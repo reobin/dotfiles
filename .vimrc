@@ -161,6 +161,9 @@ map! <Help> <Esc>
 map  <Insert> <Esc>
 map! <Insert> <Esc>
 
+" Tree list view mode "
+let g:netrw_liststyle = 1
+
 execute pathogen#infect()
 
 "------------------------------------------------------------""
