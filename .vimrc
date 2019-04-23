@@ -5,6 +5,7 @@ Plug 'tomtom/tcomment_vim'
 Plug 'itchyny/lightline.vim'
 Plug 'sheerun/vim-polyglot'
 Plug 'prettier/vim-prettier', { 'do': 'npm install' }
+Plug 'scrooloose/nerdtree'
 
 call plug#end()
 
@@ -17,6 +18,8 @@ colorscheme minimalist
 """"""""""""""""""""""""""""""""""""""""""""""""""
 " leader
 map <Space> <Leader>
+
+map <C-n> :NERDTreeToggle<CR>
 
 " C
 noremap <silent> <Leader>cc :TComment<CR>
@@ -42,6 +45,8 @@ let g:netrw_sort_sequence = '[\/]$,*'
 
 " open file in a new tab
 let g:netrw_browse_split = 3
+
+autocmd vimenter * NERDTree
  
 set hidden
 set wildmenu
