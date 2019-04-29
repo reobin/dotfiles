@@ -3,15 +3,28 @@ call plug#begin('~/.vim/plugged')
 Plug 'dikiaap/minimalist'
 Plug 'tomtom/tcomment_vim'
 Plug 'itchyny/lightline.vim'
-Plug 'sheerun/vim-polyglot'
 Plug 'prettier/vim-prettier', { 'do': 'npm install' }
 Plug 'scrooloose/nerdtree'
+Plug 'jiangmiao/auto-pairs'
+Plug 'othree/yajs.vim'
+" Plug 'mxw/vim-jsx'
+Plug 'ayu-theme/ayu-vim'
+Plug 'maxmellon/vim-jsx-pretty'
+if has('nvim')
+  Plug 'Shougo/deoplete.nvim', { 'do': ':UpdateRemotePlugins' }
+else
+  Plug 'Shougo/deoplete.nvim'
+  Plug 'roxma/nvim-yarp'
+  Plug 'roxma/vim-hug-neovim-rpc'
+endif
+Plug 'ternjs/tern_for_vim', { 'do': 'npm install' }
 
 call plug#end()
 
 set t_Co=256
 syntax on
-colorscheme minimalist
+" colorscheme minimalist
+" colorscheme vimjsx
 
 """"""""""""""""""""""""""""""""""""""""""""""""""
 " Key mappings
@@ -29,8 +42,13 @@ map <silent> <Leader>v :source ~/.vimrc<CR>:PlugInstall<CR>:bdelete<CR>:exe ":ec
 
 """"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 
+set termguicolors     " enable true colors support
+" let ayucolor="mirage" " for mirage version of theme
+let ayucolor="dark"   " for dark version of theme
+" colorscheme ayu
+
 " Lightline
-let g:lightline = { 'colorscheme': 'minimalist', }
+let g:lightline = { 'colorscheme': 'ayu', }
 set laststatus=2
 set noshowmode
 
@@ -46,8 +64,44 @@ let g:netrw_sort_sequence = '[\/]$,*'
 " open file in a new tab
 let g:netrw_browse_split = 3
 
-autocmd vimenter * NERDTree
- 
+let g:deoplete#enable_at_startup = 1
+if !exists('g:deoplete#omni#input_patterns')
+  let g:deoplete#omni#input_patterns = {}
+endif
+" let g:deoplete#disable_auto_complete = 1
+autocmd InsertLeave,CompleteDone * if pumvisible() == 0 | pclose | endif
+
+" omnifuncs
+augroup omnifuncs
+  autocmd!
+  autocmd FileType css setlocal omnifunc=csscomplete#CompleteCSS
+  autocmd FileType html,markdown setlocal omnifunc=htmlcomplete#CompleteTags
+  autocmd FileType javascript setlocal omnifunc=javascriptcomplete#CompleteJS
+  autocmd FileType python setlocal omnifunc=pythoncomplete#Complete
+  autocmd FileType xml setlocal omnifunc=xmlcomplete#CompleteTags
+augroup end
+" tern
+if exists('g:plugs["tern_for_vim"]')
+  let g:tern_show_argument_hints = 'on_hold'
+  let g:tern_show_signature_in_pum = 1
+  autocmd FileType javascript setlocal omnifunc=tern#Complete
+endif
+
+" deoplete tab-complete
+inoremap <expr><tab> pumvisible() ? "\<c-n>" : "\<tab>"
+" tern
+autocmd FileType javascript nnoremap <silent> <buffer> gb :TernDef<CR>
+
+let g:jsx_ext_required = 0
+
+inoremap " ""<left>
+inoremap ' ''<left>
+inoremap ( ()<left>
+inoremap [ []<left>
+inoremap { {}<left>
+inoremap {<CR> {<CR>}<ESC>O
+inoremap {;<CR> {<CR>};<ESC>O
+
 set hidden
 set wildmenu
 set showcmd
@@ -63,7 +117,7 @@ set visualbell
 set t_vb=
 set mouse=a
 set cmdheight=2
-set number
+set relativenumber
 set notimeout ttimeout ttimeoutlen=200
 set pastetoggle=<F11>
 set shiftwidth=2
