@@ -2,7 +2,7 @@
 # export PATH=$HOME/bin:/usr/local/bin:$PATH
 
 # Path to your oh-my-zsh installation.
-export ZSH="/Users/reobin/.oh-my-zsh"
+export ZSH="/Users/cortexstudio/.oh-my-zsh"
 
 # Set name of the theme to load --- if set to "random", it will
 # load a random theme each time oh-my-zsh is loaded, in which case,
@@ -116,4 +116,7 @@ alias vim=/usr/local/bin/vim
 
 ## Open in Chrome
 alias chrome="open -a \"Google Chrome\""
+
+## Open in sublime merge
+alias smerge="open -a \"Sublime Merge\""
 
