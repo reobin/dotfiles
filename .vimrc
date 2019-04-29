@@ -47,8 +47,6 @@ set noshowmode
 " NERDTree
 " Toggle NERDTree
 map <C-n> :NERDTreeToggle<CR>
-" absolute width of netrw window
-let g:netrw_winsize = -28
 " tree-view
 let g:netrw_liststyle = 3
 " sort is affecting only: directories on the top, files below
