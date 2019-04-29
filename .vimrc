@@ -2,14 +2,16 @@ call plug#begin('~/.vim/plugged')
 
 Plug 'dikiaap/minimalist'
 Plug 'tomtom/tcomment_vim'
-Plug 'itchyny/lightline.vim'
+Plug 'vim-airline/vim-airline'
+Plug 'vim-airline/vim-airline-themes'
 Plug 'prettier/vim-prettier', { 'do': 'npm install' }
 Plug 'scrooloose/nerdtree'
 Plug 'jiangmiao/auto-pairs'
 Plug 'othree/yajs.vim'
-Plug 'maxmellon/vim-jsx-pretty'
+Plug 'sheerun/vim-polyglot'
 Plug 'ayu-theme/ayu-vim'
 Plug 'ryanoasis/vim-devicons'
+Plug 'tpope/vim-fugitive'
 
 call plug#end()
 
@@ -27,7 +29,6 @@ syntax on
 set termguicolors
 let ayucolor="mirage"
 colorscheme ayu
-let g:jsx_ext_required = 0
 
 """"""""""""""""""""""""""""""""""""""""""""""""""
 " Key mappings
@@ -39,10 +40,11 @@ noremap <silent> <Leader>cc :TComment<CR>
 " reloads .vimrc -- making all changes active
 map <silent> <Leader>v :source ~/.vimrc<CR>:PlugInstall<CR>:bdelete<CR>:exe ":echo 'vimrc reloaded'"<CR>
 
-" Lightline
-let g:lightline = { 'colorscheme': 'wombat', }
-set laststatus=2
-set noshowmode
+" Airline
+let g:airline#extensions#tabline#enabled = 1
+let g:airline_powerline_fonts = 1
+let g:airline_theme='solarized'
+let g:airline_solarized_bg='dark'
 
 " NERDTree
 " Toggle NERDTree
