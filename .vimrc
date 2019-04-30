@@ -43,7 +43,7 @@ map <silent> <Leader>v :source ~/.vimrc<CR>:PlugInstall<CR>:bdelete<CR>:exe ":ec
 " Airline
 let g:airline#extensions#tabline#enabled = 1
 let g:airline_powerline_fonts = 1
-let g:airline_theme='solarized'
+let g:airline_theme='minimalist'
 let g:airline_solarized_bg='dark'
 
 " NERDTree
