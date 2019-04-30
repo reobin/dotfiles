@@ -120,3 +120,6 @@ alias chrome="open -a \"Google Chrome\""
 ## Open in sublime merge
 alias smerge="open -a \"Sublime Merge\""
 
+## Open in sourcetree
+alias stree="open -a \"Sourcetree\""
+
