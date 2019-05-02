@@ -9,7 +9,7 @@ Plug 'scrooloose/nerdtree'
 Plug 'jiangmiao/auto-pairs'
 Plug 'othree/yajs.vim'
 Plug 'sheerun/vim-polyglot'
-Plug 'ayu-theme/ayu-vim'
+Plug 'markvincze/panda-vim'
 Plug 'ryanoasis/vim-devicons'
 Plug 'tpope/vim-fugitive'
 
@@ -27,8 +27,7 @@ nnoremap <C-H> <C-W><C-H>
 set t_Co=256
 syntax on
 set termguicolors
-let ayucolor="mirage"
-colorscheme ayu
+color panda
 
 """"""""""""""""""""""""""""""""""""""""""""""""""
 " Key mappings
