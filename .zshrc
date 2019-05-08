@@ -123,6 +123,8 @@ alias smerge="open -a \"Sublime Merge\""
 ## Open in sourcetree
 alias stree="open -a \"Sourcetree\""
 
-## Prune git branches
+## git 
 alias gitprune="git remote prune origin"
+alias gitprunel="git branch -D $(git branch --merged)"
+alias gitlog="watch --color git log --all --decorate --oneline --graph --color"
 
