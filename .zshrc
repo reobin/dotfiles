@@ -126,5 +126,5 @@ alias stree="open -a \"Sourcetree\""
 ## git 
 alias gitprune="git remote prune origin"
 alias gitprunel="git branch -D $(git branch --merged)"
-alias gitlog="watch --color git log --all --decorate --oneline --graph --color"
+alias gitlog="watch --color git log --all --pretty=oneline --decorate --graph --color"
 
