@@ -24,4 +24,4 @@ if (preg_match("/.*?inet\s(.*?)\snetmask.*?/", $output, $matches) == true)
 	
 }
 
-echo "$wifi     $ip     $local";
+echo "$wifi\n$ip\n$local";
