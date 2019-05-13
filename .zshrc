@@ -97,16 +97,6 @@ source $ZSH/oh-my-zsh.sh
 # alias zshconfig="mate ~/.zshrc"
 # alias ohmyzsh="mate ~/.oh-my-zsh"
 
-
-## Android
-export ANDROID_HOME=/Users/reobin/Library/Android/sdk/
-export PATH=$PATH:$ANDROID_HOME/tools:$ANDROID_HOME/platform-tools
-export PATH=$ANDROID_HOME/tools:$PATH
-export PATH=$ANDROID_HOME/platform-tools:$PATH
-export PATH=$ANDROID_HOME/build-tools/19.1.0:$PATH
-
-export JAVA_HOME='/Library/Java/JavaVirtualMachines/jdk1.8.0_181.jdk/Contents/Home'
-
 ## Ruby
 export PATH=/Users/reobin/.gem/ruby/2.6.0/bin:$PATH
 export PATH=/usr/local/opt/ruby/bin:$PATH
@@ -125,6 +115,5 @@ alias stree="open -a \"Sourcetree\""
 
 ## git 
 alias gitprune="git remote prune origin"
-alias gitprunel="git branch -D $(git branch --merged)"
 alias gitlog="watch --color git log --all --pretty=oneline --decorate --graph --color"
 
