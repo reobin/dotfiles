@@ -6,7 +6,7 @@
   "terminal.external.osxExec": "iTerm2.app",
   "editor.wordBasedSuggestions": false,
   "terminal.integrated.shell.osx": "zsh",
-  "editor.fontFamily": "Fira Code",
+  "editor.fontFamily": "FuraCode Nerd Font",
   "editor.fontLigatures": true,
   "search.usePCRE2": true,
   "javascript.updateImportsOnFileMove.enabled": "always",
@@ -73,7 +73,6 @@
       ]
     }
   ],
-  "background.enabled": false,
   "typescript.updateImportsOnFileMove.enabled": "always",
   "[markdown]": {
     "editor.defaultFormatter": "esbenp.prettier-vscode"
