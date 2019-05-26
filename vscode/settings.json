@@ -1,0 +1,92 @@
+{
+  "editor.tabSize": 2,
+  "workbench.startupEditor": "none",
+  "workbench.colorTheme": "Panda Syntax",
+  "terminal.integrated.cursorStyle": "line",
+  "terminal.external.osxExec": "iTerm2.app",
+  "editor.wordBasedSuggestions": false,
+  "terminal.integrated.shell.osx": "zsh",
+  "editor.fontFamily": "Fira Code",
+  "editor.fontLigatures": true,
+  "search.usePCRE2": true,
+  "javascript.updateImportsOnFileMove.enabled": "always",
+  "[typescriptreact]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+  "editor.formatOnSave": true,
+  "workbench.iconTheme": "vs-seti",
+  "vim.enableNeovim": true,
+  "vim.neovimPath": "/usr/local/bin/nvim",
+  "workbench.settings.useSplitJSON": true,
+  "workbench.settings.editor": "json",
+  "workbench.activityBar.visible": false,
+  "editor.rulers": [120],
+  "editor.lineNumbers": "relative",
+  "window.titleBarStyle": "custom",
+  "window.nativeTabs": false,
+  "vim.leader": " ",
+  "vim.insertModeKeyBindings": [
+    {
+      "before": ["j", "j"],
+      "after": ["<esc>"]
+    }
+  ],
+  "vim.normalModeKeyBindings": [
+    {
+      "before": ["<leader>", "w"],
+      "after": [],
+      "commands": [
+        {
+          "command": "workbench.action.files.save",
+          "args": []
+        }
+      ]
+    },
+    {
+      "before": ["<leader>", "c"],
+      "after": [],
+      "commands": [
+        {
+          "command": "editor.action.commentLine"
+        }
+      ]
+    }
+  ],
+  "vim.visualModeKeyBindings": [
+    {
+      "before": ["<leader>", "w"],
+      "after": [],
+      "commands": [
+        {
+          "command": "workbench.action.files.save",
+          "args": []
+        }
+      ]
+    },
+    {
+      "before": ["<leader>", "c"],
+      "after": [],
+      "commands": [
+        {
+          "command": "editor.action.commentLine"
+        }
+      ]
+    }
+  ],
+  "background.enabled": false,
+  "typescript.updateImportsOnFileMove.enabled": "always",
+  "[markdown]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+  "[json]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+  "editor.minimap.enabled": false,
+  "todohighlight.keywords": ["debugger"],
+  "window.zoomLevel": 0,
+  "[typescript]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+  "prettier.printWidth": 120
+}
+
