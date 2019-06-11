@@ -378,11 +378,11 @@
     "Green Component" : 1
   },
   "Ansi 2 Color" : {
-    "Red Component" : 0.090683206915855408,
+    "Red Component" : 0.082352941176470587,
     "Color Space" : "sRGB",
-    "Blue Component" : 0.64535652671892374,
+    "Blue Component" : 0.86274509803921573,
     "Alpha Component" : 1,
-    "Green Component" : 0.73388671875
+    "Green Component" : 0.9882352941176471
   },
   "Send Code When Idle" : false,
   "ASCII Anti Aliased" : true,
