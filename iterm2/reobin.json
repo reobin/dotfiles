@@ -1,4 +1,6 @@
 {
+  "Badge Text" : "",
+  "Thin Strokes" : 4,
   "Working Directory" : "\/Users\/cortexstudio",
   "Prompt Before Closing 2" : false,
   "Selected Text Color" : {
@@ -34,6 +36,9 @@
     "Alpha Component" : 1,
     "Green Component" : 0.38318115472793579
   },
+  "Triggers" : [
+
+  ],
   "Mouse Reporting" : true,
   "Cursor Boost" : 0,
   "Ansi 4 Color" : {
@@ -45,6 +50,7 @@
   },
   "Non-ASCII Anti Aliased" : true,
   "Sync Title" : false,
+  "Badge Font" : "FuraCodeNerdFontComplete-Retina",
   "Disable Window Resizing" : true,
   "Description" : "Default",
   "Close Sessions On End" : true,
@@ -115,6 +121,7 @@
   },
   "Use Cursor Guide" : false,
   "Unlimited Scrollback" : false,
+  "Allow Title Setting" : true,
   "Custom Command" : "No",
   "Title Components" : 1,
   "Keyboard Map" : {
@@ -371,11 +378,11 @@
     "Green Component" : 1
   },
   "Ansi 2 Color" : {
-    "Red Component" : 0.14805346727371216,
-    "Color Space" : "Calibrated",
-    "Blue Component" : 0.82991856336593628,
+    "Red Component" : 0.090683206915855408,
+    "Color Space" : "sRGB",
+    "Blue Component" : 0.64535652671892374,
     "Alpha Component" : 1,
-    "Green Component" : 1
+    "Green Component" : 0.73388671875
   },
   "Send Code When Idle" : false,
   "ASCII Anti Aliased" : true,
@@ -389,6 +396,7 @@
     "Alpha Component" : 1,
     "Green Component" : 0.020856760442256927
   },
+  "Badge Right Margin" : 20,
   "Use Bold Font" : true,
   "Silence Bell" : false,
   "Ansi 12 Color" : {
@@ -425,6 +433,7 @@
   "Name" : "reobin",
   "Blinking Cursor" : true,
   "Guid" : "6A57EED4-D3E4-4587-909D-CFED2486189F",
+  "Badge Max Width" : 0.51000000000000001,
   "Idle Code" : 0,
   "Ansi 10 Color" : {
     "Red Component" : 0.14805346727371216,
@@ -450,8 +459,8 @@
   "Smart Cursor Color" : false,
   "Ambiguous Double Width" : false,
   "Blur Radius" : 10.541166322969543,
+  "Badge Max Height" : 0.20000000000000001,
   "Background Image Mode" : 0,
-  "Cursor Type" : 1,
   "Ansi 0 Color" : {
     "Red Component" : 0.12057839334011078,
     "Color Space" : "Calibrated",
@@ -459,9 +468,10 @@
     "Alpha Component" : 1,
     "Green Component" : 0.12339203059673309
   },
+  "Cursor Type" : 0,
   "Blur" : true,
-  "Vertical Spacing" : 1,
   "Normal Font" : "FuraCodeNerdFontComplete-Retina 12",
+  "Vertical Spacing" : 1,
   "Ansi 7 Color" : {
     "Red Component" : 0.94097667932510376,
     "Color Space" : "Calibrated",
@@ -476,7 +486,7 @@
   "Tab Color" : {
     "Red Component" : 0.68458080291748047,
     "Color Space" : "Calibrated",
-    "Blue Component" : 0.062073707580566427,
+    "Blue Component" : 0.062073707580566406,
     "Alpha Component" : 1,
     "Green Component" : 0
   },
@@ -497,7 +507,8 @@
     "Alpha Component" : 1,
     "Green Component" : 1
   },
-  "Transparency" : 0.0033193210659898478,
+  "Transparency" : 0.0033193210659898482,
+  "Badge Top Margin" : 20,
   "Background Color" : {
     "Red Component" : 0.11183337867259979,
     "Color Space" : "Calibrated",
@@ -516,6 +527,7 @@
   },
   "Columns" : 80,
   "Visual Bell" : true,
+  "ASCII Ligatures" : true,
   "Custom Directory" : "No",
   "Ansi 5 Color" : {
     "Red Component" : 0.98811757564544678,
@@ -523,6 +535,5 @@
     "Blue Component" : 0.65158092975616455,
     "Alpha Component" : 1,
     "Green Component" : 0.35074537992477417
-  },
-  "Thin Strokes" : 4
+  }
 }
