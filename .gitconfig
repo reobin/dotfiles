@@ -1,0 +1,16 @@
+[user]
+	email = gagnonrobin@icloud.com
+	name = Robin Gagnon
+
+[core]
+	editor = nvim
+	excludesfile = /Users/reobin/.gitignore_global
+
+[alias]
+	files = !git diff --name-only $(git merge-base HEAD \"$REVIEW_BASE\")
+	stat = !git diff --stat $(git merge-base HEAD \"$REVIEW_BASE\")
+	cut = !git remote prune origin
+	tree = !watch --color git log --all --pretty=oneline --decorate --graph --color
+
+[diff]
+	tool = vimdiff
