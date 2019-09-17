@@ -2,7 +2,7 @@
 # export PATH=$HOME/bin:/usr/local/bin:$PATH
 
 # Path to your oh-my-zsh installation.
-export ZSH="/Users/cortexstudio/.oh-my-zsh"
+export ZSH="/Users/reobin/.oh-my-zsh"
 
 # Set name of the theme to load --- if set to "random", it will
 # load a random theme each time oh-my-zsh is loaded, in which case,
@@ -114,6 +114,5 @@ alias smerge="open -a \"Sublime Merge\""
 alias stree="open -a \"Sourcetree\""
 
 ## git 
-alias gitprune="git remote prune origin"
-alias gitlog="watch --color git log --all --pretty=oneline --decorate --graph --color"
+export REVIEW_BASE="master"
 
