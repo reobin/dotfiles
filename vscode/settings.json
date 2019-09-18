@@ -109,9 +109,7 @@
   // Disable unwanted snippet suggestions
   "emmet.showExpandedAbbreviation": "never",
   "editor.snippetSuggestions": "none",
+  //
   "workbench.statusBar.visible": true,
-  // Gitlab Cortex
-  "gitlab.enableExperimentalFeatures": true,
-  "gitlab.instanceUrl": "https://git.cortex.ninja",
   "diffEditor.ignoreTrimWhitespace": true,
 }
