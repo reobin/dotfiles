@@ -4,7 +4,7 @@
 
 [alias]
 	cut = !git remote prune origin
-	b = branch
+	b = !gitin branch
 	d = difftool
 	s = !gitin status
 	p = push
