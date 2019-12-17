@@ -5,10 +5,16 @@ ctrl + alt - u : yabai -m space --layout bsp
 ctrl + alt - i : yabai -m space --layout float 
 
 ## move window
-alt - h : yabai -m window --move rel:-20:0
-alt - j : yabai -m window --move rel:0:20
-alt - k : yabai -m window --move rel:0:-20
-alt - l : yabai -m window --move rel:20:0
+cmd + alt - h : yabai -m window --move rel:-20:0
+cmd + alt - j : yabai -m window --move rel:0:20
+cmd + alt - k : yabai -m window --move rel:0:-20
+cmd + alt - l : yabai -m window --move rel:20:0
+
+## focus window
+alt - h : yabai -m window --focus west
+alt - j : yabai -m window --focus south
+alt - k : yabai -m window --focus north
+alt - l : yabai -m window --focus east
 
 ## resize window
 cmd + alt + ctrl - h : yabai -m window --resize right:-20:0
