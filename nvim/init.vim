@@ -4,10 +4,6 @@ call plug#end()
 
 " Relative numbers "
 set relativenumber
-colorscheme horizon
-
-" Color scheme "
-set termguicolors
 
 " Leader "
 let mapleader=" "
