@@ -2,7 +2,7 @@
 # export PATH=$HOME/bin:/usr/local/bin:$PATH
 
 # Path to your oh-my-zsh installation.
-export ZSH="/Users/reobin/.oh-my-zsh"
+export ZSH="$HOME/.oh-my-zsh"
 
 # Set name of the theme to load --- if set to "random", it will
 # load a random theme each time oh-my-zsh is loaded, in which case,
@@ -97,22 +97,26 @@ source $ZSH/oh-my-zsh.sh
 # alias zshconfig="mate ~/.zshrc"
 # alias ohmyzsh="mate ~/.oh-my-zsh"
 
-## Ruby
-export PATH=/Users/reobin/.gem/ruby/2.6.0/bin:$PATH
-export PATH=/usr/local/opt/ruby/bin:$PATH
-
 ## Vim
 alias vim=/usr/local/bin/vim
 
-## Open in Chrome
-alias chrome="open -a \"Google Chrome\""
+## git 
+export REVIEW_BASE="master"
+
+## Ruby
+export PATH=$HOME/.gem/ruby/2.6.0/bin:$PATH
+export PATH=/usr/local/opt/ruby/bin:$PATH
 
 ## Open in sublime merge
 alias smerge="open -a \"Sublime Merge\""
 
-## Open in sourcetree
-alias stree="open -a \"Sourcetree\""
+## NVM
+export NVM_DIR=~/.nvm
+source $(brew --prefix nvm)/nvm.sh
 
-## git 
-export REVIEW_BASE="master"
+## python
+alias python="/usr/local/bin/python3"
+
+## docker
+alias cdc="docker rm \$(docker ps -a -q -f status=exited)"
 
