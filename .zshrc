@@ -117,6 +117,3 @@ source $(brew --prefix nvm)/nvm.sh
 ## python
 alias python="/usr/local/bin/python3"
 
-## docker
-alias cdc="docker rm \$(docker ps -a -q -f status=exited)"
-
