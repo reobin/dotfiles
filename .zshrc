@@ -28,3 +28,9 @@ source $(brew --prefix nvm)/nvm.sh
 ## python
 alias python="/usr/local/bin/python3"
 
+## Fix cursor when exiting vim
+_fix_cursor() {
+   echo -ne '\e[3 q'
+}
+precmd_functions+=(_fix_cursor)
+
