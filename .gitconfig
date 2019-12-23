@@ -16,8 +16,11 @@
 [diff]
 	tool = vimdiff
 	algorithm = patience
+
 [user]
 	name = Robin Gagnon
 	email = robin.gagnon@cortexmedia.ca
+
 [difftool]
 	prompt = false
+
