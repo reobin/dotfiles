@@ -9,6 +9,7 @@ Plug 'scrooloose/nerdtree'
 Plug 'Xuyuanp/nerdtree-git-plugin'
 Plug 'junegunn/fzf', { 'dir': '~/.fzf', 'do': './install --all' }
 Plug 'junegunn/fzf.vim'
+Plug 'mhinz/vim-signify'
 Plug 'neoclide/coc.nvim', {'branch': 'release'}
 call plug#end()
 
@@ -19,6 +20,14 @@ call plug#end()
 "                        "
 """"""""""""""""""""""""""
 let mapleader=' '
+
+
+""""""""""""""""""""""""""
+"                        "
+"     Custom commands    "
+"                        "
+""""""""""""""""""""""""""
+nnoremap <silent> <leader>/ :noh<cr>
 
 
 """"""""""""""""""""""""""
@@ -153,4 +162,23 @@ highlight SignColumn        ctermbg=NONE                                guibg=NO
 highlight SignifySignAdd    ctermfg=green ctermbg=none                  guibg=none
 highlight SignifySignDelete ctermfg=red   ctermbg=none    guifg=#ffffff guibg=#ff0000
 highlight SignifySignChange ctermfg=blue  ctermbg=none    guifg=#000000 guibg=#ffff00
+
+
+""""""""""""""""""""""""""
+"                        "
+"       coc.nvim         "
+"                        "
+""""""""""""""""""""""""""
+" Use tab for trigger completion with characters ahead and navigate.
+" Use command ':verbose imap <tab>' to make sure tab is not mapped by other plugin.
+inoremap <silent><expr> <TAB>
+      \ pumvisible() ? "\<C-n>" :
+      \ <SID>check_back_space() ? "\<TAB>" :
+      \ ""
+inoremap <expr><S-TAB> pumvisible() ? "\<C-p>" : ""
+
+function! s:check_back_space() abort
+  let col = col('.') - 1
+  return !col || getline('.')[col - 1]  =~# '\s'
+endfunction
 
