@@ -1,7 +1,7 @@
 #!/bin/bash
 
 directories=(nvim yabai karabiner pgcli)
-files=(.zshrc .skhdrc)
+files=(.zshrc .skhdrc .gitconfig)
 
 for directory in ${directories[@]}; do
   if test -d ~/.config/$directory; then
