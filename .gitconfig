@@ -1,27 +1,32 @@
 [core]
-	editor = nvim
-	excludesfile = /Users/reobin/.gitignore_global
+  editor = nvim
+  excludesfile = /Users/reobin/.gitignore_global
 
 [alias]
-	cut = !git remote prune origin
-	b = !gitin branch
-	br = branch
-	d = difftool
-	p = push
-	c = commit
-	co = checkout
-	pl = pull
-	s = !gitin status
-	l = !gitin log
+  # shortcuts
+  br = branch
+  d = difftool
+  p = push
+  c = commit
+  co = checkout
+  pl = pull
+
+  # Clean stale branches
+  cut = !git remote prune origin
+
+  # gitin
+  b = !gitin branch
+  s = !gitin status
+  l = !gitin log
 
 [diff]
-	tool = vimdiff
-	algorithm = patience
+  tool = vimdiff
+  algorithm = patience
 
 [user]
-	name = Robin Gagnon
-	email = robin.gagnon@cortexmedia.ca
+  name = Robin Gagnon
+  email = robin.gagnon@cortexmedia.ca
 
 [difftool]
-	prompt = false
+  prompt = false
 
