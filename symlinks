@@ -1,7 +1,0 @@
-ln -s ~/git/dotfiles/nvim ~/.config/nvim
-ln -s ~/git/dotfiles/yabai ~/.config/yabai
-ln -s ~/git/dotfiles/pgcli ~/.config/pgcli
-ln -s ~/git/dotfiles/karabiner ~/.config/karabiner
-
-ln -s ~/git/dotfiles/.zshrc ~/.zshrc
-ln -s ~/git/dotfiles/.skhdrc ~/.skhdrc
