@@ -117,7 +117,8 @@ set shiftwidth=2
 "        Prettier        "
 "                        "
 """"""""""""""""""""""""""
-let g:prettier#config#print_width = 120
+nnoremap <silent> <leader>n :Prettier<cr>
+let g:prettier#config#print_width = 80
 let g:prettier#config#single_quote = 'false'
 let g:prettier#config#bracket_spacing = 'true'
 let g:prettier#config#jsx_bracket_same_line = 'false'
@@ -143,7 +144,7 @@ autocmd VimEnter * if argc() == 1 && isdirectory(argv()[0]) && !exists("s:std_in
 "                        "
 """"""""""""""""""""""""""
 nnoremap <silent> <leader>f :execute 'Ag ' . input('Ag/')<cr><cr>
-nnoremap <silent> <leader>p :Files<cr><cr>
+nnoremap <silent> <leader>p :Files<cr>
 
 
 """"""""""""""""""""""""""
