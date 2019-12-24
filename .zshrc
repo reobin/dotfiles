@@ -34,3 +34,5 @@ _fix_cursor() {
 }
 precmd_functions+=(_fix_cursor)
 
+## Fixes fzf searching in git ignored files and folders
+export FZF_DEFAULT_COMMAND='ag --hidden --ignore .git -g ""'
