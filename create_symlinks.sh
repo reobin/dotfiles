@@ -6,7 +6,7 @@ files=(.zshrc .skhdrc .gitconfig)
 for directory in ${directories[@]}; do
   if test -d ~/.config/$directory; then
     echo "remove ~/.config/$directory"
-    rm ~/.config/$directory
+    rm -rf ~/.config/$directory
   fi
   echo "create symlink from ~/git/dotfiles/$directory to ~/.config/$directory \n"
   ln -s ~/git/dotfiles/$directory ~/.config/$directory
