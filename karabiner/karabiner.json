@@ -20,14 +20,14 @@
             "manipulators": [
               {
                 "from": {
-                  "key_code": "left_control",
+                  "key_code": "right_control",
                   "modifiers": {
                     "optional": ["any"]
                   }
                 },
                 "to": [
                   {
-                    "key_code": "left_control",
+                    "key_code": "right_control",
                     "lazy": true
                   }
                 ],
@@ -41,13 +41,13 @@
             ]
           },
           {
-            "description": "Change left_control+hjkl to arrow keys",
+            "description": "Change right_control+hjkl to arrow keys",
             "manipulators": [
               {
                 "from": {
                   "key_code": "h",
                   "modifiers": {
-                    "mandatory": ["left_control"],
+                    "mandatory": ["right_control"],
                     "optional": ["any"]
                   }
                 },
@@ -62,7 +62,7 @@
                 "from": {
                   "key_code": "j",
                   "modifiers": {
-                    "mandatory": ["left_control"],
+                    "mandatory": ["right_control"],
                     "optional": ["any"]
                   }
                 },
@@ -77,7 +77,7 @@
                 "from": {
                   "key_code": "k",
                   "modifiers": {
-                    "mandatory": ["left_control"],
+                    "mandatory": ["right_control"],
                     "optional": ["any"]
                   }
                 },
@@ -92,7 +92,7 @@
                 "from": {
                   "key_code": "l",
                   "modifiers": {
-                    "mandatory": ["left_control"],
+                    "mandatory": ["right_control"],
                     "optional": ["any"]
                   }
                 },
@@ -217,7 +217,7 @@
             "key_code": "caps_lock"
           },
           "to": {
-            "key_code": "left_control"
+            "key_code": "right_control"
           }
         },
         {
