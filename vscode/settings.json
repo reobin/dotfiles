@@ -19,30 +19,20 @@
   "workbench.settings.useSplitJSON": true,
   "workbench.settings.editor": "json",
   "workbench.activityBar.visible": true,
-  "editor.rulers": [
-    120
-  ],
+  "editor.rulers": [120],
   "editor.lineNumbers": "relative",
   "window.titleBarStyle": "custom",
   "window.nativeTabs": false,
   "vim.leader": " ",
   "vim.insertModeKeyBindings": [
     {
-      "before": [
-        "j",
-        "j"
-      ],
-      "after": [
-        "<esc>"
-      ]
+      "before": ["j", "j"],
+      "after": ["<esc>"]
     }
   ],
   "vim.normalModeKeyBindings": [
     {
-      "before": [
-        "<leader>",
-        "w"
-      ],
+      "before": ["<leader>", "w"],
       "after": [],
       "commands": [
         {
@@ -52,24 +42,18 @@
       ]
     },
     {
-      "before": [
-        "<leader>",
-        "c"
-      ],
+      "before": ["<leader>", "c"],
       "after": [],
       "commands": [
         {
           "command": "editor.action.commentLine"
         }
       ]
-    },
+    }
   ],
   "vim.visualModeKeyBindings": [
     {
-      "before": [
-        "<leader>",
-        "w"
-      ],
+      "before": ["<leader>", "w"],
       "after": [],
       "commands": [
         {
@@ -79,17 +63,14 @@
       ]
     },
     {
-      "before": [
-        "<leader>",
-        "c"
-      ],
+      "before": ["<leader>", "c"],
       "after": [],
       "commands": [
         {
           "command": "editor.action.commentLine"
         }
       ]
-    },
+    }
   ],
   "typescript.updateImportsOnFileMove.enabled": "always",
   "[markdown]": {
@@ -106,10 +87,8 @@
   "prettier.printWidth": 120,
   "workbench.tree.indent": 20,
   "breadcrumbs.enabled": false,
-  // Disable unwanted snippet suggestions
   "emmet.showExpandedAbbreviation": "never",
   "editor.snippetSuggestions": "none",
-  //
   "workbench.statusBar.visible": true,
-  "diffEditor.ignoreTrimWhitespace": true,
+  "diffEditor.ignoreTrimWhitespace": true
 }
