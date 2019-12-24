@@ -3,21 +3,28 @@
 directories=(nvim yabai karabiner pgcli)
 files=(.zshrc .skhdrc .gitconfig)
 
+red="\033[0;31m"
+green="\033[0;32m"
+nocolor="\033[0m"
+
+
+printf "create symlinks for .config directories... \n"
 for directory in ${directories[@]}; do
   if test -d ~/.config/$directory; then
-    echo "remove ~/.config/$directory"
+    printf "${red}remove ~/.config/$directory\n"
     rm -rf ~/.config/$directory
   fi
-  echo "create symlink from ~/git/dotfiles/$directory to ~/.config/$directory \n"
+  printf "${green}create symlink from ~/git/dotfiles/$directory to ~/.config/$directory\n"
   ln -s ~/git/dotfiles/$directory ~/.config/$directory
 done
 
+printf "\n${nocolor}create symlinks for dotfiles... \n"
 for file in ${files[@]}; do
   if test -f ~/$file; then
-    echo "remove ~/$file"
+    printf "${red}remove ~/$file\n"
     rm ~/$file
   fi
-  echo "create symlink from ~/git/dotfiles/$file to ~/$file \n"
+  printf "${green}create symlink from ~/git/dotfiles/$file to ~/$file\n"
   ln -s ~/git/dotfiles/$file ~/$file
 done
 
