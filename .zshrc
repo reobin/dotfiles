@@ -23,7 +23,7 @@ alias smerge="open -a \"Sublime Merge\""
 
 ## NVM
 export NVM_DIR=~/.nvm
-source $(brew --prefix nvm)/nvm.sh
+#source $(brew --prefix nvm)/nvm.sh
 
 ## python
 alias python="/usr/local/bin/python3"
