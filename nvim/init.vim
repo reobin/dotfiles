@@ -176,6 +176,14 @@ highlight SignifySignChange ctermfg=blue  ctermbg=none    guifg=#000000 guibg=#f
 
 """"""""""""""""""""""""""
 "                        "
+"        NERDTree        "
+"                        "
+""""""""""""""""""""""""""
+let NERDTreeMinimalUI=1
+
+
+""""""""""""""""""""""""""
+"                        "
 "       coc.nvim         "
 "                        "
 """"""""""""""""""""""""""
