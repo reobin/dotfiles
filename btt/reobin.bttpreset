@@ -358,7 +358,7 @@
             "BTTTBWidgetWidth" : 400,
             "BTTTouchBarDefaultPlayer" : 0,
             "BTTTouchBarItemIconWidth" : 22,
-            "BTTTouchBarShellScriptString" : "php ~\/git\/dotfiles\/btt\/wifi_status.php",
+            "BTTTouchBarShellScriptString" : "php ~\/dotfiles\/btt\/wifi_status.php",
             "BTTTouchBarHideWhenNoPlayer" : false,
             "BTTTouchBarButtonFontSize" : 7,
             "BTTTouchBarButtonName" : "ifconfig",

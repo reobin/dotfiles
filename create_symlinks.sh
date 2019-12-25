@@ -14,8 +14,8 @@ for directory in ${directories[@]}; do
     printf "${red}remove ~/.config/$directory\n"
     rm -rf ~/.config/$directory
   fi
-  printf "${green}create symlink from ~/git/dotfiles/$directory to ~/.config/$directory\n"
-  ln -s ~/git/dotfiles/$directory ~/.config/$directory
+  printf "${green}create symlink from ~/dotfiles/$directory to ~/.config/$directory\n"
+  ln -s ~/dotfiles/$directory ~/.config/$directory
 done
 
 printf "\n${nocolor}create symlinks for dotfiles... \n"
@@ -24,7 +24,7 @@ for file in ${files[@]}; do
     printf "${red}remove ~/$file\n"
     rm ~/$file
   fi
-  printf "${green}create symlink from ~/git/dotfiles/$file to ~/$file\n"
-  ln -s ~/git/dotfiles/$file ~/$file
+  printf "${green}create symlink from ~/dotfiles/$file to ~/$file\n"
+  ln -s ~/dotfiles/$file ~/$file
 done
 
