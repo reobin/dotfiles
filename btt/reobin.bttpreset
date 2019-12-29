@@ -154,7 +154,7 @@
     "showOtherTriggersTab" : true,
     "BSTSnapAreaDefaultPictoDistanceFromLeft" : 0.10000000149011612
   },
-  "BTTPresetUUID" : "B6BB756A-CB38-4DCB-BDE1-3E6A0F3E0E83",
+  "BTTPresetUUID" : "55794425-1821-4DC4-8F13-9ECA63E2E093",
   "BTTPresetContent" : [
     {
       "BTTAppBundleIdentifier" : "BT.G",
@@ -176,7 +176,7 @@
           "BTTNotesInsteadOfDescription" : 0,
           "BTTEnabled" : 1,
           "BTTModifierMode" : 0,
-          "BTTOrder" : 5,
+          "BTTOrder" : 4,
           "BTTDisplayOrder" : 0,
           "BTTMergeIntoTouchBarGroups" : 0,
           "BTTTriggerConfig" : {
@@ -208,7 +208,7 @@
           "BTTNotesInsteadOfDescription" : 0,
           "BTTEnabled" : 1,
           "BTTModifierMode" : 0,
-          "BTTOrder" : 9,
+          "BTTOrder" : 8,
           "BTTDisplayOrder" : 0,
           "BTTMergeIntoTouchBarGroups" : 0
         },
@@ -225,7 +225,7 @@
           "BTTNotesInsteadOfDescription" : 0,
           "BTTEnabled" : 1,
           "BTTModifierMode" : 0,
-          "BTTOrder" : 4,
+          "BTTOrder" : 3,
           "BTTDisplayOrder" : 0,
           "BTTMergeIntoTouchBarGroups" : 0,
           "BTTTriggerConfig" : {
@@ -250,37 +250,46 @@
         },
         {
           "BTTWidgetName" : "Battery status",
-          "BTTTriggerType" : 639,
-          "BTTTriggerTypeDescription" : "Apple Script Widget",
+          "BTTTriggerType" : 642,
+          "BTTTriggerTypeDescription" : "Shell Script \/ Task Widget",
           "BTTTriggerClass" : "BTTTriggerTypeTouchBar",
           "BTTPredefinedActionType" : -1,
           "BTTPredefinedActionName" : "No Action",
+          "BTTShellScriptWidgetGestureConfig" : "\/bin\/bash:::-c:::-:::",
           "BTTEnabled2" : 1,
-          "BTTAlternateModifierKeys" : 0,
           "BTTUUID" : "9A690B55-9F3C-488D-83CB-E733E60BE000",
           "BTTNotesInsteadOfDescription" : 0,
           "BTTEnabled" : 1,
           "BTTModifierMode" : 0,
-          "BTTOrder" : 3,
+          "BTTOrder" : 1,
           "BTTDisplayOrder" : 0,
           "BTTMergeIntoTouchBarGroups" : 0,
           "BTTTriggerConfig" : {
+            "BTTTouchBarOnlyShowIcon" : false,
+            "BTTTouchBarItemPadding" : 0,
             "BTTTouchBarButtonColor" : "0.000000, 0.000000, 0.000000, 255.000000",
-            "BTTTouchBarItemIconWidth" : 22,
             "BTTTouchBarItemPlacement" : 2,
-            "BTTTouchBarAlternateBackgroundColor" : "128.829533, 128.829533, 128.829533, 255.000000",
-            "BTTTouchBarButtonCornerRadius" : 6,
-            "BTTTouchBarScriptUpdateInterval" : 3.0034723281860352,
-            "BTTTouchBarAppleScriptString" : "do shell script \"pmset -g batt | grep InternalBattery | column -t\"\rset x to the result\rset percentage to word 6 of x\rset state to word 7 of x\r\rif state is not \"discharging\" then\r\treturn \"[charging \" & percentage & \"%]\"\rend if\r\rreturn \"[\" & percentage & \"%]\"\r",
             "BTTTouchBarAppleScriptStringRunOnInit" : true,
-            "BTTTouchBarAppleScriptUsePath" : 0,
-            "BTTTouchBarFreeSpaceAfterButton" : 5,
+            "BTTTouchBarAlwaysShowButton" : false,
+            "BTTTouchBarScriptUpdateInterval" : 5,
+            "BTTTouchBarButtonWidth" : 100,
             "BTTTouchBarItemIconHeight" : 22,
-            "BTTTouchBarItemPadding" : 0
+            "BTTTouchBarButtonTextAlignment" : 0,
+            "BTTTouchBarAlternateBackgroundColor" : "128.829533, 128.829533, 128.829533, 255.000000",
+            "BTTTouchBarAppleScriptUsePath" : 0,
+            "BTTTBWidgetWidth" : 400,
+            "BTTTouchBarColorRegex" : "",
+            "BTTTouchBarItemIconWidth" : 22,
+            "BTTTouchBarButtonName" : "Battery status",
+            "BTTTouchBarButtonFontSize" : 12,
+            "BTTTouchBarShellScriptString" : "sh ~\/dotfiles\/btt\/battery.sh",
+            "BTTTouchBarAppleScriptString" : "do shell script \"pmset -g batt | grep InternalBattery | column -t\"\rset x to the result\rset percentage to word 6 of x\rset state to word 7 of x\r\rif state is not \"discharging\" then\r\treturn \"[charging \" & percentage & \"%]\"\rend if\r\rreturn \"[\" & percentage & \"%]\"\r",
+            "BTTTouchBarButtonCornerRadius" : 6,
+            "BTTTouchBarFreeSpaceAfterButton" : 5
           }
         },
         {
-          "BTTWidgetName" : "ifconfig",
+          "BTTWidgetName" : "Wifi status",
           "BTTTriggerType" : 642,
           "BTTTriggerTypeDescription" : "Shell Script \/ Task Widget",
           "BTTTriggerClass" : "BTTTriggerTypeTouchBar",
@@ -292,12 +301,12 @@
           "BTTNotesInsteadOfDescription" : 0,
           "BTTEnabled" : 1,
           "BTTModifierMode" : 0,
-          "BTTOrder" : 2,
+          "BTTOrder" : 0,
           "BTTDisplayOrder" : 0,
           "BTTMergeIntoTouchBarGroups" : 0,
           "BTTTriggerConfig" : {
-            "BTTTouchBarHideCover" : 0,
-            "BTTTouchBarItemPadding" : -10,
+            "BTTTouchBarButtonCornerRadius" : 6,
+            "BTTTouchBarFreeSpaceAfterButton" : 5,
             "BTTTouchBarBringPlayerToFront" : 0,
             "BTTTouchBarButtonColor" : "0.000000, 0.000000, 0.000000, 255.000000",
             "BTTTouchBarEmojiHideBackButton" : false,
@@ -317,10 +326,10 @@
             "BTTTouchBarShellScriptString" : "sh ~\/dotfiles\/btt\/wifi.sh",
             "BTTTouchBarHideWhenNoPlayer" : false,
             "BTTTouchBarButtonFontSize" : 7,
-            "BTTTouchBarButtonName" : "ifconfig",
+            "BTTTouchBarButtonName" : "Wifi status",
+            "BTTTouchBarHideCover" : 0,
             "BTTTouchBarOnlyShowIcon" : false,
-            "BTTTouchBarButtonCornerRadius" : 6,
-            "BTTTouchBarFreeSpaceAfterButton" : 5
+            "BTTTouchBarItemPadding" : -10
           }
         },
         {
@@ -337,7 +346,7 @@
           "BTTNotesInsteadOfDescription" : 0,
           "BTTEnabled" : 1,
           "BTTModifierMode" : 0,
-          "BTTOrder" : 6,
+          "BTTOrder" : 5,
           "BTTDisplayOrder" : 0,
           "BTTMergeIntoTouchBarGroups" : 0
         },
@@ -355,7 +364,7 @@
           "BTTNotesInsteadOfDescription" : 0,
           "BTTEnabled" : 1,
           "BTTModifierMode" : 0,
-          "BTTOrder" : 7,
+          "BTTOrder" : 6,
           "BTTDisplayOrder" : 0,
           "BTTMergeIntoTouchBarGroups" : 0
         },
@@ -373,7 +382,7 @@
           "BTTNotesInsteadOfDescription" : 0,
           "BTTEnabled" : 1,
           "BTTModifierMode" : 0,
-          "BTTOrder" : 8,
+          "BTTOrder" : 7,
           "BTTDisplayOrder" : 0,
           "BTTMergeIntoTouchBarGroups" : 0
         }
