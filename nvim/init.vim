@@ -5,8 +5,6 @@
 """"""""""""""""""""""""""
 call plug#begin()
 Plug 'prettier/vim-prettier', { 'do': 'yarn install' }
-Plug 'scrooloose/nerdtree'
-Plug 'Xuyuanp/nerdtree-git-plugin'
 Plug 'junegunn/fzf', { 'dir': '~/.fzf', 'do': './install --all' }
 Plug 'junegunn/fzf.vim'
 Plug 'mhinz/vim-signify'
@@ -14,6 +12,7 @@ Plug 'sheerun/vim-polyglot'
 Plug 'neoclide/coc.nvim', {'branch': 'release'}
 Plug 'neoclide/coc-tsserver', {'do': 'yarn install --frozen-lockfile'}
 Plug 'neoclide/coc-css', {'do': 'yarn install --frozen-lockfile'}
+Plug 'tpope/vim-commentary'
 call plug#end()
 
 
@@ -39,6 +38,34 @@ let mapleader=' '
 "                        "
 """"""""""""""""""""""""""
 nnoremap <silent> <leader>/ :noh<cr>
+
+
+""""""""""""""""""""""""""
+"                        "
+"         netrw          "
+"                        "
+""""""""""""""""""""""""""
+"" Config
+let g:netrw_liststyle = 3
+let g:netrw_banner = 0
+
+"" Open file explorer
+nnoremap <silent> <leader>ee :Explore<cr>
+nnoremap <silent> <leader>er :Sexplore<cr>
+nnoremap <silent> <leader>ew :Vexplore<cr>
+
+"" Resize pane
+" add/remove columns
+nnoremap <silent> <leader>ej :resize +5<cr>
+nnoremap <silent> <leader>ek :resize -5<cr>
+" set pane width to 80 rows
+nnoremap <silent> <leader>eo :vertical resize 80<cr>
+" add/remove rows
+nnoremap <silent> <leader>el :vertical resize +5<cr>
+nnoremap <silent> <leader>eh :vertical resize -5<cr>
+
+"" Change pane focus
+nnoremap <silent> <leader>w <C-W>w<cr>
 
 
 """"""""""""""""""""""""""
@@ -96,7 +123,8 @@ set statusline+=%0*\ %{toupper(g:currentmode[mode()])}\  " The current mode
 "    Relative Numbers    "
 "                        "
 """"""""""""""""""""""""""
-set relativenumber
+set number relativenumber
+set nu rnu
 
 
 """"""""""""""""""""""""""
@@ -127,17 +155,6 @@ let g:prettier#config#jsx_bracket_same_line = 'false'
 let g:prettier#config#arrow_parens = 'avoid'
 let g:prettier#config#trailing_comma = 'all'
 let g:prettier#config#parser = 'babylon'
-
-""""""""""""""""""""""""""
-"                        "
-"        NERDTree        "
-"                        "
-""""""""""""""""""""""""""
-nnoremap <silent> <leader>e :NERDTreeToggle<cr>
-nnoremap <silent> <leader>w <c-w>w
-" Open NERDTree automatically when vim starts up on opening a directory "
-autocmd StdinReadPre * let s:std_in=1
-autocmd VimEnter * if argc() == 1 && isdirectory(argv()[0]) && !exists("s:std_in") | exe 'NERDTree' argv()[0] | wincmd p | ene | exe 'cd '.argv()[0] | endif
 
 
 """"""""""""""""""""""""""
@@ -174,14 +191,6 @@ highlight SignColumn        ctermbg=NONE                                guibg=NO
 highlight SignifySignAdd    ctermfg=green ctermbg=none                  guibg=none
 highlight SignifySignDelete ctermfg=red   ctermbg=none    guifg=#ffffff guibg=#ff0000
 highlight SignifySignChange ctermfg=blue  ctermbg=none    guifg=#000000 guibg=#ffff00
-
-
-""""""""""""""""""""""""""
-"                        "
-"        NERDTree        "
-"                        "
-""""""""""""""""""""""""""
-let NERDTreeMinimalUI=1
 
 
 """"""""""""""""""""""""""
