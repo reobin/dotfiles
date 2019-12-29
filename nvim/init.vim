@@ -153,6 +153,8 @@ let g:prettier#config#jsx_bracket_same_line = 'false'
 let g:prettier#config#arrow_parens = 'avoid'
 let g:prettier#config#trailing_comma = 'all'
 let g:prettier#config#parser = 'babylon'
+" Disables quick-fix to auto open when files have errors
+let g:prettier#quickfix_enabled=0
 
 
 """"""""""""""""""""""""""
