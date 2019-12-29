@@ -1,5 +1,16 @@
-" Vim color file
-" Converted from Textmate theme Sublime Panda Syntax using Coloration v0.4.0 (http://github.com/sickill/coloration)
+"
+"         ██████╗  █████╗ ███╗   ██╗██████╗  █████╗   ██╗   ██╗██╗███╗   ███╗
+"         ██╔══██╗██╔══██╗████╗  ██║██╔══██╗██╔══██╗  ██║   ██║██║████╗ ████║
+"         ██████╔╝███████║██╔██╗ ██║██║  ██║███████║  ██║   ██║██║██╔████╔██║
+"         ██╔═══╝ ██╔══██║██║╚██╗██║██║  ██║██╔══██║  ╚██╗ ██╔╝██║██║╚██╔╝██║
+"         ██║     ██║  ██║██║ ╚████║██████╔╝██║  ██║██╗╚████╔╝ ██║██║ ╚═╝ ██║
+"         ╚═╝     ╚═╝  ╚═╝╚═╝  ╚═══╝╚═════╝ ╚═╝  ╚═╝╚═╝ ╚═══╝  ╚═╝╚═╝     ╚═╝
+"
+"                                  Vim color file
+"
+"                Converted from Textmate theme Sublime Panda Syntax
+"             using Coloration v0.4.0 (http://github.com/sickill/coloration)
+"
 
 if exists("syntax_on")
   syntax reset
