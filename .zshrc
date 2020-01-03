@@ -9,7 +9,7 @@
 
 export ZSH="$HOME/.oh-my-zsh"
 
-ZSH_THEME="reobin"
+ZSH_THEME="typewritten"
 
 plugins=(
   git
@@ -36,12 +36,6 @@ export NVM_DIR=~/.nvm
 
 ## python
 alias python="/usr/local/bin/python3"
-
-## Fix cursor when exiting vim
-_fix_cursor() {
-   echo -ne '\e[3 q'
-}
-precmd_functions+=(_fix_cursor)
 
 ## Fixes fzf searching in git ignored files and folders
 export FZF_DEFAULT_COMMAND='ag --hidden --ignore .git -g ""'
