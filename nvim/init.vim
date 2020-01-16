@@ -34,7 +34,7 @@ call plug#end()
 "                        "
 """"""""""""""""""""""""""
 set termguicolors
-colorscheme spacecamp_lite
+colorscheme prequel
 
 
 """"""""""""""""""""""""""
@@ -51,6 +51,8 @@ let mapleader=' '
 "                        "
 """"""""""""""""""""""""""
 nnoremap <silent> <leader>/ :noh<cr>
+"" js
+nnoremap <silent> <leader>cl iconsole.log();<esc>hi
 
 
 """"""""""""""""""""""""""
@@ -86,11 +88,11 @@ nnoremap <silent> <leader>w <C-W>w<cr>
 "      Status line       "
 "                        "
 """"""""""""""""""""""""""
-au InsertEnter * hi statusline guifg=black guibg=#d349e8 ctermfg=black ctermbg=magenta
-au InsertLeave * hi statusline guifg=black guibg=#c5ff00 ctermfg=black ctermbg=cyan
+au InsertEnter * hi statusline guifg=black guibg=#F8D146 ctermfg=black ctermbg=magenta
+au InsertLeave * hi statusline guifg=black guibg=#77979D ctermfg=black ctermbg=cyan
 
-hi statusline guifg=black guibg=#c5ff00 ctermfg=black ctermbg=cyan
-hi User1 ctermfg=007 ctermbg=239 guibg=#4e4e4e guifg=#adadad
+hi statusline guifg=black guibg=#77979D ctermfg=black ctermbg=cyan
+hi User1 ctermfg=007 ctermbg=239 guibg=#3D4047 guifg=#adadad
 
 let g:currentmode={
     \ 'n'  : 'Normal',
@@ -225,3 +227,12 @@ function! s:check_back_space() abort
   let col = col('.') - 1
   return !col || getline('.')[col - 1]  =~# '\s'
 endfunction
+
+
+""""""""""""""""""""""""""
+"                        "
+"         black          "
+"                        "
+""""""""""""""""""""""""""
+" run black inside Docker
+nnoremap <silent> <leader>db :!docker exec django black %<cr>
