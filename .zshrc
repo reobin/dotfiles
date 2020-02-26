@@ -9,6 +9,8 @@
 
 export ZSH="$HOME/.oh-my-zsh"
 
+export VISUAL="nvim"
+
 ZSH_THEME="typewritten"
 
 plugins=(
@@ -35,7 +37,10 @@ export NVM_DIR=~/.nvm
 #source $(brew --prefix nvm)/nvm.sh
 
 ## python
-alias python="/usr/local/bin/python3"
+#alias python="/usr/local/bin/python3"
 
 ## Fixes fzf searching in git ignored files and folders
 export FZF_DEFAULT_COMMAND='ag --hidden --ignore .git -g ""'
+
+export TYPEWRITTEN_MULTILINE=false
+export TYPEWRITTEN_CURSOR="underscore"
