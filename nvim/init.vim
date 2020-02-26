@@ -19,12 +19,20 @@
 """"""""""""""""""""""""""
 call plug#begin()
 Plug 'prettier/vim-prettier', { 'do': 'yarn install' }
+
 Plug 'junegunn/fzf', { 'dir': '~/.fzf', 'do': './install --all' }
 Plug 'junegunn/fzf.vim'
-Plug 'mhinz/vim-signify'
-Plug 'sheerun/vim-polyglot'
 Plug 'neoclide/coc.nvim', {'branch': 'release'}
+
+Plug 'mhinz/vim-signify'
+
 Plug 'tpope/vim-commentary'
+
+Plug 'jiangmiao/auto-pairs'
+
+Plug 'sheerun/vim-polyglot'
+Plug 'leafgarland/typescript-vim'
+Plug 'ianks/vim-tsx'
 call plug#end()
 
 
@@ -234,5 +242,14 @@ endfunction
 "         black          "
 "                        "
 """"""""""""""""""""""""""
+" run black
+nnoremap <silent> <leader>b :!black %<cr>
 " run black inside Docker
 nnoremap <silent> <leader>db :!docker exec django black %<cr>
+
+""""""""""""""""""""""""""
+"                        "
+"      js-beautify       "
+"                        "
+""""""""""""""""""""""""""
+nnoremap <silent> <leader>dp :!npx js-beautify %<cr>
