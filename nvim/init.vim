@@ -18,21 +18,29 @@
 "                        "
 """"""""""""""""""""""""""
 call plug#begin()
+" Code formatters
 Plug 'prettier/vim-prettier', { 'do': 'yarn install' }
 
+" Finders
 Plug 'junegunn/fzf', { 'dir': '~/.fzf', 'do': './install --all' }
 Plug 'junegunn/fzf.vim'
-Plug 'neoclide/coc.nvim', {'branch': 'release'}
 
+" Git gutter
 Plug 'mhinz/vim-signify'
 
+" Comments
 Plug 'tpope/vim-commentary'
 
+" Auto pair
 Plug 'jiangmiao/auto-pairs'
 
+" Languages
 Plug 'sheerun/vim-polyglot'
 Plug 'leafgarland/typescript-vim'
 Plug 'ianks/vim-tsx'
+
+" Autocomplete
+Plug 'neoclide/coc.nvim', {'branch': 'release'}
 call plug#end()
 
 
@@ -220,25 +228,6 @@ highlight SignifySignChange ctermfg=blue  ctermbg=none    guifg=#000000 guibg=#f
 
 """"""""""""""""""""""""""
 "                        "
-"       coc.nvim         "
-"                        "
-""""""""""""""""""""""""""
-" Use tab for trigger completion with characters ahead and navigate.
-" Use command ':verbose imap <tab>' to make sure tab is not mapped by other plugin.
-inoremap <silent><expr> <TAB>
-      \ pumvisible() ? "\<C-n>" :
-      \ <SID>check_back_space() ? "\<TAB>" :
-      \ ""
-inoremap <expr><S-TAB> pumvisible() ? "\<C-p>" : ""
-
-function! s:check_back_space() abort
-  let col = col('.') - 1
-  return !col || getline('.')[col - 1]  =~# '\s'
-endfunction
-
-
-""""""""""""""""""""""""""
-"                        "
 "         black          "
 "                        "
 """"""""""""""""""""""""""
@@ -247,9 +236,18 @@ nnoremap <silent> <leader>b :!black %<cr>
 " run black inside Docker
 nnoremap <silent> <leader>db :!docker exec django black %<cr>
 
+
 """"""""""""""""""""""""""
 "                        "
 "      js-beautify       "
 "                        "
 """"""""""""""""""""""""""
 nnoremap <silent> <leader>dp :!npx js-beautify %<cr>
+
+
+""""""""""""""""""""""""""
+"                        "
+"     autocomplete       "
+"                        "
+""""""""""""""""""""""""""
+source ~/.config/nvim/autocomplete.vim
