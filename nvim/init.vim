@@ -50,7 +50,7 @@ call plug#end()
 "                        "
 """"""""""""""""""""""""""
 set termguicolors
-colorscheme prequel
+colorscheme spacecamp_lite
 
 
 """"""""""""""""""""""""""
