@@ -104,10 +104,10 @@ nnoremap <silent> <leader>w <C-W>w<cr>
 "      Status line       "
 "                        "
 """"""""""""""""""""""""""
-au InsertEnter * hi statusline guifg=black guibg=#F8D146 ctermfg=black ctermbg=magenta
-au InsertLeave * hi statusline guifg=black guibg=#77979D ctermfg=black ctermbg=cyan
+au InsertEnter * hi statusline guifg=black guibg=#f1cf06 ctermfg=black ctermbg=magenta
+au InsertLeave * hi statusline guifg=black guibg=#91ABDF ctermfg=black ctermbg=cyan
 
-hi statusline guifg=black guibg=#77979D ctermfg=black ctermbg=cyan
+hi statusline guifg=black guibg=#91ABDF ctermfg=black ctermbg=cyan
 hi User1 ctermfg=007 ctermbg=239 guibg=#3D4047 guifg=#adadad
 
 let g:currentmode={
@@ -178,7 +178,8 @@ set shiftwidth=2
 "        Prettier        "
 "                        "
 """"""""""""""""""""""""""
-nnoremap <silent> <leader>n :Prettier<cr>
+" nnoremap <silent> <leader>n :Prettier<cr>
+nnoremap <silent> <leader>n :! prettier --write %<cr>
 let g:prettier#config#print_width = 80
 let g:prettier#config#single_quote = 'false'
 let g:prettier#config#bracket_spacing = 'true'
@@ -251,3 +252,11 @@ nnoremap <silent> <leader>dp :!npx js-beautify %<cr>
 "                        "
 """"""""""""""""""""""""""
 source ~/.config/nvim/autocomplete.vim
+
+
+""""""""""""""""""""""""""
+"                        "
+"        elixir          "
+"                        "
+""""""""""""""""""""""""""
+nnoremap <silent> <leader>ef :!mix format %<cr>
