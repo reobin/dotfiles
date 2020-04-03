@@ -42,5 +42,5 @@ export NVM_DIR=~/.nvm
 ## Fixes fzf searching in git ignored files and folders
 export FZF_DEFAULT_COMMAND='ag --hidden --ignore .git -g ""'
 
-export TYPEWRITTEN_MULTILINE=false
 export TYPEWRITTEN_CURSOR="underscore"
+export TYPEWRITTEN_PROMPT_LAYOUT="singleline"
