@@ -17,6 +17,8 @@ plugins=(
   git
 )
 
+MAILCHECK=0
+
 source $ZSH/oh-my-zsh.sh
 
 ## Vim
