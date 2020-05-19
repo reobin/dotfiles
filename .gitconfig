@@ -10,7 +10,7 @@
 
 [core]
   editor = nvim
-  excludesfile = /Users/reobin/.gitignore_global
+  excludesfile = ~/.gitignore_global
 
 [alias]
   # shortcuts
