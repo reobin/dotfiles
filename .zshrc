@@ -17,9 +17,7 @@ plugins=(
   git
 )
 
-MAILCHECK=0
-
-source $ZSH/oh-my-zsh.sh
+export MAILCHECK=0
 
 ## Vim
 alias vim=/usr/local/bin/vim
@@ -46,3 +44,9 @@ export FZF_DEFAULT_COMMAND='ag --hidden --ignore .git -g ""'
 
 export TYPEWRITTEN_CURSOR="underscore"
 export TYPEWRITTEN_PROMPT_LAYOUT="singleline"
+export TYPEWRITTEN_SYMBOL=">"
+export TYPEWRITTEN_GIT_RELATIVE_PATH=true
+
+[ -f ~/.fzf.zsh ] && source ~/.fzf.zsh
+
+source $ZSH/oh-my-zsh.sh
