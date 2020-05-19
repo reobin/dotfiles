@@ -36,8 +36,14 @@ Plug 'jiangmiao/auto-pairs'
 
 " Languages
 Plug 'sheerun/vim-polyglot'
+Plug 'pangloss/vim-javascript'
 Plug 'leafgarland/typescript-vim'
 Plug 'ianks/vim-tsx'
+Plug 'maxmellon/vim-jsx-pretty'
+Plug 'jparise/vim-graphql'
+
+" css colors
+Plug 'lilydjwg/colorizer'
 
 " Autocomplete
 Plug 'neoclide/coc.nvim', {'branch': 'release'}
@@ -57,8 +63,10 @@ set ignorecase
 "         Colors         "
 "                        "
 """"""""""""""""""""""""""
-set termguicolors
-colorscheme spacecamp_lite
+" set termguicolors
+" colorscheme spacecamp_lite
+let g:seoul256_background = 236
+colo seoul256
 
 
 """"""""""""""""""""""""""
@@ -268,3 +276,22 @@ source ~/.config/nvim/autocomplete.vim
 "                        "
 """"""""""""""""""""""""""
 nnoremap <silent> <leader>ef :!mix format %<cr>
+
+
+""""""""""""""""""""""""""
+"                        "
+"        stylus          "
+"                        "
+""""""""""""""""""""""""""
+nnoremap <silent> <leader>sf :!stylus-supremacy format -r %<cr>
+
+
+""""""""""""""""""""""""""
+"                        "
+"        coc.vim         "
+"                        "
+""""""""""""""""""""""""""
+let g:coc_global_extensions = ['coc-tsserver', 'coc-python']
+" GoTo code navigation.
+nmap <silent> gd <Plug>(coc-definition)
+nmap <silent> gr <Plug>(coc-references)
