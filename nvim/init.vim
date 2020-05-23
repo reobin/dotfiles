@@ -14,14 +14,11 @@
 
 """"""""""""""""""""""""""
 "                        "
-"          Plug          "
+"          Plugs         "
 "                        "
 """"""""""""""""""""""""""
 call plug#begin()
-" Code formatters
-Plug 'prettier/vim-prettier', { 'do': 'yarn install' }
-
-" Finders
+" fuzzy finder
 Plug 'junegunn/fzf', { 'dir': '~/.fzf', 'do': './install --all' }
 Plug 'junegunn/fzf.vim'
 
@@ -35,15 +32,14 @@ Plug 'tpope/vim-commentary'
 Plug 'jiangmiao/auto-pairs'
 
 " Languages
-Plug 'sheerun/vim-polyglot'
-Plug 'pangloss/vim-javascript'
-Plug 'leafgarland/typescript-vim'
-Plug 'ianks/vim-tsx'
-Plug 'maxmellon/vim-jsx-pretty'
-Plug 'jparise/vim-graphql'
+Plug 'pangloss/vim-javascript', { 'for': ['js', 'jsx'] }
+Plug 'maxmellon/vim-jsx-pretty', { 'for': ['jsx'] }
+Plug 'leafgarland/typescript-vim', { 'for': ['ts', 'tsx'] }
+Plug 'ianks/vim-tsx', { 'for': ['tsx'] }
+Plug 'jparise/vim-graphql', { 'for': ['jsx', 'tsx'] }
 
 " css colors
-Plug 'lilydjwg/colorizer'
+Plug 'lilydjwg/colorizer', { 'for': ['css', 'sass', 'scss', 'styl', 'vim'] }
 
 " Autocomplete
 Plug 'neoclide/coc.nvim', {'branch': 'release'}
@@ -57,34 +53,22 @@ call plug#end()
 """"""""""""""""""""""""""
 set ignorecase
 
+let mapleader=' '
+
+" Remove search highlight
+nnoremap <silent> <leader>/ :noh<cr>
+
+set number relativenumber
+set nu rnu
+
 
 """"""""""""""""""""""""""
 "                        "
 "         Colors         "
 "                        "
 """"""""""""""""""""""""""
-" set termguicolors
-" colorscheme spacecamp_lite
 let g:seoul256_background = 236
 colo seoul256
-
-
-""""""""""""""""""""""""""
-"                        "
-"         Leader         "
-"                        "
-""""""""""""""""""""""""""
-let mapleader=' '
-
-
-""""""""""""""""""""""""""
-"                        "
-"     Custom commands    "
-"                        "
-""""""""""""""""""""""""""
-nnoremap <silent> <leader>/ :noh<cr>
-"" js
-nnoremap <silent> <leader>cl iconsole.log();<esc>hi
 
 
 """"""""""""""""""""""""""
@@ -120,10 +104,10 @@ nnoremap <silent> <leader>w <C-W>w<cr>
 "      Status line       "
 "                        "
 """"""""""""""""""""""""""
-au InsertEnter * hi statusline guifg=black guibg=#f1cf06 ctermfg=black ctermbg=magenta
-au InsertLeave * hi statusline guifg=black guibg=#91ABDF ctermfg=black ctermbg=cyan
+au InsertEnter * hi statusline guifg=black guibg=#D5A55F ctermfg=black ctermbg=magenta
+au InsertLeave * hi statusline guifg=black guibg=#88B0D5 ctermfg=black ctermbg=cyan
 
-hi statusline guifg=black guibg=#91ABDF ctermfg=black ctermbg=cyan
+hi statusline guifg=black guibg=#88B0D5 ctermfg=black ctermbg=cyan
 hi User1 ctermfg=007 ctermbg=239 guibg=#3D4047 guifg=#adadad
 
 let g:currentmode={
@@ -167,15 +151,6 @@ set statusline+=%0*\ %{toupper(g:currentmode[mode()])}\  " The current mode
 
 """"""""""""""""""""""""""
 "                        "
-"    Relative Numbers    "
-"                        "
-""""""""""""""""""""""""""
-set number relativenumber
-set nu rnu
-
-
-""""""""""""""""""""""""""
-"                        "
 "     Tab characters     "
 "                        "
 """"""""""""""""""""""""""
@@ -191,28 +166,10 @@ set shiftwidth=2
 
 """"""""""""""""""""""""""
 "                        "
-"        Prettier        "
-"                        "
-""""""""""""""""""""""""""
-" nnoremap <silent> <leader>n :Prettier<cr>
-nnoremap <silent> <leader>n :! prettier --write %<cr>
-let g:prettier#config#print_width = 80
-let g:prettier#config#single_quote = 'false'
-let g:prettier#config#bracket_spacing = 'true'
-let g:prettier#config#jsx_bracket_same_line = 'false'
-let g:prettier#config#arrow_parens = 'avoid'
-let g:prettier#config#trailing_comma = 'all'
-let g:prettier#config#parser = 'babylon'
-" Disables quick-fix to auto open when files have errors
-let g:prettier#quickfix_enabled=0
-
-
-""""""""""""""""""""""""""
-"                        "
 "        fzf.vim         "
 "                        "
 """"""""""""""""""""""""""
-nnoremap <silent> <leader>f :execute 'Ag ' . input('Ag/')<cr><cr>
+nnoremap <silent> <leader>s :execute 'Ag ' . input('Ag/')<cr><cr>
 nnoremap <silent> <leader>p :Files<cr>
 
 
@@ -245,45 +202,22 @@ highlight SignifySignChange ctermfg=blue  ctermbg=none    guifg=#000000 guibg=#f
 
 """"""""""""""""""""""""""
 "                        "
-"         black          "
+"        external        "
+"    format commands     "
 "                        "
 """"""""""""""""""""""""""
 " run black
-nnoremap <silent> <leader>b :!black %<cr>
+nnoremap <silent> <leader>fb :!black %<cr>
 " run black inside Docker
-nnoremap <silent> <leader>db :!docker exec django black %<cr>
-
-
-""""""""""""""""""""""""""
-"                        "
-"      js-beautify       "
-"                        "
-""""""""""""""""""""""""""
-nnoremap <silent> <leader>dp :!npx js-beautify %<cr>
-
-
-""""""""""""""""""""""""""
-"                        "
-"     autocomplete       "
-"                        "
-""""""""""""""""""""""""""
-source ~/.config/nvim/autocomplete.vim
-
-
-""""""""""""""""""""""""""
-"                        "
-"        elixir          "
-"                        "
-""""""""""""""""""""""""""
-nnoremap <silent> <leader>ef :!mix format %<cr>
-
-
-""""""""""""""""""""""""""
-"                        "
-"        stylus          "
-"                        "
-""""""""""""""""""""""""""
-nnoremap <silent> <leader>sf :!stylus-supremacy format -r %<cr>
+nnoremap <silent> <leader>fdb :!docker exec django black %<cr>
+" Prettier
+nnoremap <silent> <leader>fp :!prettier --write %<cr>
+" Js beautify through npx
+nnoremap <silent> <leader>fjb :!npx js-beautify %<cr>
+" Elixir
+nnoremap <silent> <leader>fe :!mix format %<cr>
+" Stylus
+nnoremap <silent> <leader>fs :!stylus-supremacy format -r %<cr>
 
 
 """"""""""""""""""""""""""
@@ -291,7 +225,8 @@ nnoremap <silent> <leader>sf :!stylus-supremacy format -r %<cr>
 "        coc.vim         "
 "                        "
 """"""""""""""""""""""""""
-let g:coc_global_extensions = ['coc-tsserver', 'coc-python']
-" GoTo code navigation.
+let g:coc_global_extensions = ['coc-tsserver', 'coc-python', 'coc-css', 'coc-elixir', 'coc-json']
+nnoremap <silent> <leader>cr coc#refresh()<cr>
+nnoremap <silent> <leader>ci coc#util#install()<cr>
 nmap <silent> gd <Plug>(coc-definition)
 nmap <silent> gr <Plug>(coc-references)
