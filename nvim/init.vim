@@ -32,6 +32,7 @@ Plug 'tpope/vim-commentary'
 Plug 'jiangmiao/auto-pairs'
 
 " Languages
+Plug 'elixir-editors/vim-elixir', { 'for': ['ex', 'exs'] }
 Plug 'pangloss/vim-javascript', { 'for': ['js', 'jsx'] }
 Plug 'maxmellon/vim-jsx-pretty', { 'for': ['jsx'] }
 Plug 'leafgarland/typescript-vim', { 'for': ['ts', 'tsx'] }
@@ -207,17 +208,17 @@ highlight SignifySignChange ctermfg=blue  ctermbg=none    guifg=#000000 guibg=#f
 "                        "
 """"""""""""""""""""""""""
 " run black
-nnoremap <silent> <leader>fb :!black %<cr>
+nnoremap <silent> <leader>fb :!black "%"<cr>
 " run black inside Docker
-nnoremap <silent> <leader>fdb :!docker exec django black %<cr>
+nnoremap <silent> <leader>fdb :!docker exec django black "%"<cr>
 " Prettier
-nnoremap <silent> <leader>fp :!prettier --write %<cr>
+nnoremap <silent> <leader>fp :!prettier --write "%"<cr>
 " Js beautify through npx
-nnoremap <silent> <leader>fjb :!npx js-beautify %<cr>
+nnoremap <silent> <leader>fjb :!npx js-beautify "%"<cr>
 " Elixir
-nnoremap <silent> <leader>fe :!mix format %<cr>
+nnoremap <silent> <leader>fe :!mix format "%"<cr>
 " Stylus
-nnoremap <silent> <leader>fs :!stylus-supremacy format -r %<cr>
+nnoremap <silent> <leader>fs :!stylus-supremacy format -r "%"<cr>
 
 
 """"""""""""""""""""""""""
