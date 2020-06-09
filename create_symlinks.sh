@@ -13,7 +13,7 @@
 
 
 directories=(nvim yabai karabiner pgcli)
-files=(.zshrc .skhdrc .gitconfig)
+root_files=(zsh/.zshrc .skhdrc .gitconfig)
 
 red="\033[0;31m"
 green="\033[0;32m"
@@ -26,18 +26,21 @@ for directory in "${directories[@]}"; do
     printf "${red}remove ~/.config/%s\n" "$directory"
     rm -rf "$HOME/.config/$directory"
   fi
-  printf "${green}create symlink from ~/dotfiles/%s to ~/.config/%s\n\n" "$directory" "$directory"
+  printf "${green}create symlink from ~/dotfiles/%s to ~/.config/%s" "$directory" "$directory"
   ln -s "$HOME/dotfiles/$directory" "$HOME/.config/$directory"
+  printf "\n\n"
 done
 
 printf "\n${yellow}create symlinks for dotfiles... \n"
-for file in "${files[@]}"; do
-  if test -f "$HOME/$file"; then
-    printf "${red}remove ~/%s\n" "$file"
-    rm "$HOME/$file"
+for file in "${root_files[@]}"; do
+  file_name="$(basename -- $file)"
+  if test -f "$HOME/$file_name"; then
+    printf "${red}remove ~/%s\n" "$file_name"
+    rm "$HOME/$file_name"
   fi
-  printf "${green}create symlink from ~/dotfiles/%s to ~/%s\n\n" "$file" "$file"
-  ln -s "$HOME/dotfiles/$file" "$HOME/$file"
+  printf "${green}create symlink from ~/dotfiles/%s to ~/%s" "$file" "$file_name"
+  ln -s "$HOME/dotfiles/$file" "$HOME/$file_name"
+  printf "\n\n"
 done
 
 printf "\n${yellow}done\n"
