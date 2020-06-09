@@ -1,1 +1,2 @@
+ohmyzsh/ohmyzsh
 reobin/typewritten
