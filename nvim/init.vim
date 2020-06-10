@@ -19,7 +19,7 @@
 """"""""""""""""""""""""""
 call plug#begin()
 " fuzzy finder
-Plug 'junegunn/fzf', { 'dir': '~/.fzf', 'do': './install --all' }
+Plug 'junegunn/fzf'
 Plug 'junegunn/fzf.vim'
 
 " Git gutter
@@ -34,9 +34,8 @@ Plug 'jiangmiao/auto-pairs'
 " Languages
 Plug 'elixir-editors/vim-elixir', { 'for': ['ex', 'exs'] }
 Plug 'pangloss/vim-javascript', { 'for': ['js', 'jsx'] }
-Plug 'maxmellon/vim-jsx-pretty', { 'for': ['jsx'] }
-Plug 'leafgarland/typescript-vim', { 'for': ['ts', 'tsx'] }
-Plug 'ianks/vim-tsx', { 'for': ['tsx'] }
+Plug 'HerringtonDarkholme/yats.vim', { 'for': ['tsx'] }
+Plug 'maxmellon/vim-jsx-pretty', { 'for': ['jsx', 'tsx'] }
 Plug 'jparise/vim-graphql', { 'for': ['jsx', 'tsx'] }
 
 " css colors
@@ -44,6 +43,9 @@ Plug 'lilydjwg/colorizer', { 'for': ['css', 'sass', 'scss', 'styl', 'vim'] }
 
 " Autocomplete
 Plug 'neoclide/coc.nvim', {'branch': 'release'}
+
+" Colors
+Plug 'NLKNguyen/papercolor-theme'
 call plug#end()
 
 
@@ -68,8 +70,8 @@ set nu rnu
 "         Colors         "
 "                        "
 """"""""""""""""""""""""""
-let g:seoul256_background = 236
-colo seoul256
+set background=light
+colorscheme PaperColor
 
 
 """"""""""""""""""""""""""
@@ -105,11 +107,11 @@ nnoremap <silent> <leader>w <C-W>w<cr>
 "      Status line       "
 "                        "
 """"""""""""""""""""""""""
-au InsertEnter * hi statusline guifg=black guibg=#D5A55F ctermfg=black ctermbg=magenta
-au InsertLeave * hi statusline guifg=black guibg=#88B0D5 ctermfg=black ctermbg=cyan
+au InsertEnter * hi statusline guifg=254 ctermfg=254 ctermbg=magenta
+au InsertLeave * hi statusline guifg=254 ctermfg=254 ctermbg=cyan
 
-hi statusline guifg=black guibg=#88B0D5 ctermfg=black ctermbg=cyan
-hi User1 ctermfg=007 ctermbg=239 guibg=#3D4047 guifg=#adadad
+hi statusline guifg=255 ctermfg=254 ctermbg=cyan
+hi User1 ctermfg=black ctermbg=254
 
 let g:currentmode={
     \ 'n'  : 'Normal',
@@ -170,7 +172,30 @@ set shiftwidth=2
 "        fzf.vim         "
 "                        "
 """"""""""""""""""""""""""
-nnoremap <silent> <leader>s :execute 'Ag ' . input('Ag/')<cr><cr>
+let g:fzf_preview_window = 'right:50%'
+
+" Customize fzf colors to match your color scheme
+let g:fzf_colors =
+\ { 'fg':      ['fg', 'Normal'],
+  \ 'bg':      ['bg', 'Normal'],
+  \ 'hl':      ['fg', 'Comment'],
+  \ 'fg+':     ['fg', 'CursorLine', 'CursorColumn', 'Normal'],
+  \ 'bg+':     ['bg', 'CursorLine', 'CursorColumn'],
+  \ 'hl+':     ['fg', 'Statement'],
+  \ 'info':    ['fg', 'PreProc'],
+  \ 'gutter':  ['bg', 'Normal'],
+  \ 'border':  ['fg', 'Ignore'],
+  \ 'prompt':  ['fg', 'Conditional'],
+  \ 'pointer': ['fg', 'Exception'],
+  \ 'marker':  ['fg', 'Keyword'],
+  \ 'spinner': ['fg', 'Label'],
+  \ 'header':  ['fg', 'Comment'] }
+
+" Hide status line
+autocmd! FileType fzf set laststatus=0 noshowmode noruler
+  \| autocmd BufLeave <buffer> set laststatus=2 showmode ruler
+
+nnoremap <silent> <leader>s :Ag<cr>
 nnoremap <silent> <leader>p :Files<cr>
 
 
@@ -195,10 +220,10 @@ nnoremap <silent> <leader>l :exe "tabn ".g:lasttab<cr>
 """"""""""""""""""""""""""
 let g:signify_disable_by_default = 1
 nnoremap <silent> <leader>g :SignifyToggle<cr>
-highlight SignColumn        ctermbg=NONE                                guibg=NONE    gui=NONE cterm=NONE
-highlight SignifySignAdd    ctermfg=green ctermbg=none                  guibg=none
-highlight SignifySignDelete ctermfg=red   ctermbg=none    guifg=#ffffff guibg=#ff0000
-highlight SignifySignChange ctermfg=blue  ctermbg=none    guifg=#000000 guibg=#ffff00
+highlight SignColumn ctermbg=none guibg=none gui=none cterm=none
+highlight SignifySignAdd ctermfg=green ctermbg=none guibg=none
+highlight SignifySignDelete ctermfg=red ctermbg=none
+highlight SignifySignChange ctermfg=blue ctermbg=none
 
 
 """"""""""""""""""""""""""
