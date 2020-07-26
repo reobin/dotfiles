@@ -1,2 +1,2 @@
 ohmyzsh/ohmyzsh
-reobin/typewritten
+zsh-users/zsh-autosuggestions
