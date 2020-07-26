@@ -10,7 +10,7 @@
 "                                                                              "
 "                                                                              "
 """"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
-                                       
+
 
 """"""""""""""""""""""""""
 "                        "
@@ -22,30 +22,34 @@ call plug#begin()
 Plug 'junegunn/fzf'
 Plug 'junegunn/fzf.vim'
 
-" Git gutter
-Plug 'mhinz/vim-signify'
-
-" Comments
+" Git
 Plug 'tpope/vim-commentary'
+Plug 'tpope/vim-fugitive'
 
 " Auto pair
 Plug 'jiangmiao/auto-pairs'
 
-" Languages
+" Syntax highlighting
 Plug 'elixir-editors/vim-elixir', { 'for': ['ex', 'exs'] }
 Plug 'pangloss/vim-javascript', { 'for': ['js', 'jsx'] }
 Plug 'HerringtonDarkholme/yats.vim', { 'for': ['tsx'] }
 Plug 'maxmellon/vim-jsx-pretty', { 'for': ['jsx', 'tsx'] }
 Plug 'jparise/vim-graphql', { 'for': ['jsx', 'tsx'] }
-
-" css colors
-Plug 'lilydjwg/colorizer', { 'for': ['css', 'sass', 'scss', 'styl', 'vim'] }
+Plug 'evanleck/vim-svelte', { 'for': ['svelte'] }
+Plug 'mtdl9/vim-log-highlighting', { 'for': ['log'] }
 
 " Autocomplete
 Plug 'neoclide/coc.nvim', {'branch': 'release'}
 
 " Colors
-Plug 'NLKNguyen/papercolor-theme'
+Plug 'morhetz/gruvbox'
+Plug 'tomasr/molokai'
+
+" Snippets
+Plug 'SirVer/ultisnips', { 'for': ['js', 'jsx', 'ts', 'tsx'] }
+
+" Status line
+Plug 'vim-airline/vim-airline'
 call plug#end()
 
 
@@ -54,15 +58,33 @@ call plug#end()
 "        General         "
 "                        "
 """"""""""""""""""""""""""
-set ignorecase
+" set ignorecase
 
+set number relativenumber
+
+" <space>
 let mapleader=' '
 
 " Remove search highlight
 nnoremap <silent> <leader>/ :noh<cr>
 
-set number relativenumber
-set nu rnu
+
+""""""""""""""""""""""""""
+"                        "
+"      Status line       "
+"                        "
+""""""""""""""""""""""""""
+set background=dark
+let g:airline_theme='gruvbox'
+let g:airline_left_sep=''
+let g:airline_left_alt_sep=''
+let g:airline_right_sep=''
+let g:airline_right_alt_sep=''
+let g:airline_skip_empty_sections=1
+let g:airline_section_z='%02l/%L %02v'
+set noshowmode  " to get rid of thing like --INSERT--
+set noshowcmd  " to get rid of display of last command
+set shortmess+=F  " to get rid of the file name displayed in the command line bar
 
 
 """"""""""""""""""""""""""
@@ -70,9 +92,9 @@ set nu rnu
 "         Colors         "
 "                        "
 """"""""""""""""""""""""""
-set background=light
-colorscheme PaperColor
-
+let g:gruvbox_italic=1
+set termguicolors
+colorscheme gruvbox
 
 """"""""""""""""""""""""""
 "                        "
@@ -104,56 +126,6 @@ nnoremap <silent> <leader>w <C-W>w<cr>
 
 """"""""""""""""""""""""""
 "                        "
-"      Status line       "
-"                        "
-""""""""""""""""""""""""""
-au InsertEnter * hi statusline guifg=254 ctermfg=254 ctermbg=magenta
-au InsertLeave * hi statusline guifg=254 ctermfg=254 ctermbg=cyan
-
-hi statusline guifg=255 ctermfg=254 ctermbg=cyan
-hi User1 ctermfg=black ctermbg=254
-
-let g:currentmode={
-    \ 'n'  : 'Normal',
-    \ 'no' : 'Normal·Operator Pending',
-    \ 'v'  : 'Visual',
-    \ 'V'  : 'V·Line',
-    \ '^V' : 'V·Block',
-    \ 's'  : 'Select',
-    \ 'S'  : 'S·Line',
-    \ '^S' : 'S·Block',
-    \ 'i'  : 'Insert',
-    \ 'R'  : 'Replace',
-    \ 'Rv' : 'V·Replace',
-    \ 'c'  : 'Command',
-    \ 'cv' : 'Vim Ex',
-    \ 'ce' : 'Ex',
-    \ 'r'  : 'Prompt',
-    \ 'rm' : 'More',
-    \ 'r?' : 'Confirm',
-    \ '!'  : 'Shell',
-    \ 't'  : 'Terminal'
-    \}
-
-set laststatus=2
-set noshowmode
-set statusline=
-set statusline+=%0*\ %n\                                 " Buffer number
-set statusline+=%1*\ %<%f%m%r%h%w\                       " File path, modified, readonly, helpfile, preview
-set statusline+=%3*                                      " Separator
-set statusline+=%2*\ %Y                                  " FileType
-set statusline+=%3*                                      " Separator
-set statusline+=%2*\ %{''.(&fenc!=''?&fenc:&enc).''}     " Encoding
-set statusline+=\ %{&ff}                                 " FileFormat
-set statusline+=%=                                       " Right Side
-set statusline+=%2*\ col:\ %02v\                         " Colomn number
-set statusline+=%3*                                      " Separator
-set statusline+=%1*\ ln:\ %02l/%L\ (%p%%)\               " Line number / total lines, percentage of document
-set statusline+=%0*\ %{toupper(g:currentmode[mode()])}\  " The current mode
-
-
-""""""""""""""""""""""""""
-"                        "
 "     Tab characters     "
 "                        "
 """"""""""""""""""""""""""
@@ -172,28 +144,29 @@ set shiftwidth=2
 "        fzf.vim         "
 "                        "
 """"""""""""""""""""""""""
-let g:fzf_preview_window = 'right:50%'
+let g:fzf_layout = { 'window': { 'width': 0.9, 'height': 0.9 } }
+let g:fzf_preview_window = 'right:40%'
 
 " Customize fzf colors to match your color scheme
 let g:fzf_colors =
-\ { 'fg':      ['fg', 'Normal'],
-  \ 'bg':      ['bg', 'Normal'],
-  \ 'hl':      ['fg', 'Comment'],
-  \ 'fg+':     ['fg', 'CursorLine', 'CursorColumn', 'Normal'],
-  \ 'bg+':     ['bg', 'CursorLine', 'CursorColumn'],
-  \ 'hl+':     ['fg', 'Statement'],
-  \ 'info':    ['fg', 'PreProc'],
-  \ 'gutter':  ['bg', 'Normal'],
-  \ 'border':  ['fg', 'Ignore'],
-  \ 'prompt':  ['fg', 'Conditional'],
-  \ 'pointer': ['fg', 'Exception'],
-  \ 'marker':  ['fg', 'Keyword'],
-  \ 'spinner': ['fg', 'Label'],
-  \ 'header':  ['fg', 'Comment'] }
+      \ { 'fg':      ['fg', 'Normal'],
+      \ 'bg':      ['bg', 'Normal'],
+      \ 'hl':      ['fg', 'Comment'],
+      \ 'fg+':     ['fg', 'CursorLine', 'CursorColumn', 'Normal'],
+      \ 'bg+':     ['bg', 'CursorLine', 'CursorColumn'],
+      \ 'hl+':     ['fg', 'Statement'],
+      \ 'info':    ['fg', 'PreProc'],
+      \ 'gutter':  ['bg', 'Normal'],
+      \ 'border':  ['fg', 'Ignore'],
+      \ 'prompt':  ['fg', 'Conditional'],
+      \ 'pointer': ['fg', 'Exception'],
+      \ 'marker':  ['fg', 'Keyword'],
+      \ 'spinner': ['fg', 'Label'],
+      \ 'header':  ['fg', 'Comment'] }
 
 " Hide status line
 autocmd! FileType fzf set laststatus=0 noshowmode noruler
-  \| autocmd BufLeave <buffer> set laststatus=2 showmode ruler
+      \| autocmd BufLeave <buffer> set laststatus=2 showmode ruler
 
 nnoremap <silent> <leader>s :Ag<cr>
 nnoremap <silent> <leader>p :Files<cr>
@@ -215,15 +188,12 @@ nnoremap <silent> <leader>l :exe "tabn ".g:lasttab<cr>
 
 """"""""""""""""""""""""""
 "                        "
-"      Git signify       "
+"     Git fugitive       "
 "                        "
 """"""""""""""""""""""""""
-let g:signify_disable_by_default = 1
-nnoremap <silent> <leader>g :SignifyToggle<cr>
-highlight SignColumn ctermbg=none guibg=none gui=none cterm=none
-highlight SignifySignAdd ctermfg=green ctermbg=none guibg=none
-highlight SignifySignDelete ctermfg=red ctermbg=none
-highlight SignifySignChange ctermfg=blue ctermbg=none
+nnoremap <silent> <leader>gs :G<cr>
+nnoremap <silent> <leader>gl :diffget //3<cr>
+nnoremap <silent> <leader>gh :diffget //2<cr>
 
 
 """"""""""""""""""""""""""
@@ -237,13 +207,15 @@ nnoremap <silent> <leader>fb :!black "%"<cr>
 " run black inside Docker
 nnoremap <silent> <leader>fdb :!docker exec django black "%"<cr>
 " Prettier
-nnoremap <silent> <leader>fp :!prettier --write "%"<cr>
+nnoremap <silent> <leader>fp :!prettier --write --plugin-search-dir=. "%"<cr>
 " Js beautify through npx
 nnoremap <silent> <leader>fjb :!npx js-beautify "%"<cr>
 " Elixir
 nnoremap <silent> <leader>fe :!mix format "%"<cr>
 " Stylus
 nnoremap <silent> <leader>fs :!stylus-supremacy format -r "%"<cr>
+" Go
+nnoremap <silent> <leader>fg :!go fmt "%"<cr>
 
 
 """"""""""""""""""""""""""
@@ -251,8 +223,28 @@ nnoremap <silent> <leader>fs :!stylus-supremacy format -r "%"<cr>
 "        coc.vim         "
 "                        "
 """"""""""""""""""""""""""
-let g:coc_global_extensions = ['coc-tsserver', 'coc-python', 'coc-css', 'coc-elixir', 'coc-json']
+let g:coc_global_extensions = ['coc-tsserver', 'coc-python', 'coc-css', 'coc-elixir', 'coc-json', 'coc-go']
 nnoremap <silent> <leader>cr coc#refresh()<cr>
 nnoremap <silent> <leader>ci coc#util#install()<cr>
 nmap <silent> gd <Plug>(coc-definition)
 nmap <silent> gr <Plug>(coc-references)
+
+
+""""""""""""""""""""""""""
+"                        "
+"       snippets         "
+"                        "
+""""""""""""""""""""""""""
+let g:UltiSnipsSnippetDirectories=["snips"]
+let g:UltiSnipsExpandTrigger="<tab>"
+let g:UltiSnipsJumpForwardTrigger="<c-b>"
+let g:UltiSnipsJumpBackwardTrigger="<c-z>"
+
+
+""""""""""""""""""""""""""
+"                        "
+"        linter          "
+"                        "
+""""""""""""""""""""""""""
+let g:ale_fix_on_save = 1
+let b:ale_linters = ['eslint']
