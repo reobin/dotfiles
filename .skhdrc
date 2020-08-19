@@ -43,11 +43,6 @@ ctrl + alt - x : yabai -m window --space recent; yabai -m space --focus recent
 ctrl + alt - z : yabai -m window --space prev; yabai -m space --focus prev
 ctrl + alt - c : yabai -m window --space next; yabai -m space --focus next
 
-## send window to monitor and follow focus
-alt - x  : yabai -m window --display recent; yabai -m display --focus recent
-alt - z  : yabai -m window --display prev; yabai -m display --focus prev
-alt - c  : yabai -m window --display next; yabai -m display --focus next
-
 ## floating windows
 
 ### toggle float
@@ -67,4 +62,3 @@ alt - f : yabai -m window --toggle zoom-fullscreen
 
 ## toggle desktop offset
 alt - a : yabai -m space --toggle padding; yabai -m space --toggle gap
-
