@@ -41,6 +41,9 @@ Plug 'neoclide/coc.nvim', {'branch': 'release'}
 
 " Colors
 Plug 'morhetz/gruvbox'
+
+" Status line
+Plug 'vim-airline/vim-airline'
 call plug#end()
 
 
