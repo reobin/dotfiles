@@ -22,9 +22,8 @@ call plug#begin()
 Plug 'junegunn/fzf'
 Plug 'junegunn/fzf.vim'
 
-" Git
+" Comments
 Plug 'tpope/vim-commentary'
-Plug 'tpope/vim-fugitive'
 
 " Auto pair
 Plug 'jiangmiao/auto-pairs'
@@ -35,7 +34,6 @@ Plug 'pangloss/vim-javascript', { 'for': ['js', 'jsx'] }
 Plug 'HerringtonDarkholme/yats.vim', { 'for': ['tsx'] }
 Plug 'maxmellon/vim-jsx-pretty', { 'for': ['jsx', 'tsx'] }
 Plug 'jparise/vim-graphql', { 'for': ['jsx', 'tsx'] }
-Plug 'evanleck/vim-svelte', { 'for': ['svelte'] }
 Plug 'mtdl9/vim-log-highlighting', { 'for': ['log'] }
 
 " Autocomplete
@@ -43,13 +41,6 @@ Plug 'neoclide/coc.nvim', {'branch': 'release'}
 
 " Colors
 Plug 'morhetz/gruvbox'
-Plug 'tomasr/molokai'
-
-" Snippets
-Plug 'SirVer/ultisnips', { 'for': ['js', 'jsx', 'ts', 'tsx'] }
-
-" Status line
-Plug 'vim-airline/vim-airline'
 call plug#end()
 
 
@@ -58,11 +49,8 @@ call plug#end()
 "        General         "
 "                        "
 """"""""""""""""""""""""""
-" set ignorecase
-
+set ignorecase
 set number relativenumber
-
-" <space>
 let mapleader=' '
 
 " Remove search highlight
@@ -93,6 +81,7 @@ set shortmess+=F  " to get rid of the file name displayed in the command line ba
 "                        "
 """"""""""""""""""""""""""
 let g:gruvbox_italic=1
+let g:gruvbox_invert_selection=0
 set termguicolors
 colorscheme gruvbox
 
@@ -174,7 +163,7 @@ nnoremap <silent> <leader>p :Files<cr>
 
 """"""""""""""""""""""""""
 "                        "
-"         Tabs           "
+"       vim tabs         "
 "                        "
 """"""""""""""""""""""""""
 nnoremap <silent> <leader>t :tabnew<cr>
@@ -184,16 +173,6 @@ nnoremap <silent> <leader>k gt
 " Go to last active tab "
 au TabLeave * let g:lasttab = tabpagenr()
 nnoremap <silent> <leader>l :exe "tabn ".g:lasttab<cr>
-
-
-""""""""""""""""""""""""""
-"                        "
-"     Git fugitive       "
-"                        "
-""""""""""""""""""""""""""
-nnoremap <silent> <leader>gs :G<cr>
-nnoremap <silent> <leader>gl :diffget //3<cr>
-nnoremap <silent> <leader>gh :diffget //2<cr>
 
 
 """"""""""""""""""""""""""
@@ -209,7 +188,7 @@ nnoremap <silent> <leader>fdb :!docker exec django black "%"<cr>
 " Prettier
 nnoremap <silent> <leader>fp :!prettier --write --plugin-search-dir=. "%"<cr>
 " Js beautify through npx
-nnoremap <silent> <leader>fjb :!npx js-beautify "%"<cr>
+nnoremap <silent> <leader>fjb :!npx js-beautify -r "%"<cr>
 " Elixir
 nnoremap <silent> <leader>fe :!mix format "%"<cr>
 " Stylus
@@ -228,23 +207,3 @@ nnoremap <silent> <leader>cr coc#refresh()<cr>
 nnoremap <silent> <leader>ci coc#util#install()<cr>
 nmap <silent> gd <Plug>(coc-definition)
 nmap <silent> gr <Plug>(coc-references)
-
-
-""""""""""""""""""""""""""
-"                        "
-"       snippets         "
-"                        "
-""""""""""""""""""""""""""
-let g:UltiSnipsSnippetDirectories=["snips"]
-let g:UltiSnipsExpandTrigger="<tab>"
-let g:UltiSnipsJumpForwardTrigger="<c-b>"
-let g:UltiSnipsJumpBackwardTrigger="<c-z>"
-
-
-""""""""""""""""""""""""""
-"                        "
-"        linter          "
-"                        "
-""""""""""""""""""""""""""
-let g:ale_fix_on_save = 1
-let b:ale_linters = ['eslint']
