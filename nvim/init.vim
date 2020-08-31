@@ -52,6 +52,7 @@ call plug#end()
 "        General         "
 "                        "
 """"""""""""""""""""""""""
+set noswapfile
 set ignorecase
 set number relativenumber
 let mapleader=' '
