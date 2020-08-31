@@ -86,6 +86,7 @@ set shortmess+=F  " to get rid of the file name displayed in the command line ba
 let g:gruvbox_italic=1
 let g:gruvbox_invert_selection=0
 set termguicolors
+set cursorline
 colorscheme gruvbox
 
 """"""""""""""""""""""""""
