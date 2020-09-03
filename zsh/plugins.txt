@@ -1,2 +1,0 @@
-ohmyzsh/ohmyzsh
-zsh-users/zsh-autosuggestions
