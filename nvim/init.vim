@@ -40,7 +40,8 @@ Plug 'mtdl9/vim-log-highlighting', { 'for': ['log'] }
 Plug 'neoclide/coc.nvim', {'branch': 'release'}
 
 " Colors
-Plug 'morhetz/gruvbox'
+Plug 'dikiaap/minimalist'
+Plug 'NLKNguyen/papercolor-theme'
 
 " Status line
 Plug 'vim-airline/vim-airline'
@@ -55,6 +56,9 @@ call plug#end()
 set noswapfile
 set ignorecase
 set number relativenumber
+set cursorline
+set termguicolors
+
 let mapleader=' '
 
 " Remove search highlight
@@ -63,32 +67,34 @@ nnoremap <silent> <leader>/ :noh<cr>
 
 """"""""""""""""""""""""""
 "                        "
+"         Colors         "
+"                        "
+""""""""""""""""""""""""""
+syntax enable
+set t_Co=256
+set background=dark
+colorscheme PaperColor
+
+
+""""""""""""""""""""""""""
+"                        "
 "      Status line       "
 "                        "
 """"""""""""""""""""""""""
-set background=dark
-let g:airline_theme='gruvbox'
 let g:airline_left_sep=''
 let g:airline_left_alt_sep=''
 let g:airline_right_sep=''
 let g:airline_right_alt_sep=''
 let g:airline_skip_empty_sections=1
 let g:airline_section_z='%02l/%L %02v'
+let g:airline#extensions#branch#enabled = 0
+let g:airline_solarized_bg='dark'
+let g:airline_theme='minimalist'
+
 set noshowmode  " to get rid of thing like --INSERT--
 set noshowcmd  " to get rid of display of last command
 set shortmess+=F  " to get rid of the file name displayed in the command line bar
 
-
-""""""""""""""""""""""""""
-"                        "
-"         Colors         "
-"                        "
-""""""""""""""""""""""""""
-let g:gruvbox_italic=1
-let g:gruvbox_invert_selection=0
-set termguicolors
-set cursorline
-colorscheme gruvbox
 
 """"""""""""""""""""""""""
 "                        "
