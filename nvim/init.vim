@@ -19,7 +19,7 @@
 """"""""""""""""""""""""""
 call plug#begin()
 " fuzzy finder
-Plug 'junegunn/fzf'
+Plug 'junegunn/fzf', { 'do': { -> fzf#install() } }
 Plug 'junegunn/fzf.vim'
 
 " Comments
