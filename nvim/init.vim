@@ -144,32 +144,9 @@ set shiftwidth=2
 "        fzf.vim         "
 "                        "
 """"""""""""""""""""""""""
-let g:fzf_layout = { 'window': { 'width': 0.9, 'height': 0.9 } }
-let g:fzf_preview_window = 'right:40%'
-
-" Customize fzf colors to match your color scheme
-let g:fzf_colors =
-      \ { 'fg':      ['fg', 'Normal'],
-      \ 'bg':      ['bg', 'Normal'],
-      \ 'hl':      ['fg', 'Comment'],
-      \ 'fg+':     ['fg', 'CursorLine', 'CursorColumn', 'Normal'],
-      \ 'bg+':     ['bg', 'CursorLine', 'CursorColumn'],
-      \ 'hl+':     ['fg', 'Statement'],
-      \ 'info':    ['fg', 'PreProc'],
-      \ 'gutter':  ['bg', 'Normal'],
-      \ 'border':  ['fg', 'Ignore'],
-      \ 'prompt':  ['fg', 'Conditional'],
-      \ 'pointer': ['fg', 'Exception'],
-      \ 'marker':  ['fg', 'Keyword'],
-      \ 'spinner': ['fg', 'Label'],
-      \ 'header':  ['fg', 'Comment'] }
-
-" Hide status line
-autocmd! FileType fzf set laststatus=0 noshowmode noruler
-      \| autocmd BufLeave <buffer> set laststatus=2 showmode ruler
-
-nnoremap <silent> <leader>s :Ag<cr>
+nnoremap <silent> <leader>s :Rg<cr>
 nnoremap <silent> <leader>p :Files<cr>
+nnoremap <silent> ; :Buffers<cr>
 
 
 """"""""""""""""""""""""""
