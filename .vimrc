@@ -19,3 +19,7 @@ set backspace=indent,eol,start   " Allow backspace in Insert mode
 set ruler                        " Show the cursor position all the time
 
 set showcmd                      " Show incomplete commands while typingt
+
+if 1                             " When vim has compiled with the +eval feature
+  filetype plugin indent on      " Enable automatic language-dependant identing
+endif
