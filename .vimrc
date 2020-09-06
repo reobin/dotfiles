@@ -7,6 +7,8 @@ if &t_Co > 1                     " If terminal supports colors
   let c_comment_strings=1        " Highlight "strings" within comments
 endif
 
+colorscheme SpaceCamp
+
 set ttimeoutlen=50               " Wait up to 50ms after Esc for special key
 
 set backspace=indent,eol,start   " Allow backspace in Insert mode
