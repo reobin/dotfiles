@@ -12,7 +12,7 @@
 #
 
 
-directories=(nvim yabai karabiner pgcli)
+directories=(nvim yabai karabiner pgcli alacritty)
 root_files=(zsh/.zshrc .skhdrc .gitconfig .vimrc)
 
 red="\033[0;31m"
