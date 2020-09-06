@@ -1,3 +1,5 @@
 if &t_Co > 1
-	syntax enable
+  syntax enable
 endif
+
+set autoindent            " Copy indent from current line
