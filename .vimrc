@@ -4,6 +4,7 @@ endif
 
 if &t_Co > 1                     " If terminal supports colors
   syntax enable
+  let c_comment_strings=1        " Highlight "strings" within comments
 endif
 
 set autoindent            " Copy indent from current line
