@@ -12,8 +12,10 @@ set tabstop=2                    " Number of spaces that a <Tab> counts for
 set shiftwidth=2                 " The amount of indent added
 set expandtab                    " Insert spaces with the <Tab> key
 
-set ttimeoutlen=50               " wait up to 50ms after Esc for special key
+set ttimeoutlen=50               " Wait up to 50ms after Esc for special key
 
 set backspace=indent,eol,start   " Allow backspace in Insert mode
 
-set ruler                        " show the cursor position all the time
+set ruler                        " Show the cursor position all the time
+
+set showcmd                      " Show incomplete commands while typingt
