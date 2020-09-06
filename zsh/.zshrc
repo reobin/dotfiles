@@ -25,14 +25,7 @@ source ~/.zsh/zsh-autosuggestions/zsh-autosuggestions.zsh
 alias smerge="open -a \"Sublime Merge\""
 alias typo="open -a \"Typora\""
 
-# Go back to git root
-go_to_root() {
-  root="$(git rev-parse --show-toplevel 2>/dev/null)"
-  if [ ! -z $root ]; then
-    cd "$root"
-  fi;
-}
-alias gtr=go_to_root
+alias grt='cd "$(git rev-parse --show-toplevel || echo .)"'
 
 # python -> python3
 alias python=python3
