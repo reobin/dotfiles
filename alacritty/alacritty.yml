@@ -15,5 +15,9 @@ cursor:
   thickness: 0.3
 
 key_mappings:
+  # font-size
   - { key: +, mods: Command, action: IncreaseFontSize }
   - { key: -, mods: Command, action: DecreaseFontSize }
+
+  # clear
+  - { key: K, mods: Command, chars: "\x0b" }
