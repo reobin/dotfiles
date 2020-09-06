@@ -1,26 +1,6 @@
-# Configuration for Alacritty, the GPU enhanced terminal emulator.
+# Configuration for Alacritty
 
-# Import additional configuration files
-#
-# These configuration files will be loaded in order, replacing values in files
-# loaded earlier with those loaded later in the chain. The file itself will
-# always be loaded last.
-#import:
-#  - /path/to/alacritty.yml
-
-# Any items in the `env` entry below will be added as
-# environment variables. Some entries may override variables
-# set by alacritty itself.
-#env:
-  # TERM variable
-  #
-  # This value is used to set the `$TERM` environment variable for
-  # each instance of Alacritty. If it is not present, alacritty will
-  # check the local terminfo database and use `alacritty` if it is
-  # available, otherwise `xterm-256color` is used.
-  #TERM: alacritty
-
-#window:
+window:
   # Window dimensions (changes require restart)
   #
   # Specified in number of columns/lines, not pixels.
@@ -37,13 +17,10 @@
   #  x: 0
   #  y: 0
 
-  # Window padding (changes require restart)
-  #
-  # Blank space added around the window in pixels. This padding is scaled
-  # by DPI and the specified value is always added at both opposing sides.
-  #padding:
-  #  x: 0
-  #  y: 0
+  # Window padding
+  padding:
+    x: 10
+    y: 10
 
   # Spread additional padding evenly around the terminal content.
   #dynamic_padding: false
