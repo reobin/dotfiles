@@ -1,4 +1,8 @@
-if &t_Co > 1
+if &compatible
+  set nocompatible
+endif
+
+if &t_Co > 1                     " If terminal supports colors
   syntax enable
 endif
 
