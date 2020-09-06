@@ -11,8 +11,8 @@ ZSH="$HOME/.oh-my-zsh"
 
 export TERM=xterm-256color
 
-export VISUAL="nvim"
-export EDITOR="nvim"
+export VISUAL="vim"
+export EDITOR="vim"
 
 # prompt
 autoload -U promptinit; promptinit

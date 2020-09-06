@@ -9,7 +9,7 @@
 #                        git general config & aliases                                            
 
 [core]
-  editor = nvim
+  editor = vim
   excludesfile = ~/.gitignore_global
 
 [alias]
