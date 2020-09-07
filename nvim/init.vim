@@ -5,6 +5,8 @@ Plug 'junegunn/fzf.vim'
 Plug 'cocopon/iceberg.vim'
 call plug#end()
 
+filetype plugin on
+
 syntax enable
 let c_comment_strings=1           " Highlight "strings" within comments
 set relativenumber                " Display relative line number
@@ -26,3 +28,6 @@ nnoremap <Leader>p :Files<cr>
 
 " Turn off search highlighting (gets turned back on when searching)
 nnoremap <Leader>/ :noh<cr>
+
+" Function is load from the ~/.config/nvim/autoload directory
+call statusline#_init()
