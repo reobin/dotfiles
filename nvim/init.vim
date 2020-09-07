@@ -23,3 +23,6 @@ let mapleader = ' '
 
 " fzf
 nnoremap <Leader>p :Files<cr>
+
+" Turn off search highlighting (gets turned back on when searching)
+nnoremap <Leader>/ :noh<cr>
