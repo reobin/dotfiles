@@ -23,6 +23,17 @@ colorscheme iceberg
 
 let mapleader = ' '
 
+if (!exists('*SourceConfig'))
+  function SourceConfig() abort
+    source ~/.config/nvim/autoload/*
+    source $MYVIMRC
+  endfunction
+endif
+
+" init.vim related
+nnoremap <Leader>v :e $MYVIMRC<cr>
+nnoremap <Leader><Leader> :call SourceConfig()<cr>
+
 " fzf
 nnoremap <Leader>p :Files<cr>
 
