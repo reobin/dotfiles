@@ -6,7 +6,13 @@ window:
   decorations: buttonless
 
 font:
-  size: 14.0
+  normal:
+    family: DejaVu Sans Mono
+  bold:
+    family: DejaVu Sans Mono Bold
+  italic:
+    family: DejaVu Sans Mono Oblique
+  size: 17.0
 
 draw_bold_text_with_bright_colors: true
 
@@ -18,31 +24,28 @@ key_mappings:
   # font-size
   - { key: +, mods: Command, action: IncreaseFontSize }
   - { key: -, mods: Command, action: DecreaseFontSize }
-
   # clear
   - { key: K, mods: Command, chars: "\x0b" }
 
 colors:
   primary:
-    background: '0x121212'
-    foreground: '0xd0d0d0'
-
+    background: "0x2c2e34"
+    foreground: "0xc5cdd9"
   normal:
-    black:   '0x282828'
-    red:     '0xd71a1a'
-    green:   '0x57ba37'
-    yellow:  '0xf0d50c'
-    blue:    '0x91aadf'
-    magenta: '0xcf73e6'
-    cyan:    '0xb7cbf4'
-    white:   '0xdedede'
-
+    black: "0x3e4249"
+    red: "0xec7279"
+    green: "0xa0c980"
+    yellow: "0xdeb974"
+    blue: "0x6cb6eb"
+    magenta: "0xd38aea"
+    cyan: "0x5dbbc1"
+    white: "0xc5cdd9"
   bright:
-    black:   '0x666666'
-    red:     '0xff0000'
-    green:   '0xd8fa3b'
-    yellow:  '0xe7c547'
-    blue:    '0xb7cbf4'
-    magenta: '0xb77ee0'
-    cyan:    '0xa9c1de'
-    white:   '0xeeeeee'
+    black: "0x3e4249"
+    red: "0xec7279"
+    green: "0xa0c980"
+    yellow: "0xdeb974"
+    blue: "0x6cb6eb"
+    magenta: "0xd38aea"
+    cyan: "0x5dbbc1"
+    white: "0xc5cdd9"
