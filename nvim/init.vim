@@ -2,6 +2,8 @@ call plug#begin()
 Plug 'junegunn/fzf', { 'do': { -> fzf#install() } }
 Plug 'junegunn/fzf.vim'
 
+Plug 'neoclide/coc.nvim', {'branch': 'release'}
+
 Plug 'cocopon/iceberg.vim'
 call plug#end()
 
@@ -36,6 +38,9 @@ nnoremap <Leader><Leader> :call SourceConfig()<cr>
 
 " fzf
 nnoremap <Leader>p :Files<cr>
+
+" coc.nvim
+nnoremap <Leader>s :Ag<cr>
 
 " Turn off search highlighting (gets turned back on when searching)
 nnoremap <Leader>/ :noh<cr>
