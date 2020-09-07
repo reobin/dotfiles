@@ -5,6 +5,8 @@ Plug 'junegunn/fzf.vim'
 Plug 'neoclide/coc.nvim', {'branch': 'release'}
 
 Plug 'cocopon/iceberg.vim'
+
+Plug 'sheerun/vim-polyglot'
 call plug#end()
 
 filetype plugin on
