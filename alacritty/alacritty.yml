@@ -29,23 +29,23 @@ key_mappings:
 
 colors:
   primary:
-    background: "0x2c2e34"
-    foreground: "0xc5cdd9"
+    background: '#161821'
+    foreground: '#d2d4de'
   normal:
-    black: "0x3e4249"
-    red: "0xec7279"
-    green: "0xa0c980"
-    yellow: "0xdeb974"
-    blue: "0x6cb6eb"
-    magenta: "0xd38aea"
-    cyan: "0x5dbbc1"
-    white: "0xc5cdd9"
+    black:   '#161821'
+    red:     '#e27878'
+    green:   '#b4be82'
+    yellow:  '#e2a478'
+    blue:    '#84a0c6'
+    magenta: '#a093c7'
+    cyan:    '#89b8c2'
+    white:   '#c6c8d1'
   bright:
-    black: "0x3e4249"
-    red: "0xec7279"
-    green: "0xa0c980"
-    yellow: "0xdeb974"
-    blue: "0x6cb6eb"
-    magenta: "0xd38aea"
-    cyan: "0x5dbbc1"
-    white: "0xc5cdd9"
+    black:   '#6b7089'
+    red:     '#e98989'
+    green:   '#c0ca8e'
+    yellow:  '#e9b189'
+    blue:    '#91acd1'
+    magenta: '#ada0d3'
+    cyan:    '#95c4ce'
+    white:   '#d2d4de'
