@@ -75,5 +75,10 @@ nnoremap <silent> <Leader>gs :G<cr>
 nnoremap <silent> <Leader>gl :diffget //3<cr>
 nnoremap <silent> <Leader>gh :diffget //2<cr>
 
+" splits
+nnoremap <silent> <Leader>ek :res +5<cr>
+nnoremap <silent> <Leader>ej :res -5<cr>
+nnoremap <silent> <Leader>el :vertical resize +5<cr>
+nnoremap <silent> <Leader>eh :vertical resize -5<cr>
 " Function is loaded from the ~/.config/nvim/autoload directory
 au VimEnter * call statusline#_init()
