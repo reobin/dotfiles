@@ -41,8 +41,8 @@ if (!exists('*SourceConfig'))
 endif
 
 " init.vim related
-nnoremap <Leader>v :e $MYVIMRC<cr>
-nnoremap <Leader><Leader> :call SourceConfig()<cr>
+nnoremap <silent> <Leader>ve :e $MYVIMRC<cr>
+nnoremap <silent> <Leader>vs :call SourceConfig()<cr>
 
 " fzf
 nnoremap <Leader>p :Files<cr>
