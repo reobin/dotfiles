@@ -70,5 +70,5 @@ nnoremap <silent> gd :call CocAction('jumpDefinition', 'drop')<cr>
 " Turn off search highlighting (gets turned back on when searching)
 nnoremap <Leader>/ :noh<cr>
 
-" Function is load from the ~/.config/nvim/autoload directory
-call statusline#_init()
+" Function is loaded from the ~/.config/nvim/autoload directory
+au VimEnter * call statusline#_init()
