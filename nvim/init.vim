@@ -68,7 +68,7 @@ nnoremap <silent> <Leader>s :Rg<cr>
 nnoremap <silent> gd :call CocAction('jumpDefinition', 'drop')<cr>
 
 " Turn off search highlighting (gets turned back on when searching)
-nnoremap <Leader>/ :noh<cr>
+nnoremap <silent> <Leader>/ :noh<cr>
 
 " fugitive
 nnoremap <silent> <Leader>gs :G<cr>
