@@ -25,7 +25,7 @@ set tabstop=2                     " Number of spaces that a <Tab> counts for
 set shiftwidth=2                  " The amount of indent added
 set expandtab                     " Insert spaces with the <Tab> key
 
-if (has("termguicolors"))
+if (has('termguicolors'))
   set termguicolors
 endif
 set background=dark
