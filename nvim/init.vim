@@ -48,6 +48,8 @@ nnoremap <silent> <Leader>vs :call SourceConfig()<cr>
 nnoremap <silent> <Leader>p :Files<cr>
 nnoremap <silent> <Leader>b :Buffers<cr>
 
+" Vaffle
+let g:vaffle_show_hidden_files = 1
 " coc.nvim
 nnoremap <Leader>s :Ag<cr>
 
