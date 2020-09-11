@@ -45,7 +45,8 @@ nnoremap <silent> <Leader>ve :e $MYVIMRC<cr>
 nnoremap <silent> <Leader>vs :call SourceConfig()<cr>
 
 " fzf
-nnoremap <Leader>p :Files<cr>
+nnoremap <silent> <Leader>p :Files<cr>
+nnoremap <silent> <Leader>b :Buffers<cr>
 
 " coc.nvim
 nnoremap <Leader>s :Ag<cr>
