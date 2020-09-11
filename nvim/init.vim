@@ -9,6 +9,8 @@ Plug 'cocopon/iceberg.vim'
 Plug 'sheerun/vim-polyglot'
 
 Plug 'cocopon/vaffle.vim'
+
+Plug 'tpope/vim-commentary'
 call plug#end()
 
 filetype plugin on
