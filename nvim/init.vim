@@ -50,6 +50,18 @@ nnoremap <silent> <Leader>b :Buffers<cr>
 
 " Vaffle
 let g:vaffle_show_hidden_files = 1
+nnoremap <silent> <Leader>ee :Vaffle<cr>
+nnoremap <silent> <Leader>ec :Vaffle %<cr>
+function! OpenVaffleInSplit(vertical)
+  if a:vertical
+    :vsplit
+  else
+    :split
+  endif
+  :Vaffle %
+endfunction
+nnoremap <silent> <Leader>es :call OpenVaffleInSplit(0)<cr>
+nnoremap <silent> <Leader>evs :call OpenVaffleInSplit(1)<cr>
 " coc.nvim
 nnoremap <Leader>s :Ag<cr>
 
