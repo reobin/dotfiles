@@ -11,6 +11,8 @@ Plug 'sheerun/vim-polyglot'
 Plug 'cocopon/vaffle.vim'
 
 Plug 'tpope/vim-commentary'
+
+Plug 'tpope/vim-fugitive'
 call plug#end()
 
 filetype plugin on
