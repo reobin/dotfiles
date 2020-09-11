@@ -7,6 +7,8 @@ Plug 'neoclide/coc.nvim', { 'branch': 'release' }
 Plug 'cocopon/iceberg.vim'
 
 Plug 'sheerun/vim-polyglot'
+
+Plug 'cocopon/vaffle.vim'
 call plug#end()
 
 filetype plugin on
