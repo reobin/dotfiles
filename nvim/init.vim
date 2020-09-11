@@ -81,6 +81,9 @@ nnoremap <silent> <Leader>ej :res -5<cr>
 nnoremap <silent> <Leader>el :vertical resize +5<cr>
 nnoremap <silent> <Leader>eh :vertical resize -5<cr>
 
+" Last open buffer
+nnoremap <silent> <Leader>l <C-^>
+
 " Run formatter
 function! Format()
   let l:fileextension = tolower(expand('%:e'))
