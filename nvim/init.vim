@@ -80,5 +80,19 @@ nnoremap <silent> <Leader>ek :res +5<cr>
 nnoremap <silent> <Leader>ej :res -5<cr>
 nnoremap <silent> <Leader>el :vertical resize +5<cr>
 nnoremap <silent> <Leader>eh :vertical resize -5<cr>
+
+" Run formatter
+function! Format()
+  let l:fileextension = tolower(expand('%:e'))
+  if index(["ts", "tsx", "js", "jsx", "json", "md"], l:fileextension) >= 0
+    :!prettier --write '%'
+  elseif l:fileextension == "py"
+    :!black '%'
+  elseif index(["ex", "exs"], l:fileextension) >= 0
+    :!mix format '%'
+  endif
+endfunction
+nnoremap <silent> <Leader>f :call Format()<cr>
+
 " Function is loaded from the ~/.config/nvim/autoload directory
 au VimEnter * call statusline#_init()
