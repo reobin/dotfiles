@@ -3,8 +3,8 @@ function! statusline#_column()
 endfunction
 
 function! statusline#_get()
-  return ' %f %m %y '
-        \ . ' '
+  return ' %t%m %y '
+        \ . '%{FugitiveHead()} '
         \ . '%#LineNr#%='
         \ . '%l,' . statusline#_column()
 endfunction
