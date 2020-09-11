@@ -62,8 +62,10 @@ function! OpenVaffleInSplit(vertical)
 endfunction
 nnoremap <silent> <Leader>es :call OpenVaffleInSplit(0)<cr>
 nnoremap <silent> <Leader>evs :call OpenVaffleInSplit(1)<cr>
+
 " coc.nvim
-nnoremap <Leader>s :Ag<cr>
+nnoremap <silent> <Leader>s :Rg<cr>
+nnoremap <silent> gd :call CocAction('jumpDefinition', 'drop')<cr>
 
 " Turn off search highlighting (gets turned back on when searching)
 nnoremap <Leader>/ :noh<cr>
