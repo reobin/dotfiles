@@ -13,7 +13,7 @@
 
 
 directories=(nvim yabai karabiner pgcli alacritty)
-root_files=(zsh/.zshrc .skhdrc .gitconfig .vimrc .tmux.conf)
+root_files=(zsh/.zshrc .skhdrc .gitconfig .vimrc .tmux.conf .tmux)
 
 red="\033[0;31m"
 green="\033[0;32m"
