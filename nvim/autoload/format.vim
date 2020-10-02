@@ -1,6 +1,6 @@
 function! format#_run()
   let l:fileextension = tolower(expand('%:e'))
-  if index(["ts", "tsx", "js", "jsx", "json", "md", "css", "scss"], l:fileextension) >= 0
+  if index(["ts", "tsx", "js", "jsx", "json", "vue", "md", "css", "scss"], l:fileextension) >= 0
     :!prettier --write '%'
   elseif l:fileextension == "py"
     :!black '%'
