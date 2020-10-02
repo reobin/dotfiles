@@ -4,7 +4,7 @@ Plug 'junegunn/fzf.vim'
 
 Plug 'neoclide/coc.nvim', { 'branch': 'release' }
 
-Plug 'cocopon/iceberg.vim'
+Plug 'embark-theme/vim', { 'as': 'embark' }
 
 Plug 'sheerun/vim-polyglot'
 
@@ -32,7 +32,7 @@ if (has('termguicolors'))
   set termguicolors
 endif
 set background=dark
-colorscheme iceberg
+colorscheme embark
 
 let mapleader = ' '
 
