@@ -38,7 +38,9 @@ let mapleader = ' '
 
 if (!exists('*SourceConfig'))
   function SourceConfig() abort
-    source ~/.config/nvim/autoload/*
+    for f in split(glob('~/.config/nvim/autoload/*'), '\n')
+      exe 'source' f
+    endfor
     source $MYVIMRC
   endfunction
 endif
