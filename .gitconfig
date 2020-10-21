@@ -35,8 +35,14 @@
 
 [user]
   name = Robin Gagnon
-  email = robin.gagnon@cortexmedia.ca
+	email = me@reobin.dev
 
 [difftool]
   prompt = false
 
+[commit]
+	gpgsign = true
+[gpg]
+	program = gpg
+[pager]
+	branch = false
