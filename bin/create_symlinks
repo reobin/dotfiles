@@ -12,35 +12,52 @@
 #
 
 
-directories=(nvim yabai karabiner pgcli alacritty)
-root_files=(zsh/.zshrc .skhdrc .gitconfig .vimrc .tmux.conf .tmux)
+dotconfig_directories=(nvim yabai karabiner pgcli alacritty)
+root_directories=(.tmux)
+root_files=(.zshrc .skhdrc .gitconfig .tmux.conf)
 
-red="\033[0;31m"
-green="\033[0;32m"
-yellow="\033[0;33m"
-nocolor="\033[0m"
+RED="\033[0;31m"
+GREEN="\033[0;32m"
+YELLOW="\033[0;33m"
 
-printf "${yellow}create symlinks for .config directories... \n"
-for directory in "${directories[@]}"; do
-  if test -d "$HOME/.config/$directory"; then
-    printf "${red}remove ~/.config/%s\n" "$directory"
-    rm -rf "$HOME/.config/$directory"
-  fi
-  printf "${green}create symlink from ~/dotfiles/%s to ~/.config/%s" "$directory" "$directory"
-  ln -s "$HOME/dotfiles/$directory" "$HOME/.config/$directory"
-  printf "\n\n"
-done
+BREAK_LINE="
+"
 
-printf "\n${yellow}create symlinks for dotfiles... \n"
-for file in "${root_files[@]}"; do
-  file_name="$(basename -- $file)"
-  if test -f "$HOME/$file_name"; then
-    printf "${red}remove ~/%s\n" "$file_name"
-    rm "$HOME/$file_name"
-  fi
-  printf "${green}create symlink from ~/dotfiles/%s to ~/%s" "$file" "$file_name"
-  ln -s "$HOME/dotfiles/$file" "$HOME/$file_name"
-  printf "\n\n"
-done
+create_symlinks() {
+  local label=$1
+  local items=$2[@]
+  local path_prefix=$3
+  local is_directory=$4
 
-printf "\n${yellow}done\n"
+  printf "${YELLOW}create symlinks for $label...  $BREAK_LINE$BREAK_LINE"
+
+  for item in ${!items}; do
+    local path=$item
+    if [[ ! -z $path_prefix ]]; then
+      path=$path_prefix$path
+    fi;
+
+    local target_path="$HOME/$path"
+
+    if test -e $target_path; then
+      printf "${RED}remove $target_path$BREAK_LINE"
+      rm -rf $target_path
+    fi;
+
+    local source_path="$(pwd)/$item"
+
+    printf "${GREEN}create symlink from $source_path to $target_path"
+
+    ln -s $source_path $target_path
+
+    printf "$BREAK_LINE$BREAK_LINE"
+  done
+}
+
+create_symlinks ".config directories" dotconfig_directories ".config/" true
+
+create_symlinks "root directories" root_directories "" true
+
+create_symlinks "root files" root_files
+
+printf "$BREAK_LINE${YELLOW}done"
