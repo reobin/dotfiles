@@ -21,34 +21,30 @@ cursor:
   thickness: 0.3
 
 key_mappings:
-  # font-size
-  - { key: +, mods: Command, action: IncreaseFontSize }
-  - { key: -, mods: Command, action: DecreaseFontSize }
   # clear
   - { key: K, mods: Command, chars: "\x0b" }
 
 colors:
   primary:
-    background: '0x1e1c31'
-    foreground: '0xeeffff'
-  cursor:
-    text: '0x1e1c31'
-    cursor: '0xa1efd3'
+    background: '0x24292e'
+    foreground: '0xffffff'
+
   normal:
-    black: '0x1e1c31'
-    red: '0xf0719b'
-    green: '0xa1efd3'
-    yellow: '0xffe9aa'
-    blue: '0x57c7ff'
-    magenta: '0xc792ea'
-    cyan: '0x87dfeb'
-    white: '0xf8f8f2'
+    black:   '0x000000'
+    red:     '0xf16636'
+    green:   '0x59b36f'
+    yellow:  '0xf2c335'
+    blue:    '0x4c81b5'
+    magenta: '0xaf87d7'
+    cyan:    '0x4cafb5'
+    white:   '0xffffff'
+
   bright:
-    black: '0x585273'
-    red: '0xf02e6e'
-    green: '0x2ce592'
-    yellow: '0xffb378'
-    blue: '0x1da0e2'
-    magenta: '0xa742ea'
-    cyan: '0x63f2f1'
-    white: '0xa6b3cc'
+    black:   '0x6a737d'
+    red:     '0xd7410f'
+    green:   '0x48915a'
+    yellow:  '0xf2c335'
+    blue:    '0x456e98'
+    magenta: '0xa887e6'
+    cyan:    '0x5295d4'
+    white:   '0xffffff'

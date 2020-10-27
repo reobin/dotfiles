@@ -1,17 +1,10 @@
 call plug#begin()
 Plug 'junegunn/fzf', { 'do': { -> fzf#install() } }
 Plug 'junegunn/fzf.vim'
-
 Plug 'neoclide/coc.nvim', { 'branch': 'release' }
-
-Plug 'embark-theme/vim', { 'as': 'embark' }
-
+Plug 'cormacrelf/vim-colors-github'
 Plug 'sheerun/vim-polyglot'
-
-Plug 'cocopon/vaffle.vim'
-
 Plug 'tpope/vim-commentary'
-
 Plug 'tpope/vim-fugitive'
 call plug#end()
 
@@ -32,7 +25,9 @@ if (has('termguicolors'))
   set termguicolors
 endif
 set background=dark
-colorscheme embark
+autocmd ColorScheme * highlight LineNr guibg=None
+autocmd ColorScheme * highlight EndOfBuffer guibg=None
+colorscheme github
 
 let mapleader = ' '
 
