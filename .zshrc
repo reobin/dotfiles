@@ -23,6 +23,11 @@ prompt typewritten
 # plugins
 source ~/.zsh/zsh-autosuggestions/zsh-autosuggestions.zsh
 
+# Base commands
+alias mv="mv -iv" # interactive, verbose
+alias cp="cp -riv" # recursive, interactive, verbose
+alias mkdir="mkdir -vp" # verbose, parent
+
 # Open in sublime merge
 alias smerge="open -a \"Sublime Merge\""
 alias typo="open -a \"Typora\""
