@@ -34,6 +34,9 @@ alias typo="open -a \"Typora\""
 
 alias grt='cd "$(git rev-parse --show-toplevel || echo .)"'
 
+# Use like so: prettyjson ugly.json > pretty.json
+alias prettyjson="python -m json.tool"
+
 # python -> python3
 alias python=python3
 alias pip3="python -m pip"
