@@ -49,20 +49,20 @@ nnoremap <silent> <Leader>vs :call SourceConfig()<cr>
 nnoremap <silent> <Leader>p :Files<cr>
 nnoremap <silent> <Leader>b :Buffers<cr>
 
-" Vaffle
-let g:vaffle_show_hidden_files = 1
-nnoremap <silent> <Leader>ee :Vaffle<cr>
-nnoremap <silent> <Leader>ec :Vaffle %<cr>
-function! OpenVaffleInSplit(vertical)
+" Explore
+let g:netrw_altfile = 1
+let g:netrw_sizestyle = "h"
+nnoremap <silent> <Leader>ee :Explore<cr> "
+function! OpenExploreInSplit(vertical)
   if a:vertical
     :vsplit
   else
     :split
   endif
-  :Vaffle %
+  :Explore
 endfunction
-nnoremap <silent> <Leader>es :call OpenVaffleInSplit(0)<cr>
-nnoremap <silent> <Leader>evs :call OpenVaffleInSplit(1)<cr>
+nnoremap <silent> <Leader>es :call OpenExploreInSplit(0)<cr>
+nnoremap <silent> <Leader>evs :call OpenExploreInSplit(1)<cr>
 
 " coc.nvim
 nnoremap <silent> <Leader>s :Rg<cr>
