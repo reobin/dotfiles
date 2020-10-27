@@ -14,6 +14,8 @@ export TERM=xterm-256color
 export VISUAL="nvim"
 export EDITOR="nvim"
 
+export GH_PAGER="cat"
+
 # prompt
 autoload -U promptinit; promptinit
 prompt typewritten
