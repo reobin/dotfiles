@@ -6,6 +6,8 @@ function! format#_run()
     :!black '%'
   elseif index(["ex", "exs"], l:fileextension) >= 0
     :!mix format '%'
+  elseif index(["go"], l:fileextension) >= 0
+    :!go fmt '%'
   elseif l:fileextension == "php"
     :!php-cs-fixer fix --rules=@PSR2 '%'
   endif
