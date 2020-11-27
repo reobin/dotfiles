@@ -25,26 +25,29 @@ key_mappings:
   - { key: K, mods: Command, chars: "\x0b" }
 
 colors:
+  # Default colors
   primary:
-    background: '0x24292e'
-    foreground: '0xffffff'
+    background: '0x121213'
+    foreground: '0xfdf9f7'
 
+  # Normal colors
   normal:
-    black:   '0x000000'
-    red:     '0xf16636'
-    green:   '0x59b36f'
-    yellow:  '0xf2c335'
-    blue:    '0x4c81b5'
-    magenta: '0xaf87d7'
-    cyan:    '0x4cafb5'
-    white:   '0xffffff'
+    black:   '0x1c1b1d'
+    red:     '0xde9dac'
+    green:   '0x9ddeaf'
+    yellow:  '0xdedd9d'
+    blue:    '0x9dacde'
+    magenta: '0xaf9dde'
+    cyan:    '0x9dccde'
+    white:   '0xf4e0d8'
 
+  # Bright colors
   bright:
-    black:   '0x6a737d'
-    red:     '0xd7410f'
-    green:   '0x48915a'
-    yellow:  '0xf2c335'
-    blue:    '0x456e98'
-    magenta: '0xa887e6'
-    cyan:    '0x5295d4'
-    white:   '0xffffff'
+    black:   '0x635e66'
+    red:     '0xf7afc0'
+    green:   '0xaff7c3'
+    yellow:  '0xf7f6af'
+    blue:    '0xafc0f7'
+    magenta: '0xc3aff7'
+    cyan:    '0xafe3f7'
+    white:   '0xf9ece8'
