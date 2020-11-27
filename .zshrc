@@ -48,6 +48,10 @@ alias python=python3
 alias pip3="python -m pip"
 alias pip=pip3
 
+# go
+export GOPATH=$HOME/go
+export GOBIN=$GOPATH/bin
+
 # Fixes fzf searching in git ignored files and folders
 export FZF_DEFAULT_COMMAND='ag --hidden --ignore .git -g ""'
 [ -f ~/.fzf.zsh ] && source ~/.fzf.zsh
