@@ -2,7 +2,7 @@ call plug#begin()
 Plug 'junegunn/fzf', { 'do': { -> fzf#install() } }
 Plug 'junegunn/fzf.vim'
 Plug 'neoclide/coc.nvim', { 'branch': 'release' }
-Plug 'cormacrelf/vim-colors-github'
+Plug 'co1ncidence/bliss'
 Plug 'sheerun/vim-polyglot'
 Plug 'tpope/vim-commentary'
 Plug 'tpope/vim-fugitive'
@@ -27,7 +27,7 @@ endif
 set background=dark
 autocmd ColorScheme * highlight LineNr guibg=None
 autocmd ColorScheme * highlight EndOfBuffer guibg=None
-colorscheme github
+colorscheme bliss
 
 let mapleader = ' '
 
