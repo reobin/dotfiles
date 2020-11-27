@@ -20,6 +20,8 @@ export GH_PAGER="cat"
 
 alias glab="PAGER=cat glab"
 
+export TYPEWRITTEN_PROMPT_LAYOUT="pure"
+
 # prompt
 autoload -U promptinit; promptinit
 prompt typewritten
