@@ -14,7 +14,11 @@ export TERM=xterm-256color
 export VISUAL="nvim"
 export EDITOR="nvim"
 
+export PAGER="less"
+export GLAB_PAGER="cat"
 export GH_PAGER="cat"
+
+alias glab="PAGER=cat glab"
 
 # prompt
 autoload -U promptinit; promptinit
