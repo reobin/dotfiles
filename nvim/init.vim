@@ -2,10 +2,10 @@ call plug#begin()
 Plug 'junegunn/fzf', { 'do': { -> fzf#install() } }
 Plug 'junegunn/fzf.vim'
 Plug 'neoclide/coc.nvim', { 'branch': 'release' }
-Plug 'co1ncidence/bliss'
 Plug 'sheerun/vim-polyglot'
 Plug 'tpope/vim-commentary'
 Plug 'tpope/vim-fugitive'
+Plug 'pineapplegiant/spaceduck'
 call plug#end()
 
 filetype plugin on
@@ -27,7 +27,7 @@ endif
 set background=dark
 autocmd ColorScheme * highlight LineNr guibg=None
 autocmd ColorScheme * highlight EndOfBuffer guibg=None
-colorscheme bliss
+colorscheme spaceduck
 
 let mapleader = ' '
 
