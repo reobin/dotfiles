@@ -5,7 +5,7 @@ Plug 'neoclide/coc.nvim', { 'branch': 'release' }
 Plug 'sheerun/vim-polyglot'
 Plug 'tpope/vim-commentary'
 Plug 'tpope/vim-fugitive'
-Plug 'pineapplegiant/spaceduck'
+Plug 'bluz71/vim-moonfly-colors'
 call plug#end()
 
 filetype plugin on
@@ -27,7 +27,7 @@ if (has('termguicolors'))
   set termguicolors
 endif
 set background=dark
-colorscheme spaceduck
+colorscheme moonfly
 
 " init.vim
 nnoremap <silent> <Leader>ve :e $MYVIMRC<cr>
