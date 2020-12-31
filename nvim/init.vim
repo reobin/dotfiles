@@ -10,6 +10,8 @@ call plug#end()
 
 filetype plugin on
 
+let mapleader = ' '
+
 syntax enable
 let c_comment_strings=1           " Highlight "strings" within comments
 set autoindent                    " Copy indent from current line
@@ -25,43 +27,21 @@ if (has('termguicolors'))
   set termguicolors
 endif
 set background=dark
-autocmd ColorScheme * highlight LineNr guibg=None
-autocmd ColorScheme * highlight EndOfBuffer guibg=None
 colorscheme spaceduck
-
-let mapleader = ' '
-
-if (!exists('*SourceConfig'))
-  function SourceConfig() abort
-    for f in split(glob('~/.config/nvim/autoload/*'), '\n')
-      exe 'source' f
-    endfor
-    source $MYVIMRC
-  endfunction
-endif
 
 " init.vim
 nnoremap <silent> <Leader>ve :e $MYVIMRC<cr>
-nnoremap <silent> <Leader>vs :call SourceConfig()<cr>
+nnoremap <silent> <Leader>vs :call utils#source_config()<cr>
 
 " fzf
 nnoremap <silent> <Leader>p :Files<cr>
 nnoremap <silent> <Leader>b :Buffers<cr>
 
 " Explore
+let g:netrw_banner = 0
 let g:netrw_altfile = 1
-let g:netrw_sizestyle = "h"
-nnoremap <silent> <Leader>ee :Explore<cr> "
-function! OpenExploreInSplit(vertical)
-  if a:vertical
-    :vsplit
-  else
-    :split
-  endif
-  :Explore
-endfunction
-nnoremap <silent> <Leader>es :call OpenExploreInSplit(0)<cr>
-nnoremap <silent> <Leader>evs :call OpenExploreInSplit(1)<cr>
+let g:netrw_liststyle = 3
+nnoremap <silent> <Leader>ee :Explore<cr>
 
 " coc.nvim
 nnoremap <silent> <Leader>s :Rg<cr>
@@ -81,9 +61,9 @@ nnoremap <silent> <Leader>ej :res -5<cr>
 nnoremap <silent> <Leader>el :vertical resize +5<cr>
 nnoremap <silent> <Leader>eh :vertical resize -5<cr>
 
+" TODO Improve this command
 " Last open buffer
 nnoremap <silent> <Leader>l <C-^>
 
-" Functions are loaded from the ~/.config/nvim/autoload directory
-au VimEnter * call statusline#_init()
-au VimEnter * call format#_init()
+" Format using appropriate CLI
+nnoremap <silent> <Leader>f :call utils#format()<cr>
