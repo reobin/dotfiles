@@ -1,7 +1,19 @@
+let g:coc_global_extensions = [
+\ 'coc-css',
+\ 'coc-elixir',
+\ 'coc-emmet',
+\ 'coc-go',
+\ 'coc-html',
+\ 'coc-json',
+\ 'coc-omnisharp',
+\ 'coc-pyright',
+\ 'coc-tsserver',
+\ ]
+
 call plug#begin()
 Plug 'junegunn/fzf', { 'do': { -> fzf#install() } }
 Plug 'junegunn/fzf.vim'
-Plug 'neoclide/coc.nvim', { 'branch': 'release' }
+Plug 'neoclide/coc.nvim', { 'branch': 'release', 'do': { -> 'coc#util#install()' } }
 Plug 'sheerun/vim-polyglot'
 Plug 'tpope/vim-commentary'
 Plug 'tpope/vim-fugitive'
