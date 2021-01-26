@@ -65,5 +65,8 @@ nnoremap <silent> <Leader>eh :vertical resize -5<cr>
 " Last open buffer
 nnoremap <silent> <Leader>l <C-^>
 
+" Copy to clipboard
+xnoremap <silent> <Leader>c "*y
+
 " Format using appropriate CLI
 nnoremap <silent> <Leader>f :call utils#format()<cr>
