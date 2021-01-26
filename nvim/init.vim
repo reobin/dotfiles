@@ -33,6 +33,7 @@ set expandtab                     " Insert spaces with the <Tab> key
 set noswapfile                    " Disable swap file creation
 set relativenumber                " Display line numbers relative to current line
 set number                        " Display line number on current line
+set hidden                        " Do not unload buffers when switching
 
 if (has('termguicolors'))
   let &t_8f="\<Esc>[38;2;%lu;%lu;%lum"
