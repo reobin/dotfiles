@@ -73,6 +73,9 @@ nnoremap <silent> <Leader>ej :res -5<cr>
 nnoremap <silent> <Leader>el :vertical resize +5<cr>
 nnoremap <silent> <Leader>eh :vertical resize -5<cr>
 
+" Maximize current split
+nnoremap <silent> <Leader>m :MaximizerToggle<cr>
+
 " TODO Improve this command
 " Last open buffer
 nnoremap <silent> <Leader>l <C-^>
