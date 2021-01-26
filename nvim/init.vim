@@ -18,6 +18,9 @@ Plug 'sheerun/vim-polyglot'
 Plug 'tpope/vim-commentary'
 Plug 'tpope/vim-fugitive'
 Plug 'bluz71/vim-moonfly-colors'
+Plug 'jiangmiao/auto-pairs'
+
+" Plug 'cocopon/snapbuffer.vim', { 'branch': 'main' }
 call plug#end()
 
 filetype plugin on
