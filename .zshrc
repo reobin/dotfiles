@@ -45,10 +45,9 @@ alias grt='cd "$(git rev-parse --show-toplevel || echo .)"'
 # Use like so: prettyjson ugly.json > pretty.json
 alias prettyjson="python -m json.tool"
 
-# python -> python3
-alias python=python3
-alias pip3="python -m pip"
-alias pip=pip3
+# python -> brew python3
+alias python=/usr/local/bin/python3
+alias pip=/usr/local/bin/pip3
 
 # go
 export GOPATH=$HOME/go
