@@ -34,7 +34,6 @@ set tabstop=2                     " Number of spaces that a <Tab> counts for
 set shiftwidth=2                  " The amount of indent added
 set expandtab                     " Insert spaces with the <Tab> key
 set noswapfile                    " Disable swap file creation
-set relativenumber                " Display line numbers relative to current line
 set number                        " Display line number on current line
 set hidden                        " Do not unload buffers when switching
 
