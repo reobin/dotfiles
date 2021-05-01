@@ -5,9 +5,10 @@ let g:coc_global_extensions = [
 \ 'coc-go',
 \ 'coc-html',
 \ 'coc-json',
-\ 'coc-omnisharp',
 \ 'coc-pyright',
 \ 'coc-tsserver',
+\ 'coc-vetur',
+\ 'coc-omnisharp',
 \ ]
 
 call plug#begin()
