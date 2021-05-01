@@ -18,6 +18,8 @@ function! utils#format()
     :!mix format '%'
   elseif index(["go"], l:fileextension) >= 0
     :!go fmt '%'
+  elseif index(["cs"], l:fileextension) >= 0
+    :!dotnet dotnet-format HadrianBridge.csproj --include %
   elseif l:fileextension == "php"
     :!php-cs-fixer fix --rules=@PSR2 '%'
   else
