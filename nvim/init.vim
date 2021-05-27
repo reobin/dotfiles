@@ -8,18 +8,18 @@ let g:coc_global_extensions = [
 \ 'coc-pyright',
 \ 'coc-tsserver',
 \ 'coc-vetur',
-\ 'coc-omnisharp',
 \ ]
 
 call plug#begin()
 Plug 'junegunn/fzf', { 'do': { -> fzf#install() } }
 Plug 'junegunn/fzf.vim'
 Plug 'neoclide/coc.nvim', { 'branch': 'release', 'do': { -> 'coc#util#install()' } }
-Plug 'sheerun/vim-polyglot'
 Plug 'tpope/vim-commentary'
 Plug 'tpope/vim-fugitive'
-Plug 'bluz71/vim-moonfly-colors'
 Plug 'jiangmiao/auto-pairs'
+
+Plug 'sheerun/vim-polyglot'
+Plug 'aonemd/kuroi.vim'
 
 " Plug 'cocopon/snapbuffer.vim', { 'branch': 'main' }
 call plug#end()
@@ -44,7 +44,7 @@ if (has('termguicolors'))
   set termguicolors
 endif
 set background=dark
-colorscheme moonfly
+colorscheme kuroi
 
 " init.vim editing
 nnoremap <silent> <Leader>ve :e $MYVIMRC<cr>
