@@ -22,7 +22,7 @@ alias glab="PAGER=cat glab"
 
 export TYPEWRITTEN_PREFIX=""
 export TYPEWRITTEN_PROMPT_LAYOUT="half_pure"
-export TYPEWRITTEN_RELATIVE_PATH="adaptive"
+export TYPEWRITTEN_RELATIVE_PATH="home"
 
 # prompt
 autoload -U promptinit; promptinit
