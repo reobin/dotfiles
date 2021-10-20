@@ -10,11 +10,12 @@ return require('packer').startup(function()
   -- colorscheme
   use 'bluz71/vim-moonfly-colors'
 
-  -- Fuzzy finder
+  -- Telescope
   use {
     'nvim-telescope/telescope.nvim',
     requires = { {'nvim-lua/plenary.nvim'} },
   }
+  use 'kyazdani42/nvim-web-devicons'
 
   -- Treesitter
   use {
@@ -26,4 +27,15 @@ return require('packer').startup(function()
     branch = '0.5-compat',
   }
   use 'sheerun/vim-polyglot'
+
+  -- LSP
+  use 'neovim/nvim-lspconfig'
+
+  -- Completion
+  use 'hrsh7th/cmp-nvim-lsp'
+  use 'hrsh7th/cmp-buffer'
+  use 'hrsh7th/nvim-cmp'
+
+  -- Formatting
+  use 'mhartington/formatter.nvim'
 end)
