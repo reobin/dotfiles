@@ -39,5 +39,14 @@ return require("packer").startup(
 
     -- Formatting
     use "mhartington/formatter.nvim"
+
+    -- Fugitive
+    use "tpope/vim-fugitive"
+
+    -- Auto-pairs
+    use 'jiangmiao/auto-pairs'
+
+    -- Commentary
+    use 'tpope/vim-commentary'
   end
 )

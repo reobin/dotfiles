@@ -50,7 +50,7 @@ vimp.nnoremap(
 vimp.nnoremap("<leader>l", "<C-^>")
 
 -- c = copy to clipboard
-vimp.nnoremap("<leader>c", '"*y')
+vimp.xnoremap("<leader>c", '"*y')
 
 -- / = remove search highlight
 vimp.nnoremap("<leader>/", ":noh<cr>")
@@ -103,13 +103,13 @@ vimp.nnoremap("<leader><leader>d", ":Telescope lsp_definitions<cr>")
 
 -- #lsp --
 
-local nvim_lsp = require("lspconfig")
-
 vimp.nnoremap("<leader><leader>h", ":lua vim.lsp.buf.hover()<cr>")
 vimp.nnoremap("<leader><leader>e", ":lua vim.lsp.diagnostic.show_line_diagnostics()<cr>")
 
--- typescript, javascript
-nvim_lsp.tsserver.setup {}
+local lsp = require("lspconfig")
+
+-- set up language servers
+lsp.tsserver.setup {}
 
 -- #completion
 
@@ -175,3 +175,7 @@ formatter.setup {
 }
 
 vimp.nnoremap("<leader>f", ":FormatWrite<cr>")
+
+-- #fugitive --
+
+vimp.nnoremap("<leader>gg", ":G<cr>")
