@@ -149,6 +149,7 @@ formatter.setup {
       function()
         return {
           exe = "mix format",
+          args = {"-"},
           stdin = true
         }
       end
