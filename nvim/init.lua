@@ -121,33 +121,42 @@ cmp.setup {
 
 local formatter = require("formatter")
 
+local prettier = function()
+  return {
+    exe = "prettier",
+    args = {"--stdin-filepath", vim.api.nvim_buf_get_name(0)},
+    stdin = true
+  }
+end
+
 formatter.setup {
   filetype = {
+    javascript = {prettier},
+    javascriptreact = {prettier},
+    typescript = {prettier},
+    typescriptreact = {prettier},
+    elixir = {
+      function()
+        return {
+          exe = "mix format",
+          stdin = true
+        }
+      end
+    },
+    go = {
+      function()
+        return {
+          exe = "gofmt",
+          args = {vim.api.nvim_buf_get_name(0)},
+          stdin = true
+        }
+      end
+    },
     lua = {
       function()
         return {
           exe = "luafmt",
           args = {"--indent-count", 2, "--stdin"},
-          stdin = true
-        }
-      end
-    },
-    javascript = {
-      function()
-        return {
-          exe = "prettier",
-          stdin = true
-        }
-      end
-    },
-    typescriptreact = {
-      function()
-        return {
-          exe = "prettier",
-          args = {
-            "--stdin-filepath",
-            vim.fn.fnameescape(vim.api.nvim_buf_get_name(0))
-          },
           stdin = true
         }
       end
