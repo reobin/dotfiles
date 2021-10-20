@@ -7,7 +7,7 @@ window:
 
 font:
   normal:
-    family: JetBrains Mono
+    family: JetBrainsMono Nerd Font Mono
   size: 16.0
 
 draw_bold_text_with_bright_colors: true
@@ -20,43 +20,43 @@ key_mappings:
   # clear
   - { key: K, mods: Command, chars: "\x0b" }
 
-colors:
-  primary:
-    background:        '#1b1918'
-    foreground:        '#c5c8c6'
+draw_bold_text_with_bright_colors: true
 
+# Colors
+colors:
+  # Default colors
+  primary:
+    background:        '#080808'
+    foreground:        '#b2b2b2'
+    bright_foreground: '#eeeeee'
+
+  # Cursor colors
   cursor:
     text:   '#080808'
     cursor: '#9e9e9e'
 
+  # Selection colors
   selection:
-    text:       '#ffffff'
-    background: '#373b41'
+    text:       '#080808'
+    background: '#b2ceee'
 
+  # Normal colors
   normal:
-    black:   '#c5c8c6'
-    red:     '#d75f87'
-    green:   '#5faf5f'
-    yellow:  '#ffd700'
-    blue:    '#5fafff'
-    magenta: '#8787ff'
-    cyan:    '#87afd7'
-    white:   '#a1aab8'
+    black:   '#323437'
+    red:     '#ff5454'
+    green:   '#8cc85f'
+    yellow:  '#e3c78a'
+    blue:    '#80a0ff'
+    magenta: '#d183e8'
+    cyan:    '#79dac8'
+    white:   '#c6c6c6'
 
+  # Bright colors
   bright:
-    black:   '#7c8f8f'
+    black:   '#949494'
     red:     '#ff5189'
     green:   '#36c692'
     yellow:  '#bfbf97'
-    blue:    '#78c2ff'
+    blue:    '#74b2ff'
     magenta: '#ae81ff'
     cyan:    '#85dc85'
-    white:   '#e2637f'
-
-    red:     '#d75f87'
-    green:   '#5faf5f'
-    yellow:  '#ffd700'
-    blue:    '#5fafff'
-    magenta: '#8787ff'
-    cyan:    '#87afd7'
-    white:   '#a1aab8'
