@@ -14,12 +14,10 @@
 
 [alias]
   # shortcuts
-  br = branch
-  d = difftool
   p = push
   c = commit
   co = checkout
-  pl = pull
+  whoops = commit --amend --no-edit
 
   # Clean stale branches
   cut = !git remote prune origin
