@@ -1,51 +1,61 @@
 require("plugins")
 
--- Options --
+-- #options --
 
--- Tabs
+-- tabs
 vim.o.autoindent = true -- Copy indent from current line
 vim.o.tabstop = 2 -- Number of spaces that a <Tab> counts for
 vim.o.shiftwidth = vim.o.tabstop -- The amount of indent added
 vim.o.expandtab = true -- Insert spaces with the <Tab> key
 
--- Other options
+-- other
 vim.o.relativenumber = true -- Use relative number on gutter
 vim.o.hidden = true -- Do not unload buffers when switching
 
--- Map leader: <Space>
+-- map leader: <Space>
 vim.g.mapleader = " "
 
--- Color scheme
+-- colorscheme
 vim.cmd("colorscheme moonfly")
 
--- General key mappings --
+-- #general_key_mappings --
 
 local vimp = require("vimp")
 
--- J = Keep the cursor in place while joining lines
+-- J = keep the cursor in place while joining lines
 vimp.nnoremap("J", "mzJ`z")
 
--- ee = Explore
+-- ee = :Explore
 vimp.nnoremap("<leader>ee", ":Explore<cr>")
 
 -- r = reload vimrc
 vimp.nnoremap(
   "<leader>r",
   function()
-    -- Remove all previously added vimpeccable maps
+    -- remove all previously added vimpeccable maps
     vimp.unmap_all()
 
-    -- Make sure all open buffers are saved
+    -- make sure all open buffers are saved
     vim.cmd("silent wa")
 
-    -- Execute our vimrc lua file again to add back our maps
+    -- execute our vimrc lua file again to add back our maps
     dofile(vim.fn.stdpath("config") .. "/init.lua")
 
     print("init.lua reloaded")
   end
 )
 
--- Telescope --
+-- l = open last buffer
+
+vimp.nnoremap("<leader>l", "<C-^>")
+
+-- c = copy to clipboard
+vimp.nnoremap("<leader>c", '"*y')
+
+-- / = remove search highlight
+vimp.nnoremap("<leader>/", ":noh<cr>")
+
+-- #telescope --
 
 vimp.nnoremap("<leader>p", ":Telescope find_files<cr>")
 vimp.nnoremap("<leader>s", ":Telescope live_grep<cr>")
@@ -62,7 +72,7 @@ telescope.setup {
   }
 }
 
--- Treesitter --
+-- #treesitter --
 
 treesitter_languages = {
   "go",
@@ -88,20 +98,20 @@ treesitter.setup {
 
 vim.g.polyglot_disabled = treesitter_languages
 
-vimp.nnoremap("<leader>lr", ":Telescope lsp_references<cr>")
-vimp.nnoremap("<leader>ld", ":Telescope lsp_definitions<cr>")
+vimp.nnoremap("<leader><leader>r", ":Telescope lsp_references<cr>")
+vimp.nnoremap("<leader><leader>d", ":Telescope lsp_definitions<cr>")
 
--- LSP --
+-- #lsp --
 
 local nvim_lsp = require("lspconfig")
 
-vimp.nnoremap("<leader>lh", ":lua vim.lsp.buf.hover()<cr>")
-vimp.nnoremap("<leader>le", ":lua vim.lsp.diagnostic.show_line_diagnostics()<cr>")
+vimp.nnoremap("<leader><leader>h", ":lua vim.lsp.buf.hover()<cr>")
+vimp.nnoremap("<leader><leader>e", ":lua vim.lsp.diagnostic.show_line_diagnostics()<cr>")
 
 -- typescript, javascript
 nvim_lsp.tsserver.setup {}
 
--- Completion
+-- #completion
 
 vim.o.completeopt = "menuone,noselect"
 
@@ -117,7 +127,7 @@ cmp.setup {
   }
 }
 
--- Formatting
+-- #formatting
 
 local formatter = require("formatter")
 
