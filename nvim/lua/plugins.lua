@@ -48,5 +48,8 @@ return require("packer").startup(
 
     -- Commentary
     use 'tpope/vim-commentary'
+
+    -- Snippets
+    use 'L3MON4D3/LuaSnip'
   end
 )
