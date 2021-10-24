@@ -16,7 +16,9 @@ vim.o.hidden = true -- Do not unload buffers when switching
 vim.g.mapleader = " "
 
 -- colorscheme
-vim.cmd("colorscheme moonfly")
+vim.cmd("set background=light")
+vim.cmd("set termguicolors")
+vim.cmd("colorscheme edge")
 
 -- #general_key_mappings --
 

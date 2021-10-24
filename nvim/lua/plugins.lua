@@ -9,7 +9,7 @@ return require("packer").startup(
     use "svermeulen/vimpeccable"
 
     -- colorscheme
-    use "bluz71/vim-moonfly-colors"
+    use 'sainnhe/edge'
 
     -- Telescope
     use {
