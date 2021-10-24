@@ -149,8 +149,12 @@ end
 
 formatter.setup {
   filetype = {
+    html = {prettier},
     javascript = {prettier},
     javascriptreact = {prettier},
+    json = {prettier},
+    markdown = {prettier},
+    scss = {prettier},
     typescript = {prettier},
     typescriptreact = {prettier},
     elixir = {
