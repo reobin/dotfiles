@@ -27,8 +27,6 @@ local vimp = require("vimp")
 -- J = keep the cursor in place while joining lines
 vimp.nnoremap("J", "mzJ`z")
 
--- ee = :Explore
-vimp.nnoremap("<leader>ee", ":Explore<cr>")
 
 -- r = reload vimrc
 vimp.nnoremap(
@@ -203,3 +201,10 @@ colorizer.setup {
   "sass",
   "scss"
 }
+
+-- #nvim-tree --
+
+local tree = require("nvim-tree")
+tree.setup {}
+
+vimp.nnoremap("<leader>ee", ":NvimTreeToggle<cr>")

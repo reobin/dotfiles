@@ -9,7 +9,7 @@ return require("packer").startup(
     use "svermeulen/vimpeccable"
 
     -- colorscheme
-    use 'sainnhe/edge'
+    use "sainnhe/edge"
 
     -- Telescope
     use {
@@ -17,6 +17,9 @@ return require("packer").startup(
       requires = {{"nvim-lua/plenary.nvim"}}
     }
     use "kyazdani42/nvim-web-devicons"
+
+    -- Explorer
+    use "kyazdani42/nvim-tree.lua"
 
     -- Treesitter
     use {
@@ -44,12 +47,15 @@ return require("packer").startup(
     use "tpope/vim-fugitive"
 
     -- Auto-pairs
-    use 'jiangmiao/auto-pairs'
+    use "jiangmiao/auto-pairs"
 
     -- Commentary
-    use 'tpope/vim-commentary'
+    use "tpope/vim-commentary"
 
     -- Snippets
-    use 'L3MON4D3/LuaSnip'
+    use "L3MON4D3/LuaSnip"
+
+    -- CSS colors
+    use "norcalli/nvim-colorizer.lua"
   end
 )
