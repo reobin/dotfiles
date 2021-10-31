@@ -1,5 +1,7 @@
 require("plugins")
 
+local home = os.getenv("HOME")
+
 -- #options --
 
 -- tabs
@@ -26,7 +28,6 @@ local vimp = require("vimp")
 
 -- J = keep the cursor in place while joining lines
 vimp.nnoremap("J", "mzJ`z")
-
 
 -- r = reload vimrc
 vimp.nnoremap(
@@ -110,6 +111,9 @@ local lsp = require("lspconfig")
 
 -- set up language servers
 lsp.tsserver.setup {}
+lsp.elixirls.setup {
+  cmd = {home .. "/.config/elixir-ls/language_server.sh"}
+}
 
 -- #completion
 
