@@ -192,3 +192,14 @@ vimp.nnoremap("<leader>f", ":FormatWrite<cr>")
 -- #fugitive --
 
 vimp.nnoremap("<leader>gg", ":G<cr>")
+
+-- #colorizer --
+
+local colorizer = require("colorizer")
+colorizer.setup {
+  "css",
+  "html",
+  "javascript",
+  "sass",
+  "scss"
+}
