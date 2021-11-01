@@ -211,4 +211,4 @@ colorizer.setup {
 local tree = require("nvim-tree")
 tree.setup {}
 
-vimp.nnoremap("<leader>ee", ":NvimTreeToggle<cr>")
+vimp.nnoremap("<leader>ee", ":NvimTreeFindFile<cr>")
