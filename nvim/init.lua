@@ -47,7 +47,6 @@ vimp.nnoremap(
 )
 
 -- l = open last buffer
-
 vimp.nnoremap("<leader>l", "<C-^>")
 
 -- c = copy to clipboard
