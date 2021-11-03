@@ -13,6 +13,7 @@ vim.o.expandtab = true -- Insert spaces with the <Tab> key
 -- other
 vim.o.relativenumber = true -- Use relative number on gutter
 vim.o.hidden = true -- Do not unload buffers when switching
+vim.o.signcolumn = "yes" -- Always show sign column
 
 -- map leader: <Space>
 vim.g.mapleader = " "
