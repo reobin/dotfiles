@@ -57,5 +57,11 @@ return require("packer").startup(
 
     -- CSS colors
     use "norcalli/nvim-colorizer.lua"
+
+    -- git gutter
+    use {
+      "lewis6991/gitsigns.nvim",
+      requires = {"nvim-lua/plenary.nvim"}
+    }
   end
 )

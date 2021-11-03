@@ -211,3 +211,8 @@ local tree = require("nvim-tree")
 tree.setup {}
 
 vimp.nnoremap("<leader>ee", ":NvimTreeFindFile<cr>")
+
+-- #gitsigns --
+
+local gitsigns = require("gitsigns")
+gitsigns.setup()
