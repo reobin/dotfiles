@@ -19,8 +19,8 @@ vim.o.signcolumn = "yes" -- Always show sign column
 vim.g.mapleader = " "
 
 -- colorscheme
-vim.cmd("set background=light")
-vim.cmd("set termguicolors")
+vim.o.background = "light"
+vim.o.termguicolors = true
 vim.cmd("colorscheme edge")
 
 -- #general_key_mappings --
