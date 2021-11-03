@@ -218,6 +218,8 @@ vimp.nnoremap("<leader>ee", ":NvimTreeFindFile<cr>")
 local gitsigns = require("gitsigns")
 gitsigns.setup()
 
+vimp.nnoremap("<leader>gb", ":Gitsigns blame_line<cr>")
+
 -- #status line --
 
 vim.g.lightline = {
