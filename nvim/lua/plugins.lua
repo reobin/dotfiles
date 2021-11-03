@@ -66,5 +66,11 @@ return require("packer").startup(
 
     -- status line
     use "itchyny/lightline.vim"
+
+    -- harpoon
+    use {
+      "ThePrimeagen/harpoon",
+      requires = {"nvim-lua/plenary.nvim"}
+    }
   end
 )

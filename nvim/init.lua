@@ -60,7 +60,6 @@ vimp.nnoremap("<leader>/", ":noh<cr>")
 
 vimp.nnoremap("<leader>p", ":Telescope find_files<cr>")
 vimp.nnoremap("<leader>s", ":Telescope live_grep<cr>")
-vimp.nnoremap("<leader>b", ":Telescope buffers<cr>")
 
 local actions = require("telescope.actions")
 local telescope = require("telescope")
@@ -227,3 +226,15 @@ vim.g.lightline = {
   active = {left = {{"mode", "paste"}, {"gitbranch", "readonly", "filename", "modified"}}},
   component_function = {gitbranch = "fugitive#head"}
 }
+
+-- #harpoon
+
+local harpoon = require("harpoon")
+harpoon.setup()
+
+vimp.nnoremap("<leader>a", ":lua require('harpoon.mark').add_file()<cr>")
+vimp.nnoremap("<leader>b", ":lua require('harpoon.ui').toggle_quick_menu()<cr>")
+vimp.nnoremap("<leader>1", ":lua require('harpoon.ui').nav_file(1)<cr>")
+vimp.nnoremap("<leader>2", ":lua require('harpoon.ui').nav_file(2)<cr>")
+vimp.nnoremap("<leader>3", ":lua require('harpoon.ui').nav_file(3)<cr>")
+vimp.nnoremap("<leader>4", ":lua require('harpoon.ui').nav_file(4)<cr>")
