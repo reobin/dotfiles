@@ -216,3 +216,11 @@ vimp.nnoremap("<leader>ee", ":NvimTreeFindFile<cr>")
 
 local gitsigns = require("gitsigns")
 gitsigns.setup()
+
+-- #status line --
+
+vim.g.lightline = {
+  colorscheme = "edge",
+  active = {left = {{"mode", "paste"}, {"gitbranch", "readonly", "filename", "modified"}}},
+  component_function = {gitbranch = "fugitive#head"}
+}
