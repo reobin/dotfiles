@@ -72,5 +72,11 @@ return require("packer").startup(
       "ThePrimeagen/harpoon",
       requires = {"nvim-lua/plenary.nvim"}
     }
+
+    -- hop
+    use {
+      "phaazon/hop.nvim",
+      branch = "v1"
+    }
   end
 )
