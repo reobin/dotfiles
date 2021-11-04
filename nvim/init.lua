@@ -110,9 +110,8 @@ local lsp = require("lspconfig")
 
 -- set up language servers
 lsp.tsserver.setup {}
-lsp.elixirls.setup {
-  cmd = {home .. "/.config/elixir-ls/language_server.sh"}
-}
+lsp.elixirls.setup {cmd = {home .. "/.config/elixir-ls/language_server.sh"}}
+lsp.gopls.setup {}
 
 -- #completion
 
