@@ -1,8 +1,6 @@
-require("plugins")
+require("config.plugins")
 
 local home = os.getenv("HOME")
-
--- #options --
 
 -- tabs
 vim.o.autoindent = true -- Copy indent from current line
@@ -10,18 +8,14 @@ vim.o.tabstop = 2 -- Number of spaces that a <Tab> counts for
 vim.o.shiftwidth = vim.o.tabstop -- The amount of indent added
 vim.o.expandtab = true -- Insert spaces with the <Tab> key
 
--- other
 vim.o.relativenumber = true -- Use relative number on gutter
 vim.o.hidden = true -- Do not unload buffers when switching
 vim.o.signcolumn = "yes" -- Always show sign column
+vim.o.termguicolors = true
+vim.o.completeopt = "menuone,noselect"
 
 -- map leader: <Space>
 vim.g.mapleader = " "
-
--- colorscheme
-vim.o.background = "light"
-vim.o.termguicolors = true
-vim.cmd("colorscheme edge")
 
 -- #general_key_mappings --
 
@@ -39,6 +33,13 @@ vimp.nnoremap(
 
     -- make sure all open buffers are saved
     vim.cmd("silent wa")
+
+    for packagename in pairs(package.loaded) do
+      if packagename:match("^config%..*") then
+        print("reloading", packagename)
+        package.loaded[packagename] = nil
+      end
+    end
 
     -- execute our vimrc lua file again to add back our maps
     dofile(vim.fn.stdpath("config") .. "/init.lua")
@@ -116,8 +117,6 @@ lsp.gopls.setup {}
 
 -- #completion
 
-vim.o.completeopt = "menuone,noselect"
-
 local cmp = require("cmp")
 
 cmp.setup {
@@ -135,8 +134,6 @@ cmp.setup {
     ["<cr>"] = cmp.mapping.confirm({select = true})
   }
 }
-
--- #formatting
 
 local formatter = require("formatter")
 
@@ -190,47 +187,11 @@ formatter.setup {
 
 vimp.nnoremap("<leader>f", ":FormatWrite<cr>")
 
--- #fugitive --
-
 vimp.nnoremap("<leader>gg", ":G<cr>")
-
--- #colorizer --
-
-local colorizer = require("colorizer")
-colorizer.setup {
-  "css",
-  "html",
-  "javascript",
-  "sass",
-  "scss"
-}
-
--- #nvim-tree --
-
-local tree = require("nvim-tree")
-tree.setup {}
 
 vimp.nnoremap("<leader>ee", ":NvimTreeFindFile<cr>")
 
--- #gitsigns --
-
-local gitsigns = require("gitsigns")
-gitsigns.setup()
-
 vimp.nnoremap("<leader>gb", ":Gitsigns blame_line<cr>")
-
--- #status line --
-
-vim.g.lightline = {
-  colorscheme = "edge",
-  active = {left = {{"mode", "paste"}, {"gitbranch", "readonly", "filename", "modified"}}},
-  component_function = {gitbranch = "fugitive#head"}
-}
-
--- #harpoon
-
-local harpoon = require("harpoon")
-harpoon.setup()
 
 vimp.nnoremap("<leader>a", ":lua require('harpoon.mark').add_file()<cr>")
 vimp.nnoremap("<leader>b", ":lua require('harpoon.ui').toggle_quick_menu()<cr>")
@@ -239,15 +200,5 @@ vimp.nnoremap("<leader>2", ":lua require('harpoon.ui').nav_file(2)<cr>")
 vimp.nnoremap("<leader>3", ":lua require('harpoon.ui').nav_file(3)<cr>")
 vimp.nnoremap("<leader>4", ":lua require('harpoon.ui').nav_file(4)<cr>")
 
--- #hop
-
-local hop = require("hop")
-hop.setup()
-
 vimp.nnoremap("f", ":HopWord<cr>")
 vimp.nnoremap("F", ":HopLine<cr>")
-
--- #commentary
-
-local comment = require("Comment")
-comment.setup()

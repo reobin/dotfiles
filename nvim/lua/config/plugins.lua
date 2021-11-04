@@ -8,8 +8,23 @@ return require("packer").startup(
     -- init.lua config helper
     use "svermeulen/vimpeccable"
 
+    -- status line
+    use {
+      "nvim-lualine/lualine.nvim",
+      requires = {"kyazdani42/nvim-web-devicons", opt = true}
+    }
+
     -- colorscheme
-    use "sainnhe/edge"
+    use {
+      "projekt0n/github-nvim-theme",
+      config = function()
+        require("github-theme").setup(
+          {
+            theme_style = "light_default"
+          }
+        )
+      end
+    }
 
     -- Telescope
     use {
@@ -19,7 +34,12 @@ return require("packer").startup(
     use "kyazdani42/nvim-web-devicons"
 
     -- Explorer
-    use "kyazdani42/nvim-tree.lua"
+    use {
+      "kyazdani42/nvim-tree.lua",
+      config = function()
+        require("nvim-tree").setup()
+      end
+    }
 
     -- Treesitter
     use {
@@ -49,34 +69,56 @@ return require("packer").startup(
     -- Auto-pairs
     use "jiangmiao/auto-pairs"
 
-    -- Commentary
-    use "numToStr/Comment.nvim"
+    -- comments
+    use {
+      "numToStr/Comment.nvim",
+      config = function()
+        require("Comment").setup()
+      end
+    }
 
     -- Snippets
     use "L3MON4D3/LuaSnip"
 
     -- CSS colors
-    use "norcalli/nvim-colorizer.lua"
+    use {
+      "norcalli/nvim-colorizer.lua",
+      config = function()
+        require("colorizer").setup {
+          "css",
+          "html",
+          "javascript",
+          "sass",
+          "scss"
+        }
+      end
+    }
 
     -- git gutter
     use {
       "lewis6991/gitsigns.nvim",
-      requires = {"nvim-lua/plenary.nvim"}
+      requires = {"nvim-lua/plenary.nvim"},
+      config = function()
+        require("gitsigns").setup()
+      end
     }
-
-    -- status line
-    use "itchyny/lightline.vim"
 
     -- harpoon
     use {
       "ThePrimeagen/harpoon",
-      requires = {"nvim-lua/plenary.nvim"}
+      requires = {"nvim-lua/plenary.nvim"},
+      config = function()
+        require("harpoon").setup()
+      end
     }
 
     -- hop
     use {
       "phaazon/hop.nvim",
-      branch = "v1"
+      branch = "v1",
+      config = function()
+        require("hop").setup()
+      end
     }
   end
 )
