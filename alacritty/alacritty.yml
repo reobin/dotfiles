@@ -23,26 +23,30 @@ key_mappings:
 draw_bold_text_with_bright_colors: true
 
 colors:
-    primary:
-      background: "0xfafafa"
-      foreground: "0x4b505b"
-  
-    normal:
-      black: "0x4b505b"
-      red: "0xd05858"
-      green: "0x608e32"
-      yellow: "0xbe7e05"
-      blue: "0x5079be"
-      magenta: "0xb05ccc"
-      cyan: "0x3a8b84"
-      white: "0xb3b3b3"
-  
-    bright:
-      black: "0xcccccc"
-      red: "0xd05858"
-      green: "0x608e32"
-      yellow: "0xbe7e05"
-      blue: "0x5079be"
-      magenta: "0xb05ccc"
-      cyan: "0x3a8b84"
-      white: "0xb3b3b3"
+  primary:
+    background: '0xffffff'
+    foreground: '0x4d5566'
+
+  normal:
+    black:   '0x24292e'
+    red:     '0xd73a49'
+    green:   '0x22863a'
+    yellow:  '0xb08800'
+    blue:    '0x0366d6'
+    magenta: '0x6f42c1'
+    cyan:    '0x1b7c83'
+    white:   '0x4d5566'
+
+  bright:
+    black:   '0xcccccc'
+    red:     '0xcb2431'
+    green:   '0x28a745'
+    yellow:  '0xdbab09'
+    blue:    '0x2188ff'
+    magenta: '0x8a63d2'
+    cyan:    '0x1b7c83'
+    white:   '0x4d5566'
+
+  indexed_colors:
+    - { index: 16, color: '0xd18616' }
+    - { index: 17, color: '0xcb2431' }
