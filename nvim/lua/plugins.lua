@@ -50,7 +50,7 @@ return require("packer").startup(
     use "jiangmiao/auto-pairs"
 
     -- Commentary
-    use "tpope/vim-commentary"
+    use "numToStr/Comment.nvim"
 
     -- Snippets
     use "L3MON4D3/LuaSnip"

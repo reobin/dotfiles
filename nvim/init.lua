@@ -246,3 +246,8 @@ hop.setup()
 
 vimp.nnoremap("f", ":HopWord<cr>")
 vimp.nnoremap("F", ":HopLine<cr>")
+
+-- #commentary
+
+local comment = require("Comment")
+comment.setup()
