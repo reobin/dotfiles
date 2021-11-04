@@ -60,6 +60,7 @@ vimp.nnoremap("<leader>/", ":noh<cr>")
 
 vimp.nnoremap("<leader>p", ":Telescope find_files<cr>")
 vimp.nnoremap("<leader>s", ":Telescope live_grep<cr>")
+vimp.nnoremap("<leader>B", ":Telescope live_grep<cr>")
 
 local actions = require("telescope.actions")
 local telescope = require("telescope")
