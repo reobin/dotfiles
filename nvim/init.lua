@@ -11,7 +11,10 @@ vim.o.expandtab = true -- Insert spaces with the <Tab> key
 vim.o.relativenumber = true -- Use relative number on gutter
 vim.o.hidden = true -- Do not unload buffers when switching
 vim.o.signcolumn = "yes" -- Always show sign column
-vim.o.termguicolors = true
+vim.o.termguicolors = true -- use GUI colors
+
+-- menuone: show menu even if only one item is present
+-- noselect: do not automatically select an item in the menu
 vim.o.completeopt = "menuone,noselect"
 
 -- map leader: <Space>
