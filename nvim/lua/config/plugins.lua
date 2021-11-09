@@ -2,19 +2,19 @@ vim.cmd [[packadd packer.nvim]]
 
 return require("packer").startup(
   function()
-    -- Packer can manage itself
+    -- # package manager --
     use "wbthomason/packer.nvim"
 
-    -- init.lua config helper
+    -- # init.lua config helper --
     use "svermeulen/vimpeccable"
 
-    -- status line
+    -- # status line --
     use {
       "nvim-lualine/lualine.nvim",
       requires = {"kyazdani42/nvim-web-devicons", opt = true}
     }
 
-    -- colorscheme
+    -- # colorscheme --
     use {
       "projekt0n/github-nvim-theme",
       config = function()
@@ -26,14 +26,14 @@ return require("packer").startup(
       end
     }
 
-    -- Telescope
+    -- # file finder and more --
     use {
       "nvim-telescope/telescope.nvim",
       requires = {{"nvim-lua/plenary.nvim"}}
     }
     use "kyazdani42/nvim-web-devicons"
 
-    -- Explorer
+    -- # file explorer --
     use {
       "kyazdani42/nvim-tree.lua",
       config = function()
@@ -41,7 +41,7 @@ return require("packer").startup(
       end
     }
 
-    -- Treesitter
+    -- # colors --
     use {
       "nvim-treesitter/nvim-treesitter",
       run = ":TSUpdate"
@@ -52,24 +52,24 @@ return require("packer").startup(
     }
     use "sheerun/vim-polyglot"
 
-    -- LSP
+    -- # lsp --
     use "neovim/nvim-lspconfig"
 
-    -- Completion
+    -- # completion --
     use "hrsh7th/cmp-nvim-lsp"
     use "hrsh7th/cmp-buffer"
     use "hrsh7th/nvim-cmp"
 
-    -- Formatting
+    -- # code formatting --
     use "mhartington/formatter.nvim"
 
-    -- Fugitive
+    -- # git client --
     use "tpope/vim-fugitive"
 
-    -- Auto-pairs
+    -- # auto pairs --
     use "jiangmiao/auto-pairs"
 
-    -- comments
+    -- # comments --
     use {
       "numToStr/Comment.nvim",
       config = function()
@@ -77,10 +77,10 @@ return require("packer").startup(
       end
     }
 
-    -- Snippets
+    -- # snippets --
     use "L3MON4D3/LuaSnip"
 
-    -- CSS colors
+    -- # CSS colors --
     use {
       "norcalli/nvim-colorizer.lua",
       config = function()
@@ -94,7 +94,7 @@ return require("packer").startup(
       end
     }
 
-    -- git gutter
+    -- # git gutter --
     use {
       "lewis6991/gitsigns.nvim",
       requires = {"nvim-lua/plenary.nvim"},
@@ -103,7 +103,7 @@ return require("packer").startup(
       end
     }
 
-    -- harpoon
+    -- # buffer manager --
     use {
       "ThePrimeagen/harpoon",
       requires = {"nvim-lua/plenary.nvim"},
@@ -112,7 +112,7 @@ return require("packer").startup(
       end
     }
 
-    -- hop
+    -- # line/word finder --
     use {
       "phaazon/hop.nvim",
       branch = "v1"

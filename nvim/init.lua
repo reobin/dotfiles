@@ -1,6 +1,9 @@
 require("config.plugins")
 
+-- #general --
+
 local home = os.getenv("HOME")
+local vimp = require("vimp")
 
 -- tabs
 vim.o.autoindent = true -- Copy indent from current line
@@ -20,14 +23,10 @@ vim.o.completeopt = "menuone,noselect"
 -- map leader: <Space>
 vim.g.mapleader = " "
 
--- #general_key_mappings --
-
-local vimp = require("vimp")
-
 -- J = keep the cursor in place while joining lines
 vimp.nnoremap("J", "mzJ`z")
 
--- r = reload vimrc
+-- leader + r = reload vimrc
 vimp.nnoremap(
   "<leader>r",
   function()
@@ -50,6 +49,17 @@ vimp.nnoremap(
     print("init.lua reloaded")
   end
 )
+
+-- leader + l = open last buffer
+vimp.nnoremap("<leader>l", "<C-^>")
+
+-- leader + c = copy to clipboard
+vimp.xnoremap("<leader>c", '"*y')
+
+-- leader + / = remove search highlight
+vimp.nnoremap("<leader>/", ":noh<cr>")
+
+-- #lualine --
 
 local lualine = require("lualine")
 lualine.setup(
@@ -92,15 +102,6 @@ lualine.setup(
   }
 )
 
--- l = open last buffer
-vimp.nnoremap("<leader>l", "<C-^>")
-
--- c = copy to clipboard
-vimp.xnoremap("<leader>c", '"*y')
-
--- / = remove search highlight
-vimp.nnoremap("<leader>/", ":noh<cr>")
-
 -- #telescope --
 
 vimp.nnoremap("<leader>p", ":Telescope find_files<cr>")
@@ -117,6 +118,9 @@ telescope.setup {
     }
   }
 }
+
+vimp.nnoremap("<leader><leader>r", ":Telescope lsp_references<cr>")
+vimp.nnoremap("<leader><leader>d", ":Telescope lsp_definitions<cr>")
 
 -- #treesitter --
 
@@ -144,9 +148,6 @@ treesitter.setup {
 
 vim.g.polyglot_disabled = treesitter_languages
 
-vimp.nnoremap("<leader><leader>r", ":Telescope lsp_references<cr>")
-vimp.nnoremap("<leader><leader>d", ":Telescope lsp_definitions<cr>")
-
 -- #lsp --
 
 vimp.nnoremap("<leader><leader>h", ":lua vim.lsp.buf.hover()<cr>")
@@ -154,11 +155,10 @@ vimp.nnoremap("<leader><leader>e", ":lua vim.lsp.diagnostic.show_line_diagnostic
 
 local lsp = require("lspconfig")
 
--- set up language servers
 lsp.tsserver.setup {}
 lsp.gopls.setup {}
 
--- #completion
+-- #nvim ---cmp
 
 local cmp = require("cmp")
 
@@ -177,6 +177,8 @@ cmp.setup {
     ["<cr>"] = cmp.mapping.confirm({select = true})
   }
 }
+
+-- #formatter --.nvim
 
 local formatter = require("formatter")
 
@@ -230,7 +232,11 @@ formatter.setup {
 
 vimp.nnoremap("<leader>f", ":FormatWrite<cr>")
 
+-- #git-fugitive --
+
 vimp.nnoremap("<leader>gg", ":G<cr>")
+
+-- #nvim-tree --
 
 vimp.nnoremap(
   "<leader>ee",
@@ -244,7 +250,11 @@ vimp.nnoremap(
   end
 )
 
+-- #gitsigns --
+
 vimp.nnoremap("<leader>gb", ":Gitsigns blame_line<cr>")
+
+-- #harpoon --
 
 vimp.nnoremap("<leader>a", ":lua require('harpoon.mark').add_file()<cr>")
 vimp.nnoremap("<leader>b", ":lua require('harpoon.ui').toggle_quick_menu()<cr>")
@@ -252,6 +262,8 @@ vimp.nnoremap("<leader>1", ":lua require('harpoon.ui').nav_file(1)<cr>")
 vimp.nnoremap("<leader>2", ":lua require('harpoon.ui').nav_file(2)<cr>")
 vimp.nnoremap("<leader>3", ":lua require('harpoon.ui').nav_file(3)<cr>")
 vimp.nnoremap("<leader>4", ":lua require('harpoon.ui').nav_file(4)<cr>")
+
+-- #hop --
 
 require "hop".setup()
 
