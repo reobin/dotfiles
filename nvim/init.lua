@@ -232,7 +232,17 @@ vimp.nnoremap("<leader>f", ":FormatWrite<cr>")
 
 vimp.nnoremap("<leader>gg", ":G<cr>")
 
-vimp.nnoremap("<leader>ee", ":NvimTreeFindFile<cr>")
+vimp.nnoremap(
+  "<leader>ee",
+  function()
+    local filepath = vim.fn.expand("%")
+    if filepath == "" or filepath == "NvimTree" then
+      vim.cmd(":NvimTreeFindFileToggle")
+    else
+      vim.cmd(":NvimTreeFindFile")
+    end
+  end
+)
 
 vimp.nnoremap("<leader>gb", ":Gitsigns blame_line<cr>")
 
