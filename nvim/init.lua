@@ -243,5 +243,7 @@ vimp.nnoremap("<leader>2", ":lua require('harpoon.ui').nav_file(2)<cr>")
 vimp.nnoremap("<leader>3", ":lua require('harpoon.ui').nav_file(3)<cr>")
 vimp.nnoremap("<leader>4", ":lua require('harpoon.ui').nav_file(4)<cr>")
 
-vimp.nnoremap("f", ":HopWord<cr>")
-vimp.nnoremap("F", ":HopLine<cr>")
+require "hop".setup()
+
+vimp.nnoremap("<leader>j", ":HopWord<cr>")
+vimp.nnoremap("<leader>J", ":HopLine<cr>")

@@ -115,10 +115,7 @@ return require("packer").startup(
     -- hop
     use {
       "phaazon/hop.nvim",
-      branch = "v1",
-      config = function()
-        require("hop").setup()
-      end
+      branch = "v1"
     }
   end
 )
