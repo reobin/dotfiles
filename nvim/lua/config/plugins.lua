@@ -20,7 +20,7 @@ return require("packer").startup(
       config = function()
         require("github-theme").setup(
           {
-            theme_style = "light_default"
+            theme_style = "light"
           }
         )
       end
