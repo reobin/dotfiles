@@ -117,5 +117,9 @@ return require("packer").startup(
       "phaazon/hop.nvim",
       branch = "v1"
     }
+
+    -- # wiki --
+    use "vimwiki/vimwiki"
+    use "ellisonleao/glow.nvim"
   end
 )
