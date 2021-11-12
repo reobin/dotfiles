@@ -112,12 +112,6 @@ return require("packer").startup(
       end
     }
 
-    -- # line/word finder --
-    use {
-      "phaazon/hop.nvim",
-      branch = "v1"
-    }
-
     -- # wiki --
     use "vimwiki/vimwiki"
     use "ellisonleao/glow.nvim"

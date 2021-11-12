@@ -34,10 +34,6 @@ vimp.nnoremap("<leader>gb", ":Gitsigns blame_line<cr>") -- git blame
 vimp.nnoremap("<leader>a", ":lua require('harpoon.mark').add_file()<cr>") -- Add file to buffers
 vimp.nnoremap("<leader>b", ":lua require('harpoon.ui').toggle_quick_menu()<cr>") -- Open buffers UI
 
-require "hop".setup()
-vimp.nnoremap("<leader>j", ":HopWord<cr>") -- find word
-vimp.nnoremap("<leader>J", ":HopLine<cr>") -- find line
-
 vimp.nnoremap("<leader>f", ":FormatWrite<cr>") -- format file
 
 vimp.nnoremap("<leader>p", ":Telescope find_files<cr>") -- find file
