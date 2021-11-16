@@ -7,7 +7,8 @@ treesitter_languages = {
 }
 
 polyglot_languages = {
-  "elixir"
+  "elixir",
+  "python"
 }
 
 local treesitter = require("nvim-treesitter.configs")
