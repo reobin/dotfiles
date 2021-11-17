@@ -16,14 +16,8 @@ return require("packer").startup(
 
     -- # colorscheme --
     use {
-      "projekt0n/github-nvim-theme",
-      config = function()
-        require("github-theme").setup(
-          {
-            theme_style = "light"
-          }
-        )
-      end
+      "mcchrish/zenbones.nvim",
+      requires = "rktjmp/lush.nvim"
     }
 
     -- # file finder and more --

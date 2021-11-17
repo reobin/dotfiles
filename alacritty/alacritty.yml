@@ -17,36 +17,35 @@ cursor:
   thickness: 0.2
 
 key_mappings:
-  # clear
-  - { key: K, mods: Command, chars: "\x0b" }
+  - { key: K, mods: Command, chars: "\x0b" } # clear
 
 draw_bold_text_with_bright_colors: true
 
 colors:
   primary:
-    background: '0xffffff'
-    foreground: '0x4d5566'
+    foreground: '#DDDDDD'
+    background: '#4B4B4B'
+
+  cursor:
+    cursor: '#4B4B4B'
+    text: '#E2E2E2'
 
   normal:
-    black:   '0x24292e'
-    red:     '0xd73a49'
-    green:   '0x22863a'
-    yellow:  '0xb08800'
-    blue:    '0x0366d6'
-    magenta: '0x6f42c1'
-    cyan:    '0x1b7c83'
-    white:   '0x4d5566'
+    black:   '#4B4B4B'
+    red:     '#E388A3'
+    green:   '#98BD99'
+    yellow:  '#FFDF9B'
+    blue:    '#97BDDE'
+    magenta: '#A5A6C5'
+    cyan:    '#6FBDBE'
+    white:   '#DDDDDD'
 
   bright:
-    black:   '0xcccccc'
-    red:     '0xcb2431'
-    green:   '0x28a745'
-    yellow:  '0xdbab09'
-    blue:    '0x2188ff'
-    magenta: '0x8a63d2'
-    cyan:    '0x1b7c83'
-    white:   '0x4d5566'
-
-  indexed_colors:
-    - { index: 16, color: '0xd18616' }
-    - { index: 17, color: '0xcb2431' }
+    black:   '#AAAAAA'
+    red:     '#EB99B1'
+    green:   '#8FCD92'
+    yellow:  '#FFE5B3'
+    blue:    '#A2C8E9'
+    magenta: '#B2B3DA'
+    cyan:    '#6BCACB'
+    white:   '#A8A8A8'

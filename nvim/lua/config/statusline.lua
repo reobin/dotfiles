@@ -3,7 +3,7 @@ local lualine = require("lualine")
 lualine.setup(
   {
     options = {
-      theme = "github",
+      theme = "seoulbones",
       component_separators = "|",
       section_separators = ""
     },
@@ -15,9 +15,9 @@ lualine.setup(
           "diff",
           symbols = {added = " ", modified = "⦿ ", removed = " "},
           diff_color = {
-            added = {fg = "green"},
-            modified = {fg = "orange"},
-            removed = {fg = "darkred"}
+            added = {fg = "#8cc85f"},
+            modified = {fg = "#e3c78a"},
+            removed = {fg = "#ff5454"}
           }
         }
       },

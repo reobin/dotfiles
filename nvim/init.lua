@@ -14,6 +14,8 @@ vim.o.hidden = true -- Do not unload buffers when switching
 vim.o.signcolumn = "yes" -- Always show sign column
 vim.o.termguicolors = true -- use GUI colors
 
+vim.cmd [[ colorscheme seoulbones ]]
+
 vim.o.completeopt = "menuone" -- show menu even if only one item is present
 vim.o.completeopt = vim.o.completeopt .. ",noselect" -- do not automatically select an item in the menu
 
