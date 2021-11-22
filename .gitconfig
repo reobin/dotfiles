@@ -44,3 +44,6 @@
 	program = gpg
 [pager]
 	branch = false
+
+[include]
+  path = ~/.secret.gitconfig
