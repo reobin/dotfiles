@@ -37,11 +37,7 @@ return require("packer").startup(
       "nvim-treesitter/nvim-treesitter",
       run = ":TSUpdate"
     }
-    use {
-      "nvim-treesitter/nvim-treesitter-textobjects",
-      branch = "0.5-compat"
-    }
-    use "sheerun/vim-polyglot"
+    use "nvim-treesitter/nvim-treesitter-textobjects"
 
     -- # lsp --
     use "neovim/nvim-lspconfig"

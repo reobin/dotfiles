@@ -3,12 +3,9 @@ treesitter_languages = {
   "javascript",
   "lua",
   "tsx",
-  "typescript"
-}
-
-polyglot_languages = {
-  "elixir",
-  "python"
+  "typescript",
+  "python",
+  "elixir"
 }
 
 local treesitter = require("nvim-treesitter.configs")
@@ -16,9 +13,6 @@ local treesitter = require("nvim-treesitter.configs")
 treesitter.setup {
   ensure_installed = treesitter_languages,
   highlight = {
-    enable = true,
-    disable = polyglot_languages
+    enable = true
   }
 }
-
-vim.g.polyglot_disabled = treesitter_languages
