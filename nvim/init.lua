@@ -15,7 +15,7 @@ vim.o.signcolumn = "yes" -- Always show sign column
 vim.o.cursorline = true -- Highlight current line
 vim.o.termguicolors = true -- use GUI colors
 
-vim.cmd [[ colorscheme seoul ]]
+vim.cmd [[ colorscheme kanagawa ]]
 
 vim.o.completeopt = "menuone" -- show menu even if only one item is present
 vim.o.completeopt = vim.o.completeopt .. ",noselect" -- do not automatically select an item in the menu

@@ -15,10 +15,7 @@ return require("packer").startup(
     }
 
     -- # colorscheme --
-    use {
-      "mcchrish/zenbones.nvim",
-      requires = "rktjmp/lush.nvim"
-    }
+    use "rebelot/kanagawa.nvim"
 
     -- # file finder and more --
     use {

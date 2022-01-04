@@ -21,31 +21,36 @@ key_mappings:
 
 draw_bold_text_with_bright_colors: true
 
+# Kanagawa Alacritty Colors
 colors:
   primary:
-    foreground: '#DDDDDD'
-    background: '#4B4B4B'
-
-  cursor:
-    cursor: '#4B4B4B'
-    text: '#E2E2E2'
+    background: '0x1f1f28'
+    foreground: '0xdcd7ba'
 
   normal:
-    black:   '#4B4B4B'
-    red:     '#E388A3'
-    green:   '#98BD99'
-    yellow:  '#FFDF9B'
-    blue:    '#97BDDE'
-    magenta: '#A5A6C5'
-    cyan:    '#6FBDBE'
-    white:   '#DDDDDD'
+    black:   '0x090618'
+    red:     '0xc34043'
+    green:   '0x76946a'
+    yellow:  '0xc0a36e'
+    blue:    '0x7e9cd8'
+    magenta: '0x957fb8'
+    cyan:    '0x6a9589'
+    white:   '0xc8c093'
 
   bright:
-    black:   '#AAAAAA'
-    red:     '#EB99B1'
-    green:   '#8FCD92'
-    yellow:  '#FFE5B3'
-    blue:    '#A2C8E9'
-    magenta: '#B2B3DA'
-    cyan:    '#6BCACB'
-    white:   '#A8A8A8'
+    black:   '0x727169'
+    red:     '0xe82424'
+    green:   '0x98bb6c'
+    yellow:  '0xe6c384'
+    blue:    '0x7fb4ca'
+    magenta: '0x938aa9'
+    cyan:    '0x7aa89f'
+    white:   '0xdcd7ba'
+
+  selection:
+    background: '0x2d4f67'
+    foreground: '0xc8c093'
+
+  indexed_colors:
+    - { index: 16, color: '0xffa066' }
+    - { index: 17, color: '0xff5d62' }
