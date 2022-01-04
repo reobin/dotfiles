@@ -22,6 +22,9 @@ vim.o.completeopt = vim.o.completeopt .. ",noselect" -- do not automatically sel
 
 vim.g.mapleader = " " -- map leader: <space>
 
+vim.g.do_filetype_lua = 1 -- enable filetype.lua
+vim.g.did_load_filetypes = 0 -- disable filetype.vim
+
 vimp.nnoremap("<leader>r", helpers.reloadNeovimConfig)
 vimp.nnoremap("J", "mzJ`z") -- keep the cursor in place while joining lines
 vimp.nnoremap("<leader>l", "<C-^>") -- open last buffer
