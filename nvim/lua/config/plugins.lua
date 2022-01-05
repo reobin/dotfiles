@@ -38,7 +38,6 @@ return require("packer").startup(
       run = ":TSUpdate"
     }
     use "nvim-treesitter/nvim-treesitter-textobjects"
-    use "elixir-editors/vim-elixir"
 
     -- # lsp --
     use "neovim/nvim-lspconfig"

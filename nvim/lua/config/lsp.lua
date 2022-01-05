@@ -9,6 +9,16 @@ telescope.setup {
   defaults = {
     mappings = {
       i = {["<ESC>"] = actions.close}
+    },
+    preview = {
+      treesitter = {
+        "go",
+        "javascript",
+        "lua",
+        "tsx",
+        "typescript",
+        "python"
+      }
     }
   }
 }

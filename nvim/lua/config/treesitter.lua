@@ -4,7 +4,8 @@ treesitter_languages = {
   "lua",
   "tsx",
   "typescript",
-  "python"
+  "python",
+  "elixir"
 }
 
 local treesitter = require("nvim-treesitter.configs")
@@ -12,7 +13,6 @@ local treesitter = require("nvim-treesitter.configs")
 treesitter.setup {
   ensure_installed = treesitter_languages,
   highlight = {
-    enable = true,
-    disable = {"elixir"}
+    enable = true
   }
 }
