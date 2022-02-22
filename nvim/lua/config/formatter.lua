@@ -19,6 +19,7 @@ formatter.setup {
     scss = {prettier},
     typescript = {prettier},
     typescriptreact = {prettier},
+    vue = {prettier},
     elixir = {
       function()
         return {
