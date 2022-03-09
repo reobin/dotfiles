@@ -8,4 +8,25 @@ vim.g.vimwiki_list = {
 }
 
 vim.g.glow_border = "rounded"
-vimp.nnoremap("<leader>wp", ":Glow<cr>")
+
+vimp.nnoremap("<leader>wpp", ":Glow<cr>")
+
+local wiki = {}
+
+function wiki.export()
+  local filepath = vim.fn.expand("%:h")
+  local shortened = string.match(filepath, "dev/(.*)")
+
+  if (shortened == nil) then
+    shortened = filepath
+  end
+
+  local exportedfilename = shortened:gsub("/", "__")
+  local fullpath = "~/Downloads/" .. exportedfilename .. ".pdf"
+
+  local cmd = "! pandoc % -o " .. fullpath
+
+  vim.cmd(cmd)
+end
+
+vimp.nnoremap("<leader>wpd", wiki.export)
