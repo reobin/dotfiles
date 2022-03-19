@@ -98,9 +98,5 @@ return require("packer").startup(
         require("harpoon").setup()
       end
     }
-
-    -- # wiki --
-    use "vimwiki/vimwiki"
-    use "ellisonleao/glow.nvim"
   end
 )
