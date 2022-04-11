@@ -31,14 +31,16 @@ vimp.nnoremap("<leader>l", "<C-^>") -- open last buffer
 vimp.xnoremap("<leader>c", '"*y') -- copy visual selection to clipboard
 vimp.nnoremap("<leader>/", ":noh<cr>") -- remove search highlight
 
-vimp.nnoremap("<leader>gg", ":G<cr>") -- toggle open git fugitive
+-- vimp.nnoremap("<leader>gg", ":G<cr>") -- toggle open git fugitive
 
-vimp.nnoremap("<leader>ee", helpers.toggleFileTree)
+vimp.nnoremap("<leader>e", ":Neotree focus toggle position=float<cr>")
+vimp.nnoremap("<leader>b", ":Neotree focus toggle position=float source=buffers<cr>")
+vimp.nnoremap("<leader>g", ":Neotree focus toggle position=float source=git_status<cr>")
 
-vimp.nnoremap("<leader>gb", ":Gitsigns blame_line<cr>") -- git blame
+-- vimp.nnoremap("<leader>gb", ":Gitsigns blame_line<cr>") -- git blame
 
 vimp.nnoremap("<leader>a", ":lua require('harpoon.mark').add_file()<cr>") -- Add file to buffers
-vimp.nnoremap("<leader>b", ":lua require('harpoon.ui').toggle_quick_menu()<cr>") -- Open buffers UI
+vimp.nnoremap("<leader>h", ":lua require('harpoon.ui').toggle_quick_menu()<cr>") -- Open buffers UI
 
 vimp.nnoremap("<leader>f", ":FormatWrite<cr>") -- format file
 
@@ -47,7 +49,6 @@ vimp.nnoremap("<leader>s", ":Telescope live_grep<cr>") -- find text in files
 
 vimp.nnoremap("<leader><leader>r", ":Telescope lsp_references<cr>") -- go to reference
 vimp.nnoremap("<leader><leader>d", ":Telescope lsp_definitions<cr>") -- go to definition
-
 vimp.nnoremap("<leader><leader>h", ":lua vim.lsp.buf.hover()<cr>") -- hover word
 vimp.nnoremap("<leader><leader>e", ":lua vim.lsp.diagnostic.show_line_diagnostics()<cr>") -- display word errors
 

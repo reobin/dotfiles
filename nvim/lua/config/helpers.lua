@@ -20,14 +20,4 @@ function helpers.reloadNeovimConfig()
   print("init.lua reloaded")
 end
 
---- Toggles open file tree
-function helpers.toggleFileTree()
-  local filepath = vim.fn.expand("%")
-  if filepath == "" or filepath == "NvimTree" then
-    vim.cmd(":NvimTreeFindFileToggle")
-  else
-    vim.cmd(":NvimTreeFindFile")
-  end
-end
-
 return helpers

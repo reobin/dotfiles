@@ -24,14 +24,6 @@ return require("packer").startup(
     }
     use "kyazdani42/nvim-web-devicons"
 
-    -- # file explorer --
-    use {
-      "kyazdani42/nvim-tree.lua",
-      config = function()
-        require("nvim-tree").setup()
-      end
-    }
-
     -- # colors --
     use {
       "nvim-treesitter/nvim-treesitter",
@@ -96,6 +88,108 @@ return require("packer").startup(
       requires = {"nvim-lua/plenary.nvim"},
       config = function()
         require("harpoon").setup()
+      end
+    }
+
+    -- # file explorer --
+    use {
+      "nvim-neo-tree/neo-tree.nvim",
+      branch = "v2.x",
+      requires = {
+        "nvim-lua/plenary.nvim",
+        "kyazdani42/nvim-web-devicons",
+        "MunifTanjim/nui.nvim"
+      },
+      config = function()
+        vim.cmd([[ let g:neo_tree_remove_legacy_commands = 1 ]])
+
+        vim.fn.sign_define("DiagnosticSignError", {text = " ", texthl = "DiagnosticSignError"})
+        vim.fn.sign_define("DiagnosticSignWarn", {text = " ", texthl = "DiagnosticSignWarn"})
+        vim.fn.sign_define("DiagnosticSignInfo", {text = " ", texthl = "DiagnosticSignInfo"})
+        vim.fn.sign_define("DiagnosticSignHint", {text = "", texthl = "DiagnosticSignHint"})
+
+        require("neo-tree").setup(
+          {
+            close_if_last_window = false,
+            popup_border_style = "rounded",
+            enable_git_status = true,
+            enable_diagnostics = true,
+            default_component_configs = {
+              indent = {
+                indent_size = 2,
+                padding = 1,
+                with_markers = true,
+                indent_marker = "│",
+                last_indent_marker = "└",
+                highlight = "NeoTreeIndentMarker",
+                with_expanders = nil,
+                expander_collapsed = "",
+                expander_expanded = "",
+                expander_highlight = "NeoTreeExpander"
+              },
+              icon = {
+                folder_closed = "",
+                folder_open = "",
+                folder_empty = "ﰊ",
+                default = "*"
+              },
+              modified = {
+                symbol = "[+]",
+                highlight = "NeoTreeModified"
+              },
+              name = {
+                trailing_slash = false,
+                use_git_status_colors = true
+              },
+              git_status = {
+                symbols = {
+                  added = "",
+                  modified = "!",
+                  deleted = "—",
+                  renamed = "»",
+                  untracked = "?",
+                  ignored = "",
+                  unstaged = "",
+                  staged = "+",
+                  conflict = ""
+                }
+              }
+            },
+            window = {
+              position = "float"
+            },
+            filesystem = {
+              filtered_items = {
+                visible = false,
+                hide_dotfiles = false,
+                hide_gitignored = true
+              },
+              follow_current_file = true,
+              hijack_netrw_behavior = "open_default",
+              use_libuv_file_watcher = false
+            },
+            buffers = {
+              show_unloaded = true,
+              window = {
+                mappings = {
+                  ["bd"] = "buffer_delete"
+                }
+              }
+            },
+            git_status = {
+              window = {
+                mappings = {
+                  ["gA"] = "git_add_all",
+                  ["gu"] = "git_unstage_file",
+                  ["ga"] = "git_add_file",
+                  ["gr"] = "git_revert_file",
+                  ["gc"] = "git_commit",
+                  ["gp"] = "git_push"
+                }
+              }
+            }
+          }
+        )
       end
     }
   end
