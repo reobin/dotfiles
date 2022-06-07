@@ -37,6 +37,7 @@ return require("packer").startup(
     -- # completion --
     use "hrsh7th/cmp-nvim-lsp"
     use "hrsh7th/cmp-buffer"
+    use "hrsh7th/cmp-path"
     use "hrsh7th/nvim-cmp"
 
     -- # code formatting --
@@ -58,6 +59,7 @@ return require("packer").startup(
 
     -- # snippets --
     use "L3MON4D3/LuaSnip"
+    use "saadparwaiz1/cmp_luasnip"
 
     -- # CSS colors --
     use {
