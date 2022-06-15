@@ -21,36 +21,42 @@ key_mappings:
 
 draw_bold_text_with_bright_colors: true
 
-# Kanagawa Alacritty Colors
+# murphy
 colors:
+  # Default colors
   primary:
-    background: '0x1f1f28'
-    foreground: '0xdcd7ba'
+    background:        '#000000'
+    foreground:        '#FFFFFF'
+    bright_foreground: '#FFFFFF'
 
-  normal:
-    black:   '0x090618'
-    red:     '0xc34043'
-    green:   '0x76946a'
-    yellow:  '0xc0a36e'
-    blue:    '0x7e9cd8'
-    magenta: '0x957fb8'
-    cyan:    '0x6a9589'
-    white:   '0xc8c093'
+  # Cursor colors
+  cursor:
+    text:   '#FFFFFF'
+    cursor: '#9E9E9E'
 
-  bright:
-    black:   '0x727169'
-    red:     '0xe82424'
-    green:   '0x98bb6c'
-    yellow:  '0xe6c384'
-    blue:    '0x7fb4ca'
-    magenta: '0x938aa9'
-    cyan:    '0x7aa89f'
-    white:   '0xdcd7ba'
-
+  # Selection colors
   selection:
-    background: '0x2d4f67'
-    foreground: '0xc8c093'
+    text:       '#FFFFFF'
+    background: '#0000FF'
 
-  indexed_colors:
-    - { index: 16, color: '0xffa066' }
-    - { index: 17, color: '0xff5d62' }
+  # Normal colors
+  normal:
+    black:   '#323437'
+    red:     '#FF0000'
+    green:   '#87FF87'
+    yellow:  '#FFFF00'
+    blue:    '#00FFFF'
+    magenta: '#FF00FF'
+    cyan:    '#00FFFF'
+    white:   '#FFFFFF'
+
+  # Bright colors
+  bright:
+    black:   '#707781'
+    red:     '#FF0000'
+    green:   '#87FF87'
+    yellow:  '#FFFF00'
+    blue:    '#0000FF'
+    magenta: '#FF00FF'
+    cyan:    '#00FFFF'
+    white:   '#FFFFFF'

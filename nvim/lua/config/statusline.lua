@@ -3,7 +3,7 @@ local lualine = require("lualine")
 lualine.setup(
   {
     options = {
-      theme = "kanagawa",
+      theme = "auto",
       component_separators = "|",
       section_separators = ""
     },

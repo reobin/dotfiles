@@ -14,8 +14,6 @@ return require("packer").startup(
       requires = {"kyazdani42/nvim-web-devicons", opt = true}
     }
 
-    -- # colorscheme --
-    use "rebelot/kanagawa.nvim"
 
     -- # file finder and more --
     use {
