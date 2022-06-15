@@ -22,11 +22,6 @@
   # Clean stale branches
   cut = !git remote prune origin
 
-  # gitin
-  b = !gitin branch
-  s = !gitin status
-  l = !gitin log
-
 [diff]
   tool = vimdiff
   algorithm = patience
