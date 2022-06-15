@@ -14,6 +14,8 @@ return require("packer").startup(
       requires = {"kyazdani42/nvim-web-devicons", opt = true}
     }
 
+    -- # git --
+    use 'tpope/vim-fugitive'
 
     -- # file finder and more --
     use {
@@ -79,15 +81,6 @@ return require("packer").startup(
       requires = {"nvim-lua/plenary.nvim"},
       config = function()
         require("gitsigns").setup()
-      end
-    }
-
-    -- # buffer manager --
-    use {
-      "ThePrimeagen/harpoon",
-      requires = {"nvim-lua/plenary.nvim"},
-      config = function()
-        require("harpoon").setup()
       end
     }
 

@@ -31,21 +31,24 @@ vimp.nnoremap("<leader>l", "<C-^>") -- open last buffer
 vimp.xnoremap("<leader>c", '"*y') -- copy visual selection to clipboard
 vimp.nnoremap("<leader>/", ":noh<cr>") -- remove search highlight
 
--- vimp.nnoremap("<leader>gg", ":G<cr>") -- toggle open git fugitive
-
-vimp.nnoremap("<leader>e", ":Neotree focus toggle position=float<cr>")
-vimp.nnoremap("<leader>b", ":Neotree focus toggle position=float source=buffers<cr>")
-vimp.nnoremap("<leader>g", ":Neotree focus toggle position=float source=git_status<cr>")
-
--- vimp.nnoremap("<leader>gb", ":Gitsigns blame_line<cr>") -- git blame
-
-vimp.nnoremap("<leader>a", ":lua require('harpoon.mark').add_file()<cr>") -- Add file to buffers
-vimp.nnoremap("<leader>h", ":lua require('harpoon.ui').toggle_quick_menu()<cr>") -- Open buffers UI
-
-vimp.nnoremap("<leader>f", ":FormatWrite<cr>") -- format file
-
+-- #finder --
 vimp.nnoremap("<leader>p", ":Telescope find_files<cr>") -- find file
 vimp.nnoremap("<leader>s", ":Telescope live_grep<cr>") -- find text in files
+vimp.nnoremap("<leader>e", ":Neotree focus toggle reveal=true position=float<cr>")
+vimp.nnoremap("<leader>b", ":Neotree focus toggle position=float source=buffers<cr>")
+vimp.nnoremap("<leader>h", ":Neotree focus toggle position=float source=git_status<cr>")
+
+-- #git --
+vimp.nnoremap("<leader>gs", ":Git<cr>")
+vimp.nnoremap("<leader>gd", ":Gitsigns diffthis<cr>")
+vimp.nnoremap("<leader>gj", ":Gitsigns next_hunk<cr>")
+vimp.nnoremap("<leader>gk", ":Gitsigns prev_hunk<cr>")
+vimp.nnoremap("<leader>gp", ":Gitsigns preview_hunk<cr>")
+vimp.nnoremap("<leader>gr", ":Gitsigns reset_hunk<cr>")
+vimp.nnoremap("<leader>ga", ":Gitsigns stage_hunk<cr>")
+vimp.nnoremap("<leader>gu", ":Gitsigns undo_stage_hunk<cr>")
+
+vimp.nnoremap("<leader>f", ":FormatWrite<cr>") -- format file
 
 vimp.nnoremap("<leader><leader>r", ":Telescope lsp_references<cr>") -- go to reference
 vimp.nnoremap("<leader><leader>d", ":Telescope lsp_definitions<cr>") -- go to definition
