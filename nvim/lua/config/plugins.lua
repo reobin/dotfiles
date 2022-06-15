@@ -15,7 +15,7 @@ return require("packer").startup(
     }
 
     -- # git --
-    use 'tpope/vim-fugitive'
+    use "tpope/vim-fugitive"
 
     -- # file finder and more --
     use {
@@ -166,18 +166,6 @@ return require("packer").startup(
               window = {
                 mappings = {
                   ["bd"] = "buffer_delete"
-                }
-              }
-            },
-            git_status = {
-              window = {
-                mappings = {
-                  ["gA"] = "git_add_all",
-                  ["gu"] = "git_unstage_file",
-                  ["ga"] = "git_add_file",
-                  ["gr"] = "git_revert_file",
-                  ["gc"] = "git_commit",
-                  ["gp"] = "git_push"
                 }
               }
             }
