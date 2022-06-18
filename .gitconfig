@@ -20,7 +20,9 @@
   whoops = commit --amend --no-edit
 
   # Clean stale branches
+  stale = !git cut && git clean-stale
   cut = !git remote prune origin
+  clean-stale = "!git fetch -p && for branch in $(git branch -vv | grep ': gone]' | awk '{print $1}'); do git branch -D $branch; done"
 
 [diff]
   tool = vimdiff
