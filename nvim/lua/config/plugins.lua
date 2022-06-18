@@ -40,9 +40,6 @@ return require("packer").startup(
     -- # code formatting --
     use "mhartington/formatter.nvim"
 
-    -- # git client --
-    use "tpope/vim-fugitive"
-
     -- # auto pairs --
     use "jiangmiao/auto-pairs"
 
