@@ -57,7 +57,7 @@ vim.o.cursorline = true -- Highlight current line
 vim.o.completeopt = "menuone,noselect"
 
 vim.o.termguicolors = true
-vim.cmd [[colorscheme murphy]]
+vim.cmd [[ colorscheme torte ]]
 
 -- configure statusbar
 require("lualine").setup {
