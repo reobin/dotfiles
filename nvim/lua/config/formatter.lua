@@ -1,4 +1,3 @@
-local vimp = require("vimp")
 local formatter = require("formatter")
 
 local prettier = function()

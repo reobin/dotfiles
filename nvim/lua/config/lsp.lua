@@ -1,5 +1,3 @@
-local vimp = require("vimp")
-
 -- #telescope --
 
 local actions = require("telescope.actions")

@@ -1,7 +1,6 @@
 require("config.plugins")
 
 local home = os.getenv("HOME")
-local vimp = require("vimp")
 local helpers = require("config.helpers")
 
 vim.o.autoindent = true -- Copy indent from current line
@@ -25,35 +24,35 @@ vim.g.mapleader = " " -- map leader: <space>
 vim.g.do_filetype_lua = 1 -- enable filetype.lua
 vim.g.did_load_filetypes = 0 -- disable filetype.vim
 
-vimp.nnoremap("<leader>r", helpers.reloadNeovimConfig)
-vimp.nnoremap("J", "mzJ`z") -- keep the cursor in place while joining lines
-vimp.nnoremap("<leader>l", "<C-^>") -- open last buffer
-vimp.xnoremap("<leader>c", '"*y') -- copy visual selection to clipboard
-vimp.nnoremap("<leader>/", ":noh<cr>") -- remove search highlight
+vim.keymap.set("n", "<leader>r", helpers.reloadNeovimConfig)
+vim.keymap.set("n", "J", "mzJ`z") -- keep the cursor in place while joining lines
+vim.keymap.set("n", "<leader>l", "<C-^>") -- open last buffer
+vim.keymap.set("x", "<leader>c", '"*y') -- copy visual selection to clipboard
+vim.keymap.set("n", "<leader>/", ":noh<cr>") -- remove search highlight
 
 -- #finder --
-vimp.nnoremap("<leader>p", ":Telescope find_files<cr>") -- find file
-vimp.nnoremap("<leader>s", ":Telescope live_grep<cr>") -- find text in files
-vimp.nnoremap("<leader>e", ":Neotree focus toggle reveal=true position=float<cr>")
-vimp.nnoremap("<leader>b", ":Neotree focus toggle position=float source=buffers<cr>")
-vimp.nnoremap("<leader>h", ":Neotree focus toggle position=float source=git_status<cr>")
+vim.keymap.set("n", "<leader>p", ":Telescope find_files<cr>") -- find file
+vim.keymap.set("n", "<leader>s", ":Telescope live_grep<cr>") -- find text in files
+vim.keymap.set("n", "<leader>e", ":Neotree focus toggle reveal=true position=float<cr>")
+vim.keymap.set("n", "<leader>b", ":Neotree focus toggle position=float source=buffers<cr>")
+vim.keymap.set("n", "<leader>h", ":Neotree focus toggle position=float source=git_status<cr>")
 
 -- #git --
-vimp.nnoremap("<leader>gs", ":Git<cr>")
-vimp.nnoremap("<leader>gd", ":Gitsigns diffthis<cr>")
-vimp.nnoremap("<leader>gj", ":Gitsigns next_hunk<cr>")
-vimp.nnoremap("<leader>gk", ":Gitsigns prev_hunk<cr>")
-vimp.nnoremap("<leader>gp", ":Gitsigns preview_hunk<cr>")
-vimp.nnoremap("<leader>gr", ":Gitsigns reset_hunk<cr>")
-vimp.nnoremap("<leader>ga", ":Gitsigns stage_hunk<cr>")
-vimp.nnoremap("<leader>gu", ":Gitsigns undo_stage_hunk<cr>")
+vim.keymap.set("n", "<leader>gs", ":Git<cr>")
+vim.keymap.set("n", "<leader>gd", ":Gitsigns diffthis<cr>")
+vim.keymap.set("n", "<leader>gj", ":Gitsigns next_hunk<cr>")
+vim.keymap.set("n", "<leader>gk", ":Gitsigns prev_hunk<cr>")
+vim.keymap.set("n", "<leader>gp", ":Gitsigns preview_hunk<cr>")
+vim.keymap.set("n", "<leader>gr", ":Gitsigns reset_hunk<cr>")
+vim.keymap.set("n", "<leader>ga", ":Gitsigns stage_hunk<cr>")
+vim.keymap.set("n", "<leader>gu", ":Gitsigns undo_stage_hunk<cr>")
 
-vimp.nnoremap("<leader>f", ":FormatWrite<cr>") -- format file
+vim.keymap.set("n", "<leader>f", ":FormatWrite<cr>") -- format files
 
-vimp.nnoremap("<leader><leader>r", ":Telescope lsp_references<cr>") -- go to reference
-vimp.nnoremap("<leader><leader>d", ":Telescope lsp_definitions<cr>") -- go to definition
-vimp.nnoremap("<leader><leader>h", ":lua vim.lsp.buf.hover()<cr>") -- hover word
-vimp.nnoremap("<leader><leader>e", ":lua vim.lsp.diagnostic.show_line_diagnostics()<cr>") -- display word errors
+vim.keymap.set("n", "<leader><leader>r", ":Telescope lsp_references<cr>") -- go to reference
+vim.keymap.set("n", "<leader><leader>d", ":Telescope lsp_definitions<cr>") -- go to definition
+vim.keymap.set("n", "<leader><leader>h", ":lua vim.lsp.buf.hover()<cr>") -- hover word
+vim.keymap.set("n", "<leader><leader>e", ":lua vim.lsp.diagnostic.show_line_diagnostics()<cr>") -- display word errors
 
 -- #config files --
 

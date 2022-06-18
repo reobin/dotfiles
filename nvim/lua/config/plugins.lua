@@ -5,9 +5,6 @@ return require("packer").startup(
     -- # package manager --
     use "wbthomason/packer.nvim"
 
-    -- # init.lua config helper --
-    use "svermeulen/vimpeccable"
-
     -- # status line --
     use {
       "nvim-lualine/lualine.nvim",
