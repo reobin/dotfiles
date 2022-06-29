@@ -32,6 +32,7 @@ require("packer").startup(
     use "hrsh7th/cmp-buffer"
     use "saadparwaiz1/cmp_luasnip"
     use "L3MON4D3/LuaSnip"
+    use "github/copilot.vim"
 
     -- file finders
     use {
