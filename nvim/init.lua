@@ -156,7 +156,12 @@ vim.fn.sign_define("DiagnosticSignWarn", {text = " ", texthl = "DiagnosticSig
 vim.fn.sign_define("DiagnosticSignInfo", {text = " ", texthl = "DiagnosticSignInfo"})
 vim.fn.sign_define("DiagnosticSignHint", {text = "", texthl = "DiagnosticSignHint"})
 
-require("neo-tree").setup({popup_border_style = "single"})
+require("neo-tree").setup(
+  {
+    popup_border_style = "single",
+    filesystem = {filtered_items = {visible = true}}
+  }
+)
 
 vim.keymap.set("n", "<leader>e", ":Neotree focus toggle position=float reveal=true<cr>")
 vim.keymap.set("n", "<leader>b", ":Neotree focus toggle position=float source=buffers<cr>")
