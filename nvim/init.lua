@@ -60,9 +60,9 @@ vim.o.completeopt = "menuone,noselect"
 vim.o.termguicolors = true
 vim.cmd [[
   colorscheme murphy 
-  highlight Normal ctermbg=NONE guifg=white guibg=black
-  highlight String ctermbg=NONE guifg=#87ff87 guibg=black
-  highlight Boolean ctermbg=NONE guifg=#87ff87 guibg=black
+  highlight Normal ctermbg=NONE guifg=white guibg=NONE
+  highlight String ctermbg=NONE guifg=#87ff87 guibg=NONE
+  highlight Boolean ctermbg=NONE guifg=#87ff87 guibg=NONE
 ]]
 
 -- configure statusbar
