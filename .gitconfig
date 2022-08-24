@@ -14,6 +14,8 @@
 
 [alias]
   # shortcuts
+  a = add .
+  s = status
   p = push
   c = commit
   co = checkout
