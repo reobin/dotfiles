@@ -29,8 +29,6 @@ alias mkdir="mkdir -vp" # verbose, parent
 alias smerge="open -a \"Sublime Merge\""
 alias typo="open -a \"Typora\""
 
-alias grt='cd "$(git rev-parse --show-toplevel || echo .)"'
-
 # Use like so: prettyjson ugly.json > pretty.json
 alias prettyjson="python -m json.tool"
 
@@ -38,9 +36,6 @@ alias prettyjson="python -m json.tool"
 alias python=/usr/local/bin/python3
 alias pip=/usr/local/bin/pip3
 
-# Fixes fzf searching in git ignored files and folders
-export FZF_DEFAULT_COMMAND='ag --hidden --ignore .git -g ""'
-[ -f ~/.fzf.zsh ] && source ~/.fzf.zsh
 # plugins
 source ~/.zsh/zsh-autosuggestions/zsh-autosuggestions.zsh
 
@@ -52,6 +47,3 @@ autoload -U promptinit; promptinit
 prompt typewritten
 
 source $ZSH/oh-my-zsh.sh
-
-export PATH="$HOME/.rbenv/bin:$PATH"
-eval "$(rbenv init -)"
