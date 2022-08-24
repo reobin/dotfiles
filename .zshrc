@@ -20,16 +20,6 @@ export GH_PAGER="cat"
 
 alias glab="PAGER=cat glab"
 
-export TYPEWRITTEN_RELATIVE_PATH="home"
-export TYPEWRITTEN_PROMPT_LAYOUT="pure"
-
-# prompt
-autoload -U promptinit; promptinit
-prompt typewritten
-
-# plugins
-source ~/.zsh/zsh-autosuggestions/zsh-autosuggestions.zsh
-
 # Base commands
 alias mv="mv -iv" # interactive, verbose
 alias cp="cp -riv" # recursive, interactive, verbose
@@ -51,6 +41,15 @@ alias pip=/usr/local/bin/pip3
 # Fixes fzf searching in git ignored files and folders
 export FZF_DEFAULT_COMMAND='ag --hidden --ignore .git -g ""'
 [ -f ~/.fzf.zsh ] && source ~/.fzf.zsh
+# plugins
+source ~/.zsh/zsh-autosuggestions/zsh-autosuggestions.zsh
+
+# prompt
+fpath=($fpath "$HOME/.zfunctions")
+export TYPEWRITTEN_RELATIVE_PATH="home"
+export TYPEWRITTEN_PROMPT_LAYOUT="pure"
+autoload -U promptinit; promptinit
+prompt typewritten
 
 source $ZSH/oh-my-zsh.sh
 
