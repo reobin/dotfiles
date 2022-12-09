@@ -70,6 +70,7 @@ require("lualine").setup {
   options = {
     icons_enabled = false,
     theme = "auto",
+    path = 3,
     component_separators = "|",
     section_separators = ""
   }
@@ -152,7 +153,6 @@ vim.keymap.set("n", "<leader>p", telescope_builtin.find_files)
 vim.keymap.set("n", "<leader><leader>d", telescope_builtin.lsp_definitions)
 
 -- neo-tree
-vim.cmd([[ let g:neo_tree_remove_legacy_commands = 1 ]])
 vim.fn.sign_define("DiagnosticSignError", {text = " ", texthl = "DiagnosticSignError"})
 vim.fn.sign_define("DiagnosticSignWarn", {text = " ", texthl = "DiagnosticSignWarn"})
 vim.fn.sign_define("DiagnosticSignInfo", {text = " ", texthl = "DiagnosticSignInfo"})
@@ -161,7 +161,8 @@ vim.fn.sign_define("DiagnosticSignHint", {text = "", texthl = "DiagnosticSign
 require("neo-tree").setup(
   {
     popup_border_style = "single",
-    filesystem = {filtered_items = {visible = true}}
+    filesystem = {filtered_items = {visible = true}},
+    use_default_mappings = true
   }
 )
 
@@ -205,7 +206,7 @@ end
 
 -- nvim-cmp supports additional completion capabilities
 local capabilities = vim.lsp.protocol.make_client_capabilities()
-capabilities = require("cmp_nvim_lsp").update_capabilities(capabilities)
+capabilities = require("cmp_nvim_lsp").default_capabilities(capabilities)
 
 -- Enable the following language servers
 local servers = {"tsserver", "gopls", "elixirls"}
