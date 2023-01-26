@@ -95,6 +95,8 @@ vim.keymap.set("x", "<leader>c", '"*y') -- copy visual selection to clipboard
 vim.keymap.set("n", "<leader>/", ":noh<cr>") -- remove search highlight
 vim.keymap.set("n", "<C-u>", "<C-u>zz") -- scroll up half page and center cursor
 vim.keymap.set("n", "<C-d>", "<C-d>zz") -- scroll down half page and center cursor
+vim.keymap.set("n", "n", "nzz") -- search result and center cursor
+vim.keymap.set("n", "N", "Nzz") -- search result and center cursor
 
 -- highlight on yank
 local highlight_group = vim.api.nvim_create_augroup("YankHighlight", {clear = true})
