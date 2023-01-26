@@ -278,6 +278,7 @@ formatter.setup {
     typescript = {prettier},
     typescriptreact = {prettier},
     vue = {prettier},
+    yaml = {prettier},
     xml = {
       function()
         return {
