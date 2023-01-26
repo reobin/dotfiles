@@ -42,6 +42,15 @@ require("packer").startup(
     }
     use {"nvim-telescope/telescope.nvim", requires = {"nvim-lua/plenary.nvim"}}
     use {"nvim-telescope/telescope-fzf-native.nvim", run = "make"}
+
+    -- linter
+    use {
+      "folke/trouble.nvim",
+      requires = "kyazdani42/nvim-web-devicons",
+      config = function()
+        require("trouble").setup {}
+      end
+    }
   end
 )
 
@@ -151,6 +160,14 @@ telescope.load_extension "fzf"
 vim.keymap.set("n", "<leader>s", telescope_builtin.live_grep)
 vim.keymap.set("n", "<leader>p", telescope_builtin.find_files)
 vim.keymap.set("n", "<leader><leader>d", telescope_builtin.lsp_definitions)
+
+-- LSP keymaps
+vim.keymap.set("n", "<leader><leader>h", vim.lsp.buf.hover)
+vim.keymap.set("n", "<leader><leader>r", vim.lsp.buf.rename)
+
+-- Trouble
+vim.keymap.set("n", "<leader>tt", ":TroubleToggle<cr>")
+vim.keymap.set("n", "<leader>tf", ":TroubleToggle quickfix<cr>")
 
 -- neo-tree
 vim.fn.sign_define("DiagnosticSignError", {text = " ", texthl = "DiagnosticSignError"})
