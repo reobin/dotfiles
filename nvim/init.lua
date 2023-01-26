@@ -234,6 +234,15 @@ for _, lsp in ipairs(servers) do
   }
 end
 
+vim.cmd [[
+  if did_filetype()
+      finish
+  endif
+  if getline(1) =~# '^#!.*/bin/env\s\+elixir\>'
+      setfiletype elixir
+  endif
+]]
+
 vim.keymap.set("n", "<leader><leader>h", vim.lsp.buf.hover)
 
 -- luasnip setup
