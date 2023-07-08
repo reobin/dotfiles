@@ -71,6 +71,7 @@ vim.o.termguicolors = true
 vim.cmd [[
   colorscheme lunaperche 
   set background=light
+  hi link NeoTreeFloatBorder Normal
 ]]
 
 -- copilot
@@ -181,7 +182,7 @@ vim.fn.sign_define("DiagnosticSignHint", {text = "", texthl = "DiagnosticSign
 
 require("neo-tree").setup(
   {
-    popup_border_style = "single",
+    popup_border_style = "rounded",
     filesystem = {filtered_items = {visible = true}},
     use_default_mappings = true
   }
@@ -192,10 +193,12 @@ vim.keymap.set("n", "<leader>b", ":Neotree focus toggle position=float source=bu
 vim.keymap.set("n", "<leader>h", ":Neotree focus toggle position=float source=git_status<cr>")
 
 -- treesitter configuration
-require("nvim-treesitter.configs").setup {
-  highlight = {enable = true},
-  indent = {enable = true}
-}
+require("nvim-treesitter.configs").setup(
+  {
+    highlight = {enable = true},
+    indent = {enable = true}
+  }
+)
 
 -- LSP + cmp
 require("nvim-lsp-installer").setup({automatic_installation = true})
