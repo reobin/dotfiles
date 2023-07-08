@@ -74,6 +74,9 @@ vim.cmd [[
   highlight Boolean ctermbg=NONE guifg=#87ff87 guibg=NONE
 ]]
 
+-- copilot
+vim.g.copilot_filetypes = {markdown = true}
+
 -- configure statusbar
 require("lualine").setup {
   options = {
