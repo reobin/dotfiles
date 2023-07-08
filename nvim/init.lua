@@ -68,22 +68,20 @@ vim.o.completeopt = "menuone,noselect"
 
 vim.o.termguicolors = true
 vim.cmd [[
-  colorscheme murphy 
-  highlight Normal ctermbg=NONE guifg=white guibg=NONE
-  highlight String ctermbg=NONE guifg=#87ff87 guibg=NONE
-  highlight Boolean ctermbg=NONE guifg=#87ff87 guibg=NONE
+  colorscheme lunaperche 
+  set background=light
 ]]
 
 -- copilot
 vim.g.copilot_filetypes = {markdown = true}
 
--- configure statusbar
+-- statusbar
 require("lualine").setup {
   options = {
     icons_enabled = false,
-    theme = "auto",
+    theme = "onelight",
     path = 3,
-    component_separators = "|",
+    component_separators = " ",
     section_separators = ""
   }
 }

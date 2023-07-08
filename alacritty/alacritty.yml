@@ -25,9 +25,9 @@ draw_bold_text_with_bright_colors: true
 colors:
   # Default colors
   primary:
-    background:        '#000000'
-    foreground:        '#FFFFFF'
-    bright_foreground: '#FFFFFF'
+    background:        '#FFFFFF'
+    foreground:        '#000000'
+    bright_foreground: '#000000'
 
   # Cursor colors
   cursor:
@@ -37,26 +37,26 @@ colors:
   # Selection colors
   selection:
     text:       '#FFFFFF'
-    background: '#0000FF'
+    background: '#5F87AF'
 
   # Normal colors
   normal:
-    black:   '#323437'
-    red:     '#FF0000'
-    green:   '#87FF87'
-    yellow:  '#FFFF00'
-    blue:    '#00FFFF'
-    magenta: '#FF00FF'
-    cyan:    '#00FFFF'
+    black:   '#000000'
+    red:     '#AF0000'
+    green:   '#008700'
+    yellow:  '#AF5F00'
+    blue:    '#0087D7'
+    magenta: '#AF00AF'
+    cyan:    '#005F5F'
     white:   '#FFFFFF'
 
   # Bright colors
   bright:
-    black:   '#707781'
-    red:     '#FF0000'
-    green:   '#87FF87'
-    yellow:  '#FFFF00'
-    blue:    '#0000FF'
+    black:   '#767676'
+    red:     '#D70000'
+    green:   '#D70000'
+    yellow:  '#FFD787'
+    blue:    '#0087D7'
     magenta: '#FF00FF'
-    cyan:    '#00FFFF'
+    cyan:    '#008787'
     white:   '#FFFFFF'
