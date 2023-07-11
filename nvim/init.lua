@@ -63,7 +63,6 @@ vim.o.relativenumber = true -- Use relative number on gutter
 vim.o.hidden = true -- Do not unload buffers when switching
 vim.o.signcolumn = "yes" -- Always show sign column
 vim.o.cursorline = true -- Highlight current line
-vim.o.cmdheight = 0 -- Height of command bar
 
 vim.o.completeopt = "menuone,noselect"
 
