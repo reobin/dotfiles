@@ -68,9 +68,11 @@ vim.o.completeopt = "menuone,noselect"
 
 vim.o.termguicolors = true
 vim.cmd [[
-  colorscheme lunaperche 
-  set background=light
+  colorscheme murphy 
   hi link NeoTreeFloatBorder Normal
+  hi Normal ctermbg=NONE guifg=#ffffff
+  hi String ctermbg=NONE guifg=#87ff87
+  hi Boolean ctermbg=NONE guifg=#87ff87
 ]]
 
 -- copilot
@@ -80,7 +82,7 @@ vim.g.copilot_filetypes = {markdown = true}
 require("lualine").setup {
   options = {
     icons_enabled = false,
-    theme = "onelight",
+    theme = "auto",
     path = 3,
     component_separators = " ",
     section_separators = ""

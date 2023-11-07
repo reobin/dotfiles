@@ -7,7 +7,7 @@ window:
 
 font:
   normal:
-    family: JetBrainsMono Nerd Font Mono
+    family: JetBrainsMono Nerd Font
   size: 16.0
 
 draw_bold_text_with_bright_colors: true
@@ -23,40 +23,35 @@ draw_bold_text_with_bright_colors: true
 
 # murphy
 colors:
-  # Default colors
   primary:
-    background:        '#FFFFFF'
-    foreground:        '#000000'
-    bright_foreground: '#000000'
+    background:        '#000000'
+    foreground:        '#FFFFFF'
+    bright_foreground: '#FFFFFF'
 
-  # Cursor colors
   cursor:
     text:   '#FFFFFF'
     cursor: '#9E9E9E'
 
-  # Selection colors
   selection:
     text:       '#FFFFFF'
-    background: '#5F87AF'
+    background: '#0000FF'
 
-  # Normal colors
   normal:
-    black:   '#000000'
-    red:     '#AF0000'
-    green:   '#008700'
-    yellow:  '#AF5F00'
-    blue:    '#0087D7'
-    magenta: '#AF00AF'
-    cyan:    '#005F5F'
+    black:   '#323437'
+    red:     '#FF0000'
+    green:   '#87FF87'
+    yellow:  '#FFFF00'
+    blue:    '#00FFFF'
+    magenta: '#FF00FF'
+    cyan:    '#00FFFF'
     white:   '#FFFFFF'
 
-  # Bright colors
   bright:
-    black:   '#767676'
-    red:     '#D70000'
-    green:   '#D70000'
-    yellow:  '#FFD787'
-    blue:    '#0087D7'
+    black:   '#707781'
+    red:     '#FF0000'
+    green:   '#87FF87'
+    yellow:  '#FFFF00'
+    blue:    '#0000FF'
     magenta: '#FF00FF'
-    cyan:    '#008787'
+    cyan:    '#00FFFF'
     white:   '#FFFFFF'
