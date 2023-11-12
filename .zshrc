@@ -32,6 +32,9 @@ alias typo="open -a \"Typora\""
 # Use like so: prettyjson ugly.json > pretty.json
 alias prettyjson="python -m json.tool"
 
+# nvm
+source $(brew --prefix nvm)/nvm.sh
+
 # plugins
 source ~/.zsh/zsh-autosuggestions/zsh-autosuggestions.zsh
 
