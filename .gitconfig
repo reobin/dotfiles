@@ -32,17 +32,15 @@
 
 [user]
   name = Robin Gagnon
-	email = me@reobin.dev
+  email = me@reobin.dev
+	signingkey = 77849D33FBC78C20
 
 [difftool]
   prompt = false
 
 [commit]
-	gpgsign = true
+  gpgsign = true
 [gpg]
-	program = gpg
+  program = gpg
 [pager]
-	branch = false
-
-[include]
-  path = ~/.secret.gitconfig
+  branch = false
