@@ -212,7 +212,7 @@ local capabilities = vim.lsp.protocol.make_client_capabilities()
 capabilities = require("cmp_nvim_lsp").default_capabilities(capabilities)
 
 -- Enable the following language servers
-local servers = {"gopls", "elixirls", "eslint", "tsserver", "volar", "omnisharp"}
+local servers = {"eslint", "tsserver"}
 for _, lsp in ipairs(servers) do
   lspconfig[lsp].setup {
     capabilities = capabilities
