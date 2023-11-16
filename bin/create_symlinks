@@ -12,9 +12,9 @@
 #
 
 
-dotconfig_directories=(nvim yabai karabiner pgcli alacritty)
+dotconfig_directories=(nvim karabiner pgcli alacritty)
 root_directories=(.tmux)
-root_files=(.zshrc .skhdrc .gitconfig .tmux.conf .gitignore_global)
+root_files=(.zshrc .gitconfig .tmux.conf .gitignore_global)
 
 RED="\033[0;31m"
 GREEN="\033[0;32m"
