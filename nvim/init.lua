@@ -33,6 +33,7 @@ require("packer").startup(
     use "saadparwaiz1/cmp_luasnip"
     use "L3MON4D3/LuaSnip"
     use "github/copilot.vim"
+    use "rebelot/kanagawa.nvim"
 
     -- file finders
     use {
@@ -66,13 +67,13 @@ vim.o.cursorline = true -- Highlight current line
 
 vim.o.completeopt = "menuone,noselect"
 
-vim.o.termguicolors = true
 vim.cmd [[
-  colorscheme murphy 
-  hi link NeoTreeFloatBorder Normal
-  hi Normal ctermbg=NONE guifg=#ffffff
-  hi String ctermbg=NONE guifg=#87ff87
-  hi Boolean ctermbg=NONE guifg=#87ff87
+  colorscheme kanagawa
+  hi SignColumn guibg=NONE
+  hi LineNr guibg=NONE
+  hi GitSignsAdd guibg=NONE
+  hi GitSignsChange guibg=NONE
+  hi GitSignsDelete guibg=NONE
 ]]
 
 -- copilot
