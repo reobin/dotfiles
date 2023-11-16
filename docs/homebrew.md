@@ -24,3 +24,9 @@
 - `karabiner-elements`
 - `sublime-merge`
 - `visual-studio-code`
+- `better-touch-tool`
+- `alfred`
+- `1password`
+- `notion`
+- `slack`
+- `protonvpn`
