@@ -268,6 +268,7 @@ formatter.setup {
     javascriptreact = {prettier},
     json = {prettier},
     markdown = {prettier},
+    css = {prettier},
     scss = {prettier},
     typescript = {prettier},
     typescriptreact = {prettier},
