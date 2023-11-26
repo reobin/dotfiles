@@ -77,7 +77,7 @@ vim.cmd [[
 ]]
 
 -- copilot
-vim.g.copilot_filetypes = {markdown = true}
+vim.g.copilot_filetypes = {markdown = true, gitcommit = true}
 
 -- statusbar
 require("lualine").setup {
