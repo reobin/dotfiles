@@ -16,6 +16,7 @@
 - `tmux`
 - `tree-sitter`
 - `ripgrep`
+- `yarn`
 
 ### Casks
 
