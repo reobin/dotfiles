@@ -1,0 +1,22 @@
+{
+  "theme": "One Light",
+  "vim_mode": true,
+  "format_on_save": "on",
+  "formatter": "auto",
+  "language_overrides": {
+    "TSX": {
+      "format_on_save": {
+        "external": {
+          "command": "npx",
+          "arguments": [
+            "eslint_d",
+            "--stdin",
+            "--stdin-filename",
+            "{buffer_path}",
+            "--fix-to-stdout"
+          ]
+        }
+      }
+    }
+  }
+}

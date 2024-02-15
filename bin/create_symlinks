@@ -12,7 +12,7 @@
 #
 
 
-dotconfig_directories=(nvim karabiner pgcli alacritty)
+dotconfig_directories=(nvim karabiner pgcli alacritty zed)
 root_directories=(.tmux)
 root_files=(.zshrc .gitconfig .tmux.conf .gitignore_global)
 
