@@ -25,10 +25,6 @@ alias mv="mv -iv" # interactive, verbose
 alias cp="cp -riv" # recursive, interactive, verbose
 alias mkdir="mkdir -vp" # verbose, parent
 
-# zoxide
-eval "$(zoxide init zsh)"
-alias cd="z"
-
 # Open in sublime merge
 alias smerge="open -a \"Sublime Merge\""
 alias typo="open -a \"Typora\""

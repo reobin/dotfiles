@@ -17,7 +17,6 @@
 - `tree-sitter`
 - `ripgrep`
 - `yarn`
-- `zoxide`
 
 ### Casks
 
