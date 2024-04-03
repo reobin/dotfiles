@@ -2,6 +2,8 @@
 
 ## Install
 
+[Official website](https://brew.sh/)
+
 ```sh
 /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
 ```
@@ -25,8 +27,7 @@
 - `karabiner-elements`
 - `sublime-merge`
 - `visual-studio-code`
-- `better-touch-tool`
-- `alfred`
+- `raycast`
 - `1password`
 - `notion`
 - `slack`
