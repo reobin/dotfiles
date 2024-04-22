@@ -19,6 +19,7 @@
 - `tree-sitter`
 - `ripgrep`
 - `yarn`
+- `todo-txt`
 
 ### Casks
 
