@@ -32,7 +32,8 @@ alias typo="open -a \"Typora\""
 # Use like so: prettyjson ugly.json > pretty.json
 alias prettyjson="python -m json.tool"
 
-alias todo="todo.sh"
+# todo.txt: run ls after every command
+alias todo='f() { if [[ "$@" = "ls"* ]]; then todo.sh $@; else todo.sh $@ && todo.sh ls; fi };f'
 
 # nvm
 source $(brew --prefix nvm)/nvm.sh
