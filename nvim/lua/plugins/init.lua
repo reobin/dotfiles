@@ -26,6 +26,12 @@ local plugins = {
       require("plugins.configs.telescope")
     end,
   },
+  {
+    "stevearc/conform.nvim",
+    config = function()
+      require "plugins.configs.conform"
+    end,
+  },
 }
 
 require("lazy").setup(plugins, require "plugins.configs.lazy")

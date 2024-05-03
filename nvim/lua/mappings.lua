@@ -11,3 +11,5 @@ map("n", "<leader>gs", ":Git<cr>")
 map("n", "<leader>gb", ":Git blame<cr>")
 
 map("n", "<leader>e", ":Neotree focus toggle position=float reveal=true<cr>")
+
+map("n", "<leader>f", ":Format<cr>")
