@@ -12,4 +12,6 @@ map("n", "<leader>gb", ":Git blame<cr>")
 
 map("n", "<leader>e", ":Neotree focus toggle position=float reveal=true<cr>")
 
-map("n", "<leader>f", ":Format<cr>")
+map("n", "<leader>f", function()
+  require("conform").format({ async = true, lsp_fallback = true })
+end)
