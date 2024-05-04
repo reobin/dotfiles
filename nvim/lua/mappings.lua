@@ -5,6 +5,7 @@ map("n", "<leader>/", ":noh<cr>") -- remove search highlight
 
 map("n", "<leader>p", ":Telescope find_files find_command=rg,--hidden,--ignore,--files<cr>")
 map("n", "<leader>s", ":Telescope live_grep<cr>")
+map("n", "<leader>b", ":Telescope buffers<cr>")
 map("n", "<space>e", ":Explore<cr>")
 
 map("n", "<leader>gs", ":Git<cr>")
