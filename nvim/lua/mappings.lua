@@ -15,3 +15,4 @@ map("n", "<leader>e", ":Neotree focus toggle position=float reveal=true<cr>")
 map("n", "<leader>f", function()
   require("conform").format { async = true, lsp_fallback = true }
 end)
+map("n", "<leader>j", ":EslintFixAll<cr>")
