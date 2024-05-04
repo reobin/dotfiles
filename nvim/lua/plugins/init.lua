@@ -3,6 +3,7 @@ local plugins = {
   require "plugins.configs.neo-tree",
   require "plugins.configs.treesitter",
   require "plugins.configs.cmp",
+  require "plugins.configs.mason",
   require "plugins.configs.lsp",
   "tpope/vim-fugitive",
   "github/copilot.vim",
