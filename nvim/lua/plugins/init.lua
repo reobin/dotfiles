@@ -1,6 +1,7 @@
 local plugins = {
   require "plugins.configs.colorscheme",
   require "plugins.configs.neo-tree",
+  require "plugins.configs.treesitter",
   "tpope/vim-fugitive",
   "github/copilot.vim",
   require "plugins.configs.telescope",
