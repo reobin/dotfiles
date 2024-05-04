@@ -10,6 +10,11 @@ return {
             ["<ESC>"] = require("telescope.actions").close,
           },
         },
+        hidden = true,
+        file_ignore_patterns = {
+          "node_modules",
+          ".git",
+        },
       },
     }
   end,
