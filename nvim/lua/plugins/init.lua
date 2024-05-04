@@ -6,6 +6,7 @@ local plugins = {
   require "plugins.configs.mason",
   require "plugins.configs.lsp",
   "tpope/vim-fugitive",
+  require "plugins.configs.gitsigns",
   "github/copilot.vim",
   require "plugins.configs.telescope",
   require "plugins.configs.formatter",
