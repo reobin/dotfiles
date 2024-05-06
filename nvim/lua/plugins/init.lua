@@ -11,6 +11,7 @@ local plugins = {
   require "plugins.configs.telescope",
   require "plugins.configs.formatter",
   require "plugins.configs.comments",
+  require "plugins.configs.autopairs",
 }
 
 require("lazy").setup(plugins, require "plugins.configs.lazy")
