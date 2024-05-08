@@ -10,6 +10,7 @@ local plugins = {
   "github/copilot.vim",
   require "plugins.configs.telescope",
   require "plugins.configs.formatter",
+  require "plugins.configs.harpoon",
   require "plugins.configs.autopairs",
 }
 
