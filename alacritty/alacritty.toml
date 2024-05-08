@@ -21,39 +21,37 @@ x = 10
 y = 10
 
 [colors.primary]
-background = "#2c2e34"
-foreground = "#e2e2e3"
-dim_foreground = "#7f8490"
-bright_foreground = "#ffffff"
-
-[colors.selection]
-text = "#eff1f5"
-background = "#dc8a78"
+background = "0x1f1f28"
+foreground = "0xdcd7ba"
 
 [colors.normal]
-black = "#181819"
-red = "#fc5d7c"
-green = "#9ed072"
-yellow = "#e7c664"
-blue = "#76cce0"
-magenta = "#b39df3"
-cyan = "#5ed5ff"
-white = "#d0d0d0"
+black = "0x090618"
+red = "0xc34043"
+green = "0x76946a"
+yellow = "0xc0a36e"
+blue = "0x7e9cd8"
+magenta = "0x957fb8"
+cyan = "0x6a9589"
+white = "0xc8c093"
 
 [colors.bright]
-black = "#5a5a5a"
-red = "#ff5370"
-green = "#c3e88d"
-yellow = "#ffcb6b"
-blue = "#82aaff"
-magenta = "#c792ea"
-cyan = "#89ddff"
-white = "#ffffff"
+black = "0x727169"
+red = "0xe82424"
+green = "0x98bb6c"
+yellow = "0xe6c384"
+blue = "0x7fb4ca"
+magenta = "0x938aa9"
+cyan = "0x7aa89f"
+white = "0xdcd7ba"
+
+[colors.selection]
+background = "0x2d4f67"
+foreground = "0xc8c093"
 
 [[colors.indexed_colors]]
 index = 16
-color = "#fe640b"
+color = "0xffa066"
 
 [[colors.indexed_colors]]
 index = 17
-color = "#dc8a78"
+color = "0xff5d62"
