@@ -11,6 +11,7 @@ vim.o.expandtab = true
 
 vim.o.clipboard = "unnamedplus"
 vim.o.laststatus = 3
+vim.o.statusline = "%f%=%{&filetype}"
 
 vim.o.number = true
 

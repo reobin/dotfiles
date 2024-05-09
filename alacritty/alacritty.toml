@@ -1,13 +1,9 @@
-[colors]
-draw_bold_text_with_bright_colors = true
-
 [cursor]
 style = "Underline"
 thickness = 0.2
 
 [font]
 size = 16.0
-
 [font.normal]
 family = "JetBrainsMono Nerd Font"
 
@@ -15,43 +11,31 @@ family = "JetBrainsMono Nerd Font"
 decorations = "buttonless"
 dynamic_padding = true
 opacity = 0.999
-
 [window.padding]
 x = 10
 y = 10
 
 [colors.primary]
-background = "0x1f1f28"
-foreground = "0xdcd7ba"
-
+background = "#161617"
+foreground = "#c9c7cd"
+[colors.cursor]
+cursor = "#757581"
+text = "#c9c7cd"
 [colors.normal]
-black = "0x090618"
-red = "0xc34043"
-green = "0x76946a"
-yellow = "0xc0a36e"
-blue = "0x7e9cd8"
-magenta = "0x957fb8"
-cyan = "0x6a9589"
-white = "0xc8c093"
-
+black = "#27272a"
+blue = "#aca1cf"
+cyan = "#ea83a5"
+green = "#90b99f"
+magenta = "#e29eca"
+red = "#f5a191"
+white = "#c1c0d4"
+yellow = "#e6b99d"
 [colors.bright]
-black = "0x727169"
-red = "0xe82424"
-green = "0x98bb6c"
-yellow = "0xe6c384"
-blue = "0x7fb4ca"
-magenta = "0x938aa9"
-cyan = "0x7aa89f"
-white = "0xdcd7ba"
-
-[colors.selection]
-background = "0x2d4f67"
-foreground = "0xc8c093"
-
-[[colors.indexed_colors]]
-index = 16
-color = "0xffa066"
-
-[[colors.indexed_colors]]
-index = 17
-color = "0xff5d62"
+black = "#353539"
+blue = "#b9aeda"
+cyan = "#f591b2"
+green = "#9dc6ac"
+magenta = "#ecaad6"
+red = "#ffae9f"
+white = "#cac9dd"
+yellow = "#f0c5a9"
