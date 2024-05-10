@@ -1,5 +1,4 @@
-return
-{
+return {
   {
     "hrsh7th/nvim-cmp",
     event = "InsertEnter",
@@ -40,7 +39,7 @@ return
   {
     "williamboman/mason.nvim",
     config = function()
-      require("mason").setup({})
+      require("mason").setup {}
     end,
   },
   {
@@ -55,7 +54,6 @@ return
           vim.keymap.set("n", "gi", vim.lsp.buf.implementation, opts)
           vim.keymap.set("n", "gr", vim.lsp.buf.references, opts)
           vim.keymap.set("n", "<leader>k", vim.lsp.buf.hover, opts)
-          vim.keymap.set("n", "<leader>rn", vim.lsp.buf.rename, opts)
           vim.keymap.set("n", "<leader>j", ":EslintFixAll<cr>")
         end,
       })
@@ -91,5 +89,5 @@ return
         }
       end
     end,
-  }
+  },
 }
