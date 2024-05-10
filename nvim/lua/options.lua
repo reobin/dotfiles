@@ -1,5 +1,4 @@
 vim.g.mapleader = " "
-vim.g.maplocalleader = " "
 
 vim.o.termguicolors = true
 vim.o.signcolumn = "yes"
