@@ -5,7 +5,7 @@ local plugins = {
   require "plugins.configs.cmp",
   require "plugins.configs.mason",
   require "plugins.configs.lsp",
-  "tpope/vim-fugitive",
+  require "plugins.configs.fugitive",
   require "plugins.configs.gitsigns",
   "github/copilot.vim",
   require "plugins.configs.telescope",
@@ -13,6 +13,7 @@ local plugins = {
   require "plugins.configs.harpoon",
   require "plugins.configs.autopairs",
   require "plugins.configs.global-note",
+  require "plugins.configs.hardtime",
 }
 
 require("lazy").setup(plugins, require "plugins.configs.lazy")

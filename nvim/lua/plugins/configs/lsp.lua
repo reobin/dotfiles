@@ -11,6 +11,7 @@ return {
         vim.keymap.set("n", "gr", vim.lsp.buf.references, opts)
         vim.keymap.set("n", "<leader>k", vim.lsp.buf.hover, opts)
         vim.keymap.set("n", "<leader>rn", vim.lsp.buf.rename, opts)
+        vim.keymap.set("n", "<leader>j", ":EslintFixAll<cr>")
       end,
     })
 
@@ -38,7 +39,7 @@ return {
       capabilities = capabilities,
       settings = { Lua = { diagnostics = { globals = { "vim" } } } },
     }
-    for _, lsp in ipairs { "tsserver", "eslint" } do
+    for _, lsp in ipairs { "tsserver", "eslint", "gopls" } do
       lspconfig[lsp].setup {
         root_dir = lspconfig.util.root_pattern ".git",
         capabilities = capabilities,

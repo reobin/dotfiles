@@ -7,7 +7,9 @@ return {
     "MunifTanjim/nui.nvim",
   },
   config = function()
-    require("neo-tree").setup {
+    local neo_tree = require "neo-tree"
+
+    neo_tree.setup {
       filesystem = {
         filtered_items = {
           visible = true,
@@ -16,5 +18,7 @@ return {
         },
       },
     }
+
+    vim.keymap.set("n", "<leader>e", ":Neotree focus toggle position=float reveal=true<cr>")
   end,
 }
