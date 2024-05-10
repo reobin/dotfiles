@@ -15,10 +15,7 @@ export VISUAL="nvim"
 export EDITOR="nvim"
 
 export PAGER="less"
-export GLAB_PAGER="cat"
 export GH_PAGER="cat"
-
-alias glab="PAGER=cat glab"
 
 # Base commands
 alias mv="mv -iv" # interactive, verbose
@@ -27,13 +24,6 @@ alias mkdir="mkdir -vp" # verbose, parent
 
 # Open in sublime merge
 alias smerge="open -a \"Sublime Merge\""
-alias typo="open -a \"Typora\""
-
-# Use like so: prettyjson ugly.json > pretty.json
-alias prettyjson="python -m json.tool"
-
-# todo.txt: run ls after every command
-alias todo='f() { if [[ "$@" = "ls"* ]]; then todo.sh $@; else todo.sh $@ && todo.sh ls; fi };f'
 
 # nvm
 source $(brew --prefix nvm)/nvm.sh
