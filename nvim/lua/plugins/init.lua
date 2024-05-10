@@ -1,6 +1,5 @@
 local plugins = {
   require "plugins.configs.colorscheme",
-  require "plugins.configs.neo-tree",
   require "plugins.configs.treesitter",
   require "plugins.configs.lsp",
   require "plugins.configs.fugitive",
