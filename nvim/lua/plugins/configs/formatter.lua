@@ -22,6 +22,7 @@ return {
       css = { "prettier" },
       scss = { "prettier" },
       json = { "prettier" },
+      yaml = { "prettier" },
     },
     format_on_save = { timeout_ms = 500, lsp_fallback = true },
   },
