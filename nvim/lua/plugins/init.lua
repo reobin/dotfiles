@@ -12,6 +12,7 @@ local plugins = {
   require "plugins.configs.harpoon",
   require "plugins.configs.autopairs",
   require "plugins.configs.global-note",
+  require "plugins.configs.quickfix",
 }
 
 require("lazy").setup(plugins, require "plugins.configs.lazy")
