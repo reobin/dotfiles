@@ -14,4 +14,4 @@ local plugins = {
   "vimcolorschemes/extractor.nvim",
 }
 
-require("lazy").setup(plugins, require("plugins.configs.lazy"))
+require("lazy").setup(plugins, require("plugins.configs.lazy-load"))
