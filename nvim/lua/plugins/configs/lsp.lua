@@ -15,31 +15,31 @@ return {
       },
     },
     config = function()
-      local cmp = require "cmp"
+      local cmp = require("cmp")
 
-      cmp.setup {
+      cmp.setup({
         snippet = {
           expand = function(args)
             require("luasnip").lsp_expand(args.body)
           end,
         },
-        mapping = cmp.mapping.preset.insert {
-          ["<CR>"] = cmp.mapping.confirm { select = true },
-        },
-        sources = cmp.config.sources {
+        mapping = cmp.mapping.preset.insert({
+          ["<cr>"] = cmp.mapping.confirm({ select = true }),
+        }),
+        sources = cmp.config.sources({
           { name = "nvim_lsp" },
           { name = "luasnip" },
           { name = "buffer" },
           { name = "nvim_lua" },
           { name = "path" },
-        },
-      }
+        }),
+      })
     end,
   },
   {
     "williamboman/mason.nvim",
     config = function()
-      require("mason").setup {}
+      require("mason").setup({})
     end,
   },
   {
@@ -77,16 +77,16 @@ return {
         },
       }
 
-      local lspconfig = require "lspconfig"
-      lspconfig.lua_ls.setup {
+      local lspconfig = require("lspconfig")
+      lspconfig.lua_ls.setup({
         capabilities = capabilities,
         settings = { Lua = { diagnostics = { globals = { "vim" } } } },
-      }
-      for _, lsp in ipairs { "tsserver", "eslint", "gopls" } do
-        lspconfig[lsp].setup {
-          root_dir = lspconfig.util.root_pattern ".git",
+      })
+      for _, lsp in ipairs({ "tsserver", "eslint", "gopls" }) do
+        lspconfig[lsp].setup({
+          root_dir = lspconfig.util.root_pattern(".git"),
           capabilities = capabilities,
-        }
+        })
       end
     end,
   },
