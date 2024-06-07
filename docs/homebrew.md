@@ -12,21 +12,18 @@
 
 ### Formulae
 
-- `luajit`
 - `neovim`
 - `nvm`
 - `tmux`
 - `tree-sitter`
 - `ripgrep`
 - `yarn`
-- `todo-txt`
 
 ### Casks
 
-- `alacritty`
+- `wezterm`
 - `gpg-suite`
 - `karabiner-elements`
-- `sublime-merge`
 - `visual-studio-code`
 - `raycast`
 - `1password`
