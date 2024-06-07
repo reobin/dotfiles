@@ -12,9 +12,9 @@
 #
 
 
-dotconfig_directories=(nvim karabiner pgcli alacritty zed)
-root_directories=(.tmux)
-root_files=(.zshrc .gitconfig .tmux.conf .gitignore_global)
+dotconfig_directories=(nvim karabiner)
+root_directories=()
+root_files=(.zshrc .gitconfig .gitignore_global .tmux.conf .wezterm.lua)
 
 RED="\033[0;31m"
 GREEN="\033[0;32m"
