@@ -22,9 +22,6 @@ alias mv="mv -iv" # interactive, verbose
 alias cp="cp -riv" # recursive, interactive, verbose
 alias mkdir="mkdir -vp" # verbose, parent
 
-# Open in sublime merge
-alias smerge="open -a \"Sublime Merge\""
-
 # nvm
 source $(brew --prefix nvm)/nvm.sh
 
