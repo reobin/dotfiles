@@ -87,7 +87,7 @@ return {
         capabilities = capabilities,
         settings = { Lua = { diagnostics = { globals = { "vim" } } } },
       })
-      for _, lsp in ipairs({ "tsserver", "eslint", "gopls" }) do
+      for _, lsp in ipairs({ "tsserver", "eslint", "gopls", "cssls" }) do
         lspconfig[lsp].setup({
           root_dir = lspconfig.util.root_pattern(".git"),
           capabilities = capabilities,
