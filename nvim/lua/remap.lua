@@ -10,3 +10,5 @@ vim.keymap.set("n", "n", "nzzzv") -- move to next search result and center
 vim.keymap.set("n", "N", "Nzzzv") -- move to previous search result and center
 
 vim.keymap.set({ "n", "v" }, "<leader>w", "gw") -- toggle wrap
+
+vim.keymap.set("n", "<leader>b", ":ls<cr>:b<space>") -- list buffers
