@@ -1,8 +1,8 @@
 return {
-  "mellow-theme/mellow.nvim",
+  "EdenEast/nightfox.nvim",
   lazy = false,
   priority = 1000,
   config = function()
-    vim.cmd.colorscheme("mellow")
+    vim.cmd("colorscheme carbonfox")
   end,
 }
