@@ -18,4 +18,3 @@ end
 vim.opt.rtp:prepend(lazypath)
 
 require("plugins")
-vim.cmd.packadd("cfilter")
