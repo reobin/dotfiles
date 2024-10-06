@@ -17,5 +17,6 @@ return {
     vim.keymap.set("n", "<leader>p", ":Telescope find_files find_command=rg,--hidden,--ignore,--files<cr>")
     vim.keymap.set("n", "<leader>s", ":Telescope live_grep<cr>")
     vim.keymap.set("n", "<leader>r", ":Telescope resume<cr>")
+    vim.keymap.set("n", "<leader>b", ":Telescope buffers<cr>")
   end,
 }
