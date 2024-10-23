@@ -14,11 +14,6 @@
 
 [alias]
   # shortcuts
-  a = add .
-  s = status
-  p = push
-  c = commit
-  co = checkout
   whoops = commit --amend --no-edit
 
   # Clean stale branches
