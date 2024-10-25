@@ -6,6 +6,7 @@ local plugins = {
   require("plugins.configs.fugitive"),
   require("plugins.configs.gitsigns"),
   require("plugins.configs.telescope"),
+  require("plugins.configs.buffers"),
   require("plugins.configs.oil"),
   require("plugins.configs.formatter"),
   require("plugins.configs.harpoon"),
