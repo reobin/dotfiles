@@ -9,7 +9,6 @@ local plugins = {
   require("plugins.configs.buffers"),
   require("plugins.configs.oil"),
   require("plugins.configs.formatter"),
-  require("plugins.configs.harpoon"),
   require("plugins.configs.autopairs"),
   require("plugins.configs.global-note"),
   require("plugins.configs.quickfix"),
