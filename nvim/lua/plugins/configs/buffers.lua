@@ -1,8 +1,7 @@
 return {
-  "leath-dub/snipe.nvim",
+  "Pheon-Dev/buffalo-nvim",
   config = function()
-    local snipe = require("snipe")
-    snipe.setup()
-    vim.keymap.set("n", "<leader>b", snipe.create_buffer_menu_toggler())
+    local buffalo = require("buffalo.ui")
+    vim.keymap.set("n", "<leader>b", buffalo.toggle_buf_menu)
   end,
 }
