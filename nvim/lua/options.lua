@@ -8,7 +8,7 @@ vim.o.shiftwidth = vim.o.tabstop
 vim.o.expandtab = true
 
 vim.o.laststatus = 3
-vim.o.statusline = "%f %y %= %c %l/%L"
+vim.o.statusline = "%f %y %= %c/%{strlen(getline('.'))} %l/%L"
 vim.o.signcolumn = "yes"
 
 vim.o.number = true
