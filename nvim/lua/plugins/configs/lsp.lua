@@ -87,6 +87,9 @@ return {
         capabilities = capabilities,
         settings = { Lua = { diagnostics = { globals = { "vim" } } } },
       })
+
+      lspconfig.elixirls.setup({ cmd = { "elixir-ls" } })
+
       for _, lsp in ipairs({ "ts_ls", "eslint", "gopls", "cssls" }) do
         lspconfig[lsp].setup({
           root_dir = lspconfig.util.root_pattern(".git"),
