@@ -35,7 +35,7 @@
       "KC_LBRC",
       "KC_RBRC",
       "KC_BSLS",
-      "KC_RCTL",
+      "KC_LCTL",
       "KC_A",
       "KC_S",
       "KC_D",
@@ -60,14 +60,14 @@
       "KC_DOT",
       "KC_SLSH",
       "KC_RSFT",
-      "KC_LCTL",
+      "KC_NO",
       "KC_LALT",
       "KC_LGUI",
       "KC_SPC",
       "KC_RGUI",
       "KC_RALT",
       "KC_APP",
-      "KC_RCTL"
+      "KC_NO"
     ]
   ],
   "author": ""
