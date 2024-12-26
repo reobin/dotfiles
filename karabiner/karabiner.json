@@ -6,7 +6,28 @@
                 "parameters": { "basic.to_if_alone_timeout_milliseconds": 500 },
                 "rules": [
                     {
-                        "description": "Post Esc if Caps is tapped, Control if held.",
+                        "description": "left_control+backspace to delete forward",
+                        "manipulators": [
+                            {
+                                "from": {
+                                    "key_code": "delete_or_backspace",
+                                    "modifiers": {
+                                        "mandatory": ["left_control"],
+                                        "optional": ["any"]
+                                    }
+                                },
+                                "to": [
+                                    {
+                                        "key_code": "delete_forward",
+                                        "modifiers": []
+                                    }
+                                ],
+                                "type": "basic"
+                            }
+                        ]
+                    },
+                    {
+                        "description": "esc if caps is tapped, left_control if held",
                         "manipulators": [
                             {
                                 "from": {
@@ -25,7 +46,7 @@
                         ]
                     },
                     {
-                        "description": "Change left_control+hjkl to arrow keys",
+                        "description": "left_control+hjkl to arrow keys",
                         "manipulators": [
                             {
                                 "from": {
