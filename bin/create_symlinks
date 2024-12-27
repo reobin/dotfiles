@@ -12,9 +12,9 @@
 #
 
 
-dotconfig_directories=(nvim karabiner)
+dotconfig_directories=(nvim karabiner ghostty)
 root_directories=()
-root_files=(.zshrc .gitconfig .gitignore_global .tmux.conf .wezterm.lua)
+root_files=(.zshrc .gitconfig .gitignore_global .tmux.conf)
 
 RED="\033[0;31m"
 GREEN="\033[0;32m"

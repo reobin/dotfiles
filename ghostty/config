@@ -1,0 +1,12 @@
+background = #161616
+foreground = #f2f4f8
+cursor-color = #f2f4f8
+
+font-size = 16
+
+cursor-style = underline
+shell-integration-features = no-cursor
+
+macos-titlebar-style = hidden
+window-padding-x = 10
+window-padding-y = 10
