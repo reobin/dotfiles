@@ -1,6 +1,7 @@
-background = #161616
-foreground = #f2f4f8
-cursor-color = #f2f4f8
+window-theme = ghostty
+
+adjust-cursor-thickness = 3
+window-padding-color = extend
 
 font-size = 16
 
@@ -10,3 +11,26 @@ shell-integration-features = no-cursor
 macos-titlebar-style = hidden
 window-padding-x = 10
 window-padding-y = 10
+
+# carbonfox
+palette = 0=#161616
+palette = 1=#EE5396
+palette = 2=#25be6a
+palette = 3=#08BDBA
+palette = 4=#78A9FF
+palette = 5=#BE95FF
+palette = 6=#33B1FF
+palette = 7=#dfdfe0
+palette = 8=#858585
+palette = 9=#EE6A9A
+palette = 10=#42BE65
+palette = 11=#2BD6D4
+palette = 12=#86BFFF
+palette = 13=#CAA9FF
+palette = 14=#63CFFF
+palette = 15=#f2f4f8
+background = 161616
+foreground = f2f4f8
+cursor-color = f2f4f8
+selection-background = 2a2a2a
+selection-foreground = f2f4f8
