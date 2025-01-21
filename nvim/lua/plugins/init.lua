@@ -1,6 +1,7 @@
 local plugins = {
   require("plugins.configs.colorscheme"),
   require("plugins.configs.treesitter"),
+  require("plugins.configs.cmp"),
   require("plugins.configs.lsp"),
   "github/copilot.vim",
   require("plugins.configs.fugitive"),
