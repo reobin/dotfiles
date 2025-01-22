@@ -1,5 +1,6 @@
 return {
   "Pheon-Dev/buffalo-nvim",
+  dependencies = { "nvim-lua/plenary.nvim" },
   config = function()
     local buffalo = require("buffalo")
     buffalo.setup({
