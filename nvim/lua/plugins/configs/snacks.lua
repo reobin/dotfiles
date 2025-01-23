@@ -9,31 +9,31 @@ return {
     {
       "<leader>p",
       function()
-        Snacks.picker.files()
+        require("snacks").picker.files()
       end,
     },
     {
       "<leader>s",
       function()
-        Snacks.picker.grep()
+        require("snacks").picker.grep()
       end,
     },
     {
       "<leader>r",
       function()
-        Snacks.picker.resume()
+        require("snacks").picker.resume()
       end,
     },
     {
       "<leader>gb",
       function()
-        Snacks.picker.git_branches()
+        require("snacks").picker.git_branches()
       end,
     },
     {
       "<leader>gp",
       function()
-        Snacks.picker.git_diff()
+        require("snacks").picker.git_diff()
       end,
     },
   },
