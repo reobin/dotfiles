@@ -4,8 +4,26 @@ return {
   lazy = false,
   opts = {
     picker = { win = { input = { keys = { ["<Esc>"] = { "close", mode = { "n", "i" } } } } } },
+    scratch = {
+      ft = "markdown",
+      root = "~/Documents/scratch",
+      filekey = { count = true, cwd = false, branch = false },
+    },
   },
   keys = {
+    {
+      "<leader>n",
+      function()
+        require("snacks").scratch()
+      end,
+    },
+    {
+
+      "<leader>S",
+      function()
+        require("snacks").scratch.select()
+      end,
+    },
     {
       "<leader>p",
       function()
