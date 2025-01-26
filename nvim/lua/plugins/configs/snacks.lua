@@ -6,7 +6,7 @@ return {
     picker = { win = { input = { keys = { ["<Esc>"] = { "close", mode = { "n", "i" } } } } } },
     scratch = {
       ft = "markdown",
-      root = "~/Documents/scratch",
+      root = vim.fn.expand("~") .. "/Documents/scratch",
       filekey = { count = true, cwd = false, branch = false },
     },
   },
