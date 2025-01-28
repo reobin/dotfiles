@@ -54,5 +54,11 @@ return {
         require("snacks").picker.git_diff()
       end,
     },
+    {
+      "<leader>b",
+      function()
+        require("snacks").picker.buffers()
+      end,
+    },
   },
 }
