@@ -17,7 +17,7 @@ return {
     {
       "<leader>p",
       function()
-        require("snacks").picker.files({ hidden = true })
+        require("snacks").picker.smart({ hidden = true })
       end,
     },
     {
