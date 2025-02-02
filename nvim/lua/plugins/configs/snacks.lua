@@ -5,24 +5,13 @@ return {
   opts = {
     bigfile = { enabled = true },
     picker = { win = { input = { keys = { ["<Esc>"] = { "close", mode = { "n", "i" } } } } } },
-    scratch = {
-      ft = "markdown",
-      root = vim.fn.expand("~") .. "/Documents/scratch",
-      filekey = { count = true, cwd = false, branch = false },
-    },
+    scratch = { ft = "markdown", file = vim.fn.expand("~") .. "/Documents/notes/scratch.md" },
   },
   keys = {
     {
       "<leader>n",
       function()
         require("snacks").scratch()
-      end,
-    },
-    {
-
-      "<leader>S",
-      function()
-        require("snacks").scratch.select()
       end,
     },
     {
