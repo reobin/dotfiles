@@ -9,8 +9,8 @@ local plugins = {
   require("plugins.configs.snacks"),
   require("plugins.configs.oil"),
   require("plugins.configs.formatter"),
-  require("plugins.configs.autopairs"),
   require("plugins.configs.quickfix"),
+  require("plugins.configs.mini"),
   "vimcolorschemes/extractor.nvim",
 }
 
