@@ -27,7 +27,7 @@ return {
     {
       "<leader>p",
       function()
-        require("snacks").picker.files()
+        require("snacks").picker.files({ hidden = true })
       end,
     },
     {
