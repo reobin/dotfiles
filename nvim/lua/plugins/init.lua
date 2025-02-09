@@ -7,7 +7,7 @@ local plugins = {
   require("plugins.configs.fugitive"),
   require("plugins.configs.gitsigns"),
   require("plugins.configs.snacks"),
-  require("plugins.configs.oil"),
+  require("plugins.configs.explorer"),
   require("plugins.configs.formatter"),
   require("plugins.configs.quickfix"),
   require("plugins.configs.mini"),
