@@ -33,15 +33,9 @@ return {
       end,
     },
     {
-      "<leader>gb",
-      function()
-        require("snacks").picker.git_branches()
-      end,
-    },
-    {
       "<leader>gp",
       function()
-        require("snacks").picker.git_diff()
+        require("snacks").git.blame_line()
       end,
     },
     {
