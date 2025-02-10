@@ -4,6 +4,7 @@ adjust-cursor-thickness = 3
 window-padding-color = extend
 
 font-size = 16
+font-family = CommitMono
 
 cursor-style = underline
 shell-integration-features = no-cursor
