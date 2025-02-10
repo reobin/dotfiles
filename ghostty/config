@@ -8,6 +8,7 @@ font-family = CommitMono
 
 cursor-style = underline
 shell-integration-features = no-cursor
+cursor-invert-fg-bg = true
 
 macos-titlebar-style = hidden
 window-padding-x = 10
