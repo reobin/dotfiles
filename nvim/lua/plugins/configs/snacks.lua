@@ -23,7 +23,7 @@ return {
     {
       "<leader>s",
       function()
-        require("snacks").picker.grep()
+        require("snacks").picker.grep({ hidden = true })
       end,
     },
     {
