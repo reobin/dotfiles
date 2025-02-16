@@ -6,9 +6,15 @@ return {
     keymap = { preset = "enter" },
     sources = {
       default = { "lsp", "path", "snippets", "buffer" },
-      cmdline = {},
     },
-    completion = { documentation = { auto_show = true } },
+    completion = {
+      documentation = { auto_show = true },
+      menu = {
+        auto_show = function(ctx)
+          return ctx.mode ~= "cmdline"
+        end,
+      },
+    },
   },
   opts_extend = { "sources.default" },
 }
