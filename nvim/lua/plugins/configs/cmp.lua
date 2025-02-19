@@ -9,12 +9,8 @@ return {
     },
     completion = {
       documentation = { auto_show = true },
-      menu = {
-        auto_show = function(ctx)
-          return ctx.mode ~= "cmdline"
-        end,
-      },
     },
+    cmdline = { enabled = false },
   },
   opts_extend = { "sources.default" },
 }
