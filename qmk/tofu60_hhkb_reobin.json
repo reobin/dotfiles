@@ -3,8 +3,8 @@
   "notes": "",
   "documentation": "\"This file is a QMK Configurator export. You can import this at <https://config.qmk.fm>. It can also be used directly with QMK's source code.\n\nTo setup your QMK environment check out the tutorial: <https://docs.qmk.fm/#/newbs>\n\nYou can convert this file to a keymap.c using this command: `qmk json2c {keymap}`\n\nYou can compile this keymap using this command: `qmk compile {keymap}`\"\n",
   "keyboard": "dztech/tofu60",
-  "keymap": "dztech_tofu60_reobin",
-  "layout": "LAYOUT_60_ansi",
+  "keymap": "tofu60_hhkb_reobin",
+  "layout": "LAYOUT_60_hhkb",
   "layers": [
     [
       "KC_GRV",
@@ -20,6 +20,7 @@
       "KC_0",
       "KC_MINS",
       "KC_EQL",
+      "KC_BSPC",
       "KC_BSPC",
       "KC_TAB",
       "KC_Q",
@@ -60,14 +61,12 @@
       "KC_DOT",
       "KC_SLSH",
       "KC_RSFT",
-      "KC_NO",
+      "KC_DEL",
       "KC_LALT",
       "KC_LGUI",
       "KC_SPC",
       "KC_RGUI",
-      "KC_RALT",
-      "KC_APP",
-      "KC_NO"
+      "KC_APP"
     ]
   ],
   "author": ""
