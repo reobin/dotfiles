@@ -7,3 +7,6 @@ vim.keymap.set("n", "<C-d>", "<C-d>zz") -- move half page down and center
 vim.keymap.set("n", "<C-u>", "<C-u>zz") -- move half page up and center
 vim.keymap.set("n", "n", "nzzzv") -- move to next search result and center
 vim.keymap.set("n", "N", "Nzzzv") -- move to previous search result and center
+
+vim.keymap.set("n", "<leader>j", ":bn<cr>") -- next buffer
+vim.keymap.set("n", "<leader>k", ":bp<cr>") -- previous buffer

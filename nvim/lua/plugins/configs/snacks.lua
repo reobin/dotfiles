@@ -38,11 +38,5 @@ return {
         require("snacks").git.blame_line()
       end,
     },
-    {
-      "<leader>b",
-      function()
-        require("snacks").picker.buffers()
-      end,
-    },
   },
 }
