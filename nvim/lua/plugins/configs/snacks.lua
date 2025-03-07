@@ -33,6 +33,12 @@ return {
       end,
     },
     {
+      "<leader>b",
+      function()
+        require("snacks").picker.buffers()
+      end,
+    },
+    {
       "<leader>gp",
       function()
         require("snacks").git.blame_line()
