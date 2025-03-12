@@ -19,13 +19,7 @@
                                 "type": "basic"
                             },
                             {
-                                "from": {
-                                    "key_code": "delete_forward",
-                                    "modifiers": {
-                                        "mandatory": ["shift"],
-                                        "optional": ["any"]
-                                    }
-                                },
+                                "from": { "key_code": "right_shift" },
                                 "to": [
                                     {
                                         "key_code": "volume_down",
