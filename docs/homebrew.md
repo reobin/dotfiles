@@ -30,3 +30,9 @@
 - `notion`
 - `slack`
 - `protonvpn`
+
+### LSPs
+
+- `typescript-language-server`
+- `lua-language-server`
+- `vscode-langservers-extracted`
