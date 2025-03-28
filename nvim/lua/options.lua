@@ -9,7 +9,9 @@ vim.o.expandtab = true
 
 vim.o.laststatus = 3
 vim.o.statusline = "%f %y %= %c/%{strlen(getline('.'))} %l/%L"
-vim.o.signcolumn = "yes"
+vim.o.signcolumn = "yes:1"
+vim.o.numberwidth = 3
+vim.o.statuscolumn = "%l%s"
 
 vim.o.number = true
 vim.o.relativenumber = true
