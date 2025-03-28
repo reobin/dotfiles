@@ -25,6 +25,9 @@ alias mkdir="mkdir -vp" # verbose, parent
 # nvm
 source $(brew --prefix nvm)/nvm.sh
 
+# ruby
+export PATH="$HOME/.rbenv/bin:$PATH"
+
 # plugins
 source ~/.zsh/zsh-autosuggestions/zsh-autosuggestions.zsh
 
