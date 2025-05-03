@@ -17,3 +17,4 @@ vim.o.number = true
 vim.o.relativenumber = true
 
 vim.o.incsearch = true
+vim.o.cursorline = true
