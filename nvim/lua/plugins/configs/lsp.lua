@@ -37,6 +37,7 @@ return {
     }
 
     local lspconfig = require("lspconfig")
+
     lspconfig.lua_ls.setup({
       capabilities = capabilities,
       settings = { Lua = { diagnostics = { globals = { "vim" } } } },
@@ -44,11 +45,32 @@ return {
 
     lspconfig.elixirls.setup({ cmd = { "elixir-ls" } })
 
-    for _, lsp in ipairs({ "ts_ls", "eslint", "gopls", "cssls" }) do
+    for _, lsp in ipairs({ "eslint", "gopls", "cssls" }) do
       lspconfig[lsp].setup({
         root_dir = lspconfig.util.root_pattern(".git"),
         capabilities = capabilities,
       })
     end
+
+    lspconfig.ts_ls.setup({
+      root_dir = lspconfig.util.root_pattern(".git"),
+      capabilities = capabilities,
+
+      on_new_config = function(config, root_dir)
+        if root_dir:match("metadata%-api") then
+          config.init_options = {
+            preferences = {
+              importModuleSpecifierPreference = "relative",
+            },
+          }
+        else
+          config.init_options = {
+            preferences = {
+              importModuleSpecifierPreference = "non-relative",
+            },
+          }
+        end
+      end,
+    })
   end,
 }
