@@ -56,20 +56,12 @@ return {
       root_dir = lspconfig.util.root_pattern(".git"),
       capabilities = capabilities,
 
-      on_new_config = function(config, root_dir)
-        if root_dir:match("metadata%-api") then
-          config.init_options = {
-            preferences = {
-              importModuleSpecifierPreference = "relative",
-            },
-          }
-        else
-          config.init_options = {
-            preferences = {
-              importModuleSpecifierPreference = "non-relative",
-            },
-          }
-        end
+      on_new_config = function(config)
+        config.init_options = {
+          preferences = {
+            importModuleSpecifierPreference = "non-relative",
+          },
+        }
       end,
     })
   end,
