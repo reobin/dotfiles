@@ -28,6 +28,12 @@ source $(brew --prefix nvm)/nvm.sh
 # ruby
 export PATH="$HOME/.rbenv/bin:$PATH"
 
+# python
+export PATH="/opt/homebrew/opt/python/libexec/bin:$PATH"
+
+# rust
+export PATH="$HOME/.cargo/bin:$PATH"
+
 # plugins
 source ~/.zsh/zsh-autosuggestions/zsh-autosuggestions.zsh
 
