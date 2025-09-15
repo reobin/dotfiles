@@ -8,6 +8,7 @@ local plugins = {
   require("plugins.configs.gitsigns"),
   require("plugins.configs.snacks"),
   require("plugins.configs.explorer"),
+  require("plugins.configs.fff"),
   require("plugins.configs.formatter"),
   require("plugins.configs.quickfix"),
   require("plugins.configs.mini"),

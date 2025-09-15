@@ -15,12 +15,6 @@ return {
       end,
     },
     {
-      "<leader>p",
-      function()
-        require("snacks").picker.smart({ hidden = true })
-      end,
-    },
-    {
       "<leader>s",
       function()
         require("snacks").picker.grep({ hidden = true })
