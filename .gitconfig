@@ -28,7 +28,7 @@
 [user]
   name = Robin Gagnon
   email = me@reobin.dev
-	signingkey = 78AD94BAAA69EDC7
+	signingkey = 7A0979C0D3566B17
 
 [difftool]
   prompt = false
