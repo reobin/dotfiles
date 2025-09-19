@@ -14,7 +14,7 @@
 
 dotconfig_directories=(nvim karabiner ghostty)
 root_directories=()
-root_files=(.zshrc .gitconfig .gitignore_global .tmux.conf)
+root_files=(.zshrc .gitconfig .gitignore_global .tmux.conf .yabairc .skhdrc)
 
 RED="\033[0;31m"
 GREEN="\033[0;32m"
