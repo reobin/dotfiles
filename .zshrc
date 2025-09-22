@@ -37,6 +37,15 @@ export PATH="$HOME/.cargo/bin:$PATH"
 # plugins
 source ~/.zsh/zsh-autosuggestions/zsh-autosuggestions.zsh
 
+# eza
+alias ls="eza"
+alias ll="eza --long"
+alias tree="eza --tree"
+
+# zoxide
+eval "$(zoxide init zsh)"
+alias cd="z"
+
 # prompt
 fpath=($fpath "$HOME/.zfunctions")
 export TYPEWRITTEN_RELATIVE_PATH="home"
