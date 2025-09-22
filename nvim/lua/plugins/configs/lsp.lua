@@ -11,7 +11,12 @@ return {
         vim.keymap.set("n", "<leader>d", function()
           vim.diagnostic.open_float(0, { scope = "line" })
         end, opts)
-        vim.keymap.set("n", "<leader>e", ":EslintFixAll<cr>")
+        vim.keymap.set("n", "<leader>e", function()
+          vim.lsp.buf.code_action({
+            context = { only = { "source.fixAll.eslint" } },
+            apply = true,
+          })
+        end, { buffer = ev.buf, desc = "ESLint: Fix all (code action)" })
       end,
     })
 
@@ -28,41 +33,44 @@ return {
       commitCharactersSupport = true,
       tagSupport = { valueSet = { 1 } },
       resolveSupport = {
-        properties = {
-          "documentation",
-          "detail",
-          "additionalTextEdits",
-        },
+        properties = { "documentation", "detail", "additionalTextEdits" },
       },
     }
 
-    local lspconfig = require("lspconfig")
-
-    lspconfig.lua_ls.setup({
+    vim.lsp.config("lua_ls", {
       capabilities = capabilities,
       settings = { Lua = { diagnostics = { globals = { "vim" } } } },
     })
 
-    lspconfig.elixirls.setup({ cmd = { "elixir-ls" } })
+    vim.lsp.config("elixirls", {
+      cmd = { "elixir-ls" },
+      capabilities = capabilities,
+    })
 
-    for _, lsp in ipairs({ "eslint", "gopls", "cssls" }) do
-      lspconfig[lsp].setup({
-        root_dir = lspconfig.util.root_pattern(".git"),
+    local function make_root(markers)
+      return function(bufnr, on_dir)
+        local root = vim.fs.root(bufnr, markers)
+        on_dir(root or vim.uv.cwd())
+      end
+    end
+
+    for _, name in ipairs({ "eslint", "gopls", "cssls" }) do
+      vim.lsp.config(name, {
         capabilities = capabilities,
+        root_dir = make_root({ ".git" }),
       })
     end
 
-    lspconfig.ts_ls.setup({
-      root_dir = lspconfig.util.root_pattern(".git"),
+    vim.lsp.config("ts_ls", {
       capabilities = capabilities,
-
-      on_new_config = function(config)
-        config.init_options = {
-          preferences = {
-            importModuleSpecifierPreference = "non-relative",
-          },
-        }
-      end,
+      root_dir = make_root({ ".git" }),
+      init_options = {
+        preferences = {
+          importModuleSpecifierPreference = "non-relative",
+        },
+      },
     })
+
+    vim.lsp.enable({ "lua_ls", "elixirls", "eslint", "gopls", "cssls", "ts_ls" })
   end,
 }
