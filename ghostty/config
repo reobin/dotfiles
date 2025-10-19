@@ -17,5 +17,5 @@ window-padding-x = 10
 window-padding-y = 10
 
 # modified rose-pine
-theme = dark:Rose Pine,light:Rose Pine Dawn
+theme = Rose Pine
 background = 161617
