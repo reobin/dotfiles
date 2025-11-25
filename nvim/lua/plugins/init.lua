@@ -11,6 +11,7 @@ local plugins = {
   require("plugins.configs.formatter"),
   require("plugins.configs.quickfix"),
   require("plugins.configs.mini"),
+  require("plugins.configs.undotree"),
   "vimcolorschemes/extractor.nvim",
 }
 
