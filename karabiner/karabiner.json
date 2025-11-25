@@ -6,37 +6,6 @@
                 "parameters": { "basic.to_if_alone_timeout_milliseconds": 500 },
                 "rules": [
                     {
-                        "description": "delete_forward to control volume",
-                        "manipulators": [
-                            {
-                                "from": { "key_code": "delete_forward" },
-                                "to": [
-                                    {
-                                        "key_code": "volume_up",
-                                        "modifiers": []
-                                    }
-                                ],
-                                "type": "basic"
-                            },
-                            {
-                                "from": { 
-                                    "key_code": "delete_forward",
-                                    "modifiers": {
-                                        "mandatory": ["shift"],
-                                        "optional": ["any"]
-                                    }
-                                },
-                                "to": [
-                                    {
-                                        "key_code": "volume_down",
-                                        "modifiers": []
-                                    }
-                                ],
-                                "type": "basic"
-                            }
-                        ]
-                    },
-                    {
                         "description": "left_control+backspace to delete forward",
                         "manipulators": [
                             {
@@ -58,7 +27,7 @@
                         ]
                     },
                     {
-                        "description": "esc if caps is tapped, left_control if held",
+                        "description": "esc if left_control is tapped, left_control if held",
                         "manipulators": [
                             {
                                 "from": {
