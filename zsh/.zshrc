@@ -23,8 +23,8 @@ source <(fzf --zsh)
 
 alias cd="z"
 
-alias ls="eza"
-alias ll="eza --long"
+alias ls="eza --all"
+alias ll="eza --all --long"
 alias tree="eza --tree"
 
 alias mv="mv -iv" # interactive verbose
