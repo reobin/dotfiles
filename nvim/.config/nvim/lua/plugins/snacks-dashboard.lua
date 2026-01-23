@@ -4,8 +4,8 @@ return {
     dashboard = {
       sections = {
         section = "terminal",
-        cmd = "echo gm, $USER"
-      }
-    }
-  }
+        cmd = "echo gm, $USER",
+      },
+    },
+  },
 }
