@@ -10,7 +10,7 @@ return {
       desc = "Open file picker",
     },
     {
-      "<leader>s",
+      "<leader>/",
       function()
         require("snacks").picker.grep({ hidden = true })
       end,
