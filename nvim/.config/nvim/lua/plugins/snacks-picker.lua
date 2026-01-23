@@ -6,25 +6,33 @@ return {
       "<leader>p",
       function()
         require("snacks").picker.smart({ hidden = true })
-      end
+      end,
+      desc = "Open file picker"
     },
     {
       "<leader>s",
       function()
         require("snacks").picker.grep({ hidden = true })
-      end
+      end,
+      desc = "Open grep"
     },
     {
       "<leader>r",
       function()
         require("snacks").picker.resume()
-      end
+      end,
+      desc = "Resume last picker"
     },
     {
       "<leader>b",
       function()
         require("snacks").picker.buffers()
-      end
+      end,
+      desc = "Open buffers"
+    },
+    {
+      "<leader><leader>",
+      false
     }
   }
 }
