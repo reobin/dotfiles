@@ -1,5 +1,7 @@
 config-file = ?"~/.config/omarchy/current/theme/ghostty.conf" # dynamic theme colors
 
+command = /usr/bin/zsh
+
 font-family = "JetBrainsMono Nerd Font"
 font-style = Regular
 font-size = 12
