@@ -1,4 +1,3 @@
-vim.keymap.set("n", "<leader>l", "<C-^>") -- open last buffer
 vim.keymap.set("n", "<leader>/", ":noh<cr>") -- clear search highlight
 vim.keymap.set("n", "J", "mzJ`z") -- join lines without moving cursor
 vim.keymap.set("n", "<C-d>", "<C-d>zz") -- center screen after half-page down
