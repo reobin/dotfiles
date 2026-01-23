@@ -14,6 +14,7 @@ setopt hist_ignore_dups      # ignore immediate duplicates
 setopt hist_ignore_all_dups  # remove older duplicates
 setopt hist_find_no_dups     # skip duplicates when searching
 setopt inc_append_history    # write history immediately
+setopt globdots              # include dotfiles in completion results
 
 autoload -Uz compinit
 compinit
