@@ -4,6 +4,8 @@ eval "$(zoxide init zsh)"
 export EDITOR="nvim"
 export SUDO_EDITOR="$EDITOR"
 
+bindkey -e # disable vim mode on shell
+
 HISTFILE=$HOME/.zsh_history
 HISTSIZE=10000
 SAVEHIST=10000
