@@ -1,3 +1,0 @@
-#!/usr/bin/env sh
-
-yabai -m space --layout float
