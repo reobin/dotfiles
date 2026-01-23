@@ -1,4 +1,13 @@
 return {
   "saghen/blink.cmp",
-  opts = { completion = { ghost_text = { enabled = false } } }
+  opts = {
+    completion = {
+      ghost_text = { enabled = false },
+    },
+    cmdline = {
+      keymap = {
+        preset = "enter",
+      },
+    },
+  },
 }
