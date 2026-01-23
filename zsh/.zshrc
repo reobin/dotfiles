@@ -21,6 +21,9 @@ compinit
 source <(fzf --zsh)
 
 alias cd="z"
+alias ls="eza"
+alias ll="eza --long"
+alias tree="eza --tree"
 
 bindkey '^[[A' history-beginning-search-backward
 bindkey '^[[B' history-beginning-search-forward
