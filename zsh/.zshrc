@@ -21,9 +21,14 @@ compinit
 source <(fzf --zsh)
 
 alias cd="z"
+
 alias ls="eza"
 alias ll="eza --long"
 alias tree="eza --tree"
+
+alias mv="mv -iv" # interactive verbose
+alias cp="cp -riv" # recursive interactive verbose
+alias mkdir="mkdir -vp" # verbose parent
 
 bindkey '^[[A' history-beginning-search-backward
 bindkey '^[[B' history-beginning-search-forward
