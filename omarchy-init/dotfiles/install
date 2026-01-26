@@ -1,0 +1,9 @@
+#!/bin/sh
+
+CONFIGS=("keyd" "ghostty" "zsh" "starship" "nvim")
+
+cd $DOTFILES_DIRECTORY
+
+for config in "${CONFIGS[@]}"; do
+  . $INSTALL_DIRECTORY/dotfiles/$config
+done

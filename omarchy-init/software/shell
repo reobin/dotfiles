@@ -1,0 +1,21 @@
+#!/bin/bash
+
+if ! command -v zsh &>/dev/null; then
+    echo "zsh is missing. Run ./install first."
+    exit 1
+fi
+
+ZSH_PATH=$(which zsh)
+
+if [ "$SHELL" = "$ZSH_PATH" ]; then
+    echo "zsh is already the default shell."
+    exit 0
+fi
+
+# Add zsh to /etc/shells if not already there
+if ! grep -q "^$ZSH_PATH$" /etc/shells; then
+    echo "$ZSH_PATH" | sudo tee -a /etc/shells >/dev/null
+fi
+
+echo $ZSH_PATH
+sudo chsh -s "$ZSH_PATH"

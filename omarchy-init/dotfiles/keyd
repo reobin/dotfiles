@@ -1,0 +1,6 @@
+#!/bin/sh
+
+sudo stow -t / keyd
+
+sudo systemctl enable --now keyd
+sudo systemctl restart keyd
