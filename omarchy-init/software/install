@@ -1,0 +1,9 @@
+#!/bin/sh
+
+APPS=("stow" "keyd" "zsh" "shell")
+
+cd $INSTALL_DIRECTORY
+
+for app in "${APPS[@]}"; do
+  . $INSTALL_DIRECTORY/software/$app
+done

@@ -1,0 +1,9 @@
+#!/bin/sh
+
+export DOTFILES_DIRECTORY="$HOME/dotfiles"
+export INSTALL_DIRECTORY="$DOTFILES_DIRECTORY/omarchy-init"
+
+cd $INSTALL_DIRECTORY
+
+. $INSTALL_DIRECTORY/software/install
+. $INSTALL_DIRECTORY/dotfiles/install
