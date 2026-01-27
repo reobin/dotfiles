@@ -1,9 +1,9 @@
-# omarchy-init
+# `omarchy/init`
 
 Init scripts to install software and configure dotfiles.
 
 ## Get started
 
 ```sh
-./omarchy-init/install # from repository root
+./omarchy/init # from repository root
 ```
