@@ -1,6 +1,6 @@
 #!/bin/sh
 
-APPS=("stow" "keyd" "zsh" "shell")
+APPS=("stow" "keyd" "zsh" "shell" "slack-desktop")
 
 cd $INSTALL_DIRECTORY
 
