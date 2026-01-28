@@ -7,7 +7,7 @@ SOURCE_OVERRIDES_LINE="source = ~/.config/hypr/overrides/*.conf"
 
 if grep -q 'hypr/overrides' "$HYPR_CONFIG_FILE"; then
   hyprctl reload
-  exit 0
+  return 0
 fi
 
 {

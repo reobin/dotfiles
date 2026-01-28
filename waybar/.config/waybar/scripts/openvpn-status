@@ -1,0 +1,24 @@
+#!/bin/sh
+
+if [ "$#" -lt 1 ]; then
+  echo '{"text":"VPN?","class":"vpn-err","tooltip":"No profiles provided"}'
+  exit 0
+fi
+
+active_profile=""
+active_service=""
+
+for profile in "$@"; do
+  service="openvpn-client@${profile}.service"
+  if systemctl is-active --quiet "$service"; then
+    active_profile="$profile"
+    active_service="$service"
+    break
+  fi
+done
+
+if [ -n "$active_profile" ]; then
+  echo '{"text":" vpn ('$active_profile')","class":"vpn-on"}'
+else
+  echo '{"text":" vpn (off)","class":"vpn-off"}'
+fi
