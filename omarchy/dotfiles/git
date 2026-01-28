@@ -1,0 +1,5 @@
+#!/bin/sh
+
+rm -rf ~/.config/git
+
+sudo stow git
