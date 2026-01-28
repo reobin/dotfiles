@@ -1,0 +1,16 @@
+#!/bin/sh
+
+sudo stow hypr
+
+HYPR_CONFIG_FILE="$HOME/.config/hypr/hyprland.conf"
+SOURCE_OVERRIDES_LINE="source = ~/.config/hypr/overrides/*.conf"
+
+grep -q 'hypr/overrides' "$HYPR_CONFIG_FILE" && exit 0
+
+{
+  echo
+  echo '# Load local Hyprland overrides'
+  echo "$SOURCE_OVERRIDES_LINE"
+} >> "$HYPR_CONFIG_FILE"
+
+hyprctl reload

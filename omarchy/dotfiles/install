@@ -1,6 +1,6 @@
 #!/bin/sh
 
-CONFIGS=("keyd" "ghostty" "zsh" "starship" "nvim")
+CONFIGS=("keyd" "ghostty" "zsh" "starship" "nvim" "hypr")
 
 cd $DOTFILES_DIRECTORY
 
