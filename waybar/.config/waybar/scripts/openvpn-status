@@ -20,5 +20,5 @@ done
 if [ -n "$active_profile" ]; then
   echo '{"text":" vpn ('$active_profile')","class":"vpn-on"}'
 else
-  echo '{"text":" vpn (off)","class":"vpn-off"}'
+  echo '{"text":"","class":"vpn-off"}'
 fi
