@@ -5,7 +5,10 @@ sudo stow hypr
 HYPR_CONFIG_FILE="$HOME/.config/hypr/hyprland.conf"
 SOURCE_OVERRIDES_LINE="source = ~/.config/hypr/overrides/*.conf"
 
-grep -q 'hypr/overrides' "$HYPR_CONFIG_FILE" && exit 0
+if grep -q 'hypr/overrides' "$HYPR_CONFIG_FILE"; then
+  hyprctl reload
+  exit 0
+fi
 
 {
   echo
