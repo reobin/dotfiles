@@ -7,10 +7,10 @@ fi
 for profile in "$@"; do
   service="openvpn-client@${profile}.service"
   if systemctl is-active --quiet "$service"; then
-    sudo systemctl stop "$service"
+    sudo -n systemctl stop "$service" || exit 0
     exit 0
   fi
 done
 
 first="$1"
-sudo systemctl start "openvpn-client@${first}.service"
+sudo -n systemctl start "openvpn-client@${first}.service" || exit 0

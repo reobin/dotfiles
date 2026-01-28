@@ -1,3 +1,25 @@
 #!/bin/sh
 
 yay -S --noconfirm --needed openvpn
+
+#!/bin/sh
+set -eu
+
+# sudoers rules for waybar (and/or others) to start/stop OpenVPN client units without a password
+SUDO_GROUP="${SUDO_GROUP:-wheel}"
+DEST="/etc/sudoers.d/waybar-openvpn"
+
+sudo install -m 0440 /dev/stdin "$DEST" <<EOF
+# Waybar OpenVPN permissions
+# Managed by dotfiles — DO NOT EDIT
+
+Defaults:%${SUDO_GROUP} !authenticate
+Defaults:%${SUDO_GROUP} secure_path=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+
+%${SUDO_GROUP} ALL=(root) NOPASSWD: /usr/bin/systemctl start openvpn-client@*.service
+%${SUDO_GROUP} ALL=(root) NOPASSWD: /usr/bin/systemctl stop openvpn-client@*.service
+%${SUDO_GROUP} ALL=(root) NOPASSWD: /usr/bin/systemctl restart openvpn-client@*.service
+EOF
+
+# validate sudoers syntax
+sudo visudo -c >/dev/null
