@@ -47,7 +47,7 @@ fi
 # stop any active openvpn-client unit (safe even if none)
 active_units="$(systemctl list-units --type=service --state=active 'openvpn-client@*.service' --no-legend 2>/dev/null | awk '{print $1}' || true)"
 for u in $active_units; do
-  sudo systemctl stop "$u"
+  sudo systemctl stop "$u" || exit 0
 done
 
-sudo systemctl start "openvpn-client@${next}.service"
+sudo systemctl start "openvpn-client@${next}.service" || exit 0
