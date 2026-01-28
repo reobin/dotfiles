@@ -1,0 +1,16 @@
+#!/bin/sh
+
+if [ "$#" -lt 1 ]; then
+  exit 0
+fi
+
+for profile in "$@"; do
+  service="openvpn-client@${profile}.service"
+  if systemctl is-active --quiet "$service"; then
+    sudo systemctl stop "$service"
+    exit 0
+  fi
+done
+
+first="$1"
+sudo systemctl start "openvpn-client@${first}.service"

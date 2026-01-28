@@ -1,0 +1,53 @@
+#!/bin/sh
+
+if [ "$#" -lt 1 ]; then
+  exit 0
+fi
+
+# determine which profile (if any) is active
+active=""
+for profile in "$@"; do
+  service="openvpn-client@${profile}.service"
+  if systemctl is-active --quiet "$service"; then
+    active="$profile"
+    break
+  fi
+done
+
+# pick "next" in the provided list
+next=""
+prev=""
+for profile in "$@"; do
+  if [ -z "$active" ]; then
+    # none active -> "next" means second item if exists, else first
+    break
+  fi
+
+  if [ "$prev" = "$active" ]; then
+    next="$profile"
+    break
+  fi
+  prev="$profile"
+done
+
+# if active was last in list, wrap to first
+if [ -n "$active" ] && [ -z "$next" ]; then
+  next="$1"
+fi
+
+# if none active, choose second if present else first
+if [ -z "$active" ]; then
+  if [ "$#" -ge 2 ]; then
+    next="$2"
+  else
+    next="$1"
+  fi
+fi
+
+# stop any active openvpn-client unit (safe even if none)
+active_units="$(systemctl list-units --type=service --state=active 'openvpn-client@*.service' --no-legend 2>/dev/null | awk '{print $1}' || true)"
+for u in $active_units; do
+  sudo systemctl stop "$u"
+done
+
+sudo systemctl start "openvpn-client@${next}.service"

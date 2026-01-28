@@ -1,0 +1,9 @@
+{
+  "custom/openvpn": {
+    "exec": "~/.config/waybar/scripts/openvpn-status poap-vpn-prod poap-vpn-dev",
+    "interval": 3,
+    "return-type": "json",
+    "on-click": "~/.config/waybar/scripts/openvpn-toggle poap-vpn-prod poap-vpn-dev",
+    "on-click-right": "~/.config/waybar/scripts/openvpn-cycle poap-vpn-prod poap-vpn-dev",
+  },
+}
