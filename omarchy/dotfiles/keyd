@@ -1,5 +1,7 @@
 #!/bin/sh
 
+sudo rm /etc/keyd/*
+
 sudo stow -t / keyd
 
 sudo systemctl enable --now keyd
