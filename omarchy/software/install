@@ -1,6 +1,6 @@
 #!/bin/sh
 
-APPS=("stow" "keyd" "zsh" "shell" "slack-desktop" "telegram-desktop" "openvpn" "lazysql" "hyprmode")
+APPS=("stow" "keyd" "zsh" "shell" "slack-desktop" "telegram-desktop" "openvpn" "lazysql" "hyprmode" "gnome-calendar" "evolution")
 
 cd $INSTALL_DIRECTORY
 

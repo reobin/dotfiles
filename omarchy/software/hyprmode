@@ -1,4 +1,3 @@
 #!/bin/sh
 
-yay -S --noconfirm --needed python-textual
-yay -S --noconfirm --needed hyprmode
+yay -S --noconfirm --needed python-textual hyprmode

@@ -1,0 +1,7 @@
+#!/bin/sh
+
+yay -S --noconfirm --needed evolution
+
+systemctl --user enable evolution-addressbook-factory.service
+systemctl --user enable evolution-calendar-factory.service
+systemctl --user enable evolution-source-registry.service
