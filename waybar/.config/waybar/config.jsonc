@@ -13,7 +13,7 @@
     "custom/screenrecording-indicator",
   ],
   "modules-right": [
-    "group/tray-expander",
+    "tray",
     "custom/openvpn",
     "bluetooth",
     "network",
