@@ -23,5 +23,12 @@ return {
       end,
       desc = "Resume last picker",
     },
+    {
+      "<leader>N",
+      function()
+        require("snacks").picker.notifications()
+      end,
+      desc = "Open notifications picker",
+    },
   },
 }
