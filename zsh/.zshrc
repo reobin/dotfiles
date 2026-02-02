@@ -3,6 +3,7 @@ eval "$(zoxide init zsh)"
 
 export EDITOR="nvim"
 export SUDO_EDITOR="$EDITOR"
+export VISUAL="nvim"
 
 bindkey -e                  # disable vim mode on shell
 
