@@ -1,9 +1,34 @@
-#!/bin/sh
+#!/usr/bin/env bash
 
-APPS=("stow" "keyd" "zsh" "shell" "slack-desktop" "telegram-desktop" "openvpn" "lazysql" "hyprmode" "gnome-calendar" "evolution" "notion-app-electron" "bruno" "aws-cli-v2")
+: "${INSTALL_DIRECTORY:?INSTALL_DIRECTORY is not set}"
 
-cd $INSTALL_DIRECTORY
+APPS=(
+  stow
+  keyd
+  zsh
+  shell
+  slack-desktop
+  telegram-desktop
+  openvpn
+  lazysql
+  hyprmode
+  gnome-calendar
+  evolution
+  notion-app-electron
+  bruno
+  aws-cli-v2
+)
+
+cd "$INSTALL_DIRECTORY"
 
 for app in "${APPS[@]}"; do
-  . $INSTALL_DIRECTORY/software/$app
+  script="$INSTALL_DIRECTORY/software/$app"
+
+  if [[ ! -f "$script" ]]; then
+    echo "⚠️  Skipping $app (missing: $script)" >&2
+    continue
+  fi
+
+  echo "installing $app"
+  source "$script"
 done

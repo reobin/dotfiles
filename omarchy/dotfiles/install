@@ -1,10 +1,28 @@
-#!/bin/sh
+#!/usr/bin/env bash
 
-CONFIGS=("git" "keyd" "ghostty" "zsh" "starship" "nvim" "hypr" "waybar")
+: "${INSTALL_DIRECTORY:?INSTALL_DIRECTORY is not set}"
+
+CONFIGS=(
+  git
+  keyd
+  ghostty
+  zsh
+  starship
+  nvim
+  hypr
+  waybar
+)
 
 cd $DOTFILES_DIRECTORY
 
 for config in "${CONFIGS[@]}"; do
+  script="$INSTALL_DIRECTORY/dotfiles/$config"
+
+  if [[ ! -f "$script" ]]; then
+    echo "⚠️  Skipping $app (missing: $script)" >&2
+    continue
+  fi
+
   echo "configuring dotfiles for $config"
-  . $INSTALL_DIRECTORY/dotfiles/$config
+  source "$script"
 done
