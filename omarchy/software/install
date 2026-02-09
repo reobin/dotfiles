@@ -12,8 +12,6 @@ APPS=(
   openvpn
   lazysql
   hyprmode
-  gnome-calendar
-  evolution
   notion-app-electron
   bruno
   aws-cli-v2
