@@ -1,5 +1,6 @@
 eval "$(starship init zsh)"
 eval "$(zoxide init zsh)"
+eval "$(mise activate zsh)"
 
 export EDITOR="nvim"
 export SUDO_EDITOR="$EDITOR"
