@@ -35,3 +35,5 @@ alias mkdir="mkdir -vp"     # verbose parent
 
 bindkey '^[[A' history-beginning-search-backward
 bindkey '^[[B' history-beginning-search-forward
+
+export PATH="$HOME/.local/bin:$PATH"
