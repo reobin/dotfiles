@@ -38,6 +38,5 @@ bindkey '^[[B' history-beginning-search-forward
 
 export PATH="$HOME/.local/bin:$PATH"
 
-if [ -f "$HOME/.config/zsh/vpn.zsh" ]; then
-  source "$HOME/.config/zsh/vpn.zsh"
-fi
+source "$HOME/.config/zsh/vpn.zsh"
+source "$HOME/.config/zsh/git.zsh"
