@@ -95,7 +95,3 @@ tooltip {
 #custom-openvpn {
   margin-right: 17px;
 }
-
-#custom-openvpn.vpn-off {
-  opacity: 0.6;
-}

@@ -1,24 +1,17 @@
 #!/bin/sh
 
-if [ "$#" -lt 1 ]; then
-  echo '{"text":"VPN?","class":"vpn-err","tooltip":"No profiles provided"}'
-  exit 0
-fi
-
 active_profile=""
-active_service=""
 
-for profile in "$@"; do
-  service="openvpn-client@${profile}.service"
-  if systemctl is-active --quiet "$service"; then
-    active_profile="$profile"
-    active_service="$service"
-    break
-  fi
-done
+active_unit=$(systemctl list-units --type=service --state=active --no-legend 2>/dev/null | awk '$1 ~ /vpn/ {print $1}' | while read -r unit; do
+  ts=$(systemctl show -p ActiveEnterTimestampMonotonic --value "$unit" 2>/dev/null)
+  echo "$ts $unit"
+done | awk '{if ($1+0 > max) {max=$1; unit=$2}} END {print unit}')
+
+if [ -n "$active_unit" ]; then
+  active_profile=${active_unit#openvpn-client@}
+  active_profile=${active_profile%.service}
+fi
 
 if [ -n "$active_profile" ]; then
   echo '{"text":" vpn ('$active_profile')","class":"vpn-on"}'
-else
-  echo '{"text":"","class":"vpn-off"}'
 fi
