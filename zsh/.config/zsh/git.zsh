@@ -34,6 +34,9 @@ wtremove() {
 
   git worktree remove "$dir" --force 2>/dev/null || true
   git branch -D "$branch" 2>/dev/null || true
+  if git ls-remote --exit-code --heads origin "$branch" >/dev/null 2>&1; then
+    git push origin --delete "$branch"
+  fi
   git worktree prune
 
   [ -d "$dir" ] && rm -rf "$dir"
