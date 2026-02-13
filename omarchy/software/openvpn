@@ -23,3 +23,14 @@ EOF
 
 # validate sudoers syntax
 sudo visudo -c >/dev/null
+
+# docker subnet collision fix (regex replace in existing daemon.json)
+FILE="/etc/docker/daemon.json"
+OLD="172\.17\."
+NEW="172.31."
+
+if [ -f "$FILE" ]; then
+  sudo cp -a "$FILE" "$FILE.bak.$(date +%Y%m%d%H%M%S)"
+  sudo sed -Ei "s/${OLD}/${NEW}/g" "$FILE"
+  sudo systemctl restart docker
+fi
