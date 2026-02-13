@@ -1,6 +1,6 @@
 #!/bin/sh
 
-sudo rm /etc/keyd/*
+sudo rm -f /etc/keyd/*
 
 sudo stow -t / keyd
 
