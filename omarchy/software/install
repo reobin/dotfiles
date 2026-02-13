@@ -14,6 +14,7 @@ APPS=(
   notion-app-electron
   bruno
   aws-cli-v2
+  bind
 )
 
 cd "$INSTALL_DIRECTORY"
