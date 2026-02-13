@@ -14,6 +14,8 @@ wtnew() {
 
   git fetch origin
   git worktree add -b "$branch" "$dir" "origin/$base"
+  git -C "$dir" config "branch.$branch.remote" origin
+  git -C "$dir" config "branch.$branch.merge" "refs/heads/$branch"
 
   (cd "$root" && tar --exclude='.git' -cf - .) | (cd "$dir" && tar -xf -)
 
