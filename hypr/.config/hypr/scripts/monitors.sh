@@ -1,10 +1,31 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-# if DP-3 is connected, disable laptop panel, otherwise enable it.
-if hyprctl monitors -j | grep -q '"name":"DP-3"'; then
-  hyprctl keyword monitor "eDP-1,disable"
-  hyprctl keyword monitor "DP-3,preferred,auto,auto"
+INTERNAL="eDP-1"
+LOG_FILE="/tmp/monitors-debug.log"
+
+log() {
+  echo "$*" | tee -a "${LOG_FILE}"
+}
+
+LID_STATE=""
+if [ -r /proc/acpi/button/lid ]; then
+  LID_STATE="$(awk '{print $NF; exit}' /proc/acpi/button/lid/*/state 2>/dev/null || true)"
+fi
+
+EXTERNALS="$(hyprctl monitors | awk -v internal="${INTERNAL}" '/^Monitor /{if ($2!=internal)print $2}')"
+EXTERNAL="$(printf '%s\n' "${EXTERNALS}" | awk 'NF{print; exit}')"
+
+log "external detected: ${EXTERNALS:-none}"
+log "lid state: ${LID_STATE:-unknown}"
+
+if [ -n "${EXTERNAL}" ]; then
+  hyprctl keyword monitor "${EXTERNAL},preferred,auto,auto"
+  if [ "${LID_STATE}" = "closed" ]; then
+    hyprctl keyword monitor "${INTERNAL},disable"
+  else
+    hyprctl keyword monitor "${INTERNAL},preferred,auto,auto,mirror,${EXTERNAL}"
+  fi
 else
-  hyprctl keyword monitor "eDP-1,preferred,auto,auto,cm,srgb"
+  hyprctl keyword monitor "${INTERNAL},preferred,auto,auto,cm,srgb"
 fi
