@@ -1,7 +1,7 @@
 {
   "custom/openvpn": {
     "exec": "~/.config/waybar/scripts/openvpn-status",
-    "interval": 3,
+    "interval": 10,
     "return-type": "json",
   },
 }
