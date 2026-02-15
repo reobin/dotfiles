@@ -1,6 +1,9 @@
 #!/usr/bin/env bash
 
+set -euo pipefail
+
 : "${INSTALL_DIRECTORY:?INSTALL_DIRECTORY is not set}"
+: "${DOTFILES_DIRECTORY:?DOTFILES_DIRECTORY is not set}"
 
 CONFIGS=(
   git
@@ -13,13 +16,13 @@ CONFIGS=(
   waybar
 )
 
-cd $DOTFILES_DIRECTORY
+cd "$DOTFILES_DIRECTORY"
 
 for config in "${CONFIGS[@]}"; do
   script="$INSTALL_DIRECTORY/dotfiles/$config"
 
   if [[ ! -f "$script" ]]; then
-    echo "⚠️  Skipping $app (missing: $script)" >&2
+    echo "⚠️  Skipping $config (missing: $script)" >&2
     continue
   fi
 
