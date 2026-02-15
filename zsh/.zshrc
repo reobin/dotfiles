@@ -36,6 +36,10 @@ alias mkdir="mkdir -vp"     # verbose parent
 bindkey '^[[A' history-beginning-search-backward
 bindkey '^[[B' history-beginning-search-forward
 
+autoload -Uz edit-command-line
+zle -N edit-command-line
+bindkey '^X' edit-command-line
+
 export PATH="$HOME/.local/bin:$PATH"
 
 source "$HOME/.config/zsh/vpn.zsh"
