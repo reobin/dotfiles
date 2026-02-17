@@ -15,6 +15,7 @@ APPS=(
   bruno
   aws-cli-v2
   bind
+  witr
 )
 
 cd "$INSTALL_DIRECTORY"
