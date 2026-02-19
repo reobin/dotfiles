@@ -16,6 +16,7 @@ APPS=(
   aws-cli-v2
   bind
   witr
+  hyprdynamicmonitors
 )
 
 cd "$INSTALL_DIRECTORY"
