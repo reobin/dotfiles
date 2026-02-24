@@ -1,5 +1,5 @@
 #!/bin/sh
 
-rm ~/.config/starship.toml
+rm -f ~/.config/starship.toml
 
 sudo stow starship
