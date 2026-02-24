@@ -1,3 +1,6 @@
+export PATH=$PATH:$(go env GOPATH)/bin
+export PATH="$HOME/.local/bin:$PATH"
+
 eval "$(starship init zsh)"
 eval "$(zoxide init zsh)"
 eval "$(mise activate zsh)"
@@ -40,8 +43,5 @@ bindkey '^[[B' history-beginning-search-forward
 autoload -Uz edit-command-line
 zle -N edit-command-line
 bindkey '^X' edit-command-line
-
-export PATH=$PATH:$(go env GOPATH)/bin
-export PATH="$HOME/.local/bin:$PATH"
 
 source "$HOME/.config/zsh/vpn.zsh"
