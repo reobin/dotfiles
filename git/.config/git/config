@@ -29,3 +29,8 @@
 [user]
 	name = Robin Gagnon
 	email = me@reobin.dev
+[wt]
+	copyignored = true
+	copyuntracked = true
+	copymodified = true
+  basedir = "../{gitroot}-wt"
