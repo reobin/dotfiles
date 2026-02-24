@@ -1,9 +1,11 @@
 #!/usr/bin/env bash
 
-set -euo pipefail
+set -eu
 
-: "${INSTALL_DIRECTORY:?INSTALL_DIRECTORY is not set}"
-: "${DOTFILES_DIRECTORY:?DOTFILES_DIRECTORY is not set}"
+export DOTFILES_DIRECTORY="$HOME/dotfiles"
+export INSTALL_DIRECTORY="$DOTFILES_DIRECTORY/omarchy"
+
+cd "$DOTFILES_DIRECTORY"
 
 CONFIGS=(
   git
@@ -16,8 +18,6 @@ CONFIGS=(
   waybar
   uwsm
 )
-
-cd "$DOTFILES_DIRECTORY"
 
 for config in "${CONFIGS[@]}"; do
   script="$INSTALL_DIRECTORY/dotfiles/$config"

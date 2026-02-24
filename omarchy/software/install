@@ -1,6 +1,11 @@
 #!/usr/bin/env bash
 
-: "${INSTALL_DIRECTORY:?INSTALL_DIRECTORY is not set}"
+set -eu
+
+export DOTFILES_DIRECTORY="$HOME/dotfiles"
+export INSTALL_DIRECTORY="$DOTFILES_DIRECTORY/omarchy"
+
+cd "$INSTALL_DIRECTORY"
 
 APPS=(
   stow
