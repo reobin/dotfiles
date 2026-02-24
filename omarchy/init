@@ -2,5 +2,8 @@
 
 set -eu
 
+DOTFILES_DIRECTORY="$HOME/dotfiles"
+INSTALL_DIRECTORY="$DOTFILES_DIRECTORY/omarchy"
+
 . "$INSTALL_DIRECTORY/software/install"
 . "$INSTALL_DIRECTORY/dotfiles/install"
