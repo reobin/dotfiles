@@ -17,6 +17,7 @@ CONFIGS=(
   hypr
   waybar
   uwsm
+  mise
 )
 
 for config in "${CONFIGS[@]}"; do

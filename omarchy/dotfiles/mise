@@ -1,0 +1,5 @@
+#!/bin/sh
+
+rm -f ~/.config/mise/config.toml
+
+sudo stow mise
