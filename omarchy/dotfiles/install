@@ -11,7 +11,7 @@ CONFIGS=(
   git
   keyd
   ghostty
-  zsh
+  bash
   starship
   nvim
   hypr

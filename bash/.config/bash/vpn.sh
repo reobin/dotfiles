@@ -59,14 +59,31 @@ vpn-stop() {
 }
 
 vpn-list() {
-  local files
-  files=($VPN_DIR/*.conf(N))
+  local files=()
+  local nullglob_was_set=0
+
+  if shopt -q nullglob; then
+    nullglob_was_set=1
+  else
+    shopt -s nullglob
+  fi
+
+  files=("$VPN_DIR"/*.conf)
   if [ ${#files[@]} -gt 0 ]; then
+    local file
     for file in "${files[@]}"; do
-      local name="${file:t}"
+      local name
+      name=$(basename "$file")
       echo "${name%.conf}"
     done
+    if [ $nullglob_was_set -eq 0 ]; then
+      shopt -u nullglob
+    fi
     return 0
+  fi
+
+  if [ $nullglob_was_set -eq 0 ]; then
+    shopt -u nullglob
   fi
 
   sudo sh -c 'for f in /etc/openvpn/client/*.conf; do [ -e "$f" ] || exit 1; basename "$f" .conf; done' 2>/dev/null || \
