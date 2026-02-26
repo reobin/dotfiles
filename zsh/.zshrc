@@ -1,9 +1,10 @@
+eval "$(mise activate zsh)"
+
 export PATH=$PATH:$(go env GOPATH)/bin
 export PATH="$HOME/.local/bin:$PATH"
 
 eval "$(starship init zsh)"
 eval "$(zoxide init zsh)"
-eval "$(mise activate zsh)"
 eval "$(git wt --init zsh)"
 
 export EDITOR="nvim"
