@@ -10,8 +10,6 @@ cd "$INSTALL_DIRECTORY"
 APPS=(
   stow
   keyd
-  zsh
-  shell
   slack-desktop
   telegram-desktop
   openvpn

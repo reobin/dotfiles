@@ -1,0 +1,5 @@
+#!/bin/bash
+
+rm -f ~/.bashrc ~/.bash_profile
+
+stow bash
