@@ -17,3 +17,4 @@ alias mkdir="mkdir -vp"     # verbose parent
 
 source "$HOME/.config/bash/vpn.sh"
 source "$HOME/.config/bash/cursor.sh"
+export PATH="$HOME/.local/bin:$PATH"
