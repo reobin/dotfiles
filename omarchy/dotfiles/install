@@ -12,6 +12,7 @@ CONFIGS=(
   keyd
   ghostty
   bash
+  tmux
   starship
   nvim
   hypr
