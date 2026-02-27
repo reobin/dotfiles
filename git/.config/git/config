@@ -34,3 +34,4 @@
 	copyuntracked = true
 	copymodified = true
   basedir = "../{gitroot}-wt"
+  nocopy = node_modules/
