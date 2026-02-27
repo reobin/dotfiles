@@ -16,3 +16,4 @@ alias cp="cp -riv"          # recursive interactive verbose
 alias mkdir="mkdir -vp"     # verbose parent
 
 source "$HOME/.config/bash/vpn.sh"
+source "$HOME/.config/bash/cursor.sh"
