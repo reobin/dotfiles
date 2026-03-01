@@ -19,6 +19,7 @@ CONFIGS=(
   waybar
   uwsm
   mise
+  opencode
 )
 
 for config in "${CONFIGS[@]}"; do
