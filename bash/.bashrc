@@ -17,4 +17,5 @@ alias mkdir="mkdir -vp"     # verbose parent
 
 source "$HOME/.config/bash/vpn.sh"
 source "$HOME/.config/bash/cursor.sh"
+source "$HOME/.config/bash/tmux.sh"
 export PATH="$HOME/.local/bin:$PATH"
