@@ -42,10 +42,18 @@ window#waybar {
   padding: 0 6px;
   margin: 0 1.5px;
   min-width: 9px;
+  opacity: 0.4;
 }
 
 #workspaces button.empty {
-  opacity: 0.5;
+  opacity: 0.2;
+}
+
+#workspaces button.active {
+  font-weight: 900;
+  font-size: 14px;
+  color: @color11;
+  opacity: 1;
 }
 
 #cpu,

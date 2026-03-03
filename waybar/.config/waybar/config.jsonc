@@ -37,14 +37,6 @@
       "8": "8",
       "9": "9",
       "10": "0",
-      "active": "󱓻",
-    },
-    "persistent-workspaces": {
-      "1": [],
-      "2": [],
-      "3": [],
-      "4": [],
-      "5": [],
     },
   },
   "custom/omarchy": {
@@ -166,13 +158,13 @@
     "on-click": "omarchy-toggle-idle",
     "exec": "$OMARCHY_PATH/default/waybar/indicators/idle.sh",
     "signal": 9,
-    "return-type": "json"
+    "return-type": "json",
   },
   "custom/notification-silencing-indicator": {
     "on-click": "omarchy-toggle-notification-silencing",
     "exec": "$OMARCHY_PATH/default/waybar/indicators/notification-silencing.sh",
     "signal": 10,
-    "return-type": "json"
+    "return-type": "json",
   },
   "tray": {
     "icon-size": 12,
