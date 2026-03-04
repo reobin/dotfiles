@@ -7,7 +7,7 @@
   border: none;
   border-radius: 0;
   min-height: 0;
-  font-family: 'JetBrainsMono Nerd Font';
+  font-family: "JetBrainsMono Nerd Font";
   font-size: 12px;
 }
 
@@ -29,10 +29,12 @@
 
 #workspaces button.active {
   opacity: 1;
+  color: white;
 }
 
-#workspaces button.empty {
-  opacity: 0.2;
+#workspaces button.active.empty {
+  opacity: 1;
+  color: white;
 }
 
 #cpu,
