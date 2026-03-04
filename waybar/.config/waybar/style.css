@@ -1,40 +1,22 @@
 @import "../omarchy/current/theme/waybar.css";
 
-window#waybar {
-  background-color: transparent;
-}
-
 * {
-  background-color: transparent;
+  background-color: @background;
   color: @foreground;
 
   border: none;
   border-radius: 0;
   min-height: 0;
-  font-family: "JetBrainsMono Nerd Font";
+  font-family: 'JetBrainsMono Nerd Font';
   font-size: 12px;
-}
-
-.modules-left,
-.modules-center,
-.modules-right {
-  background-color: @background;
-  padding: 0 8px;
-  margin-top: 4px;
-  margin-left: 4px;
-  margin-right: 4px;
-  margin-bottom: 0;
-  border-radius: 8px;
 }
 
 .modules-left {
   margin-left: 8px;
-  margin-right: 4px;
 }
 
 .modules-right {
   margin-right: 8px;
-  margin-left: 4px;
 }
 
 #workspaces button {
@@ -45,22 +27,18 @@ window#waybar {
   opacity: 0.4;
 }
 
-#workspaces button.empty {
-  opacity: 0.2;
+#workspaces button.active {
+  opacity: 1;
 }
 
-#workspaces button.active {
-  font-weight: 900;
-  font-size: 14px;
-  color: @color11;
-  opacity: 1;
+#workspaces button.empty {
+  opacity: 0.2;
 }
 
 #cpu,
 #battery,
 #pulseaudio,
 #custom-omarchy,
-
 #custom-update {
   min-width: 12px;
   margin: 0 7.5px;
@@ -98,7 +76,6 @@ tooltip {
   opacity: 0;
 }
 
-
 #custom-screenrecording-indicator,
 #custom-idle-indicator,
 #custom-notification-silencing-indicator {
@@ -113,20 +90,16 @@ tooltip {
   color: #a55555;
 }
 
+#custom-idle-indicator.active,
+#custom-notification-silencing-indicator.active {
+  color: #a55555;
+}
+
 #custom-voxtype {
   min-width: 12px;
   margin: 0 0 0 7.5px;
 }
 
 #custom-voxtype.recording {
-  color: #a55555;
-}
-
-#custom-openvpn {
-  margin-right: 17px;
-}
-
-#custom-idle-indicator.active,
-#custom-notification-silencing-indicator.active {
   color: #a55555;
 }
