@@ -6,7 +6,7 @@
   "height": 26,
   "modules-left": ["custom/omarchy", "hyprland/workspaces"],
   "modules-center": [
-    "clock",
+    "custom/clock",
     "custom/update",
     "custom/voxtype",
     "custom/screenrecording-indicator",
@@ -19,6 +19,7 @@
     "network",
     "pulseaudio",
     "cpu",
+    "memory",
     "battery",
   ],
   "hyprland/workspaces": {
@@ -54,13 +55,19 @@
   },
   "cpu": {
     "interval": 5,
-    "format": "󰍛",
+    "format": "{usage}% 󰍛",
     "on-click": "omarchy-launch-or-focus-tui btop",
     "on-click-right": "alacritty",
   },
-  "clock": {
-    "format": "{:L%A %H:%M}",
-    "format-alt": "{:L%d %B W%V %Y}",
+  "memory": {
+    "interval": 5,
+    "format": "{percentage}% ",
+    "on-click": "omarchy-launch-or-focus-tui btop",
+    "on-click-right": "alacritty",
+  },
+  "custom/clock": {
+    "exec": "date +'%A, %B %-e | %H:%M' | tr '[:upper:]' '[:lower:]'",
+    "interval": 60,
     "tooltip": false,
     "on-click-right": "omarchy-launch-floating-terminal-with-presentation omarchy-tz-select",
   },

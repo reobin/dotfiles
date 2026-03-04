@@ -38,24 +38,25 @@
 }
 
 #cpu,
+#memory,
 #battery,
 #pulseaudio,
 #custom-omarchy,
 #custom-update {
   min-width: 12px;
-  margin: 0 7.5px;
+  margin: 0 10px;
 }
 
 #tray {
-  margin-right: 16px;
+  margin-right: 20px;
 }
 
 #bluetooth {
-  margin-right: 17px;
+  margin-right: 20px;
 }
 
 #network {
-  margin-right: 13px;
+  margin-right: 10px;
 }
 
 #custom-expand-icon {
@@ -70,7 +71,8 @@ tooltip {
   font-size: 10px;
 }
 
-#clock {
+#clock,
+#custom-clock {
   margin-left: 8.75px;
 }
 
