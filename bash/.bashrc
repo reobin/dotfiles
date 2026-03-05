@@ -1,9 +1,10 @@
 [[ $- != *i* ]] && return
-# If not running interactively, don't do anything (leave this at the top of this file)
+# if not running interactively, leave this at the top of this file
 
-# All the default Omarchy aliases and functions
-# (don't mess with these directly, just overwrite them here!)
+# default Omarchy aliases and functions
 source ~/.local/share/omarchy/default/bash/rc
+
+bind "set match-hidden-files on"
 
 eval "$(git wt --init bash)"
 
