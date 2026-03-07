@@ -11,13 +11,14 @@ return {
     },
     keymaps = {
       ["q"] = "actions.close",
-      ["="] = "actions.parent",
+      ["-"] = "actions.parent",
+      ["<leader>e"] = "actions.parent",
     },
     view_options = {
       show_hidden = true,
     },
   },
   keys = {
-    { "=", "<cmd>Oil --float<cr>" },
+    { "<leader>e", "<cmd>Oil --float<cr>", desc = "Open Oil (float)" },
   },
 }
