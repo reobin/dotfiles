@@ -8,3 +8,6 @@ vim.keymap.del("n", "<A-j>")
 vim.keymap.del("n", "<A-k>")
 vim.keymap.del("i", "<A-j>")
 vim.keymap.del("i", "<A-k>")
+
+vim.keymap.del("n", "<leader>e")
+vim.keymap.del("n", "<leader>E")
