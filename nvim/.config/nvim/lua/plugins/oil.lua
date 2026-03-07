@@ -5,8 +5,8 @@ return {
     default_file_explore = true,
     skip_confirm_for_simple_edits = true,
     float = {
-      max_width = 0.8,
-      max_height = 0.8,
+      max_width = 0.9,
+      max_height = 0.9,
       border = "rounded",
     },
     keymaps = {
