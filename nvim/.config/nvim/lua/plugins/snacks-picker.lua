@@ -5,7 +5,7 @@ return {
     {
       "<leader><leader>",
       function()
-        require("snacks").picker.smart({ hidden = true })
+        require("snacks").picker.smart({ hidden = true, filter = { cwd = true } })
       end,
       desc = "Open file picker",
     },
