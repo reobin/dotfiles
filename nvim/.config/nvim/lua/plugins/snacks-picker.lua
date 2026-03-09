@@ -2,6 +2,7 @@ return {
   "folke/snacks.nvim",
   opts = { picker = { win = { input = { keys = { ["<Esc>"] = { "close", mode = { "n", "i" } } } } } } },
   keys = {
+    { "<leader>e", false },
     {
       "<leader><leader>",
       function()
