@@ -37,6 +37,15 @@
   color: white;
 }
 
+#workspaces button.special {
+  opacity: 0.45;
+}
+
+#workspaces button.special.active {
+  opacity: 1;
+  color: white;
+}
+
 #cpu,
 #memory,
 #battery,
