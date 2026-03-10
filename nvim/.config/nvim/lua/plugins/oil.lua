@@ -5,14 +5,15 @@ return {
     default_file_explore = true,
     skip_confirm_for_simple_edits = true,
     float = {
-      max_width = 0.9,
-      max_height = 0.9,
+      max_width = 0.6,
+      max_height = 0.6,
       border = "rounded",
     },
     keymaps = {
       ["q"] = "actions.close",
+      ["<Esc>"] = { "actions.close", mode = "n" },
       ["-"] = "actions.parent",
-      ["<leader>e"] = "actions.parent",
+      ["<leader>e"] = "actions.close",
     },
     view_options = {
       show_hidden = true,
