@@ -21,4 +21,7 @@ source "$HOME/.config/bash/cursor.sh"
 source "$HOME/.config/bash/tmux.sh"
 source "$HOME/.config/bash/keybindings.sh"
 source "$HOME/.config/bash/worktrees.sh"
+
 export PATH="$HOME/.local/bin:$PATH"
+
+export PATH="$PATH:/home/reobin/.turso"
