@@ -1,5 +1,6 @@
 [tools]
 go = "latest"
+golangci-lint = "v2.11.2"
 node = "25.2.1"
 
 [settings]
