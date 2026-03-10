@@ -1,3 +1,5 @@
 vim.opt.relativenumber = true
 vim.g.lazyvim_prettier_needs_config = false
 vim.opt.conceallevel = 0
+vim.opt.ignorecase = false
+vim.opt.smartcase = false
