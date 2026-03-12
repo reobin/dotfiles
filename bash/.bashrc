@@ -25,3 +25,9 @@ source "$HOME/.config/bash/worktrees.sh"
 export PATH="$HOME/.local/bin:$PATH"
 
 export PATH="$PATH:/home/reobin/.turso"
+
+export PNPM_HOME="/home/reobin/.local/share/pnpm"
+case ":$PATH:" in
+  *":$PNPM_HOME:"*) ;;
+  *) export PATH="$PNPM_HOME:$PATH" ;;
+esac
