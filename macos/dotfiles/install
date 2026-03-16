@@ -8,6 +8,7 @@ INSTALL_DIRECTORY="$DOTFILES_DIRECTORY/macos"
 cd "$DOTFILES_DIRECTORY"
 
 CONFIGS=(
+  ghostty
   starship
   zsh
 )

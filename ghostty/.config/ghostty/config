@@ -1,0 +1,17 @@
+command = /bin/zsh
+
+font-family = "SF Mono"
+font-style = Regular
+font-size = 12
+
+window-theme = ghostty
+macos-titlebar-style = hidden
+window-padding-x = 10
+window-padding-y = 10
+confirm-close-surface = false
+resize-overlay = never
+
+cursor-style = underline
+shell-integration-features = no-cursor
+cursor-invert-fg-bg = true
+adjust-cursor-thickness = 2
