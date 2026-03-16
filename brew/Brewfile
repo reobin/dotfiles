@@ -1,5 +1,6 @@
 brew "neovim"
 brew "opencode"
+brew "starship"
 brew "stow"
 cask "1password"
 cask "helium-browser"
