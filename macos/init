@@ -1,0 +1,11 @@
+#!/usr/bin/env bash
+
+set -eu
+
+DOTFILES_DIRECTORY="$HOME/dotfiles"
+INSTALL_DIRECTORY="$DOTFILES_DIRECTORY/macos"
+
+echo "running macOS config"
+"$INSTALL_DIRECTORY/config"
+
+. "$INSTALL_DIRECTORY/dotfiles/install"

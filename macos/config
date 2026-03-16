@@ -1,0 +1,15 @@
+#!/usr/bin/env bash
+
+set -eu
+
+# Disable the accented character popup when holding a key.
+defaults write -g ApplePressAndHoldEnabled -bool false
+
+# Make key repeat feel faster.
+defaults write -g InitialKeyRepeat -int 20
+defaults write -g KeyRepeat -int 1
+
+# Make Dock autohide feel instant.
+defaults write com.apple.dock autohide-time-modifier -int 0
+defaults write com.apple.Dock autohide-delay -float 0.0001
+killall Dock

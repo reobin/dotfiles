@@ -1,8 +1,0 @@
-#!/bin/bash
-
-# macOS: Disable the accented character prompt when holding 'e', for example
-defaults write -g ApplePressAndHoldEnabled -bool false
-
-# macOS: Enable faster key repeat
-defaults write -g InitialKeyRepeat -int 20
-defaults write -g KeyRepeat -int 1

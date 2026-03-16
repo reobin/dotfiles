@@ -1,0 +1,24 @@
+#!/usr/bin/env bash
+
+set -eu
+
+DOTFILES_DIRECTORY="$HOME/dotfiles"
+INSTALL_DIRECTORY="$DOTFILES_DIRECTORY/macos"
+
+cd "$DOTFILES_DIRECTORY"
+
+CONFIGS=(
+  zsh
+)
+
+for config in "${CONFIGS[@]}"; do
+  script="$INSTALL_DIRECTORY/dotfiles/$config"
+
+  if [[ ! -f "$script" ]]; then
+    echo "Skipping $config (missing: $script)" >&2
+    continue
+  fi
+
+  echo "configuring dotfiles for $config"
+  source "$script"
+done
