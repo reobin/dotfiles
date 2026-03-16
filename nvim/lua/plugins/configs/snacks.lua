@@ -15,7 +15,7 @@ return {
       end,
     },
     {
-      "<leader>p",
+      "<leader><leader>",
       function()
         require("snacks").picker.smart({ hidden = true })
       end,
