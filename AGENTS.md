@@ -1,0 +1,7 @@
+# Agent Instructions
+
+When working on this macOS dotfiles repository:
+
+- Make changes directly to files in this repo
+- Do NOT modify system files outside this repo (for example `~/.zshrc` or `~/.config/ghostty/config`)
+- Dotfiles are linked into place from this repo via `stow` scripts under `macos/dotfiles/`
