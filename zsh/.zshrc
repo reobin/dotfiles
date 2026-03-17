@@ -1,4 +1,7 @@
 alias c='opencode'
+alias ls='eza --all'
+alias ll='eza --all --long'
+alias tree='eza --tree'
 
 export EDITOR='nvim'
 export VISUAL='nvim'
