@@ -17,22 +17,8 @@
                 },
                 "to": [
                   {
-                    "key_code": "left_control",
+                    "key_code": "right_control",
                     "lazy": true
-                  },
-                  {
-                    "set_variable": {
-                      "name": "caps_layer",
-                      "value": 1
-                    }
-                  }
-                ],
-                "to_after_key_up": [
-                  {
-                    "set_variable": {
-                      "name": "caps_layer",
-                      "value": 0
-                    }
                   }
                 ],
                 "to_if_alone": [
@@ -42,7 +28,7 @@
                 ],
                 "to_if_held_down": [
                   {
-                    "key_code": "left_control"
+                    "key_code": "right_control"
                   }
                 ],
                 "parameters": {
@@ -52,16 +38,12 @@
                 "type": "basic"
               },
               {
-                "conditions": [
-                  {
-                    "name": "caps_layer",
-                    "type": "variable_if",
-                    "value": 1
-                  }
-                ],
                 "from": {
                   "key_code": "h",
                   "modifiers": {
+                    "mandatory": [
+                      "right_control"
+                    ],
                     "optional": [
                       "any"
                     ]
@@ -76,16 +58,12 @@
                 "type": "basic"
               },
               {
-                "conditions": [
-                  {
-                    "name": "caps_layer",
-                    "type": "variable_if",
-                    "value": 1
-                  }
-                ],
                 "from": {
                   "key_code": "j",
                   "modifiers": {
+                    "mandatory": [
+                      "right_control"
+                    ],
                     "optional": [
                       "any"
                     ]
@@ -100,16 +78,12 @@
                 "type": "basic"
               },
               {
-                "conditions": [
-                  {
-                    "name": "caps_layer",
-                    "type": "variable_if",
-                    "value": 1
-                  }
-                ],
                 "from": {
                   "key_code": "k",
                   "modifiers": {
+                    "mandatory": [
+                      "right_control"
+                    ],
                     "optional": [
                       "any"
                     ]
@@ -124,16 +98,12 @@
                 "type": "basic"
               },
               {
-                "conditions": [
-                  {
-                    "name": "caps_layer",
-                    "type": "variable_if",
-                    "value": 1
-                  }
-                ],
                 "from": {
                   "key_code": "l",
                   "modifiers": {
+                    "mandatory": [
+                      "right_control"
+                    ],
                     "optional": [
                       "any"
                     ]
