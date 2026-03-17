@@ -25,5 +25,5 @@ tmux_session_name_refresh() {
 if [[ -n $TMUX ]]; then
   autoload -Uz add-zsh-hook
   add-zsh-hook chpwd tmux_session_name_refresh
-  add-zsh-hook precmd tmux_session_name_refresh
+  tmux_session_name_refresh
 fi
