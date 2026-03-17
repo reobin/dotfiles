@@ -2,7 +2,7 @@ command = /bin/zsh
 
 font-family = "SF Mono"
 font-style = Regular
-font-size = 12
+font-size = 16
 
 theme = Rose Pine
 window-theme = ghostty
