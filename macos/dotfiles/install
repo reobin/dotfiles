@@ -11,6 +11,7 @@ CONFIGS=(
   ghostty
   karabiner
   nvim
+  opencode
   starship
   zsh
 )
