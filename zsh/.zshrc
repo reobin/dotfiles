@@ -6,5 +6,7 @@ export GIT_EDITOR='nvim'
 
 source ~/.config/zsh/tmux.zsh
 source ~/.config/zsh/cursor.zsh
+source ~/.config/zsh/history.zsh
+source ~/.config/zsh/completion.zsh
 
 eval "$(starship init zsh)"
