@@ -1,0 +1,68 @@
+#!/usr/bin/env bash
+
+set -eu
+
+stow karabiner
+
+mkdir -p ~/.config/karabiner
+
+if [[ -d "/Applications/Karabiner-Elements.app" ]]; then
+  osascript -e 'tell application "Karabiner-Elements" to quit' >/dev/null 2>&1 || true
+fi
+
+python3 - "$HOME/.config/karabiner/karabiner.json" "$HOME/dotfiles/karabiner/.config/karabiner/assets/complex_modifications/caps-escape-hjkl-arrows.json" <<'PY'
+import json
+import pathlib
+import sys
+
+target_path = pathlib.Path(sys.argv[1]).expanduser()
+rule_path = pathlib.Path(sys.argv[2]).expanduser()
+
+rule_data = json.loads(rule_path.read_text())
+rule = rule_data["rules"][0]
+description = rule["description"]
+
+if target_path.exists():
+    config = json.loads(target_path.read_text())
+else:
+    config = {
+        "global": {
+            "ask_for_confirmation_before_quitting": True,
+            "check_for_updates_on_startup": True,
+            "show_in_menu_bar": True,
+            "show_profile_name_in_menu_bar": False,
+        },
+        "profiles": [
+            {
+                "complex_modifications": {"rules": []},
+                "name": "Default profile",
+                "selected": True,
+                "virtual_hid_keyboard": {"keyboard_type_v2": "ansi"},
+            }
+        ],
+    }
+
+profiles = config.setdefault("profiles", [])
+if not profiles:
+    profiles.append(
+        {
+            "complex_modifications": {"rules": []},
+            "name": "Default profile",
+            "selected": True,
+            "virtual_hid_keyboard": {"keyboard_type_v2": "ansi"},
+        }
+    )
+
+profile = next((item for item in profiles if item.get("selected")), profiles[0])
+complex_modifications = profile.setdefault("complex_modifications", {})
+rules = complex_modifications.setdefault("rules", [])
+rules = [item for item in rules if item.get("description") != description]
+rules.append(rule)
+complex_modifications["rules"] = rules
+
+target_path.write_text(json.dumps(config, indent=2) + "\n")
+PY
+
+if [[ -d "/Applications/Karabiner-Elements.app" ]]; then
+  open -gj -a "Karabiner-Elements"
+fi

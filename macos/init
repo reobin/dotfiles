@@ -5,6 +5,9 @@ set -eu
 DOTFILES_DIRECTORY="$HOME/dotfiles"
 INSTALL_DIRECTORY="$DOTFILES_DIRECTORY/macos"
 
+echo "installing Homebrew packages"
+brew bundle --file "$DOTFILES_DIRECTORY/brew/Brewfile"
+
 echo "running macOS config"
 "$INSTALL_DIRECTORY/config"
 
