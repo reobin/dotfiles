@@ -10,6 +10,7 @@ cd "$DOTFILES_DIRECTORY"
 CONFIGS=(
   ghostty
   karabiner
+  nvim
   starship
   zsh
 )
