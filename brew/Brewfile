@@ -1,5 +1,6 @@
 brew "neovim"
 brew "opencode"
+brew "lazygit"
 brew "starship"
 brew "stow"
 cask "1password"
