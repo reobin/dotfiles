@@ -10,3 +10,4 @@ source ~/.config/zsh/history.zsh
 source ~/.config/zsh/completion.zsh
 
 eval "$(starship init zsh)"
+eval "$(zoxide init zsh --cmd cd)"
