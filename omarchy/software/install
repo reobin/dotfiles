@@ -9,6 +9,7 @@ cd "$INSTALL_DIRECTORY"
 
 APPS=(
   stow
+  pnpm
   keyd
   slack-desktop
   telegram-desktop
