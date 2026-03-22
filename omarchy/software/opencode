@@ -1,0 +1,9 @@
+#!/bin/sh
+
+if pacman -Q opencode >/dev/null 2>&1; then
+  sudo pacman -Rns --noconfirm opencode
+fi
+
+if ! command -v opencode >/dev/null 2>&1; then
+  pnpm add -g opencode-ai
+fi

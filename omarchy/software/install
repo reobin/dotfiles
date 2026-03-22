@@ -23,6 +23,7 @@ APPS=(
   turso-cli
   hyprdynamicmonitors
   git-wt
+  opencode
 )
 
 cd "$INSTALL_DIRECTORY"
