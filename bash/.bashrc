@@ -22,13 +22,10 @@ source "$HOME/.config/bash/tmux.sh"
 source "$HOME/.config/bash/keybindings.sh"
 source "$HOME/.config/bash/worktrees.sh"
 source "$HOME/.config/bash/trash.sh"
+source "$HOME/.config/bash/path.sh"
 
-export PATH="$HOME/.local/bin:$PATH"
-
-export PATH="$PATH:/home/reobin/.turso"
+path_prepend "$HOME/.local/bin"
+path_append "$HOME/.turso"
 
 export PNPM_HOME="/home/reobin/.local/share/pnpm"
-case ":$PATH:" in
-  *":$PNPM_HOME:"*) ;;
-  *) export PATH="$PNPM_HOME:$PATH" ;;
-esac
+path_prepend "$PNPM_HOME"
