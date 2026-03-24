@@ -4,7 +4,7 @@
   # remote cleanup
   stale = !git cut && git clean-stale
   cut = !git remote prune origin
-  clean-stale = "!git fetch -p && for branch in $(git branch -vv | grep ': gone]' | awk '{print $1}'); do git branch -D $branch; done"
+  clean-stale = !git fetch -p && git branch -vv | grep gone | sed 's/^[*+] //' | awk '{print $1}' | xargs git branch -D 2>/dev/null || true
 [init]
 	defaultBranch = main
 [pull]
