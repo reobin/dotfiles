@@ -4,42 +4,30 @@ _vpn_service() {
   printf "openvpn-client@%s.service" "$1"
 }
 
-_vpn_dns_hook() {
-  printf "%s/%s-dns.sh" "$VPN_DIR" "$1"
-}
-
-_vpn_wait_tun0() {
-  local i
-  for i in {1..20}; do
-    if ip link show tun0 >/dev/null 2>&1; then
-      return 0
-    fi
-    sleep 0.2
-  done
-}
-
-vpn-start() {
+_vpn_connect() {
   local name="$1"
   if [ -z "$name" ]; then
-    echo "usage: vpn-start <profile>"
-    echo "example: vpn-start poap-vpn-prod"
+    echo "usage: vpn-connect <profile>"
+    echo "example: vpn-connect poap-vpn-prod"
     return 1
+  fi
+
+  local active
+  active=$(systemctl list-units --type=service --state=active --no-legend 2>/dev/null | awk '$1 ~ /openvpn-client@/ {print $1}')
+  if [ -n "$active" ]; then
+    echo "disconnecting ${active//openvpn-client@/}..."
+    echo "$active" | xargs -r sudo systemctl stop
+    sleep 0.5
   fi
 
   local service
   service=$(_vpn_service "$name")
 
   sudo systemctl start "$service"
-
-  local hook
-  hook=$(_vpn_dns_hook "$name")
-  if sudo test -x "$hook"; then
-    _vpn_wait_tun0
-    sudo sh "$hook"
-  fi
+  echo "connecting to $name..."
 }
 
-vpn-stop() {
+vpn-disconnect() {
   local name="$1"
   if [ -z "$name" ]; then
     local services
@@ -58,7 +46,7 @@ vpn-stop() {
   sudo systemctl stop "$service"
 }
 
-vpn-list() {
+_vpn_list() {
   local files=()
   local nullglob_was_set=0
 
@@ -86,6 +74,18 @@ vpn-list() {
     shopt -u nullglob
   fi
 
-  sudo sh -c 'for f in /etc/openvpn/client/*.conf; do [ -e "$f" ] || exit 1; basename "$f" .conf; done' 2>/dev/null || \
+  sudo sh -c 'for f in /etc/openvpn/client/*.conf; do [ -e "$f" ] || exit 1; basename "$f" .conf; done' 2>/dev/null ||
     echo "no openvpn profiles found in /etc/openvpn/client"
+}
+
+vpn-connect() {
+  if [ -n "$1" ]; then
+    _vpn_connect "$1"
+  else
+    local selected
+    selected=$(_vpn_list | fzf --height=5)
+    if [ -n "$selected" ]; then
+      _vpn_connect "$selected"
+    fi
+  fi
 }
