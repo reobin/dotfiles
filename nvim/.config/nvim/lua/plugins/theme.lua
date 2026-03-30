@@ -1,14 +1,14 @@
 return {
   {
-    "rose-pine/neovim",
-    name = "rose-pine",
+    "reobin/olive-crt.nvim",
+    name = "olive-crt",
     lazy = false,
     priority = 1000,
   },
   {
     "LazyVim/LazyVim",
     opts = {
-      colorscheme = "rose-pine",
+      colorscheme = "olive-crt",
     },
   },
 }
