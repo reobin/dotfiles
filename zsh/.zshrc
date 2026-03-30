@@ -10,7 +10,10 @@ export EDITOR='nvim'
 export VISUAL='nvim'
 export GIT_EDITOR='nvim'
 
+eval "$(git wt --init zsh)"
+
 source ~/.config/zsh/tmux.zsh
+source ~/.config/zsh/worktrees.zsh
 source ~/.config/zsh/cursor.zsh
 source ~/.config/zsh/history.zsh
 source ~/.config/zsh/completion.zsh
