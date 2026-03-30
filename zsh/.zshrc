@@ -12,13 +12,13 @@ export GIT_EDITOR='nvim'
 
 eval "$(git wt --init zsh)"
 
+bindkey -e
+
 source ~/.config/zsh/tmux.zsh
 source ~/.config/zsh/worktrees.zsh
 source ~/.config/zsh/cursor.zsh
 source ~/.config/zsh/history.zsh
 source ~/.config/zsh/completion.zsh
-
-bindkey -e
 
 eval "$(starship init zsh)"
 eval "$(zoxide init zsh --cmd cd)"
