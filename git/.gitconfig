@@ -1,3 +1,8 @@
+[alias]
+	whoops = commit --amend --no-edit
+	stale = !git cut && git clean-stale
+	cut = !git remote prune origin
+	clean-stale = !git fetch -p && git branch -vv | grep gone | sed 's/^[*+] //' | awk '{print $1}' | xargs git branch -D 2>/dev/null || true
 [core]
 	editor = nvim
 [sequence]
