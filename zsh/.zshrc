@@ -15,5 +15,7 @@ source ~/.config/zsh/cursor.zsh
 source ~/.config/zsh/history.zsh
 source ~/.config/zsh/completion.zsh
 
+bindkey -e
+
 eval "$(starship init zsh)"
 eval "$(zoxide init zsh --cmd cd)"
