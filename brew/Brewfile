@@ -1,5 +1,8 @@
+tap "k1LoW/tap"
+
 brew "neovim"
 brew "opencode"
+brew "k1LoW/tap/git-wt"
 brew "lazygit"
 brew "starship"
 brew "stow"
