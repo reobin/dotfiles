@@ -8,3 +8,4 @@ _edit_command_line() {
 }
 
 bind -x '"\C-x": _edit_command_line'
+bind -r '\ec'  # disable fzf Alt+C (directory jump)
