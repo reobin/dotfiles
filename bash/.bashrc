@@ -16,6 +16,9 @@ alias mv="mv -iv"       # interactive verbose
 alias cp="cp -riv"      # recursive interactive verbose
 alias mkdir="mkdir -vp" # verbose parent
 
+alias cc="claude"
+alias oc="opencode"
+
 source "$HOME/.config/bash/vpn.sh"
 source "$HOME/.config/bash/cursor.sh"
 source "$HOME/.config/bash/tmux.sh"
