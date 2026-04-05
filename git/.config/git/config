@@ -5,8 +5,7 @@
   c = commit
   co = checkout
   a = add .
-  s = stash
-  sp = stash pop
+  s = status
   l = log
 
   # remote cleanup
