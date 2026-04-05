@@ -1,4 +1,5 @@
 alias c='opencode'
+alias cc='claude'
 alias ls='eza --all'
 alias ll='eza --all --long'
 alias tree='eza --tree'
