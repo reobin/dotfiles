@@ -34,9 +34,7 @@
 	copyignored = true
 	copyuntracked = true
 	copymodified = true
-  basedir = "../{gitroot}-wt"
-  nocopy = node_modules/
-  hook = mise trust .
+	hook = mise trust .
 [credential]
 	helper = cache --timeout=604800
 [merge]
