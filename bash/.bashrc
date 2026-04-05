@@ -18,6 +18,8 @@ alias mkdir="mkdir -vp" # verbose parent
 
 alias cc="claude"
 alias oc="opencode"
+alias t="tmux new-session"
+alias g="git"
 
 source "$HOME/.config/bash/vpn.sh"
 source "$HOME/.config/bash/cursor.sh"

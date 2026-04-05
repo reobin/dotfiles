@@ -1,7 +1,3 @@
-t() {
-  tmux new-session
-}
-
 tl() {
   [[ -z $1 ]] && { echo "Usage: tl <ai>"; return 1; }
   [[ -z $TMUX ]] && { echo "You must start tmux to use tl."; return 1; }
