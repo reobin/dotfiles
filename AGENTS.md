@@ -6,3 +6,4 @@ When working on this macOS dotfiles repository:
 - Do NOT modify system files outside this repo (for example `~/.zshrc` or `~/.config/ghostty/config`)
 - Dotfiles are linked into place from this repo via `stow` scripts under `macos/dotfiles/`
 - **Never auto-commit changes** — only commit when explicitly requested.
+- **No co-author** — do not add Co-Authored-By lines to commit messages.
