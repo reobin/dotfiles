@@ -5,8 +5,7 @@
 	c = commit
 	co = checkout
 	a = add .
-	s = stash
-	sp = stash pop
+	s = status
 	l = log
 	stale = !git cut && git clean-stale
 	cut = !git remote prune origin
