@@ -1,5 +1,13 @@
 [alias]
   whoops = commit --amend --no-edit
+  p = push
+  pl = pull
+  c = commit
+  co = checkout
+  a = add .
+  s = stash
+  sp = stash pop
+  l = log
 
   # remote cleanup
   stale = !git cut && git clean-stale
