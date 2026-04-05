@@ -12,3 +12,7 @@
 	nocopy = node_modules/
 [sequence]
 	editor = nvim
+[diff]
+	tool = nvimdiff
+[merge]
+	tool = nvimdiff
