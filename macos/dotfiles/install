@@ -13,6 +13,7 @@ CONFIGS=(
   karabiner
   nvim
   opencode
+  claude
   starship
   tmux
   zsh
