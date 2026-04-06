@@ -1,0 +1,24 @@
+#!/usr/bin/env bash
+
+set -eu
+
+DOTFILES_DIRECTORY="$HOME/dotfiles"
+INSTALL_DIRECTORY="$DOTFILES_DIRECTORY/macos"
+
+cd "$DOTFILES_DIRECTORY"
+
+APPS=(
+  claude
+)
+
+for app in "${APPS[@]}"; do
+  script="$INSTALL_DIRECTORY/software/$app"
+
+  if [[ ! -f "$script" ]]; then
+    echo "Skipping $app (missing: $script)" >&2
+    continue
+  fi
+
+  echo "installing $app"
+  source "$script"
+done
