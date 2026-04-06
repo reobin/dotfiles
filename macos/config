@@ -13,3 +13,7 @@ defaults write -g KeyRepeat -int 1
 defaults write com.apple.dock autohide-time-modifier -int 0
 defaults write com.apple.Dock autohide-delay -float 0.0001
 killall Dock
+
+# Prevent system and display from sleeping.
+sudo pmset -a sleep 0
+sudo pmset -a displaysleep 0
