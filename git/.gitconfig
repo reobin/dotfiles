@@ -2,6 +2,8 @@
 	whoops = commit --amend --no-edit
 	p = push
 	pl = pull
+	f = fetch
+	r = rebase
 	c = commit
 	co = checkout
 	a = add .
