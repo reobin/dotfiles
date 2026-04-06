@@ -12,6 +12,11 @@ $line_break\
 $python\
 $character"""
 
+[username]
+format = "[🌐 $user ]($style)"
+style_user = "bright-black"
+show_always = false
+
 [directory]
 style = "blue"
 truncation_length = 0
