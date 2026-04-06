@@ -9,6 +9,8 @@ alias mkdir='mkdir -vp'
 alias t='tmux'
 alias g='git'
 
+export PATH="$HOME/.local/bin:$PATH"
+
 export EDITOR='nvim'
 export VISUAL='nvim'
 export GIT_EDITOR='nvim'
