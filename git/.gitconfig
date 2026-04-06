@@ -5,6 +5,7 @@
 	f = fetch
 	r = rebase
 	c = commit
+	b = branch
 	co = checkout
 	a = add .
 	s = status
