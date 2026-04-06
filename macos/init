@@ -5,12 +5,6 @@ set -eu
 DOTFILES_DIRECTORY="$HOME/dotfiles"
 INSTALL_DIRECTORY="$DOTFILES_DIRECTORY/macos"
 
-echo "requesting sudo access"
-if ! sudo -v; then
-  echo "sudo access is required; aborting" >&2
-  exit 1
-fi
-
 echo "installing Homebrew packages"
 brew bundle --file "$DOTFILES_DIRECTORY/brew/Brewfile"
 
