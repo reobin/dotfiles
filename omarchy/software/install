@@ -24,6 +24,7 @@ APPS=(
   hyprdynamicmonitors
   git-wt
   opencode
+  tailscale
 )
 
 cd "$INSTALL_DIRECTORY"
