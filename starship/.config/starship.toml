@@ -1,7 +1,7 @@
 "$schema" = 'https://starship.rs/config-schema.json'
 
 format = """
-$env_var\
+$username\
 $directory\
 $git_branch\
 $git_state\
@@ -11,9 +11,10 @@ $line_break\
 $python\
 $character"""
 
-[env_var.SSH_CONNECTION]
-format = "[ssh ](bright-black)"
-default = ""
+[username]
+format = "[🌐 $user ]($style)"
+style_user = "bright-black"
+show_always = false
 
 [directory]
 style = "blue"
