@@ -6,7 +6,7 @@ alias tree='eza --tree'
 alias mv='mv -iv'
 alias cp='cp -riv'
 alias mkdir='mkdir -vp'
-alias t='tmux new-session'
+alias t='tmux'
 alias g='git'
 
 export EDITOR='nvim'
