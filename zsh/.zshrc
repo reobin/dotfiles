@@ -8,6 +8,7 @@ alias cp='cp -riv'
 alias mkdir='mkdir -vp'
 alias t='tmux'
 alias g='git'
+alias lg='lazygit'
 
 export PATH="$HOME/.local/bin:$PATH"
 
