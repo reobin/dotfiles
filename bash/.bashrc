@@ -20,6 +20,7 @@ alias cc="claude"
 alias oc="opencode"
 alias t="tmux"
 alias g="git"
+alias lg="lazygit"
 
 source "$HOME/.config/bash/vpn.sh"
 source "$HOME/.config/bash/cursor.sh"
