@@ -1,5 +1,5 @@
 {
-  "include": ["~/.config/waybar/conf.d/openvpn.jsonc"],
+  "include": ["~/.config/waybar/conf.d/openvpn.jsonc", "~/.config/waybar/conf.d/tailscale.jsonc"],
   "reload_style_on_change": true,
   "layer": "top",
   "position": "top",
@@ -16,6 +16,7 @@
   ],
   "modules-right": [
     "tray",
+    "custom/tailscale",
     "custom/openvpn",
     "bluetooth",
     "network",

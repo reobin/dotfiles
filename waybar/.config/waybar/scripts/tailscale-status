@@ -1,0 +1,33 @@
+#!/bin/sh
+
+copy_value() {
+  [ -n "$1" ] && printf '%s' "$1" | wl-copy
+}
+
+tailscale_field() {
+  tailscale status --json 2>/dev/null | jq -r "$1 // empty" 2>/dev/null
+}
+
+tailscale_ip() {
+  tailscale status --json 2>/dev/null | jq -r '(.Self.TailscaleIPs // [] | map(select(test("^[0-9.]+$"))) | .[0]) // empty' 2>/dev/null
+}
+
+case "$1" in
+  --copy-dns)
+    copy_value "$(tailscale_field '.Self.DNSName | sub("\\.$"; "")')"
+    exit 0
+    ;;
+  --copy-ip)
+    copy_value "$(tailscale_ip)"
+    exit 0
+    ;;
+esac
+
+if [ "$(tailscale_field '.BackendState')" = "Running" ]; then
+  hostname=$(tailscale_field '.Self.HostName')
+  dns_name=$(tailscale_field '.Self.DNSName | sub("\\.$"; "")')
+  ip=$(tailscale_ip)
+  tooltip=$(printf '%s\n%s' "$dns_name" "$ip")
+
+  [ -n "$hostname" ] && jq -nc --arg text "󰖂 $hostname" --arg tooltip "$tooltip" '{text: $text, tooltip: $tooltip, class: "vpn-on"}'
+fi

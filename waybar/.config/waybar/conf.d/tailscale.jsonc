@@ -1,0 +1,9 @@
+{
+  "custom/tailscale": {
+    "exec": "~/.config/waybar/scripts/tailscale-status",
+    "interval": 10,
+    "on-click": "~/.config/waybar/scripts/tailscale-status --copy-dns",
+    "on-click-right": "~/.config/waybar/scripts/tailscale-status --copy-ip",
+    "return-type": "json",
+  },
+}
