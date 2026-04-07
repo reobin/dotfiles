@@ -25,3 +25,6 @@
 	tool = nvimdiff
 [merge]
 	tool = nvimdiff
+[user]
+	name = Robin Gagnon
+	email = me@reobin.dev
