@@ -28,6 +28,7 @@ source "$HOME/.config/bash/keybindings.sh"
 source "$HOME/.config/bash/git.sh"
 source "$HOME/.config/bash/worktrees.sh"
 source "$HOME/.config/bash/trash.sh"
+source "$HOME/.config/bash/aws.sh"
 source "$HOME/.config/bash/path.sh"
 
 path_prepend "$HOME/.local/bin"
