@@ -1,0 +1,35 @@
+#!/usr/bin/env bash
+
+set -eu
+
+AMPHETAMINE_APP_ID="937984704"
+AMPHETAMINE_APP="/Applications/Amphetamine.app"
+
+if [[ -d "$AMPHETAMINE_APP" ]]; then
+  echo "Amphetamine is already installed"
+else
+  if command -v mas >/dev/null 2>&1; then
+    echo "installing Amphetamine from the Mac App Store"
+    if ! mas install "$AMPHETAMINE_APP_ID"; then
+      echo "Amphetamine install skipped; sign in to the App Store and rerun macos/init or install it manually:" >&2
+      echo "  https://apps.apple.com/us/app/amphetamine/id$AMPHETAMINE_APP_ID" >&2
+    fi
+  else
+    echo "Amphetamine is available from the Mac App Store"
+    echo "  Install manually: https://apps.apple.com/us/app/amphetamine/id$AMPHETAMINE_APP_ID"
+  fi
+fi
+
+cat <<EOF
+
+Amphetamine one-time setup:
+1. Install Amphetamine from the Mac App Store if it is not already installed.
+2. Open Amphetamine and enable Launch at Login.
+3. Create a Trigger for "Power Adapter Connected".
+4. Set the Trigger session duration to indefinite.
+5. Enable closed-display mode so the Mac stays awake with the lid closed.
+6. If Amphetamine prompts to install a helper script such as Power Protect, install it and approve the admin/authentication prompt.
+7. Approve any macOS permission prompts Amphetamine needs for login items or automation.
+
+This repo config keeps the Mac awake with pmset, but lid-closed reliability depends on Amphetamine being configured.
+EOF
