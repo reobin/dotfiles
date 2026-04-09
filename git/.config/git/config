@@ -5,6 +5,7 @@
   cp = cherry-pick
   f = fetch
   r = rebase
+  rt = reset
   ri = "!f() { git rebase -i HEAD~$1; }; f"
   rir = rebase -i --root
   c = commit
