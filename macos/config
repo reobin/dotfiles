@@ -17,10 +17,12 @@ defaults write com.apple.dock autohide-time-modifier -int 0
 defaults write com.apple.Dock autohide-delay -float 0.0001
 killall Dock
 
-# Keep the machine awake by default. The more aggressive standby changes stay
-# AC-only so an unplugged machine does not burn through battery quite as hard.
-sudo pmset -a sleep 0
-sudo pmset -a displaysleep 0
+# Keep the machine awake on AC power, but still let the displays blank on
+# idle (~2 min). Closed-lid awake behavior still depends on Amphetamine, while
+# battery power keeps a normal sleep timeout to avoid draining in a bag.
+sudo pmset -c sleep 0
+sudo pmset -b sleep 10
+sudo pmset -a displaysleep 2
 sudo pmset -a powernap 0
 sudo pmset -a tcpkeepalive 1
 sudo pmset -c standby 0
