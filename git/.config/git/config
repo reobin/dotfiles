@@ -2,6 +2,7 @@
   whoops = commit --amend --no-edit
   p = push
   pl = pull
+  cp = cherry-pick
   f = fetch
   r = rebase
   c = commit
