@@ -5,6 +5,8 @@
 	cp = cherry-pick
 	f = fetch
 	r = rebase
+	ri = "!f() { git rebase -i HEAD~$1; }; f"
+	rir = rebase -i --root
 	c = commit
 	b = branch
 	co = checkout
