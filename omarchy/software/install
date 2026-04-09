@@ -21,6 +21,7 @@ APPS=(
   bind
   witr
   turso-cli
+  wrangler
   hyprdynamicmonitors
   git-wt
   opencode

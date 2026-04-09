@@ -1,0 +1,5 @@
+#!/bin/sh
+
+if ! command -v wrangler >/dev/null 2>&1; then
+  pnpm add -g wrangler
+fi
