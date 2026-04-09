@@ -6,6 +6,8 @@
   f = fetch
   r = rebase
   rt = reset
+  rts = reset --soft
+  rth = reset --hard
   ri = "!f() { git rebase -i HEAD~$1; }; f"
   rir = rebase -i --root
   c = commit
