@@ -20,7 +20,6 @@
   shd = stash drop
   l = log
   bc = !"$HOME/.config/git/scripts/branch-cleanup"
-  wtd = !"$HOME/.config/git/scripts/worktree-delete"
 [init]
 	defaultBranch = main
 [pull]
