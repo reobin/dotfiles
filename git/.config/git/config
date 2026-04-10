@@ -15,6 +15,9 @@
   co = checkout
   a = add .
   s = status
+  sh = stash
+  shp = stash pop
+  shd = stash drop
   l = log
   bc = !"$HOME/.config/git/scripts/branch-cleanup"
   wtd = !"$HOME/.config/git/scripts/worktree-delete"
