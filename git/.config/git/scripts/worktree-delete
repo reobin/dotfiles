@@ -1,0 +1,39 @@
+#!/usr/bin/env bash
+
+set -euo pipefail
+
+main="$(git worktree list | awk 'NR==1{print $1}')"
+current_dir="$(pwd)"
+
+printf 'Current worktree: %s\n' "$current_dir"
+printf 'Main worktree: %s\n' "$main"
+
+if [[ "$current_dir" == "$main" ]]; then
+  echo "Cannot remove the main worktree"
+  exit 1
+fi
+
+if ! gum confirm "Remove worktree and branch?"; then
+  printf 'Cancelled.\n'
+  exit 0
+fi
+
+branch="$(git branch --show-current)"
+
+if [[ -z "$branch" ]]; then
+  printf 'No current branch found for this worktree.\n'
+  exit 1
+fi
+
+printf 'Deleting worktree for branch: %s\n' "$branch"
+printf 'Switching to main worktree...\n'
+
+cd "$main"
+
+git wt -D "$branch" || {
+  printf 'Deletion failed. Returning to %s\n' "$current_dir"
+  cd "$current_dir" || true
+  exit 1
+}
+
+printf 'Removed worktree and branch: %s\n' "$branch"
