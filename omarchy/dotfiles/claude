@@ -1,5 +1,6 @@
 #!/bin/sh
 
 rm -f ~/.claude/settings.json
+rm -f ~/.claude/statusline-command.sh
 
 sudo stow claude

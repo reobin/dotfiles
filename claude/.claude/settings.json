@@ -2,6 +2,9 @@
   "permissions": {
     "defaultMode": "plan"
   },
-  "model": "opus",
+  "statusLine": {
+    "type": "command",
+    "command": "bash ~/.claude/statusline-command.sh"
+  },
   "skipDangerousModePermissionPrompt": true
 }
