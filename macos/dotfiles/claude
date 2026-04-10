@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
 
 rm -f ~/.claude/settings.json
+rm -f ~/.claude/statusline-command.sh
 
 stow claude
