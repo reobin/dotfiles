@@ -11,6 +11,7 @@ APPS=(
   stow
   pnpm
   keyd
+  helium-browser
   slack-desktop
   telegram-desktop
   openvpn
