@@ -2,6 +2,5 @@
   "permissions": {
     "defaultMode": "plan"
   },
-  "model": "opus",
   "skipDangerousModePermissionPrompt": true
 }
