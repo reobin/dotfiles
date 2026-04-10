@@ -18,11 +18,11 @@ gd() {
   fi
 
   if command -v gum >/dev/null 2>&1; then
-    gum confirm "Remove worktree and branch?" || return 0
+    gum confirm --default=true "Remove worktree and branch?" || return 0
   else
-    printf "Remove worktree and branch? [y/N] "
+    printf "Remove worktree and branch? [Y/n] "
     read -r reply
-    [[ $reply == [Yy] || $reply == [Yy][Ee][Ss] ]] || return 0
+    [[ -z $reply || $reply == [Yy] || $reply == [Yy][Ee][Ss] ]] || return 0
   fi
 
   branch="$(git branch --show-current)"
