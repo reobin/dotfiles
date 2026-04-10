@@ -18,6 +18,7 @@ alias mkdir="mkdir -vp" # verbose parent
 
 alias cc="claude"
 alias oc="opencode"
+alias pn="pnpm"
 alias t="tmux"
 alias g="git"
 alias lg="lazygit"
