@@ -1,6 +1,5 @@
 tap "k1LoW/tap"
 
-brew "awscli"
 brew "neovim"
 brew "opencode"
 brew "k1LoW/tap/git-wt"

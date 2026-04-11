@@ -1,0 +1,16 @@
+#!/usr/bin/env bash
+
+if command -v aws >/dev/null 2>&1 && aws --version >/dev/null 2>&1; then
+  echo "aws cli is already installed"
+  return 0
+fi
+
+INSTALLER_PKG="$(mktemp -t AWSCLIV2).pkg"
+
+echo "downloading AWS CLI v2 installer"
+curl -fsSL "https://awscli.amazonaws.com/AWSCLIV2.pkg" -o "$INSTALLER_PKG"
+
+echo "installing AWS CLI v2 (may prompt for sudo)"
+sudo installer -pkg "$INSTALLER_PKG" -target /
+
+rm -f "$INSTALLER_PKG"

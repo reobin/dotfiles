@@ -9,6 +9,7 @@ cd "$DOTFILES_DIRECTORY"
 
 APPS=(
   amphetamine
+  awscli
   claude
 )
 
