@@ -10,7 +10,6 @@ tl() {
   ai_pane=$(tmux split-window -h -p 40 -d -t "$editor_pane" -c "$current_dir" -P -F '#{pane_id}')
 
   tmux send-keys -t "$ai_pane" "$ai" C-m
-  tmux send-keys -t "$editor_pane" "$EDITOR" C-m
   tmux select-pane -t "$ai_pane"
 }
 
