@@ -12,6 +12,7 @@ alias t='tmux'
 alias g='git'
 alias lg='lazygit'
 alias n='nvim'
+alias ts='tailscale'
 
 export PATH="$HOME/.local/bin:$PATH"
 
