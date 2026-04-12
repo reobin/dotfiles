@@ -23,6 +23,7 @@ alias t="tmux"
 alias g="git"
 alias lg="lazygit"
 alias n="nvim"
+alias ts="tailscale"
 
 source "$HOME/.config/bash/vpn.sh"
 source "$HOME/.config/bash/cursor.sh"
