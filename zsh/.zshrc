@@ -11,6 +11,7 @@ alias mkdir='mkdir -vp'
 alias t='tmux'
 alias g='git'
 alias lg='lazygit'
+alias n='nvim'
 
 export PATH="$HOME/.local/bin:$PATH"
 
