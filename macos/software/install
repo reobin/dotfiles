@@ -11,6 +11,7 @@ APPS=(
   amphetamine
   awscli
   claude
+  syncthing
 )
 
 for app in "${APPS[@]}"; do
