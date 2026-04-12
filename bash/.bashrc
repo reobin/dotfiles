@@ -22,6 +22,7 @@ alias pn="pnpm"
 alias t="tmux"
 alias g="git"
 alias lg="lazygit"
+alias n="nvim"
 
 source "$HOME/.config/bash/vpn.sh"
 source "$HOME/.config/bash/cursor.sh"
