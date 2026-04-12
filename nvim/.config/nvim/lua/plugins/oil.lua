@@ -18,6 +18,7 @@ return {
       show_hidden = true,
     },
   },
+  lazy = false,
   keys = {
     { "<leader>e", "<cmd>Oil --float<cr>", desc = "Open Oil (float)" },
   },
