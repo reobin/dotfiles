@@ -27,7 +27,6 @@ APPS=(
   git-wt
   opencode
   tailscale
-  syncthing
   sheets
 )
 
