@@ -22,7 +22,11 @@ Rules:
 - If the scope clearly matches only part of the worktree, stage only the relevant changes.
 - Before committing, review the staged diff and verify it matches the requested scope exactly.
 - Choose the commit message yourself. Do not ask me to write it.
-- Follow conventional commits.
+- Follow conventional commits in normal repositories.
+- When the current repository is this dotfiles repo, use a context prefix instead of a conventional commit type.
+- In this dotfiles repo, format the subject as `context: short subject`.
+- Infer `context` from the files being committed or the command argument, and prefer specific areas like `zsh`, `nvim`, `bash`, `git`, `tmux`, `claude`, `opencode`, `ai`, `hypr`, or `waybar` over generic labels.
+- If the changes span multiple unrelated areas in this dotfiles repo and no single context fits, stop and ask me which context to use.
 - Keep the subject short and direct.
 - Keep the body short and direct.
 - Prefer no body for simple changes.
@@ -38,6 +42,15 @@ Message style:
 
 ```text
 type: short subject
+
+- short point
+- short why
+```
+
+Dotfiles repo style:
+
+```text
+context: short subject
 
 - short point
 - short why
