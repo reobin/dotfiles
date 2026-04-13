@@ -35,7 +35,9 @@ Rules:
 - Include why only when that context is actually helpful.
 - If command arguments are provided, use them only as a hint for PR framing.
 - After creating a commit as part of `/pr`, do not ask separately whether to push; continue through branch push and PR creation.
-- Return the PR URL after creation.
+- Before creating the PR, show the PR title, body, base branch, and head branch so I can review them.
+- After creating the PR, show the PR title, URL, and a summary of what was included (commits, files changed).
+- Keep all output text lowercase, except when referring to names that are inherently uppercase (file paths, env vars, branch names, etc.).
 
 PR style:
 
