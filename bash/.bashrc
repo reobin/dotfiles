@@ -16,6 +16,7 @@ alias mv="mv -iv"       # interactive verbose
 alias cp="cp -riv"      # recursive interactive verbose
 alias mkdir="mkdir -vp" # verbose parent
 
+unalias c
 alias cc="claude"
 alias oc="opencode"
 alias pn="pnpm"
