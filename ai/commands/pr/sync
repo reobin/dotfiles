@@ -8,7 +8,7 @@ cat > "$repo_root/claude/.claude/commands/pr.md" <<'EOF'
 ---
 description: Create a PR from existing commits, creating a branch first if needed.
 argument-hint: [optional scope or intent]
-allowed-tools: Bash(git status *) Bash(git diff *) Bash(git log *) Bash(git rev-parse *) Bash(git branch *) Bash(git wt *) Bash(git remote *) Bash(git push *) Bash(gh pr create *) Bash(gh repo view *)
+allowed-tools: Bash(git status *) Bash(git diff *) Bash(git log *) Bash(git rev-parse *) Bash(git branch *) Bash(git wt *) Bash(git remote *) Bash(git push *) Bash(gh pr create *) Bash(gh repo view *) AskUserQuestion
 ---
 
 <!-- Generated from ai/commands/pr/body.md by ai/commands/pr/sync -->

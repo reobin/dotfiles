@@ -1,7 +1,7 @@
 ---
 description: Commit current changes, optionally scoped by an argument like "/commit auth fixes", then ask whether to push.
 argument-hint: [optional scope or intent]
-allowed-tools: Bash(git status *) Bash(git diff *) Bash(git add -A) Bash(git commit *) Bash(git log *) Bash(git push *)
+allowed-tools: Bash(git status *) Bash(git diff *) Bash(git add -A) Bash(git commit *) Bash(git log *) Bash(git push *) AskUserQuestion
 ---
 
 <!-- Generated from ai/commands/commit/body.md by ai/commands/commit/sync -->
@@ -36,7 +36,7 @@ Rules:
 - Never push automatically.
 - Never create an empty commit.
 - Do not commit obvious secret files.
-- After creating the commit, show a summary that includes: the full commit message, the list of files changed, and a short stat (insertions/deletions). When command arguments were provided and not all changes were committed, also list the files that were left uncommitted. Then ask me via an explicit yes/no prompt whether to push it now.
+- After creating the commit, show a summary that includes: the full commit message, the list of files changed, and a short stat (insertions/deletions). When command arguments were provided and not all changes were committed, also list the files that were left uncommitted. Then use the `AskUserQuestion` tool to ask whether to push, with options like "push now" and "skip push".
 - Keep all output text lowercase, except when referring to names that are inherently uppercase (file paths, env vars, branch names, etc.).
 
 Message style:

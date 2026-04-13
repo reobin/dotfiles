@@ -1,7 +1,7 @@
 ---
 description: Create a PR from existing commits, creating a branch first if needed.
 argument-hint: [optional scope or intent]
-allowed-tools: Bash(git status *) Bash(git diff *) Bash(git log *) Bash(git rev-parse *) Bash(git branch *) Bash(git wt *) Bash(git remote *) Bash(git push *) Bash(gh pr create *) Bash(gh repo view *)
+allowed-tools: Bash(git status *) Bash(git diff *) Bash(git log *) Bash(git rev-parse *) Bash(git branch *) Bash(git wt *) Bash(git remote *) Bash(git push *) Bash(gh pr create *) Bash(gh repo view *) AskUserQuestion
 ---
 
 <!-- Generated from ai/commands/pr/body.md by ai/commands/pr/sync -->
@@ -36,7 +36,7 @@ Rules:
 - Include why only when that context is actually helpful.
 - If command arguments are provided, use them only as a hint for PR framing.
 - After creating a commit as part of `/pr`, do not ask separately whether to push; continue through branch push and PR creation.
-- Before creating the PR, show the PR title, body, base branch, and head branch so I can review them.
+- Before creating the PR, show the PR title, body, base branch, and head branch, then use the `AskUserQuestion` tool to ask whether to proceed, with options like "create pr" and "cancel".
 - After creating the PR, show the PR title, URL, and a summary of what was included (commits, files changed).
 - Keep all output text lowercase, except when referring to names that are inherently uppercase (file paths, env vars, branch names, etc.).
 
