@@ -1,0 +1,30 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+repo_root=$(git rev-parse --show-toplevel)
+body_file="$repo_root/ai/commands/commit/body.md"
+
+cat > "$repo_root/claude/.claude/commands/commit.md" <<'EOF'
+---
+description: Commit current changes, optionally scoped by an argument like "/commit auth fixes", then ask whether to push.
+argument-hint: [optional scope or intent]
+allowed-tools: Bash(git status *) Bash(git diff *) Bash(git add -A) Bash(git commit *) Bash(git log *) Bash(git push *)
+---
+
+<!-- Generated from ai/commands/commit/body.md by ai/commands/commit/sync -->
+
+EOF
+
+cat "$body_file" >> "$repo_root/claude/.claude/commands/commit.md"
+
+cat > "$repo_root/opencode/.config/opencode/commands/commit.md" <<'EOF'
+---
+description: Commit current changes, optionally scoped by an argument like "/commit auth fixes", then ask whether to push.
+agent: build
+---
+
+<!-- Generated from ai/commands/commit/body.md by ai/commands/commit/sync -->
+
+EOF
+
+cat "$body_file" >> "$repo_root/opencode/.config/opencode/commands/commit.md"
