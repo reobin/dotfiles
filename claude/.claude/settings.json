@@ -14,7 +14,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "cp /tmp/claude-statusline-total /tmp/claude-statusline-offset 2>/dev/null; true"
+            "command": "session_id=$(jq -r '.session_id // \"default\"'); cp \"/tmp/claude-statusline-total-$session_id\" \"/tmp/claude-statusline-offset-$session_id\" 2>/dev/null; true"
           }
         ]
       }

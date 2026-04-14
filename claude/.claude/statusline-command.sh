@@ -1,8 +1,9 @@
 #!/usr/bin/env bash
 input=$(cat)
+session_id=$(echo "$input" | jq -r '.session_id // "default"')
 total=$(echo "$input" | jq '((.context_window.total_input_tokens // 0) + (.context_window.total_output_tokens // 0))')
-echo "$total" > /tmp/claude-statusline-total
-offset=$(cat /tmp/claude-statusline-offset 2>/dev/null || echo 0)
+echo "$total" > "/tmp/claude-statusline-total-$session_id"
+offset=$(cat "/tmp/claude-statusline-offset-$session_id" 2>/dev/null || echo 0)
 adjusted=$((total - offset))
 echo "$input" | jq -j --argjson total "$adjusted" '
   def fmt:
