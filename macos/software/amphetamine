@@ -7,17 +7,18 @@ AMPHETAMINE_APP="/Applications/Amphetamine.app"
 
 if [[ -d "$AMPHETAMINE_APP" ]]; then
   echo "Amphetamine is already installed"
-else
-  if command -v mas >/dev/null 2>&1; then
-    echo "installing Amphetamine from the Mac App Store"
-    if ! mas install "$AMPHETAMINE_APP_ID"; then
-      echo "Amphetamine install skipped; sign in to the App Store and rerun macos/init or install it manually:" >&2
-      echo "  https://apps.apple.com/us/app/amphetamine/id$AMPHETAMINE_APP_ID" >&2
-    fi
-  else
-    echo "Amphetamine is available from the Mac App Store"
-    echo "  Install manually: https://apps.apple.com/us/app/amphetamine/id$AMPHETAMINE_APP_ID"
+  exit 0
+fi
+
+if command -v mas >/dev/null 2>&1; then
+  echo "installing Amphetamine from the Mac App Store"
+  if ! mas install "$AMPHETAMINE_APP_ID"; then
+    echo "Amphetamine install skipped; sign in to the App Store and rerun macos/init or install it manually:" >&2
+    echo "  https://apps.apple.com/us/app/amphetamine/id$AMPHETAMINE_APP_ID" >&2
   fi
+else
+  echo "Amphetamine is available from the Mac App Store"
+  echo "  Install manually: https://apps.apple.com/us/app/amphetamine/id$AMPHETAMINE_APP_ID"
 fi
 
 cat <<EOF
