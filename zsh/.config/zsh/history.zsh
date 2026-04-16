@@ -29,3 +29,10 @@ fi
 if (( ${+terminfo[kcud1]} )); then
   bindkey "$terminfo[kcud1]" down-line-or-beginning-search
 fi
+
+h() {
+  local cmd
+  cmd=$(fc -rl 1 | fzf --no-sort --height=40% --reverse | sed 's/^ *[0-9]\{1,\}\**[ \t]\{1,\}//') || return
+  [ -z "$cmd" ] && return
+  print -z "$cmd"
+}
