@@ -20,5 +20,5 @@
     "command": "bash ~/.claude/statusline-command.sh"
   },
   "skipDangerousModePermissionPrompt": true,
-  "effortLevel": "high"
+  "skipAutoPermissionPrompt": true
 }
