@@ -34,6 +34,7 @@ source "$HOME/.config/bash/git.sh"
 source "$HOME/.config/bash/trash.sh"
 source "$HOME/.config/bash/aws.sh"
 source "$HOME/.config/bash/path.sh"
+source "$HOME/.config/bash/history.sh"
 
 path_prepend "$HOME/.local/bin"
 path_append "$HOME/.turso"
