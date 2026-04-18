@@ -1,6 +1,7 @@
 #!/bin/sh
 
 rm -rf ~/.config/hypr
+rm -f ~/.config/omarchy/branding/screensaver.txt
 
 sudo stow hypr
 
