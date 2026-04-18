@@ -1,5 +1,6 @@
 #!/bin/sh
 
 rm -f ~/.config/opencode/opencode.json
+rm -rf ~/.config/opencode/themes
 
 sudo stow opencode
