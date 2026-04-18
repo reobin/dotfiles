@@ -15,7 +15,6 @@ APPS=(
   slack-desktop
   telegram-desktop
   openvpn
-  lazysql
   notion-app-electron
   bruno
   aws-cli-v2
