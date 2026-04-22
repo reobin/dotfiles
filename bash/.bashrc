@@ -25,6 +25,7 @@ alias g="git"
 alias lg="lazygit"
 alias n="nvim"
 alias ts="tailscale"
+alias open="xdg-open"
 
 source "$HOME/.config/bash/vpn.sh"
 source "$HOME/.config/bash/cursor.sh"
