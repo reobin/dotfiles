@@ -21,6 +21,7 @@ CONFIGS=(
   mise
   opencode
   claude
+  voxtype
 )
 
 for config in "${CONFIGS[@]}"; do
