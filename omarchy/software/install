@@ -25,6 +25,7 @@ APPS=(
   hyprdynamicmonitors
   git-wt
   opencode
+  ocv
   claude
   tailscale
   sheets
