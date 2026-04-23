@@ -4,6 +4,8 @@
 # default Omarchy aliases and functions
 source ~/.local/share/omarchy/default/bash/rc
 
+export DOTFILES="$HOME/dotfiles"
+
 bind "set match-hidden-files on"
 
 eval "$(git wt --init bash)"
