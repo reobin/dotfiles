@@ -14,6 +14,8 @@ alias lg='lazygit'
 alias n='nvim'
 alias ts='tailscale'
 
+export DOTFILES="$HOME/dotfiles"
+
 export PATH="$HOME/.local/bin:$PATH"
 
 export EDITOR='nvim'
