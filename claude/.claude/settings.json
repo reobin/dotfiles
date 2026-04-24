@@ -7,5 +7,7 @@
     "command": "bash ~/.claude/statusline-command.sh"
   },
   "skipDangerousModePermissionPrompt": true,
-  "skipAutoPermissionPrompt": true
+  "skipAutoPermissionPrompt": true,
+  "theme": "auto",
+  "remoteControlAtStartup": false
 }
