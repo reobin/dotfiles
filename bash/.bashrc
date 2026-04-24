@@ -44,3 +44,6 @@ path_append "$HOME/.turso"
 
 export PNPM_HOME="/home/reobin/.local/share/pnpm"
 path_prepend "$PNPM_HOME"
+
+export BUN_INSTALL="$HOME/.bun"
+path_prepend "$BUN_INSTALL/bin"
