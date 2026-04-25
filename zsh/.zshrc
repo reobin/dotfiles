@@ -1,5 +1,6 @@
 alias oc='opencode'
 alias cc='claude'
+alias cx='codex'
 alias pn='pnpm'
 alias ls='eza --all'
 alias ll='eza --all --long'
