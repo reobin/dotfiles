@@ -21,3 +21,6 @@ adjust-cursor-thickness = 2
 
 # Fix general slowness on hyprland (https://github.com/ghostty-org/ghostty/discussions/3224)
 async-backend = epoll
+
+# Free up ctrl+enter so it can reach the running app (e.g. opencode submit-from-insert)
+keybind = ctrl+enter=unbind
