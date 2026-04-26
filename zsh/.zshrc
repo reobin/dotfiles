@@ -18,6 +18,9 @@ export DOTFILES="$HOME/dotfiles"
 
 export PATH="$HOME/.local/bin:$PATH"
 
+export BUN_INSTALL="$HOME/.bun"
+export PATH="$BUN_INSTALL/bin:$PATH"
+
 export EDITOR='nvim'
 export VISUAL='nvim'
 export GIT_EDITOR='nvim'
@@ -34,3 +37,5 @@ source ~/.config/zsh/completion.zsh
 
 eval "$(starship init zsh)"
 eval "$(zoxide init zsh --cmd cd)"
+
+[ -s "$BUN_INSTALL/_bun" ] && source "$BUN_INSTALL/_bun"
