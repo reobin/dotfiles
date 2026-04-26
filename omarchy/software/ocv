@@ -1,5 +1,5 @@
 #!/bin/sh
 
 if ! command -v ocv >/dev/null 2>&1; then
-  pnpm add -g --allow-build=@leohenon/ocv @leohenon/ocv
+  curl -fsSL https://raw.githubusercontent.com/leohenon/opencode-vim/ocv/install.sh | sudo sh
 fi
