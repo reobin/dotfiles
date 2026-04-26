@@ -20,7 +20,7 @@ alias mkdir="mkdir -vp" # verbose parent
 
 unalias c
 alias cc="claude"
-alias oc="opencode"
+alias oc="ocv"
 alias cx="codex"
 alias pn="pnpm"
 alias t="tmux"
