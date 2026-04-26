@@ -12,6 +12,7 @@ APPS=(
   awscli
   bun
   claude
+  ocv
 )
 
 for app in "${APPS[@]}"; do

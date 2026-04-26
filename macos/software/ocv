@@ -1,0 +1,8 @@
+#!/usr/bin/env bash
+
+if command -v ocv >/dev/null 2>&1; then
+  echo "ocv is already installed"
+  return 0
+fi
+
+pnpm add -g --allow-build=@leohenon/ocv @leohenon/ocv
