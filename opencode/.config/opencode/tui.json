@@ -3,6 +3,7 @@
   "theme": "olive-crt",
   "vim_system_clipboard_register": true,
   "keybinds": {
+    "leader": "ctrl+o",
     "input_force_submit": "ctrl+return"
   }
 }
