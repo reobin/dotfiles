@@ -1,4 +1,4 @@
-alias oc='opencode'
+alias oc='ocv'
 alias cc='claude'
 alias cx='codex'
 alias pn='pnpm'
