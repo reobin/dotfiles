@@ -1,0 +1,8 @@
+{
+  "$schema": "https://opencode.ai/tui.json",
+  "theme": "olive-crt",
+  "vim_system_clipboard_register": true,
+  "keybinds": {
+    "input_force_submit": "ctrl+return"
+  }
+}
