@@ -5,5 +5,5 @@ if pacman -Q opencode >/dev/null 2>&1; then
 fi
 
 if ! command -v opencode >/dev/null 2>&1; then
-  pnpm add -g opencode-ai
+  curl -fsSL https://opencode.ai/install | bash
 fi
