@@ -3,3 +3,5 @@
 rm -rf ~/.config/uwsm
 
 sudo stow uwsm
+
+mkdir -p ~/Pictures/Screenshots ~/Videos/Screencasts
