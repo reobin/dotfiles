@@ -1,7 +1,7 @@
 [tools]
 go = "latest"
 golangci-lint = "v2.11.2"
-node = "25.2.1"
+node = "25.9.0"
 
 [settings]
 legacy_version_file = true
