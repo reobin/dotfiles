@@ -4,8 +4,7 @@ if command -v pnpm >/dev/null 2>&1; then
   :
 else
   if ! command -v corepack >/dev/null 2>&1; then
-    echo "corepack is required to install pnpm. Install Node.js with Corepack first." >&2
-    return 1 2>/dev/null || exit 1
+    npm install -g corepack
   fi
 
   corepack enable
