@@ -30,6 +30,7 @@ APPS=(
   tailscale
   sheets
   valkey
+  bun
 )
 
 cd "$INSTALL_DIRECTORY"
