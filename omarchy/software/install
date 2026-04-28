@@ -31,6 +31,7 @@ APPS=(
   sheets
   valkey
   bun
+  wl-clipboard-x11
 )
 
 cd "$INSTALL_DIRECTORY"
