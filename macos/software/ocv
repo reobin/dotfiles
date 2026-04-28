@@ -5,4 +5,4 @@ if command -v ocv >/dev/null 2>&1; then
   return 0
 fi
 
-pnpm add -g --allow-build=@leohenon/ocv @leohenon/ocv
+npm install -g @leohenon/ocv
