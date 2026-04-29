@@ -4,33 +4,46 @@ set -eu
 
 AMPHETAMINE_APP_ID="937984704"
 AMPHETAMINE_APP="/Applications/Amphetamine.app"
+AMPHETAMINE_PLIST="$HOME/Library/Containers/com.if.Amphetamine/Data/Library/Preferences/com.if.Amphetamine.plist"
 
-if [[ -d "$AMPHETAMINE_APP" ]]; then
-  echo "Amphetamine is already installed"
-  exit 0
-fi
-
-if command -v mas >/dev/null 2>&1; then
-  echo "installing Amphetamine from the Mac App Store"
-  if ! mas install "$AMPHETAMINE_APP_ID"; then
-    echo "Amphetamine install skipped; sign in to the App Store and rerun macos/init or install it manually:" >&2
-    echo "  https://apps.apple.com/us/app/amphetamine/id$AMPHETAMINE_APP_ID" >&2
+if [[ ! -d "$AMPHETAMINE_APP" ]]; then
+  if command -v mas >/dev/null 2>&1; then
+    echo "installing Amphetamine from the Mac App Store"
+    if ! mas install "$AMPHETAMINE_APP_ID"; then
+      echo "Amphetamine install skipped; sign in to the App Store and rerun macos/init or install it manually:" >&2
+      echo "  https://apps.apple.com/us/app/amphetamine/id$AMPHETAMINE_APP_ID" >&2
+    fi
+  else
+    echo "Amphetamine is available from the Mac App Store"
+    echo "  Install manually: https://apps.apple.com/us/app/amphetamine/id$AMPHETAMINE_APP_ID"
   fi
 else
-  echo "Amphetamine is available from the Mac App Store"
-  echo "  Install manually: https://apps.apple.com/us/app/amphetamine/id$AMPHETAMINE_APP_ID"
+  echo "Amphetamine is already installed"
+fi
+
+# Make Amphetamine begin an indefinite session as soon as it launches at login.
+# Default Duration = 0 maps to "indefinite" in Amphetamine's session menu.
+# Plist lives in the App Store sandbox container, so write the path directly.
+if [[ -f "$AMPHETAMINE_PLIST" ]]; then
+  osascript -e 'tell application "Amphetamine" to quit' >/dev/null 2>&1 || true
+
+  defaults write "$AMPHETAMINE_PLIST" "Start Session At Launch" -bool true
+  defaults write "$AMPHETAMINE_PLIST" "Default Duration" -int 0
+
+  echo "configured Amphetamine to start an indefinite session at launch"
+else
+  echo "Amphetamine prefs not found yet; launch Amphetamine once then rerun macos/init" >&2
 fi
 
 cat <<EOF
 
 Amphetamine one-time setup:
 1. Install Amphetamine from the Mac App Store if it is not already installed.
-2. Open Amphetamine and enable Launch at Login.
-3. Create a Trigger for "Power Adapter Connected".
-4. Set the Trigger session duration to indefinite.
-5. Enable closed-display mode so the Mac stays awake with the lid closed.
-6. If Amphetamine prompts to install a helper script such as Power Protect, install it and approve the admin/authentication prompt.
-7. Approve any macOS permission prompts Amphetamine needs for login items or automation.
+2. Open Amphetamine and enable Launch at Login (so it starts at macOS startup).
+3. Enable closed-display mode so the Mac stays awake with the lid closed.
+4. If Amphetamine prompts to install a helper script such as Power Protect, install it and approve the admin/authentication prompt.
+5. Approve any macOS permission prompts Amphetamine needs for login items or automation.
 
 This repo config keeps the Mac awake with pmset, but lid-closed reliability depends on Amphetamine being configured.
+The repo also flips Amphetamine's "Start Session At Launch" + "Default Duration = indefinite" preferences automatically.
 EOF
