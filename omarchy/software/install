@@ -32,6 +32,7 @@ APPS=(
   valkey
   bun
   wl-clipboard-x11
+  proton-authenticator
 )
 
 cd "$INSTALL_DIRECTORY"
