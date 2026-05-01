@@ -2,10 +2,8 @@
   "$schema": "https://opencode.ai/tui.json",
   "theme": "system",
   "vim_system_clipboard_register": true,
-  "vim_enter_submit": false,
   "keybinds": {
     "leader": "ctrl+o",
-    "input_submit": "ctrl+return",
-    "input_newline": "return"
+    "input_force_submit": "ctrl+return"
   }
 }
