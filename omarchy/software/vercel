@@ -1,0 +1,5 @@
+#!/bin/sh
+
+if ! command -v vercel >/dev/null 2>&1; then
+  pnpm add -g vercel
+fi
