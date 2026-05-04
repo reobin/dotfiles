@@ -73,4 +73,14 @@ return {
 		lazy = true,
 		priority = 1000,
 	},
+	{
+		"vimcolorschemes/olive-crt.nvim",
+		lazy = true,
+		priority = 1000,
+	},
+	{
+		"vague-theme/vague.nvim",
+		lazy = true,
+		priority = 1000,
+	},
 }
