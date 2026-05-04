@@ -23,6 +23,6 @@ return {
   end,
   lazy = false,
   keys = {
-    { "<leader>e", "<cmd>Canola --float<cr>", desc = "Open Canola (float)" },
+    { "<leader>e", "<cmd>Oil --float<cr>", desc = "Open Canola (float)" },
   },
 }
