@@ -5,11 +5,11 @@ session_name_from_path() {
   local base worktree
 
   if [[ "$path" == "$HOME" ]]; then
-    printf ''
+    printf '~'
   elif [[ "$path" == "$HOME/"* ]]; then
     path="${path#"$HOME/"}"
     if [[ "$path" == "dev" ]]; then
-      path=""
+      path="dev"
     else
       path="${path#dev/}"
     fi
