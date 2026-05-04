@@ -34,7 +34,7 @@ APPS=(
   bun
   wl-clipboard-x11
   proton-authenticator
-  t.watch
+  thud.sh
 )
 
 cd "$INSTALL_DIRECTORY"

@@ -1,5 +1,0 @@
-#!/bin/sh
-
-if ! command -v t.watch >/dev/null 2>&1; then
-  pnpm add -g @reobin/t.watch
-fi
