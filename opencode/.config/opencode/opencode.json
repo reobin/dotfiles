@@ -3,7 +3,7 @@
   "theme": "system",
   "autoupdate": true,
   "plugin": [
-    "thud.sh"
+    "thud.sh@0.2.1"
   ],
   "default_agent": "plan",
   "agent": {
