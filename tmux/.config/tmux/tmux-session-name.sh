@@ -1,70 +1,26 @@
 #!/usr/bin/env bash
 
-abbreviate_path_component() {
-  local component="$1"
-
-  if [[ "$component" == "dev" ]]; then
-    printf 'd'
-  elif [[ "$component" == .* && "${#component}" -gt 2 ]]; then
-    printf '.%s' "${component:1:1}"
-  elif [[ "${#component}" -gt 4 ]]; then
-    printf '%s' "${component:0:1}"
-  else
-    printf '%s' "$component"
-  fi
-}
-
-compact_path() {
-  local path="$1"
-  local prefix=""
-  local compact=""
-  local component i
-  local -a components
-
-  if [[ "$path" == /* ]]; then
-    prefix="/"
-    path="${path#/}"
-  fi
-
-  IFS='/' read -r -a components <<< "$path"
-
-  for ((i = 0; i < ${#components[@]}; i++)); do
-    component="${components[$i]}"
-    [[ -z "$component" ]] && continue
-
-    if [[ "$i" -eq $((${#components[@]} - 1)) ]]; then
-      compact+="$component"
-    else
-      compact+="$(abbreviate_path_component "$component")/"
-    fi
-  done
-
-  printf '%s%s' "$prefix" "${compact%/}"
-}
-
 session_name_from_path() {
   local path="$1"
   local base worktree
 
   if [[ "$path" == "$HOME" ]]; then
-    printf '~'
+    printf ''
   elif [[ "$path" == "$HOME/"* ]]; then
     path="${path#"$HOME/"}"
-    if [[ "$path" == */.wt/* ]]; then
-      base="${path%%/.wt/*}"
-      worktree="${path#*/.wt/}"
-      printf '%s:%s' "$(compact_path "$base")" "$worktree"
+    if [[ "$path" == "dev" ]]; then
+      path=""
     else
-      compact_path "$path"
+      path="${path#dev/}"
     fi
+  fi
+
+  if [[ "$path" == */.wt/* ]]; then
+    base="${path%%/.wt/*}"
+    worktree="${path#*/.wt/}"
+    printf '%s~%s' "$base" "$worktree"
   else
-    if [[ "$path" == */.wt/* ]]; then
-      base="${path%%/.wt/*}"
-      worktree="${path#*/.wt/}"
-      printf '%s:%s' "$(compact_path "$base")" "$worktree"
-    else
-      compact_path "$path"
-    fi
+    printf '%s' "$path"
   fi
 }
 
