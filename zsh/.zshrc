@@ -33,6 +33,7 @@ eval "$(git wt --init zsh)"
 bindkey -e
 
 source ~/.config/zsh/tmux.zsh
+source ~/.config/zsh/hammerspoon.zsh
 source ~/.config/zsh/git.zsh
 source ~/.config/zsh/cursor.zsh
 source ~/.config/zsh/history.zsh

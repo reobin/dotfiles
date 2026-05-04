@@ -10,6 +10,7 @@ cd "$DOTFILES_DIRECTORY"
 CONFIGS=(
   git
   ghostty
+  hammerspoon
   karabiner
   nvim
   opencode

@@ -13,6 +13,8 @@ APPS=(
   bun
   claude
   ocv
+  pnpm
+  thud.sh
 )
 
 for app in "${APPS[@]}"; do
