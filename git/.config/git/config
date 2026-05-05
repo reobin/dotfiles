@@ -45,6 +45,11 @@
 [user]
 	name = Robin Gagnon
 	email = me@reobin.dev
+	signingkey = ~/.ssh/id_rsa.pub
+[gpg]
+	format = ssh
+[commit]
+	gpgsign = true
 [wt]
 	copyignored = true
 	copyuntracked = true
