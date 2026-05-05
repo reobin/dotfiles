@@ -3,7 +3,7 @@ th() {
   local title="thud.sh"
   local width="${TH_WIDTH:-360}"
   local command_name command_path addr height i launch_command previous_addr active_workspace focus_addr
-  local class_arg title_arg
+  local class_arg title_arg old_addr
 
   for command_name in ghostty hyprctl jq thud.sh; do
     if ! command -v "$command_name" >/dev/null 2>&1; then
@@ -19,28 +19,32 @@ th() {
     map(select(.class == $class or .title == "thud.sh" or .initialTitle == "thud.sh")) | first | .address // empty
   ')" || return 1
 
+  if [[ -n "$addr" ]]; then
+    old_addr="$addr"
+    hyprctl dispatch closewindow "address:$addr" >/dev/null || return 1
+    addr=""
+  fi
+
+  printf -v class_arg '%q' "$class"
+  printf -v title_arg '%q' "$title"
+  command_path="$(command -v thud.sh)" || return 1
+  printf -v command_path '%q' "$command_path"
+  launch_command="ghostty --gtk-single-instance=false --class=$class_arg --title=$title_arg --gtk-titlebar=false -e $command_path"
+
+  hyprctl dispatch exec -- "$launch_command" >/dev/null || return 1
+
+  for i in {1..50}; do
+    addr="$(set -o pipefail; hyprctl clients -j | jq -r --arg class "$class" '
+      map(select(.class == $class or .title == "thud.sh" or .initialTitle == "thud.sh")) | first | .address // empty
+    ')" || return 1
+
+    [[ -n "$addr" && "$addr" != "$old_addr" ]] && break
+    sleep 0.05
+  done
+
   if [[ -z "$addr" ]]; then
-    printf -v class_arg '%q' "$class"
-    printf -v title_arg '%q' "$title"
-    command_path="$(command -v thud.sh)" || return 1
-    printf -v command_path '%q' "$command_path"
-    launch_command="ghostty --gtk-single-instance=false --class=$class_arg --title=$title_arg --gtk-titlebar=false -e $command_path"
-
-    hyprctl dispatch exec -- "$launch_command" >/dev/null || return 1
-
-    for i in {1..50}; do
-      addr="$(set -o pipefail; hyprctl clients -j | jq -r --arg class "$class" '
-        map(select(.class == $class or .title == "thud.sh" or .initialTitle == "thud.sh")) | first | .address // empty
-      ')" || return 1
-
-      [[ -n "$addr" ]] && break
-      sleep 0.05
-    done
-
-    if [[ -z "$addr" ]]; then
-      printf 'th: timed out waiting for Ghostty window\n' >&2
-      return 1
-    fi
+    printf 'th: timed out waiting for Ghostty window\n' >&2
+    return 1
   fi
 
   hyprctl -q --batch \
