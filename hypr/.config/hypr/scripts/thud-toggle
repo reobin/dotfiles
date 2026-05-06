@@ -1,0 +1,69 @@
+#!/bin/sh
+address=$(hyprctl clients -j | jq -r '.[] | select(.class == "dev.reobin.thud") | .address')
+if [ -n "$address" ]; then
+  hyprctl dispatch closewindow "address:$address"
+else
+  target_width=300
+  prev_address=$(hyprctl activewindow -j | jq -r '.address // empty')
+  active_width=$(hyprctl activewindow -j | jq -r '.size[0] // empty')
+  default_split_ratio=$(hyprctl getoption dwindle:default_split_ratio -j | jq -r '.float // empty')
+  split_bias=$(hyprctl getoption dwindle:split_bias -j | jq -r '.int // empty')
+  restore_dwindle() {
+    if [ -n "$default_split_ratio" ]; then
+      hyprctl keyword dwindle:default_split_ratio "$default_split_ratio" >/dev/null
+    fi
+    if [ -n "$split_bias" ]; then
+      hyprctl keyword dwindle:split_bias "$split_bias" >/dev/null
+    fi
+  }
+
+  if [ -n "$active_width" ] && [ "$active_width" -gt 0 ]; then
+    initial_split_ratio=$(jq -nr --argjson width "$active_width" --argjson target "$target_width" '
+      if $width <= $target then 1.9 else $target / ($width - $target) end
+      | if . < 0.1 then 0.1 elif . > 1.9 then 1.9 else . end
+    ')
+    hyprctl keyword dwindle:split_bias 0 >/dev/null
+    hyprctl keyword dwindle:default_split_ratio "$initial_split_ratio" >/dev/null
+  fi
+
+  # Preselect left so the next window spawns on the left side of the split
+  hyprctl dispatch layoutmsg "preselect l"
+
+  uwsm-app -- ghostty --class=dev.reobin.thud --title=thud -e /home/reobin/.local/share/pnpm/thud >/dev/null 2>&1 &
+
+  # Wait for thud to appear
+  for i in $(seq 1 50); do
+    address=$(hyprctl clients -j | jq -r '.[] | select(.class == "dev.reobin.thud") | .address')
+    if [ -n "$address" ]; then
+      break
+    fi
+    sleep 0.05
+  done
+
+  if [ -n "$address" ]; then
+    # Resize width to ~300px (resizeactive is tiling-aware, relative)
+    current_width=$(hyprctl clients -j | jq -r --arg address "$address" '.[] | select(.address == $address) | .size[0]')
+    if [ -n "$current_width" ]; then
+      delta=$((target_width - current_width))
+    else
+      delta=0
+    fi
+
+    if [ "$delta" -ne 0 ]; then
+      hyprctl dispatch focuswindow "address:$address" >/dev/null
+      hyprctl dispatch resizeactive "$delta" 0 >/dev/null
+    fi
+    restore_dwindle
+
+    # Return focus to previous window after a brief delay to outrace uwsm focus-steal
+    if [ -n "$prev_address" ] && [ "$prev_address" != "$address" ]; then
+      hyprctl dispatch focuswindow "address:$prev_address" >/dev/null
+      (
+        sleep 0.3
+        hyprctl dispatch focuswindow "address:$prev_address" >/dev/null
+      ) &
+    fi
+  else
+    restore_dwindle
+  fi
+fi
