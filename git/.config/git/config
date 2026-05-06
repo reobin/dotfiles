@@ -1,6 +1,7 @@
 [alias]
   ca = commit --amend --no-edit
   p = push
+  pf = push --force-with-lease
   pl = pull
   cp = cherry-pick
   f = fetch
