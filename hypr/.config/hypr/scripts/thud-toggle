@@ -3,7 +3,7 @@ address=$(hyprctl clients -j | jq -r '.[] | select(.class == "dev.reobin.thud") 
 if [ -n "$address" ]; then
   hyprctl dispatch closewindow "address:$address"
 else
-  target_width=300
+  target_width=400
   prev_address=$(hyprctl activewindow -j | jq -r '.address // empty')
   active_width=$(hyprctl activewindow -j | jq -r '.size[0] // empty')
   default_split_ratio=$(hyprctl getoption dwindle:default_split_ratio -j | jq -r '.float // empty')
@@ -41,7 +41,7 @@ else
   done
 
   if [ -n "$address" ]; then
-    # Resize width to ~300px (resizeactive is tiling-aware, relative)
+    # Resize width to ~400px (resizeactive is tiling-aware, relative)
     current_width=$(hyprctl clients -j | jq -r --arg address "$address" '.[] | select(.address == $address) | .size[0]')
     if [ -n "$current_width" ]; then
       delta=$((target_width - current_width))
