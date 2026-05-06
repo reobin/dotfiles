@@ -1,0 +1,62 @@
+[alias]
+  ca = commit --amend --no-edit
+  p = push
+  pf = push --force-with-lease
+  pl = pull
+  cp = cherry-pick
+  f = fetch
+  r = rebase
+  rt = reset
+  rts = reset --soft
+  rth = reset --hard
+  ri = "!f() { git rebase -i HEAD~$1; }; f"
+  rir = rebase -i --root
+  c = commit
+  b = branch
+  co = checkout
+  a = add .
+  s = status
+  sh = stash
+  shp = stash pop
+  shd = stash drop
+  l = log
+  bc = !"$HOME/.config/git/scripts/branch-cleanup"
+[init]
+	defaultBranch = main
+[pull]
+	rebase = true 			 # Rebase (instead of merge) on pull
+[push]
+	autoSetupRemote = true   # Automatically set upstream branch on push
+[diff]
+	algorithm = histogram    # Clearer diffs on moved/edited lines
+	colorMoved = plain       # Highlight moved blocks in diffs
+	mnemonicPrefix = true    # More intuitive refs in diff output
+	tool = nvimdiff
+[commit]
+	verbose = true           # Include diff comment in commit message template
+[column]
+	ui = auto 			     # Output in columns when possible
+[branch]
+	sort = -committerdate    # Sort branches by most recent commit first
+[tag]
+	sort = -version:refname  # Sort version numbers as you would expect
+[rerere]
+	enabled = true           # Record and reuse conflict resolutions
+	autoupdate = true        # Apply stored conflict resolutions automatically
+[user]
+	name = Robin Gagnon
+	email = me@reobin.dev
+	signingkey = ~/.ssh/id_rsa.pub
+[gpg]
+	format = ssh
+[commit]
+	gpgsign = true
+[wt]
+	copyignored = true
+	copyuntracked = true
+	copymodified = true
+	hook = mise trust .
+[credential]
+	helper = cache --timeout=604800
+[merge]
+	tool = nvimdiff
