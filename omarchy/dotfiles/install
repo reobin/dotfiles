@@ -22,6 +22,7 @@ CONFIGS=(
   opencode
   claude
   voxtype
+  helium
 )
 
 for config in "${CONFIGS[@]}"; do

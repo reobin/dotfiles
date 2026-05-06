@@ -1,0 +1,5 @@
+#!/bin/sh
+
+rm -f ~/.config/helium-browser-flags.conf
+
+sudo stow helium
