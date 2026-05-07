@@ -13,16 +13,4 @@ tl() {
   tmux select-pane -t "$ai_pane"
 }
 
-tmux_session_name_refresh() {
-  [[ -z $TMUX ]] && return 0
 
-  local session_id
-  session_id=$(tmux display-message -p '#{session_id}' 2>/dev/null) || return 0
-  ~/.config/tmux/tmux-session-name.sh "$session_id"
-}
-
-if [[ -n $TMUX ]]; then
-  autoload -Uz add-zsh-hook
-  add-zsh-hook chpwd tmux_session_name_refresh
-  tmux_session_name_refresh
-fi
