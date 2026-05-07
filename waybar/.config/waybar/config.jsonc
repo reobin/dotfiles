@@ -21,6 +21,7 @@
     "bluetooth",
     "network",
     "pulseaudio",
+    "hyprland/language",
     "cpu",
     "memory",
     "battery",
@@ -131,6 +132,11 @@
       "headset": "",
       "default": ["", "", ""],
     },
+  },
+  "hyprland/language": {
+    "format": "{short} ",
+    "tooltip-format": "{long}",
+    "on-click": "hyprctl switchxkblayout all next",
   },
   "custom/voxtype": {
     "exec": "omarchy-voxtype-status",
