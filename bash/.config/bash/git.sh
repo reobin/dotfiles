@@ -1,3 +1,19 @@
+gc() {
+  local repo_url="$1"
+  local target_dir="$2"
+
+  if [[ -z "$repo_url" ]]; then
+    printf 'Usage: gc <repository-url> [directory]\n'
+    return 1
+  fi
+
+  if [[ -n "$target_dir" ]]; then
+    git clone "$repo_url" "$target_dir" && cd "$target_dir"
+  else
+    git clone "$repo_url" && cd "$(basename "$repo_url" .git)"
+  fi
+}
+
 gd() {
   local main current_dir branch output
 
