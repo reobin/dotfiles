@@ -29,5 +29,5 @@ if [ "$(tailscale_field '.BackendState')" = "Running" ]; then
   ip=$(tailscale_ip)
   tooltip=$(printf '%s\n%s' "$dns_name" "$ip")
 
-  [ -n "$hostname" ] && jq -nc --arg text "󰖂 $hostname" --arg tooltip "$tooltip" '{text: $text, tooltip: $tooltip, class: "vpn-on"}'
+  [ -n "$hostname" ] && jq -nc --arg text "$hostname 󰖂" --arg tooltip "$tooltip" '{text: $text, tooltip: $tooltip, class: "vpn-on"}'
 fi
