@@ -34,6 +34,7 @@ APPS=(
   bun
   wl-clipboard-x11
   proton-authenticator
+  typst
   thud.sh
 )
 
