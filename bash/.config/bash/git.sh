@@ -1,25 +1,9 @@
 gc() {
-  local repo_url="$1"
-  local target_dir="$2"
-
-  if [[ -z "$repo_url" ]]; then
-    printf 'Usage: gc <repository-url> [directory]\n'
-    return 1
-  fi
-
-  if [[ -n "$target_dir" ]]; then
-    git clone "$repo_url" "$target_dir" && cd "$target_dir"
-  else
-    git clone "$repo_url" && cd "$(basename "$repo_url" .git)"
-  fi
-}
-
-gcl() {
   local repo="$1"
   local target_dir="$2"
 
   if [[ -z "$repo" ]]; then
-    printf 'Usage: gcl <owner/repo> [directory]\n'
+    printf 'Usage: gc <owner/repo> [directory]\n'
     return 1
   fi
 
