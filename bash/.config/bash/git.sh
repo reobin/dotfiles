@@ -14,6 +14,42 @@ gc() {
   fi
 }
 
+gcl() {
+  local repo="$1"
+  local target_dir="$2"
+
+  if [[ -z "$repo" ]]; then
+    printf 'Usage: gcl <owner/repo> [directory]\n'
+    return 1
+  fi
+
+  if ! command -v gh >/dev/null 2>&1; then
+    printf 'gh CLI is not installed\n'
+    return 1
+  fi
+
+  local dir_name
+  if [[ -n "$target_dir" ]]; then
+    dir_name="$target_dir"
+  else
+    dir_name="$(basename "$repo" .git)"
+  fi
+
+  if gh repo clone "$repo" "$target_dir" 2>/dev/null; then
+    cd "$dir_name"
+  else
+    printf 'SSH clone failed, trying HTTPS...\n'
+    if [[ "$repo" != *"://"* && "$repo" != *"@"* ]]; then
+      if gh repo clone "https://github.com/$repo.git" "$target_dir" 2>/dev/null; then
+        cd "$dir_name"
+        return 0
+      fi
+    fi
+    printf 'Clone failed.\n'
+    return 1
+  fi
+}
+
 gd() {
   local main current_dir branch output
 
