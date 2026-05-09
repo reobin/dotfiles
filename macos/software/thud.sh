@@ -5,4 +5,4 @@ if command -v thud.sh >/dev/null 2>&1; then
   return 0
 fi
 
-pnpm add -g thud.sh
+pnpm add -g thud.sh@latest

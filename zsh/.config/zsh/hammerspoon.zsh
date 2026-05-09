@@ -6,5 +6,5 @@ th() {
     return 1
   fi
 
-  /usr/bin/open "hammerspoon://thud?width=$width"
+  hs -A -q -c "thud.show({ width = $width })"
 }
