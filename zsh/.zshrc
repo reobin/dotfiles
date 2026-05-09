@@ -18,9 +18,6 @@ export DOTFILES="$HOME/dotfiles"
 
 export PATH="$HOME/.local/bin:$PATH"
 
-export PNPM_HOME="$HOME/Library/pnpm"
-export PATH="$PNPM_HOME:$PATH"
-
 export BUN_INSTALL="$HOME/.bun"
 export PATH="$BUN_INSTALL/bin:$PATH"
 
@@ -43,3 +40,11 @@ eval "$(starship init zsh)"
 eval "$(zoxide init zsh --cmd cd)"
 
 [ -s "$BUN_INSTALL/_bun" ] && source "$BUN_INSTALL/_bun"
+
+# pnpm
+export PNPM_HOME="/Users/reobin/Library/pnpm"
+case ":$PATH:" in
+  *":$PNPM_HOME/bin:"*) ;;
+  *) export PATH="$PNPM_HOME/bin:$PATH" ;;
+esac
+# pnpm end
