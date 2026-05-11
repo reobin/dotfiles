@@ -46,6 +46,7 @@ path_prepend "$HOME/.opencode/bin"
 
 export PNPM_HOME="/home/reobin/.local/share/pnpm"
 path_prepend "$PNPM_HOME"
+path_prepend "$PNPM_HOME/bin"
 
 export BUN_INSTALL="$HOME/.bun"
 path_prepend "$BUN_INSTALL/bin"
