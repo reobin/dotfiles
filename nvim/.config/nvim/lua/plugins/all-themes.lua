@@ -84,6 +84,11 @@ return {
     priority = 1000,
   },
   {
+    "webhooked/kanso.nvim",
+    lazy = true,
+    priority = 1000,
+  },
+  {
     "vimcolorschemes/olive-crt.nvim",
     lazy = true,
     priority = 1000,
