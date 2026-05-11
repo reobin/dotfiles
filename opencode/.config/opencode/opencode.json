@@ -1,6 +1,5 @@
 {
   "$schema": "https://opencode.ai/config.json",
-  "theme": "system",
   "autoupdate": true,
   "plugin": ["thud.sh"],
   "default_agent": "plan",
