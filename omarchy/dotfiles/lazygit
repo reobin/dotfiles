@@ -1,0 +1,5 @@
+#!/bin/sh
+
+rm -rf ~/.config/lazygit
+
+sudo stow lazygit

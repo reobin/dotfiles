@@ -23,6 +23,7 @@ CONFIGS=(
   claude
   voxtype
   helium
+  lazygit
 )
 
 for config in "${CONFIGS[@]}"; do
