@@ -24,7 +24,6 @@ APPS=(
   turso-cli
   wrangler
   vercel
-  hyprdynamicmonitors
   git-wt
   opencode
   ocv
