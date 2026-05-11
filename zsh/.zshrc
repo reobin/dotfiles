@@ -16,14 +16,18 @@ alias ts='tailscale'
 
 export DOTFILES="$HOME/dotfiles"
 
-export PATH="$HOME/.local/bin:$PATH"
-
 export BUN_INSTALL="$HOME/.bun"
-export PATH="$BUN_INSTALL/bin:$PATH"
+export PNPM_HOME="/Users/reobin/Library/pnpm"
 
 export EDITOR='nvim'
 export VISUAL='nvim'
 export GIT_EDITOR='nvim'
+
+source ~/.config/zsh/path.zsh
+
+pathadd "$HOME/.local/bin"
+pathadd "$BUN_INSTALL/bin"
+pathadd "$PNPM_HOME/bin"
 
 eval "$(git wt --init zsh)"
 
@@ -40,11 +44,3 @@ eval "$(starship init zsh)"
 eval "$(zoxide init zsh --cmd cd)"
 
 [ -s "$BUN_INSTALL/_bun" ] && source "$BUN_INSTALL/_bun"
-
-# pnpm
-export PNPM_HOME="/Users/reobin/Library/pnpm"
-case ":$PATH:" in
-  *":$PNPM_HOME/bin:"*) ;;
-  *) export PATH="$PNPM_HOME/bin:$PATH" ;;
-esac
-# pnpm end
