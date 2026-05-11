@@ -12,6 +12,7 @@ CONFIGS=(
   ghostty
   hammerspoon
   karabiner
+  lazygit
   nvim
   opencode
   claude

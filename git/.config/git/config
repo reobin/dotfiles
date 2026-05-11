@@ -19,7 +19,7 @@
   sh = stash
   shp = stash pop
   shd = stash drop
-  l = log
+  l = "!f() { git --no-pager log -n ${1:-10}; }; f"
   bc = !"$HOME/.config/git/scripts/branch-cleanup"
 [init]
 	defaultBranch = main
