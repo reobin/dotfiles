@@ -21,7 +21,6 @@
   shd = stash drop
   l = log
   bc = !"$HOME/.config/git/scripts/branch-cleanup"
-	d = !hunk diff
 [init]
 	defaultBranch = main
 [pull]

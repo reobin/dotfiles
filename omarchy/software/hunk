@@ -1,5 +1,0 @@
-#!/bin/sh
-
-if ! command -v hunk >/dev/null 2>&1; then
-  pnpm add -g hunkdiff
-fi

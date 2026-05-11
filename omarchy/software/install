@@ -12,7 +12,6 @@ APPS=(
   pnpm
   keyd
   helium-browser
-  hunk
   slack-desktop
   telegram-desktop
   openvpn
