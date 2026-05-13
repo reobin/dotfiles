@@ -19,6 +19,11 @@ gc() {
     dir_name="$(basename "$repo" .git)"
   fi
 
+  if [[ -d "$dir_name" ]]; then
+    cd "$dir_name"
+    return 0
+  fi
+
   if gh repo clone "$repo" "$target_dir" 2>/dev/null; then
     cd "$dir_name"
   else
