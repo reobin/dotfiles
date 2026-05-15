@@ -29,7 +29,7 @@ else
   # Preselect left so the next window spawns on the left side of the split
   hyprctl dispatch layoutmsg "preselect l"
 
-  uwsm-app -- ghostty --class=dev.reobin.thud --title=thud -e /home/reobin/.local/share/pnpm/thud >/dev/null 2>&1 &
+  uwsm-app -- ghostty --class=dev.reobin.thud --title=thud -e "$HOME/.local/share/pnpm/bin/thud" >/dev/null 2>&1 &
 
   # Wait for thud to appear
   for i in $(seq 1 50); do
