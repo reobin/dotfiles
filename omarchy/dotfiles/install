@@ -24,6 +24,7 @@ CONFIGS=(
   voxtype
   helium
   lazygit
+  qutebrowser
 )
 
 for config in "${CONFIGS[@]}"; do

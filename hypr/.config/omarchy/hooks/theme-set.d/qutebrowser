@@ -1,0 +1,5 @@
+#!/bin/bash
+
+if pgrep -x qutebrowser >/dev/null; then
+  qutebrowser ':config-source'
+fi

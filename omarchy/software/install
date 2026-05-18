@@ -35,6 +35,7 @@ APPS=(
   proton-authenticator
   typst
   thud.sh
+  qutebrowser
 )
 
 cd "$INSTALL_DIRECTORY"
