@@ -1,3 +1,10 @@
 #!/bin/sh
 
 yay -S --noconfirm --needed qutebrowser
+
+xdg-settings set default-web-browser org.qutebrowser.qutebrowser.desktop
+xdg-mime default org.qutebrowser.qutebrowser.desktop text/html
+xdg-mime default org.qutebrowser.qutebrowser.desktop x-scheme-handler/http
+xdg-mime default org.qutebrowser.qutebrowser.desktop x-scheme-handler/https
+xdg-mime default org.qutebrowser.qutebrowser.desktop x-scheme-handler/about
+xdg-mime default org.qutebrowser.qutebrowser.desktop x-scheme-handler/unknown
