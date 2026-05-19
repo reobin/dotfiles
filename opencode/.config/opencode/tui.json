@@ -4,6 +4,7 @@
   "vim_system_clipboard_register": true,
   "keybinds": {
     "leader": "ctrl+o",
-    "prompt_submit": "ctrl+return"
+    "messages_half_page_up": "ctrl+u",
+    "messages_half_page_down": "ctrl+d"
   }
 }

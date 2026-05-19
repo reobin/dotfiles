@@ -3,8 +3,9 @@
   "autoupdate": true,
   "plugin": ["thud.sh"],
   "default_agent": "plan",
+  "model": "openai/gpt-5.5",
   "agent": {
-    "plan": { "model": "openai/gpt-5.5", "variant": "high" },
-    "build": { "model": "openai/gpt-5.5", "variant": "low" }
+    "plan": { "variant": "low" },
+    "build": { "variant": "low" }
   }
 }
