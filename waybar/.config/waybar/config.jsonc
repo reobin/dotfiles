@@ -27,6 +27,7 @@
     "hyprland/language",
     "cpu",
     "memory",
+    "temperature",
     "battery",
   ],
   "hyprland/workspaces": {
@@ -140,6 +141,13 @@
     "format": "{short} ",
     "tooltip-format": "{long}",
     "on-click": "hyprctl switchxkblayout all next",
+  },
+  "temperature": {
+    "hwmon-path": "/sys/class/hwmon/hwmon6/temp1_input",
+    "interval": 5,
+    "format": "{temperatureC}°C ",
+    "critical-threshold": 85,
+    "on-click": "omarchy-launch-or-focus-tui btop",
   },
   "custom/voxtype": {
     "exec": "omarchy-voxtype-status",

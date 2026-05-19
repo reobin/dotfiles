@@ -60,6 +60,7 @@
 #pulseaudio,
 #cpu,
 #memory,
+#temperature,
 #battery,
 #language {
   min-width: 12px;
@@ -109,6 +110,10 @@ tooltip {
 #custom-idle-indicator.active,
 #custom-notification-silencing-indicator.active {
   color: #a55555;
+}
+
+#temperature.critical {
+  color: #e06c75;
 }
 
 #custom-voxtype {
