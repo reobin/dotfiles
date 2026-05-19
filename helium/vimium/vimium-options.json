@@ -1,0 +1,6 @@
+{
+  "keyMappings": "map J nextTab\nmap K previousTab",
+  "newTabDestination": "browserNewTabPage",
+  "searchEngines": "",
+  "settingsVersion": "2.4.2"
+}
