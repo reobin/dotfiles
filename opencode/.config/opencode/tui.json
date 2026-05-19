@@ -5,6 +5,8 @@
   "keybinds": {
     "leader": "ctrl+o",
     "messages_half_page_up": "ctrl+u",
-    "messages_half_page_down": "ctrl+d"
+    "messages_half_page_down": "ctrl+d",
+    "messages_first": "ctrl+a",
+    "messages_last": "ctrl+e"
   }
 }
