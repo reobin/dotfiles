@@ -1,1 +1,10 @@
+gui:
+  tabWidth: 2
+  mouseEvents: false
+  sidePanelWidth: 0.25
+  showRandomTip: false
+  showCommandLog: false
+  nerdFontsVersion: "3"
+  commitHashLength: 0
+  border: single
 promptToReturnFromSubprocess: false
