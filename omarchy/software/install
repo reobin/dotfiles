@@ -12,6 +12,7 @@ APPS=(
   pnpm
   keyd
   helium-browser
+  hunk
   slack-desktop
   telegram-desktop
   openvpn
@@ -35,7 +36,6 @@ APPS=(
   proton-authenticator
   typst
   thud.sh
-  qutebrowser
 )
 
 cd "$INSTALL_DIRECTORY"
