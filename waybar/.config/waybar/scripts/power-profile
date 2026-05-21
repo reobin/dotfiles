@@ -1,0 +1,24 @@
+#!/bin/sh
+
+PROFILES="power-saver balanced performance"
+
+case "$1" in
+  --next)
+    current=$(powerprofilesctl get)
+    next=$(echo "$PROFILES" | tr ' ' '\n' | awk -v cur="$current" '{if (p) {print; exit}} {p = ($0 == cur)}')
+    [ -z "$next" ] && next=$(echo "$PROFILES" | awk '{print $1}')
+    powerprofilesctl set "$next"
+    exit 0
+    ;;
+esac
+
+current=$(powerprofilesctl get)
+
+case "$current" in
+  performance) icon="" ;;
+  balanced)    icon="" ;;
+  power-saver) icon="" ;;
+  *)           icon="?" ;;
+esac
+
+echo "{\"text\":\"$icon\",\"tooltip\":\"$current\",\"class\":\"$current\"}"

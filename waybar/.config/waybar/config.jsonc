@@ -2,6 +2,7 @@
   "include": [
     "~/.config/waybar/conf.d/openvpn.jsonc",
     "~/.config/waybar/conf.d/tailscale.jsonc",
+    "~/.config/waybar/conf.d/power-profile.jsonc",
   ],
   "reload_style_on_change": true,
   "layer": "top",
@@ -28,6 +29,7 @@
     "cpu",
     "memory",
     "temperature",
+    "custom/power-profile",
     "battery",
   ],
   "hyprland/workspaces": {

@@ -78,14 +78,14 @@ tooltip {
 
 #clock,
 #custom-clock {
-  margin: 0 5px;
+  margin: 0 10px;
   padding: 0;
 }
 
 #custom-update {
   min-width: 12px;
   font-size: 10px;
-  margin: 0 5px;
+  margin: 0 10px;
   padding: 0;
 }
 
@@ -97,8 +97,7 @@ tooltip {
 #custom-idle-indicator,
 #custom-notification-silencing-indicator {
   min-width: 12px;
-  margin-left: 5px;
-  margin-right: 0;
+  margin: 0 10px;
   font-size: 10px;
   padding: 0;
 }
@@ -118,11 +117,29 @@ tooltip {
 
 #custom-voxtype {
   min-width: 12px;
-  margin: 0 5px;
+  margin: 0 10px;
   padding: 0;
 }
 
 #custom-voxtype.recording {
   color: #a55555;
+}
+
+#custom-power-profile {
+  min-width: 12px;
+  margin: 0 10px;
+  padding: 0;
+}
+
+#custom-power-profile.performance {
+  color: #f7768e;
+}
+
+#custom-power-profile.balanced {
+  color: #9ece6a;
+}
+
+#custom-power-profile.power-saver {
+  color: #e0af68;
 }
 
