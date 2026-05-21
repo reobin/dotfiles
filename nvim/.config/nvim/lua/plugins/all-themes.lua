@@ -98,4 +98,9 @@ return {
     lazy = true,
     priority = 1000,
   },
+  {
+    "cocopon/iceberg.vim",
+    lazy = true,
+    priority = 1000,
+  },
 }
