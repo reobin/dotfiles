@@ -115,6 +115,11 @@ tooltip {
   color: #e06c75;
 }
 
+#cpu.critical,
+#memory.critical {
+  color: #e06c75;
+}
+
 #custom-voxtype {
   min-width: 12px;
   margin: 0 10px;

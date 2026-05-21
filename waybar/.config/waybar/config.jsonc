@@ -71,12 +71,20 @@
     "format": "{usage}% 󰍛",
     "on-click": "omarchy-launch-or-focus-tui btop",
     "on-click-right": "alacritty",
+    "states": {
+      "warning": 80,
+      "critical": 95,
+    },
   },
   "memory": {
     "interval": 5,
     "format": "{percentage}% ",
     "on-click": "omarchy-launch-or-focus-tui btop",
     "on-click-right": "alacritty",
+    "states": {
+      "warning": 80,
+      "critical": 95,
+    },
   },
   "custom/clock": {
     "exec": "date +'%A, %B %-e | %H:%M' | tr '[:upper:]' '[:lower:]'",
