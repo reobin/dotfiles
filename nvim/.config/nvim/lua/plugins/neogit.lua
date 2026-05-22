@@ -11,6 +11,9 @@ return {
       width = 0.9,
       height = 0.9,
     },
+    status = {
+      HEAD_folded = true,
+    },
   },
   keys = {
     { "<leader>gg", "<cmd>Neogit<cr>", desc = "Neogit" },
