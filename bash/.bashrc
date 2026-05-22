@@ -37,6 +37,7 @@ source "$HOME/.config/bash/git.sh"
 source "$HOME/.config/bash/open.sh"
 source "$HOME/.config/bash/trash.sh"
 source "$HOME/.config/bash/aws.sh"
+source "$HOME/.config/bash/ssh.sh"
 source "$HOME/.config/bash/path.sh"
 source "$HOME/.config/bash/history.sh"
 
