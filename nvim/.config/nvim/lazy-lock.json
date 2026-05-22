@@ -1,6 +1,6 @@
 {
   "LazyVim": { "branch": "main", "commit": "28db03f958d58dfff3c647ce28fdc1cb88ac158d" },
-  "aether.nvim": { "branch": "v3", "commit": "e4c485f6fea6170fe2da17e87ca98cd25d215cd5" },
+  "aether": { "branch": "v3", "commit": "ffe6f242ae47174cab7d8d81b71c15d864c36aa3" },
   "bamboo.nvim": { "branch": "master", "commit": "e74ac25613cd537f7d2d924a54ed479c88537a43" },
   "blink-copilot": { "branch": "main", "commit": "7ad8209b2f880a2840c94cdcd80ab4dc511d4f39" },
   "blink.cmp": { "branch": "main", "commit": "b19413d214068f316c78978b08264ed1c41830ec" },
