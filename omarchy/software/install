@@ -36,6 +36,7 @@ APPS=(
   proton-authenticator
   typst
   thud.sh
+  veracrypt
 )
 
 cd "$INSTALL_DIRECTORY"
