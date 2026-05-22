@@ -1,8 +1,9 @@
 -- Make highlight groups transparent while preserving their other attributes
 local function make_transparent(name)
 	local ok, hl = pcall(vim.api.nvim_get_hl, 0, { name = name, link = false })
-	if ok then
+	if ok and next(hl) then
 		hl.bg = nil
+		hl.ctermbg = nil
 		vim.api.nvim_set_hl(0, name, hl)
 	end
 end
@@ -20,6 +21,10 @@ local groups = {
 	"SignColumn",
 	"LineNr",
 	"CursorLineNr",
+	"DiagnosticSignInfo",
+	"DiagnosticSignWarn",
+	"DiagnosticSignHint",
+	"DiagnosticSignError",
 	"NormalNC",
 	"WhichKeyFloat",
 	"TelescopeBorder",
