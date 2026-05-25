@@ -1,0 +1,8 @@
+#!/usr/bin/env bash
+
+if command -v openclaw >/dev/null 2>&1; then
+  echo "openclaw is already installed"
+  return 0
+fi
+
+curl -fsSL https://openclaw.ai/install.sh | bash

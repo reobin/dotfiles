@@ -45,3 +45,5 @@ eval "$(starship init zsh)"
 eval "$(zoxide init zsh --cmd cd)"
 
 [ -s "$BUN_INSTALL/_bun" ] && source "$BUN_INSTALL/_bun"
+
+[ -f "/Users/reobin/.openclaw/completions/openclaw.zsh" ] && source "/Users/reobin/.openclaw/completions/openclaw.zsh"
