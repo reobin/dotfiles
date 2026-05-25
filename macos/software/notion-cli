@@ -1,0 +1,8 @@
+#!/usr/bin/env bash
+
+if command -v ntn >/dev/null 2>&1; then
+  echo "ntn is already installed"
+  return 0
+fi
+
+npm install -g ntn
