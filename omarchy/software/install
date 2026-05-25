@@ -37,6 +37,7 @@ APPS=(
   typst
   thud.sh
   veracrypt
+  trezor-suite
 )
 
 cd "$INSTALL_DIRECTORY"
