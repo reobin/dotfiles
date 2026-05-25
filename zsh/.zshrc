@@ -27,6 +27,7 @@ source ~/.config/zsh/path.zsh
 
 pathadd "$HOME/.local/bin"
 pathadd "$BUN_INSTALL/bin"
+pathadd "$PNPM_HOME"
 pathadd "$PNPM_HOME/bin"
 
 eval "$(git wt --init zsh)"
