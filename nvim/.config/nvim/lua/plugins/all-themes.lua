@@ -103,4 +103,9 @@ return {
     lazy = true,
     priority = 1000,
   },
+  {
+    "szymonwilczek/arete.nvim",
+    lazy = true,
+    priority = 1000,
+  },
 }
