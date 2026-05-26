@@ -2,15 +2,12 @@
   "exclusionRules": [
     {
       "passKeys": "",
-      "pattern": "https?://mail.google.com/*"
-    },
-    {
-      "passKeys": "",
       "pattern": "https?://mail.proton.me/*"
     }
   ],
-  "keyMappings": "map J nextTab\nmap K previousTab\nmap <a-j> nextTab\nmap <a-k> previousTab",
+  "keyMappings": "map J nextTab\nmap K previousTab\nmap <a-j> nextTab\nmap <a-k> previousTab\nmap <c-d> scrollPageDown\nmap <c-u> scrollPageUp",
   "newTabDestination": "browserNewTabPage",
   "searchEngines": "",
-  "settingsVersion": "2.4.2"
+  "settingsVersion": "2.4.2",
+  "userDefinedLinkHintCss": "div > .vimiumHintMarker {\n  background: rgba(17, 19, 26, 0.72);\n  border: 1px solid rgba(122, 162, 247, 0.75);\n  border-radius: 0;\n  box-shadow: none;\n  color: #c0caf5;\n  font-family: \"JetBrains Mono\", \"FiraCode Nerd Font\", monospace;\n  font-size: 11px;\n  font-weight: 700;\n  letter-spacing: 0.04em;\n  line-height: 1;\n  padding: 2px 5px;\n  text-shadow: none;\n  text-transform: uppercase;\n}\n\ndiv > .vimiumHintMarker span {\n  color: inherit;\n  font-size: inherit;\n  font-weight: inherit;\n  line-height: inherit;\n  text-shadow: none;\n}\n\ndiv > .vimiumHintMarker > .matchingCharacter {\n  background: rgba(122, 162, 247, 0.9);\n  border-radius: 0;\n  box-shadow: none;\n  color: #11131a;\n  font-size: inherit;\n  font-weight: inherit;\n  line-height: inherit;\n  padding: 0;\n  text-shadow: none;\n}"
 }
