@@ -19,8 +19,51 @@ shell-integration-features = no-cursor
 cursor-invert-fg-bg = true
 adjust-cursor-thickness = 2
 
-# Fix general slowness on hyprland (https://github.com/ghostty-org/ghostty/discussions/3224)
+# fix general slowness on hyprland (https://github.com/ghostty-org/ghostty/discussions/3224)
 async-backend = epoll
 
-# Free up ctrl+enter so it can reach the running app (e.g. opencode submit-from-insert)
+# free up ctrl+enter so it can reach the running app (e.g. opencode submit-from-insert)
 keybind = ctrl+enter=unbind
+
+# disable tab/split/window management
+keybind = ctrl+shift+t=unbind
+keybind = ctrl+shift+w=unbind
+keybind = ctrl+shift+q=unbind
+keybind = ctrl+shift+n=unbind
+keybind = ctrl+shift+tab=unbind
+keybind = ctrl+tab=unbind
+keybind = ctrl+shift+arrow_left=unbind
+keybind = ctrl+shift+arrow_right=unbind
+keybind = ctrl+page_up=unbind
+keybind = ctrl+page_down=unbind
+keybind = ctrl+shift+o=unbind
+keybind = ctrl+shift+e=unbind
+keybind = ctrl+shift+enter=unbind
+keybind = alt+f4=unbind
+keybind = super+ctrl+[=unbind
+keybind = super+ctrl+]=unbind
+keybind = ctrl+alt+arrow_up=unbind
+keybind = ctrl+alt+arrow_down=unbind
+keybind = ctrl+alt+arrow_left=unbind
+keybind = ctrl+alt+arrow_right=unbind
+keybind = super+ctrl+shift+arrow_up=unbind
+keybind = super+ctrl+shift+arrow_down=unbind
+keybind = super+ctrl+shift+arrow_left=unbind
+keybind = super+ctrl+shift+arrow_right=unbind
+keybind = alt+digit_1=unbind
+keybind = alt+1=unbind
+keybind = alt+digit_2=unbind
+keybind = alt+2=unbind
+keybind = alt+digit_3=unbind
+keybind = alt+3=unbind
+keybind = alt+digit_4=unbind
+keybind = alt+4=unbind
+keybind = alt+digit_5=unbind
+keybind = alt+5=unbind
+keybind = alt+digit_6=unbind
+keybind = alt+6=unbind
+keybind = alt+digit_7=unbind
+keybind = alt+7=unbind
+keybind = alt+digit_8=unbind
+keybind = alt+8=unbind
+keybind = alt+9=unbind
