@@ -1,0 +1,58 @@
+#!/bin/bash
+# omarchy:summary=Cycle active window through centered workspace float sizes.
+
+TAG_80X80="workspace-float-80x80"
+TAG_80X90="workspace-float-80x90"
+
+active=$(hyprctl activewindow -j)
+addr=$(jq -r '.address // empty' <<<"$active")
+
+[[ -n $addr ]] || exit 0
+
+floating=$(jq -r '.floating' <<<"$active")
+tagged_80x80=$(jq -r --arg tag "$TAG_80X80" 'any(.tags[]?; . == $tag or . == ($tag + "*"))' <<<"$active")
+tagged_80x90=$(jq -r --arg tag "$TAG_80X90" 'any(.tags[]?; . == $tag or . == ($tag + "*"))' <<<"$active")
+
+remove_float_tags() {
+  hyprctl -- dispatch tagwindow "-$TAG_80X80" "address:$addr" >/dev/null
+  hyprctl -- dispatch tagwindow "-$TAG_80X90" "address:$addr" >/dev/null
+}
+
+if [[ $tagged_80x90 == true ]]; then
+  remove_float_tags
+
+  if [[ $floating == true ]]; then
+    hyprctl dispatch togglefloating "address:$addr" >/dev/null
+  fi
+
+  exit 0
+fi
+
+target_tag=$TAG_80X80
+height_ratio=0.8
+
+if [[ $tagged_80x80 == true ]]; then
+  target_tag=$TAG_80X90
+  height_ratio=0.9
+fi
+
+monitor_id=$(jq -r '.monitor' <<<"$active")
+size=$(hyprctl monitors -j | jq -r --argjson monitor "$monitor_id" --argjson height_ratio "$height_ratio" '
+  .[] | select(.id == $monitor) |
+  .scale as $scale |
+  .reserved as $reserved |
+  (((.width / $scale) - $reserved[0] - $reserved[2]) * 0.8 | floor | tostring) + " " +
+  (((.height / $scale) - $reserved[1] - $reserved[3]) * $height_ratio | floor | tostring)
+')
+
+[[ -n $size ]] || exit 1
+
+if [[ $floating != true ]]; then
+  hyprctl dispatch togglefloating "address:$addr" >/dev/null
+fi
+
+remove_float_tags
+hyprctl dispatch resizeactive exact $size "address:$addr" >/dev/null
+hyprctl dispatch centerwindow "address:$addr" >/dev/null
+hyprctl dispatch alterzorder top "address:$addr" >/dev/null
+hyprctl -- dispatch tagwindow "+$target_tag" "address:$addr" >/dev/null
