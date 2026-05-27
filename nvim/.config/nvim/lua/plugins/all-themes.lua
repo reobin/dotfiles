@@ -43,6 +43,11 @@ return {
     priority = 1000,
   },
   {
+    "sainnhe/gruvbox-material",
+    lazy = true,
+    priority = 1000,
+  },
+  {
     "rebelot/kanagawa.nvim",
     lazy = true,
     priority = 1000,
