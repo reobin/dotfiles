@@ -1,0 +1,88 @@
+#!/usr/bin/env bash
+
+set -eu
+
+SOURCE="$HOME/dotfiles/codex/.codex/config.toml"
+TARGET="$HOME/.codex/config.toml"
+BEGIN_MARKER="# codex baseline: begin"
+END_MARKER="# codex baseline: end"
+
+if [[ ! -f "$SOURCE" ]]; then
+  echo "missing codex baseline: $SOURCE" >&2
+  return 1 2>/dev/null || exit 1
+fi
+
+mkdir -p "$(dirname "$TARGET")"
+
+tmp="$(mktemp)"
+root_tmp="$(mktemp)"
+tables_tmp="$(mktemp)"
+trap 'rm -f "$tmp" "$root_tmp" "$tables_tmp"' EXIT
+
+if [[ -s "$TARGET" ]]; then
+  awk '
+    $0 == "# codex baseline: begin" { in_baseline = 1; next }
+    $0 == "# codex baseline: end" { in_baseline = 0; next }
+    in_baseline { next }
+
+    /^\[[^]]+\][[:space:]]*(#.*)?$/ {
+      table = substr($0, 2, index($0, "]") - 2)
+      skip_table = table == "tui" ||
+        table == "plugins.\"github@openai-curated\"" ||
+        table == "features" ||
+        table == "hooks"
+
+      next
+    }
+
+    skip_table { next }
+
+    table == "" && $0 ~ /^(model|model_reasoning_effort|approval_policy|sandbox_mode)[[:space:]]*=/ {
+      next
+    }
+
+    table == "" && $0 !~ /^[[:space:]]*$/ { print }
+  ' "$TARGET" > "$root_tmp"
+
+  awk '
+    $0 == "# codex baseline: begin" { in_baseline = 1; next }
+    $0 == "# codex baseline: end" { in_baseline = 0; next }
+    in_baseline { next }
+
+    /^\[[^]]+\][[:space:]]*(#.*)?$/ {
+      table = substr($0, 2, index($0, "]") - 2)
+      skip_table = table == "tui" ||
+        table == "plugins.\"github@openai-curated\"" ||
+        table == "features" ||
+        table == "hooks"
+
+      if (skip_table) {
+        next
+      }
+
+      print
+      next
+    }
+
+    table == "" || skip_table { next }
+
+    { print }
+  ' "$TARGET" > "$tables_tmp"
+fi
+
+if [[ -s "$root_tmp" ]]; then
+  cat "$root_tmp" > "$tmp"
+  printf '\n' >> "$tmp"
+fi
+
+cat "$SOURCE" >> "$tmp"
+
+if [[ -s "$tables_tmp" ]]; then
+  printf '\n' >> "$tmp"
+  cat "$tables_tmp" >> "$tmp"
+fi
+
+mv "$tmp" "$TARGET"
+trap - EXIT
+
+echo "installed codex baseline"

@@ -1,0 +1,24 @@
+# codex baseline: begin
+# managed by dotfiles; keep personal project paths and generated state outside this block.
+model = "gpt-5.5"
+model_reasoning_effort = "high"
+approval_policy = "on-request"
+sandbox_mode = "workspace-write"
+
+[tui]
+theme = "github"
+
+[plugins."github@openai-curated"]
+enabled = true
+
+[features]
+terminal_resize_reflow = true
+
+[hooks]
+SessionStart = [{ hooks = [{ type = "command", command = "thud-codex-status" }] }]
+UserPromptSubmit = [{ hooks = [{ type = "command", command = "thud-codex-status" }] }]
+PreToolUse = [{ hooks = [{ type = "command", command = "thud-codex-status" }] }]
+PermissionRequest = [{ hooks = [{ type = "command", command = "thud-codex-status" }] }]
+PostToolUse = [{ hooks = [{ type = "command", command = "thud-codex-status" }] }]
+Stop = [{ hooks = [{ type = "command", command = "thud-codex-status" }] }]
+# codex baseline: end
