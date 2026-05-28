@@ -8,6 +8,10 @@ sandbox_mode = "workspace-write"
 [tui]
 theme = "github"
 
+[tui.keymap.chat]
+decrease_reasoning_effort = "alt-["
+increase_reasoning_effort = "alt-]"
+
 [plugins."github@openai-curated"]
 enabled = true
 
