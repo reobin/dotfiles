@@ -1,0 +1,51 @@
+#!/bin/bash
+
+active=$(hyprctl activewindow -j)
+addr=$(jq -r '.address // empty' <<<"$active")
+
+if [[ -z "$addr" || "$addr" == "0x0" ]]; then
+  exit 0
+fi
+
+floating=$(jq -r '.floating' <<<"$active")
+pinned=$(jq -r '.pinned' <<<"$active")
+popped=$(jq -r 'any(.tags[]?; sub("\\*$"; "") == "pop")' <<<"$active")
+
+if [[ "$popped" == "true" ]]; then
+  if [[ "$pinned" == "true" ]]; then
+    hyprctl -q dispatch pin address:"$addr"
+  fi
+
+  if [[ "$floating" == "true" ]]; then
+    hyprctl -q --batch \
+      "dispatch togglefloating address:$addr;" \
+      "dispatch tagwindow -pop address:$addr;"
+  else
+    hyprctl -q dispatch tagwindow -pop address:"$addr"
+  fi
+  exit 0
+fi
+
+monitor_id=$(jq -r '.monitor // empty' <<<"$active")
+monitor=$(hyprctl monitors -j | jq -c --argjson id "$monitor_id" '.[] | select(.id == $id)')
+
+if [[ -z "$monitor" ]]; then
+  exit 0
+fi
+
+width=$(jq -nr --argjson width "$(jq -r '.width' <<<"$monitor")" --argjson scale "$(jq -r '.scale // 1' <<<"$monitor")" '$width / $scale * 0.8 | floor')
+height=$(jq -nr --argjson height "$(jq -r '.height' <<<"$monitor")" --argjson scale "$(jq -r '.scale // 1' <<<"$monitor")" '$height / $scale * 0.9 | floor')
+
+if [[ "$floating" != "true" ]]; then
+  hyprctl -q dispatch togglefloating address:"$addr"
+fi
+
+if [[ "$pinned" == "true" ]]; then
+  hyprctl -q dispatch pin address:"$addr"
+fi
+
+hyprctl -q --batch \
+  "dispatch resizeactive exact $width $height address:$addr;" \
+  "dispatch centerwindow address:$addr;" \
+  "dispatch alterzorder top address:$addr;" \
+  "dispatch tagwindow +pop address:$addr;"
