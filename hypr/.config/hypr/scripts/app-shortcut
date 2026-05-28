@@ -1,0 +1,33 @@
+#!/bin/bash
+set -euo pipefail
+
+if [[ $# -ne 1 ]]; then
+  exit 2
+fi
+
+key=$1
+class=$(hyprctl activewindow -j | jq -r '.class // empty')
+
+case "$key:$class" in
+  J:org.telegram.desktop)
+    hyprctl dispatch sendshortcut "ALT, Down, activewindow"
+    ;;
+  K:org.telegram.desktop)
+    hyprctl dispatch sendshortcut "ALT, Up, activewindow"
+    ;;
+  J:helium)
+    hyprctl dispatch sendshortcut "CTRL, Tab, activewindow"
+    ;;
+  K:helium)
+    hyprctl dispatch sendshortcut "CTRL SHIFT, Tab, activewindow"
+    ;;
+  J:*)
+    hyprctl dispatch sendshortcut "ALT, J, activewindow"
+    ;;
+  K:*)
+    hyprctl dispatch sendshortcut "ALT, K, activewindow"
+    ;;
+  *)
+    exit 2
+    ;;
+esac

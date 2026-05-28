@@ -5,7 +5,7 @@
       "pattern": "https?://mail.proton.me/*"
     }
   ],
-  "keyMappings": "map J nextTab\nmap K previousTab\nmap <a-j> nextTab\nmap <a-k> previousTab\nmap <c-d> scrollPageDown\nmap <c-u> scrollPageUp",
+  "keyMappings": "map J nextTab\nmap K previousTab\nmap <c-d> scrollPageDown\nmap <c-u> scrollPageUp",
   "newTabDestination": "browserNewTabPage",
   "searchEngines": "",
   "settingsVersion": "2.4.2",
