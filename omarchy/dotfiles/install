@@ -23,6 +23,7 @@ CONFIGS=(
   codex
   claude
   voxtype
+  elephant
   helium
   lazygit
 )

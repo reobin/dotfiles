@@ -1,0 +1,6 @@
+#!/bin/sh
+
+mkdir -p ~/.config/elephant
+
+sudo stow elephant
+
