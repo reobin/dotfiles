@@ -7,6 +7,8 @@ sandbox_mode = "workspace-write"
 
 [tui]
 theme = "github"
+status_line = ["model-with-reasoning", "used-tokens", "five-hour-limit", "weekly-limit"]
+status_line_use_colors = true
 
 [tui.keymap.chat]
 decrease_reasoning_effort = "alt-["
