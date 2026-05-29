@@ -1,0 +1,5 @@
+#!/bin/sh
+
+if ! command -v herdr >/dev/null 2>&1; then
+  curl -fsSL https://herdr.dev/install.sh | sh
+fi

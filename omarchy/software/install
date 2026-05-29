@@ -13,6 +13,7 @@ APPS=(
   keyd
   helium-browser
   hunk
+  herdr
   slack-desktop
   telegram-desktop
   openvpn

@@ -24,6 +24,7 @@ alias oc='mise x node@25.9.0 -- ocv'
 alias co="codex"
 alias pn="pnpm"
 alias t="tmux"
+alias herdr='EDITOR="nvim +" command herdr'
 alias g="git"
 alias lg="lazygit"
 alias n="nvim"

@@ -1,0 +1,5 @@
+#!/bin/sh
+
+rm -f ~/.config/herdr/config.toml
+
+sudo stow herdr

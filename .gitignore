@@ -1,1 +1,3 @@
 .claude/
+herdr/.config/herdr/*.log
+herdr/.config/herdr/session.json

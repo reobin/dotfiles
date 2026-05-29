@@ -26,6 +26,7 @@ CONFIGS=(
   elephant
   helium
   lazygit
+  herdr
 )
 
 for config in "${CONFIGS[@]}"; do
