@@ -14,5 +14,3 @@ tl() {
   tmux send-keys -t "$ai_pane" "$ai" C-m
   tmux select-pane -t "$ai_pane"
 }
-
-
