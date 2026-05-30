@@ -1,7 +1,23 @@
 onboarding = false
 
 [theme]
-name = "solarized-light"
+name = "terminal"
+
+[theme.custom]
+panel_bg = "darkgray"
+surface_dim = "darkgray"
+surface0 = "darkgray"
+surface1 = "gray"
+overlay0 = "white"
+overlay1 = "cyan"
+subtext0 = "white"
+selected = "white"
+accent = "cyan"
+mauve = "cyan"
+green = "green"
+yellow = "yellow"
+red = "red"
+peach = "yellow"
 
 [terminal]
 new_cwd = "follow"
@@ -56,10 +72,10 @@ type = "shell"
 command = "$HOME/dotfiles/herdr/.local/bin/herdr-close-other-panes"
 
 [ui]
-mouse_capture = true
+mouse_capture = false
 confirm_close = true
 prompt_new_tab_name = false
-accent = "green"
+accent = "cyan"
 
 show_agent_labels_on_pane_borders = true
 
