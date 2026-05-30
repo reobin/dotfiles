@@ -3,6 +3,7 @@ go = "latest"
 golangci-lint = "v2.11.2"
 node = "25.9.0"
 bun = "latest"
+zig = "0.15.2"
 
 [settings]
 legacy_version_file = true
