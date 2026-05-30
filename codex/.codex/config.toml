@@ -21,10 +21,10 @@ enabled = true
 terminal_resize_reflow = true
 
 [hooks]
-SessionStart = [{ hooks = [{ type = "command", command = "thud-codex-status" }] }]
-UserPromptSubmit = [{ hooks = [{ type = "command", command = "thud-codex-status" }] }]
-PreToolUse = [{ hooks = [{ type = "command", command = "thud-codex-status" }] }]
-PermissionRequest = [{ hooks = [{ type = "command", command = "thud-codex-status" }] }]
+SessionStart = [{ hooks = [{ type = "command", command = "thud-codex-status" }, { type = "command", command = "bash '/home/reobin/.codex/herdr-agent-state.sh' idle", timeout = 10 }] }]
+UserPromptSubmit = [{ hooks = [{ type = "command", command = "thud-codex-status" }, { type = "command", command = "bash '/home/reobin/.codex/herdr-agent-state.sh' working", timeout = 10 }] }]
+PreToolUse = [{ hooks = [{ type = "command", command = "thud-codex-status" }, { type = "command", command = "bash '/home/reobin/.codex/herdr-agent-state.sh' working", timeout = 10 }] }]
+PermissionRequest = [{ hooks = [{ type = "command", command = "thud-codex-status" }, { type = "command", command = "bash '/home/reobin/.codex/herdr-agent-state.sh' blocked", timeout = 10 }] }]
 PostToolUse = [{ hooks = [{ type = "command", command = "thud-codex-status" }] }]
-Stop = [{ hooks = [{ type = "command", command = "thud-codex-status" }] }]
+Stop = [{ hooks = [{ type = "command", command = "thud-codex-status" }, { type = "command", command = "bash '/home/reobin/.codex/herdr-agent-state.sh' idle", timeout = 10 }] }]
 # codex baseline: end
