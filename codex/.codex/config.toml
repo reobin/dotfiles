@@ -11,8 +11,8 @@ status_line = ["model-with-reasoning", "used-tokens", "five-hour-limit", "weekly
 status_line_use_colors = true
 
 [tui.keymap.chat]
-decrease_reasoning_effort = "alt-["
-increase_reasoning_effort = "alt-]"
+decrease_reasoning_effort = ["alt-[", "ctrl-,"]
+increase_reasoning_effort = ["alt-]", "ctrl-."]
 
 [plugins."github@openai-curated"]
 enabled = true
