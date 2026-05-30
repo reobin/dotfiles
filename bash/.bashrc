@@ -25,6 +25,7 @@ alias co="codex"
 alias pn="pnpm"
 alias t="tmux"
 alias herdr='EDITOR="nvim +" command herdr'
+alias h="herdr"
 alias g="git"
 alias lg="lazygit"
 alias n="nvim"
