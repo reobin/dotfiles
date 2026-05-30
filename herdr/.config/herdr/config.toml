@@ -72,7 +72,7 @@ type = "shell"
 command = "$HOME/dotfiles/herdr/.local/bin/herdr-close-other-panes"
 
 [ui]
-mouse_capture = false
+mouse_capture = true
 confirm_close = true
 prompt_new_tab_name = false
 accent = "cyan"
