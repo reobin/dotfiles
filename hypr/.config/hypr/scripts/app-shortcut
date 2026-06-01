@@ -9,6 +9,9 @@ key=$1
 class=$(hyprctl activewindow -j | jq -r '.class // empty')
 
 case "$key:$class" in
+  H:*)
+    hyprctl dispatch sendshortcut "ALT, H, activewindow"
+    ;;
   J:org.telegram.desktop)
     hyprctl dispatch sendshortcut "ALT, Down, activewindow"
     ;;
@@ -26,6 +29,9 @@ case "$key:$class" in
     ;;
   K:*)
     hyprctl dispatch sendshortcut "ALT, K, activewindow"
+    ;;
+  L:*)
+    hyprctl dispatch sendshortcut "ALT, L, activewindow"
     ;;
   *)
     exit 2
