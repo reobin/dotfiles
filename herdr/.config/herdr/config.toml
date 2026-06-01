@@ -4,20 +4,12 @@ onboarding = false
 name = "terminal"
 
 [theme.custom]
-panel_bg = "black"
-surface_dim = "black"
-surface0 = "black"
-surface1 = "black"
-overlay0 = "darkgrey"
-overlay1 = "black"
-subtext0 = "darkgrey"
-selected = "black"
-accent = "cyan"
-mauve = "cyan"
-green = "green"
-yellow = "yellow"
-red = "red"
-peach = "yellow"
+# accent = "cyan"
+# mauve = "cyan"
+# green = "green"
+# yellow = "yellow"
+# red = "red"
+# peach = "yellow"
 
 [terminal]
 new_cwd = "follow"

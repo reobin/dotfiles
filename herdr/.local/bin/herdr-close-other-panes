@@ -2,7 +2,8 @@
 
 set -eu
 
-herdr pane list |
+pane_ids="$(
+  herdr pane list |
   jq -r '
     .result.panes as $panes
     | ($panes[] | select(.focused == true)) as $focused
@@ -13,5 +14,9 @@ herdr pane list |
     | sort_by(.pane_id | split("-")[-1] | tonumber)
     | reverse[]
     | .pane_id
-  ' |
-  xargs -r -n 1 herdr pane close
+  '
+)"
+
+if [ -n "$pane_ids" ]; then
+  printf '%s\n' "$pane_ids" | xargs -n 1 herdr pane close
+fi
