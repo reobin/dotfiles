@@ -12,6 +12,7 @@ APPS=(
   awscli
   bun
   claude
+  herdr
   notion-cli
   ocv
   openclaw

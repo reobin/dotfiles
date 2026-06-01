@@ -1,0 +1,22 @@
+#!/bin/sh
+
+set -eu
+
+pane_ids="$(
+  herdr pane list |
+  jq -r '
+    .result.panes as $panes
+    | ($panes[] | select(.focused == true)) as $focused
+    | [
+        $panes[]
+        | select(.tab_id == $focused.tab_id and .pane_id != $focused.pane_id)
+      ]
+    | sort_by(.pane_id | split("-")[-1] | tonumber)
+    | reverse[]
+    | .pane_id
+  '
+)"
+
+if [ -n "$pane_ids" ]; then
+  printf '%s\n' "$pane_ids" | xargs -n 1 herdr pane close
+fi

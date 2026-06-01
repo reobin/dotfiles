@@ -11,6 +11,7 @@ CONFIGS=(
   git
   ghostty
   hammerspoon
+  herdr
   karabiner
   lazygit
   nvim
