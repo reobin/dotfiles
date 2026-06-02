@@ -45,6 +45,7 @@ source "$HOME/.config/bash/path.sh"
 source "$HOME/.config/bash/history.sh"
 
 path_prepend "$HOME/.local/bin"
+path_prepend "$HOME/.cargo/bin"
 path_append "$HOME/.turso"
 path_prepend "$HOME/.opencode/bin"
 
