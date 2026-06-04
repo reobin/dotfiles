@@ -10,9 +10,12 @@ theme = "github"
 status_line = ["model-with-reasoning", "used-tokens", "five-hour-limit", "weekly-limit"]
 status_line_use_colors = true
 
+[tui.keymap.global]
+open_transcript = []
+
 [tui.keymap.chat]
-decrease_reasoning_effort = ["alt-[", "ctrl-,"]
-increase_reasoning_effort = ["alt-]", "ctrl-."]
+decrease_reasoning_effort = ["alt-[", "alt-t"]
+increase_reasoning_effort = ["alt-]", "ctrl-t"]
 
 [tui.keymap.composer]
 queue = []
