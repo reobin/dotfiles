@@ -8,6 +8,17 @@ fi
 key=$1
 class=$(hyprctl activewindow -j | jq -r '.class // empty')
 
+is_browser_tab_context() {
+  case "$class" in
+    helium | [Ff]irefox | zen | librewolf | chrome-*__* | chromium-*__*)
+      return 0
+      ;;
+    *)
+      return 1
+      ;;
+  esac
+}
+
 case "$key:$class" in
   H:*)
     hyprctl dispatch sendshortcut "ALT, H, activewindow"
@@ -18,17 +29,19 @@ case "$key:$class" in
   K:org.telegram.desktop)
     hyprctl dispatch sendshortcut "ALT, Up, activewindow"
     ;;
-  J:helium)
-    hyprctl dispatch sendshortcut "CTRL, Tab, activewindow"
-    ;;
-  K:helium)
-    hyprctl dispatch sendshortcut "CTRL SHIFT, Tab, activewindow"
-    ;;
   J:*)
-    hyprctl dispatch sendshortcut "ALT, J, activewindow"
+    if is_browser_tab_context; then
+      hyprctl dispatch sendshortcut "CTRL, Tab, activewindow"
+    else
+      hyprctl dispatch sendshortcut "ALT, J, activewindow"
+    fi
     ;;
   K:*)
-    hyprctl dispatch sendshortcut "ALT, K, activewindow"
+    if is_browser_tab_context; then
+      hyprctl dispatch sendshortcut "CTRL SHIFT, Tab, activewindow"
+    else
+      hyprctl dispatch sendshortcut "ALT, K, activewindow"
+    fi
     ;;
   L:*)
     hyprctl dispatch sendshortcut "ALT, L, activewindow"
