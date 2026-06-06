@@ -1,0 +1,9 @@
+#!/bin/bash
+
+rm -f \
+  ~/.local/share/applications/ChatGPT.desktop \
+  ~/.local/share/applications/YouTube.desktop \
+  ~/.local/share/applications/X.desktop \
+  ~/.local/share/applications/Discord.desktop
+
+stow webapps

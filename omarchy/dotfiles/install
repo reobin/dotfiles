@@ -25,6 +25,7 @@ CONFIGS=(
   voxtype
   elephant
   helium
+  webapps
   lazygit
   herdr
 )

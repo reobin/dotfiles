@@ -1,0 +1,9 @@
+[Desktop Entry]
+Version=1.0
+Name=X
+Comment=X
+Exec=/home/reobin/.local/bin/firefox-webapp https://x.com/
+Terminal=false
+Type=Application
+Icon=/home/reobin/.local/share/applications/icons/X.png
+StartupNotify=true
