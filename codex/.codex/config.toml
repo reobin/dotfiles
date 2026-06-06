@@ -2,12 +2,13 @@
 # managed by dotfiles; keep personal project paths and generated state outside this block.
 model = "gpt-5.5"
 model_reasoning_effort = "low"
+plan_mode_reasoning_effort = "high"
 approval_policy = "on-request"
 sandbox_mode = "workspace-write"
 
 [tui]
 theme = "github"
-status_line = ["model-with-reasoning", "used-tokens", "five-hour-limit", "weekly-limit"]
+status_line = ["reasoning", "context-used", "five-hour-limit", "weekly-limit"]
 status_line_use_colors = true
 
 [tui.keymap.global]

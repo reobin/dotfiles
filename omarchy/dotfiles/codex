@@ -37,7 +37,7 @@ if [[ -s "$TARGET" ]]; then
 
     skip_table { next }
 
-    table == "" && $0 ~ /^(model|model_reasoning_effort|approval_policy|sandbox_mode)[[:space:]]*=/ {
+    table == "" && $0 ~ /^(model|model_reasoning_effort|plan_mode_reasoning_effort|approval_policy|sandbox_mode)[[:space:]]*=/ {
       next
     }
 
