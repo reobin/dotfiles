@@ -1,5 +1,7 @@
 #!/bin/sh
 
-rm -f ~/.config/starship.toml
+. "$HOME/dotfiles/omarchy/dotfiles/lib"
+
+replace_with_stow_source "$HOME/dotfiles/starship/.config/starship.toml" "$HOME/.config/starship.toml"
 
 sudo stow starship

@@ -1,5 +1,8 @@
 #!/bin/bash
 
-rm -f ~/.bashrc ~/.bash_profile
+. "$HOME/dotfiles/omarchy/dotfiles/lib"
+
+replace_with_stow_source "$HOME/dotfiles/bash/.bashrc" "$HOME/.bashrc"
+replace_with_stow_source "$HOME/dotfiles/bash/.bash_profile" "$HOME/.bash_profile"
 
 stow bash

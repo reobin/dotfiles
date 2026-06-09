@@ -1,0 +1,10 @@
+replace_with_stow_source() {
+  source="$1"
+  target="$2"
+
+  if [ -e "$target" ] || [ -L "$target" ]; then
+    if [ "$(readlink -f "$target")" != "$(readlink -f "$source")" ]; then
+      rm -rf "$target"
+    fi
+  fi
+}

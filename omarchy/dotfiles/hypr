@@ -1,7 +1,9 @@
 #!/bin/sh
 
-rm -rf ~/.config/hypr
-rm -f ~/.config/omarchy/branding/screensaver.txt
+. "$HOME/dotfiles/omarchy/dotfiles/lib"
+
+replace_with_stow_source "$HOME/dotfiles/hypr/.config/hypr" "$HOME/.config/hypr"
+replace_with_stow_source "$HOME/dotfiles/hypr/.config/omarchy/branding/screensaver.txt" "$HOME/.config/omarchy/branding/screensaver.txt"
 
 sudo stow hypr
 

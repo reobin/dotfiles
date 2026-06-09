@@ -1,5 +1,7 @@
 #!/bin/sh
 
-rm -f ~/.config/helium-browser-flags.conf
+. "$HOME/dotfiles/omarchy/dotfiles/lib"
+
+replace_with_stow_source "$HOME/dotfiles/helium/.config/helium-browser-flags.conf" "$HOME/.config/helium-browser-flags.conf"
 
 sudo stow helium

@@ -1,7 +1,9 @@
 #!/bin/sh
 
-rm -f ~/.config/opencode/opencode.json
-rm -f ~/.config/opencode/tui.json
-rm -rf ~/.config/opencode/themes
+. "$HOME/dotfiles/omarchy/dotfiles/lib"
+
+replace_with_stow_source "$HOME/dotfiles/opencode/.config/opencode/opencode.json" "$HOME/.config/opencode/opencode.json"
+replace_with_stow_source "$HOME/dotfiles/opencode/.config/opencode/tui.json" "$HOME/.config/opencode/tui.json"
+replace_with_stow_source "$HOME/dotfiles/opencode/.config/opencode/themes" "$HOME/.config/opencode/themes"
 
 sudo stow opencode

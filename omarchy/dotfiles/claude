@@ -1,6 +1,8 @@
 #!/bin/sh
 
-rm -f ~/.claude/settings.json
-rm -f ~/.claude/statusline-command.sh
+. "$HOME/dotfiles/omarchy/dotfiles/lib"
+
+replace_with_stow_source "$HOME/dotfiles/claude/.claude/settings.json" "$HOME/.claude/settings.json"
+replace_with_stow_source "$HOME/dotfiles/claude/.claude/statusline-command.sh" "$HOME/.claude/statusline-command.sh"
 
 sudo stow claude
