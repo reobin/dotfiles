@@ -26,6 +26,7 @@ APPS=(
   wrangler
   vercel
   git-wt
+  kondo
   opencode
   ocv
   claude
