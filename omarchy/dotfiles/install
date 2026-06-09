@@ -28,6 +28,8 @@ CONFIGS=(
   webapps
   lazygit
   herdr
+  firefox
+  tridactyl
 )
 
 for config in "${CONFIGS[@]}"; do

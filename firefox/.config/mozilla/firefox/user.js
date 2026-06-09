@@ -1,0 +1,11 @@
+user_pref("browser.tabs.closeWindowWithLastTab", false);
+user_pref("browser.search.suggest.enabled", false);
+user_pref("browser.urlbar.suggest.searches", false);
+user_pref("browser.urlbar.showSearchTerms.enabled", false);
+user_pref("browser.newtabpage.activity-stream.widgets.weather.enabled", false);
+user_pref("devtools.cache.disabled", true);
+user_pref("privacy.userContext.enabled", true);
+user_pref("privacy.userContext.ui.enabled", true);
+user_pref("signon.rememberSignons", false);
+user_pref("sidebar.revamp", true);
+user_pref("sidebar.verticalTabs", true);
