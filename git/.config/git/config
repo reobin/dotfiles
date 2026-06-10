@@ -20,7 +20,7 @@
   shp = stash pop
   shd = stash drop
   l = log
-  d = !hunk diff
+  d = !hunk diff --watch
   ds = !hunk diff --staged
   hs = !hunk show
   bc = !"$HOME/.config/git/scripts/branch-cleanup"
