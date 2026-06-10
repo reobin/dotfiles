@@ -28,6 +28,7 @@ CONFIGS=(
   webapps
   lazygit
   herdr
+  hunk
   firefox
   tridactyl
 )

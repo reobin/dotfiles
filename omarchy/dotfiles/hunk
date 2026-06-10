@@ -1,0 +1,27 @@
+#!/bin/sh
+
+. "$HOME/dotfiles/omarchy/dotfiles/lib"
+
+replace_with_stow_source "$HOME/dotfiles/hunk/.config/hunk/config.toml" "$HOME/.config/hunk/config.toml"
+replace_with_stow_source "$HOME/dotfiles/hunk/.config/hunk/state.json" "$HOME/.config/hunk/state.json"
+
+sudo stow hunk
+
+link_hunk_skill() {
+  skill_root="$1"
+  skill_link="$skill_root/hunk-review"
+
+  mkdir -p "$skill_root"
+
+  if [ -L "$skill_link" ] || [ ! -e "$skill_link" ]; then
+    ln -sfn "$skill_dir" "$skill_link"
+  else
+    echo "skipping hunk skill link: $skill_link already exists and is not a symlink" >&2
+  fi
+}
+
+if command -v hunk >/dev/null 2>&1 && skill_path="$(hunk skill path)"; then
+  skill_dir="$(dirname "$skill_path")"
+  link_hunk_skill "$HOME/.agents/skills"
+  link_hunk_skill "$HOME/.codex/skills"
+fi

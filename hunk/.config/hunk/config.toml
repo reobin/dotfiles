@@ -1,1 +1,3 @@
 theme = "auto"
+agent_notes = true
+transparent_background = true
