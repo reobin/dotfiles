@@ -1,4 +1,0 @@
-bind <C-;> mode ignore
-bind --mode=ignore <C-;> mode normal
-unbind d
-unbind D

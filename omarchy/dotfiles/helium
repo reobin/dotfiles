@@ -5,3 +5,10 @@
 replace_with_stow_source "$HOME/dotfiles/helium/.config/helium-browser-flags.conf" "$HOME/.config/helium-browser-flags.conf"
 
 sudo stow helium
+
+xdg-settings set default-web-browser helium.desktop
+xdg-mime default helium.desktop text/html
+xdg-mime default helium.desktop x-scheme-handler/http
+xdg-mime default helium.desktop x-scheme-handler/https
+xdg-mime default helium.desktop x-scheme-handler/about
+xdg-mime default helium.desktop x-scheme-handler/unknown

@@ -25,12 +25,9 @@ CONFIGS=(
   voxtype
   elephant
   helium
-  webapps
   lazygit
   herdr
   hunk
-  firefox
-  tridactyl
 )
 
 for config in "${CONFIGS[@]}"; do
