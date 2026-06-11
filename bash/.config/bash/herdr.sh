@@ -15,7 +15,7 @@ hl() {
     jq -r '.result.panes[] | select(.focused == true) | .foreground_cwd // .cwd' |
     head -n 1)
 
-  split_result=$(herdr pane split "$current_pane" --direction right --cwd "$current_dir" --focus)
+  split_result=$(herdr pane split "$current_pane" --direction right --ratio 0.6 --cwd "$current_dir" --focus)
   new_pane=$(printf '%s\n' "$split_result" |
     jq -r '.result.pane_id // .result.pane.pane_id // .result.panes[-1].pane_id // empty')
 
