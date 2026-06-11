@@ -9,7 +9,7 @@ return {
       function()
         require("snacks").scratch()
       end,
-      desc = "Open quick note"
+      desc = "Open quick note",
     },
   },
 }
