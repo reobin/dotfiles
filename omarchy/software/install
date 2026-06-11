@@ -16,6 +16,7 @@ APPS=(
   herdr
   slack-desktop
   telegram-desktop
+  rustdesk-bin
   openvpn
   notion-app-electron
   bruno
