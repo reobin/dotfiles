@@ -54,11 +54,6 @@ navigate_pane_up = "k"
 navigate_pane_right = "l"
 
 [[keys.command]]
-key = "prefix+t"
-type = "pane"
-command = "thud --mode=popup"
-
-[[keys.command]]
 key = "prefix+o"
 type = "shell"
 command = "$HOME/dotfiles/herdr/.local/bin/herdr-close-other-panes"
