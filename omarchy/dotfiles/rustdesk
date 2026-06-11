@@ -1,0 +1,19 @@
+#!/usr/bin/env bash
+
+set -eu
+
+PEERS_DIRECTORY="$HOME/.config/rustdesk/peers"
+
+if [[ ! -d "$PEERS_DIRECTORY" ]]; then
+  exit 0
+fi
+
+for peer in "$PEERS_DIRECTORY"/*.toml; do
+  [[ -e "$peer" ]] || continue
+
+  if grep -q "^view_only = " "$peer"; then
+    sed -i "s/^view_only = .*/view_only = true/" "$peer"
+  else
+    printf "\nview_only = true\n" >> "$peer"
+  fi
+done

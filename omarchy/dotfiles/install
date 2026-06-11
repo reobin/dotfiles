@@ -28,6 +28,7 @@ CONFIGS=(
   lazygit
   herdr
   hunk
+  rustdesk
 )
 
 for config in "${CONFIGS[@]}"; do
