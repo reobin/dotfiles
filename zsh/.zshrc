@@ -1,7 +1,8 @@
 alias oc='ocv'
 alias cc='claude'
-alias cx='codex'
+alias co='codex'
 alias pn='pnpm'
+alias pnx='pnpm dlx'
 alias ls='eza --all'
 alias ll='eza --all --long'
 alias tree='eza --tree'
@@ -27,6 +28,8 @@ export GIT_EDITOR='nvim'
 source ~/.config/zsh/path.zsh
 
 pathadd "$HOME/.local/bin"
+pathadd "$HOME/.cargo/bin"
+pathadd "$HOME/.opencode/bin"
 pathadd "$BUN_INSTALL/bin"
 pathadd "$PNPM_HOME"
 pathadd "$PNPM_HOME/bin"
@@ -37,12 +40,10 @@ bindkey -e
 
 source ~/.config/zsh/tmux.zsh
 source ~/.config/zsh/herdr.zsh
-source ~/.config/zsh/hammerspoon.zsh
 source ~/.config/zsh/git.zsh
 source ~/.config/zsh/cursor.zsh
 source ~/.config/zsh/history.zsh
 source ~/.config/zsh/completion.zsh
-source ~/.config/zsh/herdr.zsh
 
 eval "$(starship init zsh)"
 eval "$(zoxide init zsh --cmd cd)"
