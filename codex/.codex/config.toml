@@ -28,12 +28,7 @@ submit = ["enter"]
 enabled = true
 
 [features]
+hooks = true
 terminal_resize_reflow = true
 
-[hooks]
-SessionStart = [{ hooks = [{ type = "command", command = "bash \"$HOME/.codex/herdr-agent-state.sh\" idle", timeout = 10 }] }]
-UserPromptSubmit = [{ hooks = [{ type = "command", command = "bash \"$HOME/.codex/herdr-agent-state.sh\" working", timeout = 10 }] }]
-PreToolUse = [{ hooks = [{ type = "command", command = "bash \"$HOME/.codex/herdr-agent-state.sh\" working", timeout = 10 }] }]
-PermissionRequest = [{ hooks = [{ type = "command", command = "bash \"$HOME/.codex/herdr-agent-state.sh\" blocked", timeout = 10 }] }]
-Stop = [{ hooks = [{ type = "command", command = "bash \"$HOME/.codex/herdr-agent-state.sh\" idle", timeout = 10 }] }]
 # codex baseline: end

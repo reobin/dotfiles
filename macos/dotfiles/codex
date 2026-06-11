@@ -95,4 +95,8 @@ trap - EXIT
 
 cp "$AUTO_PROFILE_SOURCE" "$AUTO_PROFILE_TARGET"
 
+if command -v herdr >/dev/null 2>&1; then
+  herdr integration install codex
+fi
+
 echo "installed codex baseline"
