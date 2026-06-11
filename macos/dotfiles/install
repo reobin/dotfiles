@@ -10,13 +10,13 @@ cd "$DOTFILES_DIRECTORY"
 CONFIGS=(
   git
   ghostty
-  hammerspoon
   herdr
   karabiner
   lazygit
   nvim
   opencode
   claude
+  codex
   starship
   tmux
   zsh

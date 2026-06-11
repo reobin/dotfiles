@@ -1,0 +1,38 @@
+# codex baseline: begin
+# managed by dotfiles; keep personal project paths and generated state outside this block.
+model = "gpt-5.5"
+model_reasoning_effort = "low"
+plan_mode_reasoning_effort = "high"
+approval_policy = "on-request"
+sandbox_mode = "workspace-write"
+
+[tui]
+theme = "github"
+status_line = ["reasoning", "context-used", "five-hour-limit", "weekly-limit"]
+status_line_use_colors = true
+
+[tui.keymap.global]
+open_transcript = []
+
+[tui.keymap.chat]
+decrease_reasoning_effort = ["alt-[", "alt-t"]
+increase_reasoning_effort = ["alt-]", "ctrl-t"]
+interrupt_turn = "ctrl-x"
+
+[tui.keymap.composer]
+queue = []
+submit = ["enter"]
+
+[plugins."github@openai-curated"]
+enabled = true
+
+[features]
+terminal_resize_reflow = true
+
+[hooks]
+SessionStart = [{ hooks = [{ type = "command", command = "bash \"$HOME/.codex/herdr-agent-state.sh\" idle", timeout = 10 }] }]
+UserPromptSubmit = [{ hooks = [{ type = "command", command = "bash \"$HOME/.codex/herdr-agent-state.sh\" working", timeout = 10 }] }]
+PreToolUse = [{ hooks = [{ type = "command", command = "bash \"$HOME/.codex/herdr-agent-state.sh\" working", timeout = 10 }] }]
+PermissionRequest = [{ hooks = [{ type = "command", command = "bash \"$HOME/.codex/herdr-agent-state.sh\" blocked", timeout = 10 }] }]
+Stop = [{ hooks = [{ type = "command", command = "bash \"$HOME/.codex/herdr-agent-state.sh\" idle", timeout = 10 }] }]
+# codex baseline: end
