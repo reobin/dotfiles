@@ -17,7 +17,7 @@ APPS=(
   ocv
   openclaw
   pnpm
-  thud.sh
+  rustdesk
 )
 
 for app in "${APPS[@]}"; do

@@ -1,7 +1,0 @@
-#!/usr/bin/env bash
-
-if [[ -e ~/.hammerspoon && ! -L ~/.hammerspoon ]]; then
-  rm -rf ~/.hammerspoon
-fi
-
-stow hammerspoon

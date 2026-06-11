@@ -1,0 +1,20 @@
+#!/usr/bin/env bash
+
+set -eu
+
+RUSTDESK_APP="/Applications/RustDesk.app"
+
+if [[ ! -d "$RUSTDESK_APP" ]]; then
+  echo "RustDesk is not installed; run brew bundle via macos/init first" >&2
+  return 0 2>/dev/null || exit 0
+fi
+
+osascript <<'APPLESCRIPT'
+tell application "System Events"
+  if not (exists login item "RustDesk") then
+    make login item at end with properties {path:"/Applications/RustDesk.app", hidden:false}
+  end if
+end tell
+APPLESCRIPT
+
+echo "configured RustDesk to open at login"
