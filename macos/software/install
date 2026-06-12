@@ -15,7 +15,6 @@ APPS=(
   herdr
   notion-cli
   ocv
-  openclaw
   pnpm
   rustdesk
 )
