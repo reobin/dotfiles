@@ -10,17 +10,15 @@ if [[ -d "/Applications/Karabiner-Elements.app" ]]; then
   osascript -e 'tell application "Karabiner-Elements" to quit' >/dev/null 2>&1 || true
 fi
 
-python3 - "$HOME/.config/karabiner/karabiner.json" "$HOME/dotfiles/karabiner/.config/karabiner/assets/complex_modifications/caps-escape-hjkl-arrows.json" <<'PY'
+python3 - "$HOME/.config/karabiner/karabiner.json" \
+  "$HOME/dotfiles/karabiner/.config/karabiner/assets/complex_modifications/caps-escape-hjkl-arrows.json" \
+  "$HOME/dotfiles/karabiner/.config/karabiner/assets/complex_modifications/helium-tab-switching.json" <<'PY'
 import json
 import pathlib
 import sys
 
 target_path = pathlib.Path(sys.argv[1]).expanduser()
-rule_path = pathlib.Path(sys.argv[2]).expanduser()
-
-rule_data = json.loads(rule_path.read_text())
-rule = rule_data["rules"][0]
-description = rule["description"]
+rule_paths = [pathlib.Path(arg).expanduser() for arg in sys.argv[2:]]
 
 if target_path.exists():
     config = json.loads(target_path.read_text())
@@ -56,8 +54,14 @@ if not profiles:
 profile = next((item for item in profiles if item.get("selected")), profiles[0])
 complex_modifications = profile.setdefault("complex_modifications", {})
 rules = complex_modifications.setdefault("rules", [])
-rules = [item for item in rules if item.get("description") != description]
-rules.append(rule)
+
+for rule_path in rule_paths:
+    rule_data = json.loads(rule_path.read_text())
+    for rule in rule_data["rules"]:
+        description = rule["description"]
+        rules = [item for item in rules if item.get("description") != description]
+        rules.append(rule)
+
 complex_modifications["rules"] = rules
 
 target_path.write_text(json.dumps(config, indent=2) + "\n")
