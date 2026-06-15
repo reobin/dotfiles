@@ -1,9 +1,11 @@
 tap "k1LoW/tap"
+tap "mobile-dev-inc/tap"
 
 brew "neovim"
 brew "opencode"
 brew "k1LoW/tap/git-wt"
 brew "lazygit"
+brew "mobile-dev-inc/tap/maestro"
 brew "mas"
 brew "node"
 brew "starship"

@@ -19,6 +19,7 @@ alias ts='tailscale'
 export DOTFILES="$HOME/dotfiles"
 
 export BUN_INSTALL="$HOME/.bun"
+export JAVA_HOME="/opt/homebrew/opt/openjdk"
 export PNPM_HOME="/Users/reobin/Library/pnpm"
 
 export EDITOR='nvim'
@@ -31,6 +32,7 @@ pathadd "$HOME/.local/bin"
 pathadd "$HOME/.cargo/bin"
 pathadd "$HOME/.opencode/bin"
 pathadd "$BUN_INSTALL/bin"
+pathadd "$JAVA_HOME/bin"
 pathadd "$PNPM_HOME"
 pathadd "$PNPM_HOME/bin"
 
