@@ -17,7 +17,7 @@
                 },
                 "to": [
                   {
-                    "key_code": "right_control",
+                    "key_code": "left_control",
                     "lazy": true
                   }
                 ],
@@ -28,7 +28,7 @@
                 ],
                 "to_if_held_down": [
                   {
-                    "key_code": "right_control"
+                    "key_code": "left_control"
                   }
                 ],
                 "parameters": {
@@ -42,7 +42,7 @@
                   "key_code": "h",
                   "modifiers": {
                     "mandatory": [
-                      "right_control"
+                      "left_control"
                     ],
                     "optional": [
                       "any"
@@ -62,7 +62,7 @@
                   "key_code": "j",
                   "modifiers": {
                     "mandatory": [
-                      "right_control"
+                      "left_control"
                     ],
                     "optional": [
                       "any"
@@ -82,7 +82,7 @@
                   "key_code": "k",
                   "modifiers": {
                     "mandatory": [
-                      "right_control"
+                      "left_control"
                     ],
                     "optional": [
                       "any"
@@ -102,7 +102,7 @@
                   "key_code": "l",
                   "modifiers": {
                     "mandatory": [
-                      "right_control"
+                      "left_control"
                     ],
                     "optional": [
                       "any"
@@ -113,6 +113,23 @@
                   {
                     "key_code": "right_arrow",
                     "modifiers": []
+                  }
+                ],
+                "type": "basic"
+              },
+              {
+                "from": {
+                  "key_code": "right_control",
+                  "modifiers": {
+                    "optional": [
+                      "any"
+                    ]
+                  }
+                },
+                "to": [
+                  {
+                    "key_code": "left_gui",
+                    "lazy": true
                   }
                 ],
                 "type": "basic"
