@@ -13,6 +13,7 @@ CONFIGS=(
   herdr
   karabiner
   lazygit
+  terminal-theme
   nvim
   opencode
   claude

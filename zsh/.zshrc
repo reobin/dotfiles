@@ -47,6 +47,7 @@ source ~/.config/zsh/git.zsh
 source ~/.config/zsh/cursor.zsh
 source ~/.config/zsh/history.zsh
 source ~/.config/zsh/completion.zsh
+source ~/.config/zsh/theme.zsh
 
 eval "$(starship init zsh)"
 eval "$(zoxide init zsh --cmd cd)"
