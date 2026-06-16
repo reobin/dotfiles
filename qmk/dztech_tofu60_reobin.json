@@ -66,8 +66,8 @@
       "KC_LALT",
       "KC_LGUI",
       "KC_SPC",
-      "KC_LCTL",
-      "KC_NO",
+      "KC_RCTL",
+      "KC_RGUI",
       "KC_NO",
       "KC_NO"
     ],
