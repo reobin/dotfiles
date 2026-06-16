@@ -11,7 +11,7 @@ pane_ids="$(
         $panes[]
         | select(.tab_id == $focused.tab_id and .pane_id != $focused.pane_id)
       ]
-    | sort_by(.pane_id | split("-")[-1] | tonumber)
+    | sort_by(.pane_id | capture("(?<n>[0-9]+)$").n | tonumber)
     | reverse[]
     | .pane_id
   '
