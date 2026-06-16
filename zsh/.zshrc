@@ -28,6 +28,7 @@ export GIT_EDITOR='nvim'
 
 source ~/.config/zsh/path.zsh
 
+pathadd "/opt/homebrew/bin"
 pathadd "$HOME/.local/bin"
 pathadd "$HOME/.cargo/bin"
 pathadd "$HOME/.opencode/bin"

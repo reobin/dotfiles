@@ -60,7 +60,7 @@ command = "$HOME/dotfiles/herdr/.local/bin/herdr-close-other-panes"
 
 [ui]
 mouse_capture = true
-confirm_close = true
+confirm_close = false
 prompt_new_tab_name = false
 
 show_agent_labels_on_pane_borders = true

@@ -1,6 +1,9 @@
 pathadd() {
   local dir="$1"
-  if [[ -d "$dir" && ":$PATH:" != *":$dir:"* ]]; then
-    PATH="${dir}${PATH:+":$PATH"}"
+  if [[ -d "$dir" ]]; then
+    PATH=":${PATH}:"
+    PATH="${PATH//:${dir}:/:}"
+    PATH="${dir}${PATH%:}"
+    PATH="${PATH#:}"
   fi
 }
