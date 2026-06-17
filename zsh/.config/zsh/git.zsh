@@ -3,12 +3,12 @@ gc() {
   local target_dir="$2"
 
   if [[ -z "$repo" ]]; then
-    print 'Usage: gc <owner/repo> [directory]'
+    printf 'Usage: gc <owner/repo> [directory]\n'
     return 1
   fi
 
   if ! command -v gh >/dev/null 2>&1; then
-    print 'gh CLI is not installed'
+    printf 'gh CLI is not installed\n'
     return 1
   fi
 
@@ -19,17 +19,34 @@ gc() {
     dir_name="$(basename "$repo" .git)"
   fi
 
-  if gh repo clone "$repo" "$target_dir" 2>/dev/null; then
+  if [[ -d "$dir_name" ]]; then
+    printf 'Using existing clone: %s\n' "$dir_name"
+    cd "$dir_name"
+    return 0
+  fi
+
+  local clone_args=("$repo")
+  [[ -n "$target_dir" ]] && clone_args+=("$target_dir")
+
+  printf 'Cloning %s with SSH...\n' "$repo"
+  if gh repo clone "${clone_args[@]}" -- --progress; then
+    printf 'Clone complete. Entering %s\n' "$dir_name"
     cd "$dir_name"
   else
-    print 'SSH clone failed, trying HTTPS...'
+    printf 'SSH clone failed. Trying HTTPS...\n'
     if [[ "$repo" != *"://"* && "$repo" != *"@"* ]]; then
-      if gh repo clone "https://github.com/$repo.git" "$target_dir" 2>/dev/null; then
+      local https_repo="https://github.com/$repo.git"
+      local https_clone_args=("$https_repo")
+      [[ -n "$target_dir" ]] && https_clone_args+=("$target_dir")
+
+      printf 'Cloning %s with HTTPS...\n' "$repo"
+      if gh repo clone "${https_clone_args[@]}" -- --progress; then
+        printf 'Clone complete. Entering %s\n' "$dir_name"
         cd "$dir_name"
         return 0
       fi
     fi
-    print 'Clone failed.'
+    printf 'Clone failed.\n'
     return 1
   fi
 }
