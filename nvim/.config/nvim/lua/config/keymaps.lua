@@ -12,9 +12,9 @@ vim.keymap.del("i", "<A-k>")
 vim.keymap.del("n", "<leader>E")
 
 vim.keymap.set("x", "<leader>cc", function()
-  require("config.codex").send_visual_selection({ submit = true })
-end, { desc = "Send selection comment to Codex" })
+  require("config.agent").send_visual_selection({ submit = true })
+end, { desc = "Send selection comment to agent" })
 
 vim.keymap.set("x", "<leader>cC", function()
-  require("config.codex").send_visual_selection({ submit = false })
-end, { desc = "Draft selection comment in Codex" })
+  require("config.agent").send_visual_selection({ submit = false })
+end, { desc = "Draft selection comment in agent" })
