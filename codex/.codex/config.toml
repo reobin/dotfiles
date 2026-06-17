@@ -8,7 +8,7 @@ approvals_reviewer = "auto_review"
 sandbox_mode = "workspace-write"
 
 [tui]
-theme = "github"
+theme = "ansi"
 status_line = ["reasoning", "context-used", "five-hour-limit", "weekly-limit"]
 status_line_use_colors = true
 

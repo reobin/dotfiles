@@ -1,5 +1,5 @@
 return {
-  colorscheme = "dayfox",
+  colorscheme = "catppuccin-latte",
   options = {
     background = "light",
   },

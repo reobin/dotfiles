@@ -1,3 +1,0 @@
-return {
-  colorscheme = "catppuccin-macchiato",
-}

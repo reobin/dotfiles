@@ -9,6 +9,12 @@ if ok and type(theme) == "table" then
     end
   end
 
+  if type(theme.options) == "table" then
+    for key, value in pairs(theme.options) do
+      vim.o[key] = value
+    end
+  end
+
   if type(theme.colorscheme) == "string" then
     active_theme = theme.colorscheme
   end
@@ -28,47 +34,12 @@ return {
     priority = 1000,
   },
   {
-    "folke/tokyonight.nvim",
-    lazy = false,
-    priority = 1000,
-    opts = {
-      style = "storm",
-    },
-  },
-  {
-    "ellisonleao/gruvbox.nvim",
-    lazy = false,
-    priority = 1000,
-    opts = {
-      contrast = "hard",
-    },
-  },
-  {
-    "projekt0n/github-nvim-theme",
-    name = "github-theme",
-    lazy = false,
-    priority = 1000,
-  },
-  {
-    "miikanissi/modus-themes.nvim",
-    lazy = false,
-    priority = 1000,
-  },
-  {
-    "Mofiqul/dracula.nvim",
-    lazy = false,
-    priority = 1000,
-  },
-  {
-    "navarasu/onedark.nvim",
-    lazy = false,
-    priority = 1000,
-    opts = {
-      style = "darker",
-    },
-  },
-  {
     "junegunn/seoul256.vim",
+    lazy = false,
+    priority = 1000,
+  },
+  {
+    "EdenEast/nightfox.nvim",
     lazy = false,
     priority = 1000,
   },
