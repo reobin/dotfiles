@@ -37,6 +37,8 @@ pathadd "$JAVA_HOME/bin"
 pathadd "$PNPM_HOME"
 pathadd "$PNPM_HOME/bin"
 
+eval "$(mise activate zsh)"
+
 eval "$(git wt --init zsh)"
 
 bindkey -e
