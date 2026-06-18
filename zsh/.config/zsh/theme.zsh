@@ -161,12 +161,19 @@ __terminal_theme_wallpaper_color() {
   [[ -r "$ghostty_file" ]] || return 1
 
   while IFS= read -r line; do
-    if [[ "$line" =~ '^palette[[:space:]]*=[[:space:]]*([0-9]+)=(#[0-9A-Fa-f]{6})' ]]; then
+    if [[ "$line" =~ '^#[[:space:]]*wallpaper-color[[:space:]]*=[[:space:]]*(#[0-9A-Fa-f]{6})' ]]; then
+      color[wallpaper-color]="$match[1]"
+    elif [[ "$line" =~ '^palette[[:space:]]*=[[:space:]]*([0-9]+)=(#[0-9A-Fa-f]{6})' ]]; then
       palette[$match[1]]="$match[2]"
     elif [[ "$line" =~ '^([[:alpha:]-]+)[[:space:]]*=[[:space:]]*(#[0-9A-Fa-f]{6})' ]]; then
       color[$match[1]]="$match[2]"
     fi
   done < "$ghostty_file"
+
+  if [[ -n "${color[wallpaper-color]:-}" ]]; then
+    print -r -- "${color[wallpaper-color]}"
+    return 0
+  fi
 
   bg="${color[background]:-${palette[0]:-#000000}}"
   __terminal_theme_complementary_color "$bg"
