@@ -1,5 +1,3 @@
 #!/usr/bin/env bash
 
-rm -f ~/.config/herdr/config.toml
-
 stow herdr
