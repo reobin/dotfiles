@@ -477,17 +477,12 @@ tt() {
   command mkdir -p "$ghostty_theme_dir"
   command cp -f "$themes_dir/$theme/ghostty.conf" "$ghostty_theme_dir/$ghostty_theme"
   command cp -f "$themes_dir/$theme/nvim.lua" "$active_dir/nvim.lua"
-  command cp -f "$themes_dir/$theme/tmux.conf" "$active_dir/tmux.conf"
   print -r -- "$theme" > "$current_file"
   __terminal_theme_apply_system_appearance "$themes_dir/$theme" || true
   __terminal_theme_apply_wallpaper "$themes_dir/$theme" || true
   __terminal_theme_ensure_ghostty_active_theme "$ghostty_config" || true
 
   __terminal_theme_apply_env
-
-  if command -v tmux >/dev/null 2>&1; then
-    tmux source-file "$HOME/.config/tmux/tmux.conf" >/dev/null 2>&1 || true
-  fi
 
   if command -v herdr >/dev/null 2>&1; then
     herdr server reload-config >/dev/null 2>&1 || true

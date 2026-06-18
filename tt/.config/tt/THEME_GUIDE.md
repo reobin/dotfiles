@@ -1,7 +1,7 @@
 # Terminal Theme Guide
 
-Keep themes small, coherent, and tested across Ghostty, Neovim, tmux, Starship,
-and Herdr.
+Keep themes small, coherent, and tested across Ghostty, Neovim, Starship, and
+Herdr.
 
 ## Files
 
@@ -9,7 +9,6 @@ Each theme lives in `themes/<name>/` with:
 
 * `ghostty.conf` - terminal palette and surface colors
 * `nvim.lua` - Neovim colorscheme metadata
-* `tmux.conf` - tmux status and pane colors
 
 Mirror `ghostty.conf` to `ghostty/.config/ghostty/themes/terminal-<name>` or
 `.config/ghostty/themes/terminal-<name>` inside this package so Ghostty can
@@ -57,7 +56,7 @@ Avoid adding a theme unless it looks good in all four places:
 
 ## Add Checklist
 
-1. Create `themes/<name>/ghostty.conf`, `nvim.lua`, and `tmux.conf`.
+1. Create `themes/<name>/ghostty.conf` and `nvim.lua`.
 2. Add the Neovim plugin only if no existing plugin provides the colorscheme.
 3. Mirror the Ghostty palette to `ghostty/.config/ghostty/themes/terminal-<name>`.
 4. Run `tt <name>` or choose it with `tt`.

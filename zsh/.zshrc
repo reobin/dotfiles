@@ -9,7 +9,6 @@ alias tree='eza --tree'
 alias mv='mv -iv'
 alias cp='cp -riv'
 alias mkdir='mkdir -vp'
-alias t='tmux'
 alias h='herdr'
 alias g='git'
 alias lg='lazygit'
@@ -45,7 +44,6 @@ eval "$(git wt --init zsh)"
 
 bindkey -e
 
-source ~/.config/zsh/tmux.zsh
 source ~/.config/zsh/herdr.zsh
 source ~/.config/zsh/git.zsh
 source ~/.config/zsh/aws.zsh

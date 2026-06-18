@@ -20,7 +20,6 @@ CONFIGS=(
   claude
   codex
   starship
-  tmux
   zsh
 )
 
