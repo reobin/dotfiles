@@ -24,6 +24,246 @@ end tell
 APPLESCRIPT
 }
 
+__terminal_theme_background() {
+  emulate -L zsh
+  setopt local_options no_aliases
+
+  local theme_dir="$1" line
+
+  [[ -r "$theme_dir/ghostty.conf" ]] || return 1
+
+  while IFS= read -r line; do
+    if [[ "$line" =~ '^background[[:space:]]*=[[:space:]]*(#[0-9A-Fa-f]{6})' ]]; then
+      print -r -- "$match[1]"
+      return 0
+    fi
+  done < "$theme_dir/ghostty.conf"
+
+  return 1
+}
+
+__terminal_theme_is_light() {
+  emulate -L zsh
+  setopt local_options no_aliases
+
+  local hex="$1"
+  [[ "$hex" == \#[[:xdigit:]][[:xdigit:]][[:xdigit:]][[:xdigit:]][[:xdigit:]][[:xdigit:]] ]] || return 1
+
+  local -u body="${hex#\#}"
+  local red green blue luminance
+  red="$((16#${body[1,2]}))"
+  green="$((16#${body[3,4]}))"
+  blue="$((16#${body[5,6]}))"
+  luminance="$((299 * red + 587 * green + 114 * blue))"
+
+  (( luminance >= 128000 ))
+}
+
+__terminal_theme_apply_system_appearance() {
+  emulate -L zsh
+  setopt local_options no_aliases
+
+  local theme_dir="$1" bg dark_mode
+
+  command -v osascript >/dev/null 2>&1 || return 1
+  bg="$(__terminal_theme_background "$theme_dir")" || return 1
+
+  if __terminal_theme_is_light "$bg"; then
+    dark_mode=false
+  else
+    dark_mode=true
+  fi
+
+  osascript >/dev/null 2>&1 <<APPLESCRIPT
+tell application "System Events"
+  tell appearance preferences to set dark mode to $dark_mode
+end tell
+APPLESCRIPT
+}
+
+__terminal_theme_complementary_color() {
+  emulate -L zsh
+  setopt local_options no_aliases
+
+  local hex="$1"
+
+  command -v perl >/dev/null 2>&1 || return 1
+  [[ "$hex" == \#[[:xdigit:]][[:xdigit:]][[:xdigit:]][[:xdigit:]][[:xdigit:]][[:xdigit:]] ]] || return 1
+
+  perl -e '
+    my ($hex) = @ARGV;
+    $hex =~ s/^#//;
+
+    my ($red, $green, $blue) = map { hex($_) / 255 } ($hex =~ /(..)(..)(..)/);
+    my $max = $red > $green ? ($red > $blue ? $red : $blue) : ($green > $blue ? $green : $blue);
+    my $min = $red < $green ? ($red < $blue ? $red : $blue) : ($green < $blue ? $green : $blue);
+    my ($hue, $sat, $light) = (0, 0, ($max + $min) / 2);
+
+    if ($max != $min) {
+      my $delta = $max - $min;
+      $sat = $light > 0.5 ? $delta / (2 - $max - $min) : $delta / ($max + $min);
+
+      if ($max == $red) {
+        $hue = (($green - $blue) / $delta + ($green < $blue ? 6 : 0)) / 6;
+      } elsif ($max == $green) {
+        $hue = (($blue - $red) / $delta + 2) / 6;
+      } else {
+        $hue = (($red - $green) / $delta + 4) / 6;
+      }
+    }
+
+    $hue += 0.5;
+    $hue -= 1 if $hue >= 1;
+    $sat *= 0.75;
+    $sat = 0.18 if $sat < 0.18;
+    $sat = 0.38 if $sat > 0.38;
+
+    if ($light < 0.35) {
+      $light = 0.42;
+    } elsif ($light > 0.70) {
+      $light = 0.82;
+    }
+
+    sub hue_to_rgb {
+      my ($p, $q, $t) = @_;
+      $t += 1 if $t < 0;
+      $t -= 1 if $t > 1;
+      return $p + ($q - $p) * 6 * $t if $t < 1 / 6;
+      return $q if $t < 1 / 2;
+      return $p + ($q - $p) * (2 / 3 - $t) * 6 if $t < 2 / 3;
+      return $p;
+    }
+
+    my ($out_red, $out_green, $out_blue);
+
+    if ($sat == 0) {
+      ($out_red, $out_green, $out_blue) = ($light, $light, $light);
+    } else {
+      my $q = $light < 0.5 ? $light * (1 + $sat) : $light + $sat - $light * $sat;
+      my $p = 2 * $light - $q;
+      $out_red = hue_to_rgb($p, $q, $hue + 1 / 3);
+      $out_green = hue_to_rgb($p, $q, $hue);
+      $out_blue = hue_to_rgb($p, $q, $hue - 1 / 3);
+    }
+
+    printf "#%02X%02X%02X\n", map { int($_ * 255 + 0.5) } ($out_red, $out_green, $out_blue);
+  ' "$hex"
+}
+
+__terminal_theme_wallpaper_color() {
+  emulate -L zsh
+  setopt local_options no_aliases
+
+  local theme_dir="$1" ghostty_file line bg
+  local -A color palette
+
+  ghostty_file="$theme_dir/ghostty.conf"
+  [[ -r "$ghostty_file" ]] || return 1
+
+  while IFS= read -r line; do
+    if [[ "$line" =~ '^palette[[:space:]]*=[[:space:]]*([0-9]+)=(#[0-9A-Fa-f]{6})' ]]; then
+      palette[$match[1]]="$match[2]"
+    elif [[ "$line" =~ '^([[:alpha:]-]+)[[:space:]]*=[[:space:]]*(#[0-9A-Fa-f]{6})' ]]; then
+      color[$match[1]]="$match[2]"
+    fi
+  done < "$ghostty_file"
+
+  bg="${color[background]:-${palette[0]:-#000000}}"
+  __terminal_theme_complementary_color "$bg"
+}
+
+__terminal_theme_generate_solid_wallpaper() {
+  emulate -L zsh
+  setopt local_options no_aliases
+
+  local theme_dir="$1" theme hex body cache_dir wallpaper tmp_ppm
+  local -u upper_body
+
+  command -v perl >/dev/null 2>&1 || return 1
+  command -v sips >/dev/null 2>&1 || return 1
+
+  theme="${theme_dir:t}"
+  hex="$(__terminal_theme_wallpaper_color "$theme_dir")" || return 1
+  [[ "$hex" == \#[[:xdigit:]][[:xdigit:]][[:xdigit:]][[:xdigit:]][[:xdigit:]][[:xdigit:]] ]] || return 1
+
+  body="${hex#\#}"
+  upper_body="$body"
+  cache_dir="${XDG_CACHE_HOME:-$HOME/.cache}/tt/wallpapers"
+  wallpaper="$cache_dir/$theme-$upper_body.png"
+  tmp_ppm="$cache_dir/$theme-$upper_body.ppm.$$"
+
+  if [[ -r "$wallpaper" ]]; then
+    print -r -- "$wallpaper"
+    return 0
+  fi
+
+  command mkdir -p "$cache_dir" || return 1
+
+  perl -e '
+    my ($out, $hex) = @ARGV;
+    $hex =~ s/^#//;
+    my @rgb = map { hex($_) } ($hex =~ /(..)(..)(..)/);
+    open my $fh, ">:raw", $out or die "cannot write $out: $!";
+    print {$fh} "P6\n1 1\n255\n", pack("C3", @rgb);
+    close $fh;
+  ' "$tmp_ppm" "$hex" || return 1
+
+  if sips -s format png "$tmp_ppm" --out "$wallpaper" >/dev/null 2>&1; then
+    command rm -f "$tmp_ppm"
+    print -r -- "$wallpaper"
+    return 0
+  fi
+
+  command rm -f "$tmp_ppm"
+  return 1
+}
+
+__terminal_theme_apply_wallpaper() {
+  emulate -L zsh
+  setopt local_options no_aliases
+
+  local theme_dir="$1" wallpaper escaped
+
+  [[ "${TERMINAL_THEME_WALLPAPER:-1}" != "0" ]] || return 1
+  command -v osascript >/dev/null 2>&1 || return 1
+
+  wallpaper="$(__terminal_theme_generate_solid_wallpaper "$theme_dir")" || return 1
+  escaped="${wallpaper//\\/\\\\}"
+  escaped="${escaped//\"/\\\"}"
+
+  osascript >/dev/null 2>&1 <<APPLESCRIPT
+tell application "System Events"
+  set picture of every desktop to "$escaped"
+end tell
+APPLESCRIPT
+}
+
+__terminal_theme_ensure_ghostty_active_theme() {
+  emulate -L zsh
+  setopt local_options no_aliases
+
+  local config="$1" tmp_config
+
+  [[ -w "$config" ]] || return 1
+  grep -Eq '^theme[[:space:]]*=[[:space:]]*terminal-active[[:space:]]*$' "$config" && return 0
+
+  tmp_config="${config}.tmp.$$"
+  awk '
+    BEGIN { changed = 0 }
+    /^theme[[:space:]]*=/ {
+      print "theme = terminal-active"
+      changed = 1
+      next
+    }
+    { print }
+    END {
+      if (!changed) {
+        print "theme = terminal-active"
+      }
+    }
+  ' "$config" > "$tmp_config" && command mv -f "$tmp_config" "$config"
+}
+
 __terminal_theme_rgb() {
   emulate -L zsh
   setopt local_options no_aliases
@@ -178,19 +418,14 @@ __terminal_theme_complete() {
   setopt local_options no_aliases
 
   local root themes_dir
-  local -a themes opts
+  local -a themes
   root="$(__terminal_theme_root)"
   themes_dir="$root/themes"
   themes=("$themes_dir"/*(N:t))
-  opts=(-c --current)
 
   (( CURRENT == 2 )) || return 0
 
-  if [[ "$PREFIX" == -* ]]; then
-    compadd -a opts
-  else
-    compadd -a themes
-  fi
+  compadd -a themes
 }
 
 tt() {
@@ -203,11 +438,6 @@ tt() {
   active_dir="$root/active"
   current_file="$root/current"
   theme="$1"
-
-  if [[ "$theme" == "-c" || "$theme" == "--current" ]]; then
-    [[ -r "$current_file" ]] && cat "$current_file" || print olive
-    return 0
-  fi
 
   if [[ -z "$theme" ]]; then
     local themes
@@ -230,9 +460,9 @@ tt() {
     return 1
   fi
 
-  local ghostty_config ghostty_theme ghostty_theme_dir tmp_config
+  local ghostty_config ghostty_theme ghostty_theme_dir
   ghostty_config="${XDG_CONFIG_HOME:-$HOME/.config}/ghostty/config"
-  ghostty_theme="terminal-$theme"
+  ghostty_theme="terminal-active"
   ghostty_theme_dir="${XDG_CONFIG_HOME:-$HOME/.config}/ghostty/themes"
 
   command mkdir -p "$active_dir"
@@ -242,24 +472,9 @@ tt() {
   command cp -f "$themes_dir/$theme/nvim.lua" "$active_dir/nvim.lua"
   command cp -f "$themes_dir/$theme/tmux.conf" "$active_dir/tmux.conf"
   print -r -- "$theme" > "$current_file"
-
-  if [[ -w "$ghostty_config" ]]; then
-    tmp_config="${ghostty_config}.tmp.$$"
-    awk -v theme="$ghostty_theme" '
-      BEGIN { changed = 0 }
-      /^theme[[:space:]]*=/ {
-        print "theme = " theme
-        changed = 1
-        next
-      }
-      { print }
-      END {
-        if (!changed) {
-          print "theme = " theme
-        }
-      }
-    ' "$ghostty_config" > "$tmp_config" && command mv -f "$tmp_config" "$ghostty_config"
-  fi
+  __terminal_theme_apply_system_appearance "$themes_dir/$theme" || true
+  __terminal_theme_apply_wallpaper "$themes_dir/$theme" || true
+  __terminal_theme_ensure_ghostty_active_theme "$ghostty_config" || true
 
   __terminal_theme_apply_env
 

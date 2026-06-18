@@ -5,6 +5,7 @@ name = "terminal"
 
 [theme.custom]
 # accent = "cyan"
+overlay0 = "darkgray"
 # mauve = "cyan"
 # green = "green"
 # yellow = "yellow"

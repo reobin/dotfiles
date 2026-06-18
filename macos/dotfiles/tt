@@ -3,3 +3,11 @@
 rm -rf ~/.config/terminal-theme ~/.config/tt
 
 stow tt
+
+mkdir -p ~/.config/tt/active ~/.config/ghostty/themes
+rm -f ~/.config/ghostty/themes/terminal-active
+cp ~/.config/tt/themes/olive/ghostty.conf ~/.config/tt/active/ghostty.conf
+cp ~/.config/tt/themes/olive/nvim.lua ~/.config/tt/active/nvim.lua
+cp ~/.config/tt/themes/olive/tmux.conf ~/.config/tt/active/tmux.conf
+cp ~/.config/tt/themes/olive/ghostty.conf ~/.config/ghostty/themes/terminal-active
+printf 'olive\n' > ~/.config/tt/current

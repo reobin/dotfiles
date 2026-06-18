@@ -4,3 +4,6 @@ herdr/.config/herdr/herdr-server.log
 herdr/.config/herdr/session.json
 herdr/.config/herdr/release-notes.json
 codex/.codex/tmp/
+tt/.config/ghostty/themes/terminal-active
+tt/.config/tt/active/
+tt/.config/tt/current
