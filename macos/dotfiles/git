@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
 
 rm -f ~/.gitconfig
+rm -f ~/.config/git/ignore
 
 stow git
