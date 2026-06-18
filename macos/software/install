@@ -16,7 +16,6 @@ APPS=(
   notion-cli
   ocv
   pnpm
-  rustdesk
 )
 
 for app in "${APPS[@]}"; do
