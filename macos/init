@@ -5,6 +5,10 @@ set -eu
 DOTFILES_DIRECTORY="$HOME/dotfiles"
 INSTALL_DIRECTORY="$DOTFILES_DIRECTORY/macos"
 
+echo "trusting non-official Homebrew formulae"
+brew trust --formula k1low/tap/git-wt
+brew trust --formula mobile-dev-inc/tap/maestro
+
 echo "installing Homebrew packages"
 brew bundle --file "$DOTFILES_DIRECTORY/brew/Brewfile"
 
