@@ -236,4 +236,21 @@ function M.send_visual_selection(opts)
   end)
 end
 
+function M.copy_visual_selection()
+  local selection = visual_selection()
+  if not selection then
+    notify("No visual selection found.", vim.log.levels.WARN)
+    return
+  end
+
+  vim.ui.input({ prompt = "Agent comment: " }, function(comment)
+    if comment == nil then
+      return
+    end
+
+    vim.fn.setreg("+", build_prompt(comment, selection))
+    notify("Copied selection comment to clipboard.")
+  end)
+end
+
 return M
