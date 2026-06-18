@@ -1,0 +1,22 @@
+#!/usr/bin/env bash
+
+set -eu
+
+if ! command -v herdr >/dev/null 2>&1; then
+  echo "Skipping Herdr integrations (herdr is not installed)" >&2
+  return 0
+fi
+
+if ! command -v ocv >/dev/null 2>&1 && ! command -v opencode >/dev/null 2>&1; then
+  echo "Skipping Herdr opencode integration (opencode/ocv is not installed)" >&2
+  return 0
+fi
+
+if herdr integration status | grep -q '^opencode: current'; then
+  echo "Herdr opencode integration is already installed"
+else
+  echo "installing Herdr opencode integration"
+  herdr integration install opencode
+fi
+
+herdr server reload-config >/dev/null 2>&1 || true

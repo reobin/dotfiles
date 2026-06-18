@@ -17,3 +17,4 @@ echo "running macOS config"
 
 . "$INSTALL_DIRECTORY/software/install"
 . "$INSTALL_DIRECTORY/dotfiles/install"
+. "$INSTALL_DIRECTORY/integrations/install"
