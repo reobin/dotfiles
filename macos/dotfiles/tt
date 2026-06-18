@@ -1,0 +1,5 @@
+#!/usr/bin/env bash
+
+rm -rf ~/.config/terminal-theme ~/.config/tt
+
+stow tt

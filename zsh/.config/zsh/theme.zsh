@@ -1,5 +1,5 @@
 __terminal_theme_root() {
-  print -r -- "${XDG_CONFIG_HOME:-$HOME/.config}/terminal-theme"
+  print -r -- "${XDG_CONFIG_HOME:-$HOME/.config}/tt"
 }
 
 __terminal_theme_apply_env() {
@@ -56,6 +56,15 @@ __terminal_theme_color_block() {
   printf '%s%*s\033[0m\n' "$text" "$pad" ''
 }
 
+__terminal_theme_swatch() {
+  emulate -L zsh
+  setopt local_options no_aliases
+
+  local hex="$1" rgb
+  rgb="$(__terminal_theme_rgb "$hex")" || return
+  printf '\033[48;2;%sm   \033[0m' "$rgb"
+}
+
 __terminal_theme_preview_columns() {
   emulate -L zsh
   setopt local_options no_aliases
@@ -94,7 +103,7 @@ __terminal_theme_preview() {
   emulate -L zsh
   setopt local_options no_aliases
 
-  local theme_dir="$1" ghostty_file theme line name i bg fg accent selection_bg selection_fg
+  local theme_dir="$1" ghostty_file theme line name i bg fg accent selection_bg selection_fg cols pad
   local -A color palette
   ghostty_file="$theme_dir/ghostty.conf"
   theme="${theme_dir:t}"
@@ -116,25 +125,26 @@ __terminal_theme_preview() {
   selection_bg="${color[selection-background]:-${palette[8]:-$bg}}"
   selection_fg="${color[selection-foreground]:-$fg}"
 
-  __terminal_theme_line "$selection_bg" "$selection_fg" " $theme "
   __terminal_theme_line "$bg" "$fg" ""
-
-  __terminal_theme_line "$bg" "$accent" "surface"
-  for name in background foreground cursor-color selection-background selection-foreground; do
-    [[ -n "${color[$name]:-}" ]] && __terminal_theme_color_block "$name" "${color[$name]}" "$bg" "$fg"
-  done
+  __terminal_theme_style "$bg" "$fg"
+  printf ' %s%*s\033[0m\n' "$theme" "$(( ${FZF_PREVIEW_COLUMNS:-${COLUMNS:-80}} - ${#theme} - 1 ))" ''
   __terminal_theme_line "$bg" "$fg" ""
+  __terminal_theme_style "$bg" "$fg"
+  printf '  '
+  __terminal_theme_swatch "$bg"
+  __terminal_theme_swatch "$fg"
+  printf '  '
 
-  __terminal_theme_line "$bg" "$accent" "ansi"
-  for i in {0..7}; do
-    [[ -n "${palette[$i]:-}" ]] && __terminal_theme_color_block "palette $i" "${palette[$i]}" "$bg" "$fg"
+  for i in {1..6}; do
+    [[ -n "${palette[$i]:-}" ]] && __terminal_theme_swatch "${palette[$i]}"
   done
+
+  cols="$(__terminal_theme_preview_columns)"
+  pad=$((cols - 28))
+  (( pad < 0 )) && pad=0
+  __terminal_theme_style "$bg" "$fg"
+  printf '%*s\033[0m\n' "$pad" ''
   __terminal_theme_line "$bg" "$fg" ""
-
-  __terminal_theme_line "$bg" "$accent" "bright"
-  for i in {8..15}; do
-    [[ -n "${palette[$i]:-}" ]] && __terminal_theme_color_block "palette $i" "${palette[$i]}" "$bg" "$fg"
-  done
 }
 
 __terminal_theme_select() {
@@ -147,11 +157,12 @@ __terminal_theme_select() {
 
     print -rl -- "$themes_dir"/*(N:t) | fzf \
       --prompt='theme> ' \
-      --height=60% \
+      --height=~90% \
       --reverse \
       --cycle \
       --no-multi \
       --bind='enter:accept' \
+      --preview-window='right,45%,border-left' \
       --preview="$preview_cmd"
     return
   fi

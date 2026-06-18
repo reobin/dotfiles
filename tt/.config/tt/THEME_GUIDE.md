@@ -11,8 +11,10 @@ Each theme lives in `themes/<name>/` with:
 * `nvim.lua` - Neovim colorscheme metadata
 * `tmux.conf` - tmux status and pane colors
 
-Mirror `ghostty.conf` to `ghostty/.config/ghostty/themes/terminal-<name>` so
-Ghostty can load it directly.
+Mirror `ghostty.conf` to `ghostty/.config/ghostty/themes/terminal-<name>` or
+`.config/ghostty/themes/terminal-<name>` inside this package so Ghostty can
+load it directly. Do not duplicate a mirror already owned by the `ghostty`
+stow package.
 
 ## Palette Rules
 

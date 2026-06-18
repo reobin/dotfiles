@@ -1,5 +1,5 @@
 local active_theme = "olive-crt"
-local theme_file = vim.fn.expand("~/.config/terminal-theme/active/nvim.lua")
+local theme_file = vim.fn.expand("~/.config/tt/active/nvim.lua")
 local ok, theme = pcall(dofile, theme_file)
 
 if ok and type(theme) == "table" then
@@ -40,6 +40,16 @@ return {
   },
   {
     "EdenEast/nightfox.nvim",
+    lazy = false,
+    priority = 1000,
+  },
+  {
+    "sainnhe/everforest",
+    lazy = false,
+    priority = 1000,
+  },
+  {
+    "tanvirtin/monokai.nvim",
     lazy = false,
     priority = 1000,
   },

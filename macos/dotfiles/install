@@ -14,7 +14,7 @@ CONFIGS=(
   karabiner
   lazygit
   mise
-  terminal-theme
+  tt
   nvim
   opencode
   claude
