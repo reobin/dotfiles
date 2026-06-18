@@ -37,6 +37,7 @@ pathadd "$BUN_INSTALL/bin"
 pathadd "$JAVA_HOME/bin"
 pathadd "$PNPM_HOME"
 pathadd "$PNPM_HOME/bin"
+pathadd "/opt/homebrew/bin"
 
 eval "$(mise activate zsh)"
 
