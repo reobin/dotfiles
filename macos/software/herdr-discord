@@ -1,0 +1,67 @@
+#!/usr/bin/env bash
+# Install + link the herdr-discord plugin from GitHub, and stage a placeholder
+# config so the user only has to paste the webhook URL.
+#
+# Idempotent: re-running on a machine where the plugin is already linked is a
+# no-op. The placeholder config is only created if the user has not yet created
+# one of their own.
+#
+# Why git clone + link (not herdr plugin install): the install path uses
+# hardcoded HTTPS, which requires interactive git credentials for a private
+# repo. Cloning via SSH reuses whatever git/SSH config the dotfiles set up.
+
+set -eu
+
+PLUGIN_ID="herdr-discord"
+PLUGIN_REPO="reobin/herdr-discord"
+PLUGIN_DIR="${HERDR_DISCORD_DIR:-$HOME/dev/herdr-discord}"
+REF="${HERDR_DISCORD_REF:-main}"
+EXAMPLE_URL="https://raw.githubusercontent.com/${PLUGIN_REPO}/${REF}/config.example.json"
+
+if ! command -v herdr >/dev/null 2>&1; then
+  echo "Skipping $PLUGIN_ID (herdr is not installed)" >&2
+  return 0
+fi
+
+# Clone the repo if it isn't already on disk. (Fresh machine: clone. Existing
+# dev checkout: leave alone.)
+if [[ ! -d "$PLUGIN_DIR/.git" ]]; then
+  mkdir -p "$(dirname "$PLUGIN_DIR")"
+  echo "cloning $PLUGIN_REPO to $PLUGIN_DIR"
+  git clone "git@github.com:${PLUGIN_REPO}.git" "$PLUGIN_DIR"
+  if [[ "$REF" != "main" && "$REF" != "master" ]]; then
+    (cd "$PLUGIN_DIR" && git checkout "$REF")
+  fi
+fi
+
+# Link the plugin if not already linked. (herdr's --json has no space after
+# the colon, hence the slightly forgiving grep.)
+if ! herdr plugin list --json 2>/dev/null | grep -q "\"plugin_id\":\"${PLUGIN_ID}\""; then
+  echo "linking $PLUGIN_ID from $PLUGIN_DIR"
+  herdr plugin link "$PLUGIN_DIR"
+else
+  echo "$PLUGIN_ID is already linked"
+fi
+
+# Stage a placeholder config.json if the user doesn't have one yet. Fetched
+# fresh from the plugin repo on every install so the placeholder never drifts
+# from the upstream example.
+CONFIG_DIR="$(herdr plugin config-dir "$PLUGIN_ID")"
+mkdir -p "$CONFIG_DIR"
+CONFIG_FILE="$CONFIG_DIR/config.json"
+
+if [[ ! -s "$CONFIG_FILE" ]]; then
+  if ! curl -fsSL "$EXAMPLE_URL" -o "$CONFIG_FILE.tmp"; then
+    echo "warning: could not fetch $EXAMPLE_URL — write $CONFIG_FILE by hand" >&2
+    rm -f "$CONFIG_FILE.tmp"
+  else
+    mv "$CONFIG_FILE.tmp" "$CONFIG_FILE"
+    chmod 600 "$CONFIG_FILE"
+    echo "wrote placeholder config to $CONFIG_FILE"
+    echo "→ edit it and replace webhook_url with your real Discord webhook"
+  fi
+else
+  echo "config already present at $CONFIG_FILE (left untouched)"
+fi
+
+herdr server reload-config >/dev/null 2>&1 || true

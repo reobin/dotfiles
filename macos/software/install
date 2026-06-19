@@ -13,6 +13,7 @@ APPS=(
   bun
   claude
   herdr
+  herdr-discord
   notion-cli
   ocv
   pnpm

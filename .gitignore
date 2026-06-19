@@ -3,6 +3,8 @@ herdr/.config/herdr/herdr-client.log
 herdr/.config/herdr/herdr-server.log
 herdr/.config/herdr/session.json
 herdr/.config/herdr/release-notes.json
+herdr/.config/herdr/plugins.json
+herdr/.config/herdr/plugins/
 codex/.codex/tmp/
 tt/.config/ghostty/themes/terminal-active
 tt/.config/tt/active/
