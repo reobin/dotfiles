@@ -15,6 +15,10 @@ overlay0 = "darkgray"
 [terminal]
 new_cwd = "follow"
 
+[update]
+version_check = true
+manifest_check = true
+
 [keys]
 prefix = "ctrl+space"
 
@@ -74,9 +78,12 @@ mouse_capture = true
 confirm_close = false
 prompt_new_tab_name = false
 
+pane_borders = true
+pane_gaps = true
 show_agent_labels_on_pane_borders = true
 
-agent_panel_scope = "all"
+agent_panel_sort = "priority"
+
 [ui.toast]
 delivery = "herdr"
 
