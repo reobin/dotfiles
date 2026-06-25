@@ -10,6 +10,10 @@ Each theme lives in `themes/<name>/` with:
 * `ghostty.conf` - terminal palette and surface colors
 * `nvim.lua` - Neovim colorscheme metadata
 
+Each `ghostty.conf` must declare a static wallpaper color:
+
+* `# wallpaper-color = #RRGGBB`
+
 Mirror `ghostty.conf` to `ghostty/.config/ghostty/themes/terminal-<name>` or
 `.config/ghostty/themes/terminal-<name>` inside this package so Ghostty can
 load it directly. Do not duplicate a mirror already owned by the `ghostty`
@@ -59,6 +63,7 @@ Avoid adding a theme unless it looks good in all four places:
 1. Create `themes/<name>/ghostty.conf` and `nvim.lua`.
 2. Add the Neovim plugin only if no existing plugin provides the colorscheme.
 3. Mirror the Ghostty palette to `ghostty/.config/ghostty/themes/terminal-<name>`.
-4. Run `tt <name>` or choose it with `tt`.
-5. Open Herdr and verify sidebar contrast.
-6. Open Neovim and verify startup has no Lazy errors.
+4. Add a static `# wallpaper-color = #RRGGBB` to `ghostty.conf` and its mirror.
+5. Run `tt <name>` or choose it with `tt`.
+6. Open Herdr and verify sidebar contrast.
+7. Open Neovim and verify startup has no Lazy errors.

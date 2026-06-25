@@ -81,102 +81,23 @@ end tell
 APPLESCRIPT
 }
 
-__terminal_theme_complementary_color() {
-  emulate -L zsh
-  setopt local_options no_aliases
-
-  local hex="$1"
-
-  command -v perl >/dev/null 2>&1 || return 1
-  [[ "$hex" == \#[[:xdigit:]][[:xdigit:]][[:xdigit:]][[:xdigit:]][[:xdigit:]][[:xdigit:]] ]] || return 1
-
-  perl -e '
-    my ($hex) = @ARGV;
-    $hex =~ s/^#//;
-
-    my ($red, $green, $blue) = map { hex($_) / 255 } ($hex =~ /(..)(..)(..)/);
-    my $max = $red > $green ? ($red > $blue ? $red : $blue) : ($green > $blue ? $green : $blue);
-    my $min = $red < $green ? ($red < $blue ? $red : $blue) : ($green < $blue ? $green : $blue);
-    my ($hue, $sat, $light) = (0, 0, ($max + $min) / 2);
-
-    if ($max != $min) {
-      my $delta = $max - $min;
-      $sat = $light > 0.5 ? $delta / (2 - $max - $min) : $delta / ($max + $min);
-
-      if ($max == $red) {
-        $hue = (($green - $blue) / $delta + ($green < $blue ? 6 : 0)) / 6;
-      } elsif ($max == $green) {
-        $hue = (($blue - $red) / $delta + 2) / 6;
-      } else {
-        $hue = (($red - $green) / $delta + 4) / 6;
-      }
-    }
-
-    $hue += 0.5;
-    $hue -= 1 if $hue >= 1;
-    $sat *= 0.75;
-    $sat = 0.18 if $sat < 0.18;
-    $sat = 0.38 if $sat > 0.38;
-
-    if ($light < 0.35) {
-      $light = 0.42;
-    } elsif ($light > 0.70) {
-      $light = 0.82;
-    }
-
-    sub hue_to_rgb {
-      my ($p, $q, $t) = @_;
-      $t += 1 if $t < 0;
-      $t -= 1 if $t > 1;
-      return $p + ($q - $p) * 6 * $t if $t < 1 / 6;
-      return $q if $t < 1 / 2;
-      return $p + ($q - $p) * (2 / 3 - $t) * 6 if $t < 2 / 3;
-      return $p;
-    }
-
-    my ($out_red, $out_green, $out_blue);
-
-    if ($sat == 0) {
-      ($out_red, $out_green, $out_blue) = ($light, $light, $light);
-    } else {
-      my $q = $light < 0.5 ? $light * (1 + $sat) : $light + $sat - $light * $sat;
-      my $p = 2 * $light - $q;
-      $out_red = hue_to_rgb($p, $q, $hue + 1 / 3);
-      $out_green = hue_to_rgb($p, $q, $hue);
-      $out_blue = hue_to_rgb($p, $q, $hue - 1 / 3);
-    }
-
-    printf "#%02X%02X%02X\n", map { int($_ * 255 + 0.5) } ($out_red, $out_green, $out_blue);
-  ' "$hex"
-}
-
 __terminal_theme_wallpaper_color() {
   emulate -L zsh
   setopt local_options no_aliases
 
-  local theme_dir="$1" ghostty_file line bg
-  local -A color palette
+  local theme_dir="$1" ghostty_file line
 
   ghostty_file="$theme_dir/ghostty.conf"
   [[ -r "$ghostty_file" ]] || return 1
 
   while IFS= read -r line; do
     if [[ "$line" =~ '^#[[:space:]]*wallpaper-color[[:space:]]*=[[:space:]]*(#[0-9A-Fa-f]{6})' ]]; then
-      color[wallpaper-color]="$match[1]"
-    elif [[ "$line" =~ '^palette[[:space:]]*=[[:space:]]*([0-9]+)=(#[0-9A-Fa-f]{6})' ]]; then
-      palette[$match[1]]="$match[2]"
-    elif [[ "$line" =~ '^([[:alpha:]-]+)[[:space:]]*=[[:space:]]*(#[0-9A-Fa-f]{6})' ]]; then
-      color[$match[1]]="$match[2]"
+      print -r -- "$match[1]"
+      return 0
     fi
   done < "$ghostty_file"
 
-  if [[ -n "${color[wallpaper-color]:-}" ]]; then
-    print -r -- "${color[wallpaper-color]}"
-    return 0
-  fi
-
-  bg="${color[background]:-${palette[0]:-#000000}}"
-  __terminal_theme_complementary_color "$bg"
+  return 1
 }
 
 __terminal_theme_generate_solid_wallpaper() {
