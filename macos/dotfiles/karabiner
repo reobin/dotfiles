@@ -68,5 +68,5 @@ target_path.write_text(json.dumps(config, indent=2) + "\n")
 PY
 
 if [[ -d "/Applications/Karabiner-Elements.app" ]]; then
-  open -gj -a "Karabiner-Elements"
+  open -gj "/Applications/Karabiner-Elements.app" >/dev/null 2>&1 || true
 fi
