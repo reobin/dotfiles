@@ -7,7 +7,9 @@ INSTALL_DIRECTORY="$DOTFILES_DIRECTORY/macos"
 
 echo "trusting non-official Homebrew formulae"
 brew trust --formula k1low/tap/git-wt
+brew trust --formula libsql/sqld/sqld
 brew trust --formula mobile-dev-inc/tap/maestro
+brew trust --formula tursodatabase/tap/turso
 
 echo "installing Homebrew packages"
 brew bundle --file "$DOTFILES_DIRECTORY/brew/Brewfile"
