@@ -2,5 +2,7 @@
   "permissions": {
     "defaultMode": "auto"
   },
-  "theme": "auto"
+  "theme": "auto",
+  "editorMode": "normal",
+  "tui": "default"
 }
