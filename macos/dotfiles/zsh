@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
 
-rm -f ~/.zshrc
+rm -f ~/.zshrc ~/.zprofile
 
 stow zsh

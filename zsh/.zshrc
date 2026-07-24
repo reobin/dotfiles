@@ -21,18 +21,6 @@ export EDITOR='nvim'
 export VISUAL='nvim'
 export GIT_EDITOR='nvim'
 
-source ~/.config/zsh/path.zsh
-
-pathadd "/opt/homebrew/bin"
-pathadd "/opt/homebrew/opt/libpq/bin"
-pathadd "$HOME/.local/bin"
-pathadd "$HOME/.cargo/bin"
-pathadd "$HOME/.opencode/bin"
-pathadd "$JAVA_HOME/bin"
-pathadd "/opt/homebrew/bin"
-
-eval "$(mise activate zsh)"
-
 eval "$(git wt --init zsh)"
 
 bindkey -e
@@ -48,4 +36,4 @@ source ~/.config/zsh/theme.zsh
 eval "$(starship init zsh)"
 eval "$(zoxide init zsh --cmd cd)"
 
-export PATH="$HOME/bin:$PATH"
+eval "$(mise activate zsh)"
