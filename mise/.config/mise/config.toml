@@ -4,5 +4,14 @@ legacy_version_file = true
 idiomatic_version_file_enable_tools = ["node"]
 
 [tools]
+node = "lts"
+aws-cli = { version = "latest", symlink_bins = true }
+bun = "latest"
+claude = "latest"
+herdr = "latest"
+"github:leohenon/opencode-vim" = { version = "1.18.4-ocv.4.9", matching_regex = "^ocv-", bin = "ocv" }
+"npm:ntn" = "latest"
+pnpm = "latest"
 rust = "latest"
+vercel = "latest"
 zig = "latest"

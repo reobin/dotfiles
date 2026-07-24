@@ -17,9 +17,6 @@ alias ts='tailscale'
 
 export DOTFILES="$HOME/dotfiles"
 
-export BUN_INSTALL="$HOME/.bun"
-export PNPM_HOME="/Users/reobin/Library/pnpm"
-
 export EDITOR='nvim'
 export VISUAL='nvim'
 export GIT_EDITOR='nvim'
@@ -31,10 +28,7 @@ pathadd "/opt/homebrew/opt/libpq/bin"
 pathadd "$HOME/.local/bin"
 pathadd "$HOME/.cargo/bin"
 pathadd "$HOME/.opencode/bin"
-pathadd "$BUN_INSTALL/bin"
 pathadd "$JAVA_HOME/bin"
-pathadd "$PNPM_HOME"
-pathadd "$PNPM_HOME/bin"
 pathadd "/opt/homebrew/bin"
 
 eval "$(mise activate zsh)"
@@ -53,7 +47,5 @@ source ~/.config/zsh/theme.zsh
 
 eval "$(starship init zsh)"
 eval "$(zoxide init zsh --cmd cd)"
-
-[ -s "$BUN_INSTALL/_bun" ] && source "$BUN_INSTALL/_bun"
 
 export PATH="$HOME/bin:$PATH"

@@ -3,3 +3,5 @@
 rm -rf ~/.config/mise
 
 stow mise
+
+mise install

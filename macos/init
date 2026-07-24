@@ -15,6 +15,5 @@ brew bundle --file "$DOTFILES_DIRECTORY/brew/Brewfile"
 echo "running macOS config"
 "$INSTALL_DIRECTORY/config"
 
-. "$INSTALL_DIRECTORY/software/install"
 . "$INSTALL_DIRECTORY/dotfiles/install"
 . "$INSTALL_DIRECTORY/integrations/install"
