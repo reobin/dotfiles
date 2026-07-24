@@ -18,7 +18,6 @@ alias ts='tailscale'
 export DOTFILES="$HOME/dotfiles"
 
 export BUN_INSTALL="$HOME/.bun"
-export JAVA_HOME="/opt/homebrew/opt/openjdk"
 export PNPM_HOME="/Users/reobin/Library/pnpm"
 
 export EDITOR='nvim'
@@ -57,5 +56,4 @@ eval "$(zoxide init zsh --cmd cd)"
 
 [ -s "$BUN_INSTALL/_bun" ] && source "$BUN_INSTALL/_bun"
 
-[ -f "/Users/reobin/.openclaw/completions/openclaw.zsh" ] && source "/Users/reobin/.openclaw/completions/openclaw.zsh"
 export PATH="$HOME/bin:$PATH"

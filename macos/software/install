@@ -8,12 +8,10 @@ INSTALL_DIRECTORY="$DOTFILES_DIRECTORY/macos"
 cd "$DOTFILES_DIRECTORY"
 
 APPS=(
-  amphetamine
   awscli
   bun
   claude
   herdr
-  herdr-discord
   notion-cli
   ocv
   pnpm
