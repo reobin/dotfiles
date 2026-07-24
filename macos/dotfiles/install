@@ -20,6 +20,7 @@ CONFIGS=(
   claude
   codex
   starship
+  superwhisper
   zsh
 )
 

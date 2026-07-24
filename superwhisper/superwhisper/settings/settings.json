@@ -1,0 +1,21 @@
+{
+  "favoriteModelIDs" : [
+    "vad-v2",
+    "seg-v1",
+    "speakerkit-coreml",
+    "emb-v1"
+  ],
+  "modeKeys" : [
+
+  ],
+  "replacements" : [
+    {
+      "id" : "5B1B7FB3-EF00-44BC-9F14-D5AF39C00DE3",
+      "original" : "super whisper",
+      "with" : "Superwhisper"
+    }
+  ],
+  "vocabulary" : [
+    "Superwhisper"
+  ]
+}

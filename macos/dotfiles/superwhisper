@@ -1,0 +1,18 @@
+#!/usr/bin/env bash
+
+set -eu
+
+mkdir -p "$HOME/superwhisper"
+
+for config in settings modes; do
+  target="$HOME/superwhisper/$config"
+
+  if [[ -e "$target" && ! -L "$target" ]]; then
+    echo "refusing to replace unmanaged Superwhisper config: $target" >&2
+    return 1 2>/dev/null || exit 1
+  fi
+
+  rm -f "$target"
+done
+
+stow superwhisper
