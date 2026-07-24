@@ -25,7 +25,6 @@ eval "$(git wt --init zsh)"
 
 bindkey -e
 
-source ~/.config/zsh/herdr.zsh
 source ~/.config/zsh/git.zsh
 source ~/.config/zsh/aws.zsh
 source ~/.config/zsh/cursor.zsh
