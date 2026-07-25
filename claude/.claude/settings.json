@@ -1,8 +1,22 @@
 {
+  "editorMode": "normal",
+  "hooks": {
+    "SessionStart": [
+      {
+        "hooks": [
+          {
+            "command": "bash '/Users/reobin/.claude/hooks/herdr-agent-state.sh' session",
+            "timeout": 10,
+            "type": "command"
+          }
+        ],
+        "matcher": "*"
+      }
+    ]
+  },
   "permissions": {
     "defaultMode": "auto"
   },
   "theme": "auto",
-  "editorMode": "normal",
   "tui": "default"
 }
