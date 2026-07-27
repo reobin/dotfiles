@@ -9,7 +9,16 @@ herdr/.config/herdr/plugins/
 herdr/.local/bin/bunx
 herdr/.local/bin/claude
 herdr/.local/bin/herdr
+herdr/.local/bin/analyze-traffic-conditions
+herdr/.local/bin/feature-callout-implementer
+herdr/.local/bin/interpret-load-test-results
+herdr/.local/bin/plan-load-test
+herdr/.local/bin/pr-dashboard
+herdr/.local/bin/slackcli
 opencode/.config/opencode/plugins/herdr-agent-state.js
+opencode/.config/opencode/AGENTS.md
+opencode/.config/opencode/commands/
+opencode/.config/opencode/skills/
 codex/.codex/tmp/
 tt/.config/ghostty/themes/terminal-active
 tt/.config/tt/active/
