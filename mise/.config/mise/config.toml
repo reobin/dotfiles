@@ -4,7 +4,7 @@ legacy_version_file = true
 idiomatic_version_file_enable_tools = ["node"]
 
 [tools]
-node = "lts"
+node = "22"
 aws-cli = { version = "latest", symlink_bins = true }
 bun = "latest"
 claude = "latest"
@@ -14,4 +14,5 @@ herdr = "latest"
 pnpm = "latest"
 rust = "latest"
 vercel = "latest"
+yarn = "latest"
 zig = "latest"
