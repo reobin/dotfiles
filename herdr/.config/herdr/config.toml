@@ -63,6 +63,12 @@ navigate_pane_up = "k"
 navigate_pane_right = "l"
 
 [[keys.command]]
+key = "prefix+s"
+type = "shell"
+command = "$HOME/dotfiles/herdr/.local/bin/herdr-toggle-split"
+description = "toggle split direction"
+
+[[keys.command]]
 key = "prefix+o"
 type = "shell"
 command = "$HOME/dotfiles/herdr/.local/bin/herdr-close-other-panes"

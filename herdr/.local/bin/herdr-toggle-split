@@ -1,0 +1,82 @@
+#!/bin/sh
+
+set -eu
+
+if [ $# -gt 0 ]; then
+  layout="$(herdr pane layout --pane "$1")"
+else
+  layout="$(herdr pane layout --current)"
+fi
+
+plan="$(
+  printf '%s' "$layout" |
+  jq -r '
+    .result.layout as $layout
+    | $layout.panes as $panes
+    | $layout.splits as $splits
+    | if ($panes | length) != 2 or ($splits | length) != 1 or $layout.zoomed then
+        empty
+      else
+        $splits[0] as $split
+        | (if $split.direction == "down" then "right" else "down" end) as $direction
+        | (
+            if $split.direction == "down" then
+              $panes | sort_by(.rect.y)
+            else
+              $panes | sort_by(.rect.x)
+            end
+          ) as $ordered
+        | [
+            $direction,
+            $layout.workspace_id,
+            $layout.tab_id,
+            $ordered[0].pane_id,
+            $ordered[1].pane_id,
+            ($ordered[1].focused | tostring),
+            ($split.ratio | tostring)
+          ]
+        | join(" ")
+      end
+  '
+)"
+
+if [ -z "$plan" ]; then
+  herdr notification show "toggle split" \
+    --body "needs exactly two unzoomed panes in this tab" \
+    --sound none >/dev/null
+  exit 0
+fi
+
+# shellcheck disable=SC2086
+set -- $plan
+direction="$1"
+workspace="$2"
+tab="$3"
+target="$4"
+moved="$5"
+moved_focused="$6"
+ratio="$7"
+
+if [ "$moved_focused" = "true" ]; then
+  focus="--focus"
+else
+  focus="--no-focus"
+fi
+
+# A same-tab move is a no-op, so detach the pane into a scratch tab first and
+# then move it back with the new split direction. The scratch tab disappears
+# once it is empty. If the second move fails the pane stays there, so say so
+# instead of leaving it lost.
+trap 'herdr notification show "toggle split" \
+  --body "pane $moved left in a scratch tab" --sound none >/dev/null' EXIT
+
+herdr pane move "$moved" --new-tab --workspace "$workspace" --no-focus >/dev/null
+
+herdr pane move "$moved" \
+  --tab "$tab" \
+  --split "$direction" \
+  --target-pane "$target" \
+  --ratio "$ratio" \
+  "$focus" >/dev/null
+
+trap - EXIT
