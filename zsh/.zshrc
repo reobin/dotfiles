@@ -21,7 +21,9 @@ export EDITOR='nvim'
 export VISUAL='nvim'
 export GIT_EDITOR='nvim'
 
-eval "$(git wt --init zsh)"
+source ~/.config/zsh/cache.zsh
+
+zsh_cached_eval git-wt git-wt --init zsh
 
 bindkey -e
 
@@ -32,7 +34,12 @@ source ~/.config/zsh/history.zsh
 source ~/.config/zsh/completion.zsh
 source ~/.config/zsh/theme.zsh
 
-eval "$(starship init zsh)"
-eval "$(zoxide init zsh --cmd cd)"
+zsh_cached_eval starship starship init zsh
+# starship always sets RPROMPT, but no right_format is configured, so it spawns
+# a second starship per prompt just to print nothing. Drop this line if one is.
+RPROMPT=''
 
+zsh_cached_eval zoxide zoxide init zsh --cmd cd
+
+# Not cacheable: `mise activate` bakes the activation-time PATH into its output.
 eval "$(mise activate zsh)"

@@ -1,4 +1,6 @@
-eval "$(/opt/homebrew/bin/brew shellenv zsh)"
+source ~/.config/zsh/cache.zsh
+
+zsh_cached_eval brew /opt/homebrew/bin/brew shellenv zsh
 
 source ~/.config/zsh/path.zsh
 
