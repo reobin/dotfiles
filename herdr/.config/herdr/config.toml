@@ -74,6 +74,14 @@ type = "shell"
 command = "$HOME/dotfiles/herdr/.local/bin/herdr-close-other-panes"
 
 [[keys.command]]
+key = "prefix+p"
+type = "popup"
+command = "$SHELL"
+width = "80%"
+height = "80%"
+description = "floating pane"
+
+[[keys.command]]
 key = "prefix+shift+d"
 type = "plugin_action"
 command = "herdr-discord.toggle"
