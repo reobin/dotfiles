@@ -1,4 +1,7 @@
 {
+  "env": {
+    "DISABLE_TELEMETRY": "1"
+  },
   "permissions": {
     "defaultMode": "auto"
   },
@@ -21,11 +24,20 @@
     "command": "bash '/Users/reobin/.claude/statusline.sh'"
   },
   "enabledPlugins": {
-    "Notion@claude-plugins-official": true
+    "Notion@claude-plugins-official": true,
+    "mattpocock-skills@mattpocock": true
+  },
+  "extraKnownMarketplaces": {
+    "mattpocock": {
+      "source": {
+        "source": "github",
+        "repo": "mattpocock/skills"
+      }
+    }
   },
   "tui": "default",
   "theme": "auto",
-  "editorMode": "vim",
+  "editorMode": "normal",
   "mcpServers": {
     "slack": {
       "type": "http",
