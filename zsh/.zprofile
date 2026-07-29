@@ -10,3 +10,6 @@ pathadd "$HOME/.cargo/bin"
 pathadd "$HOME/.opencode/bin"
 pathadd "/opt/homebrew/bin"
 pathadd "$HOME/bin"
+
+# Herdr panes are login shells, so FPATH accumulates duplicates when nested.
+typeset -U path fpath
