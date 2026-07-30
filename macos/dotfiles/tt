@@ -6,7 +6,7 @@ stow tt
 
 mkdir -p ~/.config/tt/active ~/.config/ghostty/themes
 rm -f ~/.config/ghostty/themes/terminal-active
-cp ~/.config/tt/themes/everforest-dark/ghostty.conf ~/.config/tt/active/ghostty.conf
-cp ~/.config/tt/themes/everforest-dark/nvim.lua ~/.config/tt/active/nvim.lua
-cp ~/.config/tt/themes/everforest-dark/ghostty.conf ~/.config/ghostty/themes/terminal-active
-printf 'everforest-dark\n' > ~/.config/tt/current
+cp ~/.config/tt/themes/carbonfox/ghostty.conf ~/.config/tt/active/ghostty.conf
+cp ~/.config/tt/themes/carbonfox/nvim.lua ~/.config/tt/active/nvim.lua
+cp ~/.config/tt/themes/carbonfox/ghostty.conf ~/.config/ghostty/themes/terminal-active
+printf 'carbonfox\n' > ~/.config/tt/current

@@ -9,7 +9,7 @@ __terminal_theme_apply_env() {
   if [[ -r "$root/current" ]]; then
     export TERMINAL_THEME="$(<"$root/current")"
   else
-    export TERMINAL_THEME="olive"
+    export TERMINAL_THEME="carbonfox"
   fi
 }
 

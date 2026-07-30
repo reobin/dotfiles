@@ -1,4 +1,4 @@
-local active_theme = "olive-crt"
+local active_theme = "carbonfox"
 local theme_file = vim.fn.expand("~/.config/tt/active/nvim.lua")
 local ok, theme = pcall(dofile, theme_file)
 
@@ -22,34 +22,13 @@ end
 
 return {
   {
-    "reobin/olive-crt.nvim",
-    name = "olive-crt",
-    lazy = false,
-    priority = 1000,
-  },
-  {
     "catppuccin/nvim",
     name = "catppuccin",
     lazy = false,
     priority = 1000,
   },
   {
-    "junegunn/seoul256.vim",
-    lazy = false,
-    priority = 1000,
-  },
-  {
     "EdenEast/nightfox.nvim",
-    lazy = false,
-    priority = 1000,
-  },
-  {
-    "sainnhe/everforest",
-    lazy = false,
-    priority = 1000,
-  },
-  {
-    "tanvirtin/monokai.nvim",
     lazy = false,
     priority = 1000,
   },
