@@ -26,6 +26,7 @@
 	copyignored = true
 	copyuntracked = true
 	copymodified = true
+	nocopy = node_modules/
 [sequence]
 	editor = nvim
 [diff]
