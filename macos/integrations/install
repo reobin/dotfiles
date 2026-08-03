@@ -7,16 +7,44 @@ if ! command -v herdr >/dev/null 2>&1; then
   return 0
 fi
 
-if ! command -v ocv >/dev/null 2>&1 && ! command -v opencode >/dev/null 2>&1; then
-  echo "Skipping Herdr opencode integration (opencode/ocv is not installed)" >&2
-  return 0
-fi
+INTEGRATION_STATUS="$(herdr integration status)"
 
-if herdr integration status | grep -q '^opencode: current'; then
-  echo "Herdr opencode integration is already installed"
-else
-  echo "installing Herdr opencode integration"
-  herdr integration install opencode
-fi
+# Each agent reports its state through a hook written into that agent's own
+# config directory, so every agent needs its own install.
+install_herdr_integration() {
+  local integration="$1"
+  shift
+
+  local bin
+  for bin in "$@"; do
+    if ! command -v "$bin" >/dev/null 2>&1; then
+      continue
+    fi
+
+    if grep -q "^$integration: current" <<<"$INTEGRATION_STATUS"; then
+      echo "Herdr $integration integration is already installed"
+    else
+      echo "installing Herdr $integration integration"
+      herdr integration install "$integration"
+    fi
+
+    return 0
+  done
+
+  local names
+  names="$(
+    IFS=/
+    echo "$*"
+  )"
+
+  echo "Skipping Herdr $integration integration ($names is not installed)" >&2
+}
+
+# opencode ships the `opencode` command, opencode-vim ships `ocv`.
+install_herdr_integration opencode opencode ocv
+install_herdr_integration claude claude
+install_herdr_integration codex codex
+
+unset -f install_herdr_integration
 
 herdr server reload-config >/dev/null 2>&1 || true
