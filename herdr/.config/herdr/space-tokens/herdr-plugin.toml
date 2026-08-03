@@ -1,0 +1,56 @@
+id = "reobin.space-tokens"
+name = "Space tokens"
+version = "0.1.0"
+min_herdr_version = "0.7.0"
+description = "Report one sidebar line per agent on each space"
+platforms = ["linux", "macos"]
+
+# Startup refreshes once after the session is restored; the event hooks keep it
+# current after that. Nothing here is a daemon, so there is no live clock: the
+# lines change when Herdr sees something change.
+[[startup]]
+command = ["sh", "refresh.sh"]
+
+[[events]]
+on = "pane.agent_status_changed"
+command = ["sh", "refresh.sh"]
+
+[[events]]
+on = "pane.agent_detected"
+command = ["sh", "refresh.sh"]
+
+[[events]]
+on = "pane.created"
+command = ["sh", "refresh.sh"]
+
+[[events]]
+on = "pane.closed"
+command = ["sh", "refresh.sh"]
+
+[[events]]
+on = "pane.moved"
+command = ["sh", "refresh.sh"]
+
+[[events]]
+on = "pane.exited"
+command = ["sh", "refresh.sh"]
+
+[[events]]
+on = "tab.created"
+command = ["sh", "refresh.sh"]
+
+[[events]]
+on = "tab.closed"
+command = ["sh", "refresh.sh"]
+
+[[events]]
+on = "tab.renamed"
+command = ["sh", "refresh.sh"]
+
+[[events]]
+on = "workspace.created"
+command = ["sh", "refresh.sh"]
+
+[[events]]
+on = "workspace.closed"
+command = ["sh", "refresh.sh"]
