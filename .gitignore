@@ -1,4 +1,6 @@
-.claude/
+claude/.claude/*
+!claude/.claude/settings.json
+!claude/.claude/statusline.sh
 herdr/.config/herdr/herdr-client.log
 herdr/.config/herdr/herdr-server.log
 herdr/.config/herdr/session.json

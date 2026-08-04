@@ -1,9 +1,9 @@
 #!/usr/bin/env bash
 
-rm -f ~/.claude/settings.json
-rm -f ~/.claude/statusline-command.sh
-
-stow claude
+# ~/.claude also holds Claude Code state and whatever the ai repo installs, so
+# it has to stay a real directory. Folding it would make it a symlink into this
+# repo, where any write to ~/.claude/<file> hits the tracked source instead.
+stow --no-folding claude
 
 # hunk ships its agent review skill with the formula; opt path follows upgrades
 mkdir -p ~/.claude/skills
