@@ -1,0 +1,26 @@
+#!/usr/bin/env bash
+
+set -eu
+
+# `pmset disablesleep` is the only switch that also blocks lid-closed sleep, and
+# it is system wide: there is no `-c`/`-b` form. So the AC-only behavior has to
+# be toggled from here, on every power source change.
+#
+# Runs as root under launchd, so pmset needs no sudo. Absolute paths because the
+# daemon inherits launchd's minimal environment.
+
+if /usr/bin/pmset -g batt | /usr/bin/grep -q "'AC Power'"; then
+  wanted=1
+else
+  wanted=0
+fi
+
+# pmset omits SleepDisabled entirely while it is off.
+current="$(/usr/bin/pmset -g | /usr/bin/awk '$1 == "SleepDisabled" { print $2 }')"
+current="${current:-0}"
+
+if [[ "$current" == "$wanted" ]]; then
+  exit 0
+fi
+
+/usr/bin/pmset -a disablesleep "$wanted"

@@ -1,0 +1,28 @@
+#!/usr/bin/env bash
+
+set -eu
+
+DOTFILES_DIRECTORY="$HOME/dotfiles"
+DAEMONS_DIRECTORY="$DOTFILES_DIRECTORY/macos/daemons"
+
+# The plist points at the script in this repo, so only the plist is copied out.
+# launchd refuses to load a daemon plist that is not owned by root.
+install_daemon() {
+  local label="$1"
+  local source="$DAEMONS_DIRECTORY/$label.plist"
+  local target="/Library/LaunchDaemons/$label.plist"
+
+  if [[ -f "$target" ]] && cmp -s "$source" "$target" && sudo launchctl print "system/$label" >/dev/null 2>&1; then
+    echo "$label daemon is already installed"
+    return 0
+  fi
+
+  echo "installing $label daemon"
+  sudo install -o root -g wheel -m 644 "$source" "$target"
+  sudo launchctl bootout "system/$label" 2>/dev/null || true
+  sudo launchctl bootstrap system "$target"
+}
+
+install_daemon com.reobin.keep-awake
+
+unset -f install_daemon
