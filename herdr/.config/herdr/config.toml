@@ -96,14 +96,17 @@ show_agent_labels_on_pane_borders = true
 
 agent_panel_sort = "spaces"
 
-# Each space is one block: name, git, then a line per pane with what it is
-# running. The a1..a4 tokens come from space-tokens/refresh.sh; rows with no
-# value disappear, so a block is only as tall as it has content. Drag the
-# sidebar's section divider to the bottom to starve the agents panel.
+# Each space is one block: name, branch, then a line per pane with what it is
+# running. The title and a1..a4 tokens come from space-tokens/refresh.sh; rows
+# with no value disappear, so a block is only as tall as it has content. Drag
+# the sidebar's section divider to the bottom to starve the agents panel.
+#
+# $title stands in for the built-in workspace token because labels are bare
+# basenames; it names the repo instead, and the branch row says which checkout.
 [ui.sidebar.spaces]
 row_gap = 1
 rows = [
-  ["state_icon", { token = "workspace", bold = true }],
+  ["state_icon", { token = "$title", bold = true }],
   ["branch", "git_status"],
   [{ token = "$a1_hot", bold = true }],
   ["$a1"],

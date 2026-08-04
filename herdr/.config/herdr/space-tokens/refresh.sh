@@ -17,6 +17,11 @@
 # dev server or an editor reads as part of the space the way it does in thud.
 # Set processes=0 to list only agents.
 #
+# `title` stands in for the label on the title row: the repo name when the space
+# is in a git repo, the directory name otherwise. Labels are bare basenames, so a
+# worktree label says nothing about which repo it belongs to; the branch row
+# under the title is what tells one checkout of a repo from another.
+#
 # Usage: refresh.sh         report the current panes
 #        refresh.sh clear    remove every token this script owns
 
@@ -36,7 +41,7 @@ if [ "${1:-}" = "clear" ]; then
     args="$args --clear-token a$slot --clear-token a${slot}_hot --clear-token a${slot}_title"
     slot=$((slot + 1))
   done
-  args="$args --clear-token more"
+  args="$args --clear-token more --clear-token title"
 
   for workspace in $(printf '%s' "$workspaces" | jq -r '.result.workspaces[].workspace_id'); do
     # shellcheck disable=SC2086
@@ -57,6 +62,21 @@ for workspace in $(printf '%s' "$workspaces" | jq -r '.result.workspaces[] | sel
     printf '%s\n%s\n' "$tabs" "$list" |
       jq -sc --arg ws "$workspace" '
         .[0] + { ($ws): (.[1].result.tabs | map({ key: .tab_id, value: .label }) | from_entries) }
+      '
+  )"
+done
+
+# Which repo a space belongs to is not in its path in any reliable way, and Herdr
+# already tracks it, so ask. Spaces outside a repo report no name and fall back
+# to their directory below. One call per space.
+repos='{}'
+for workspace in $(printf '%s' "$workspaces" | jq -r '.result.workspaces[].workspace_id'); do
+  info="$("$herdr" worktree list --workspace "$workspace")" || continue
+  repos="$(
+    printf '%s\n%s\n' "$repos" "$info" |
+      jq -sc --arg ws "$workspace" '
+        (.[1].result.source.repo_name // "") as $repo
+        | if $repo == "" then .[0] else .[0] + { ($ws): $repo } end
       '
   )"
 done
@@ -88,7 +108,8 @@ fi
 
 plan="$(
   printf '%s' "$workspaces" |
-    jq -r --argjson panes "$panes" --argjson tabs "$tabs" --argjson commands "$commands" --argjson slots "$slots" '
+    jq -r --argjson panes "$panes" --argjson tabs "$tabs" --argjson commands "$commands" --argjson slots "$slots" \
+      --argjson repos "$repos" '
       def mark:
         if . == "blocked" then "◆"
         elif . == "working" then "●"
@@ -105,7 +126,17 @@ plan="$(
       | . as $workspace
       | ($panes.result.panes | map(select(.workspace_id == $workspace.workspace_id))) as $mine
       | ($tabs[$workspace.workspace_id] // {}) as $tab_labels
-      | [
+      | ($repos[$workspace.workspace_id] // "") as $repo
+      | ($mine[0].cwd // "") as $cwd
+      | ($workspace.label // "") as $label
+      # The title row renders this instead of the label, so every space has to
+      # come out with a name: repo, else the directory it sits in, else the label
+      # for a space with no pane to read a cwd from.
+      | (if $repo != "" then $repo
+         else ((($cwd / "/") | map(select(. != "")) | last) // $label)
+         end) as $title
+      | (if $title == "" then ["--clear-token", "title"] else ["--token", "title=\($title)"] end)
+      + [
           range(1; $slots + 1) as $slot
           | ($mine[$slot - 1]) as $pane
           | if $pane == null then
