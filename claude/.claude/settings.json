@@ -36,9 +36,15 @@
       }
     }
   },
+  "remote": {
+    "defaultEnvironmentId": "env_01FEEXG2YVgrSU375srfc8oT"
+  },
   "tui": "default",
   "theme": "auto",
   "editorMode": "normal",
+  "terminalProgressBarEnabled": true,
+  "agentPushNotifEnabled": true,
+  "remoteControlEnabled": true,
   "mcpServers": {
     "slack": {
       "type": "http",
@@ -48,5 +54,6 @@
         "callbackPort": 3118
       }
     }
-  }
+  },
+  "remoteControlAtStartup": true
 }
