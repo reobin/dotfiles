@@ -4,7 +4,3 @@
 # it has to stay a real directory. Folding it would make it a symlink into this
 # repo, where any write to ~/.claude/<file> hits the tracked source instead.
 stow --no-folding claude
-
-# hunk ships its agent review skill with the formula; opt path follows upgrades
-mkdir -p ~/.claude/skills
-ln -sfn /opt/homebrew/opt/hunk/libexec/skills/hunk-review ~/.claude/skills/hunk-review

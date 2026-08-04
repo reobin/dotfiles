@@ -17,7 +17,6 @@ herdr/.local/bin/interpret-load-test-results
 herdr/.local/bin/plan-load-test
 herdr/.local/bin/pr-dashboard
 herdr/.local/bin/slackcli
-hunk/.config/hunk/state.json
 opencode/.config/opencode/plugins/herdr-agent-state.js
 opencode/.config/opencode/AGENTS.md
 opencode/.config/opencode/commands/
