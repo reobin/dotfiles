@@ -13,7 +13,6 @@ alias h='herdr'
 alias g='git'
 alias lg='lazygit'
 alias n='nvim'
-alias ts='tailscale'
 
 export DOTFILES="$HOME/dotfiles"
 
