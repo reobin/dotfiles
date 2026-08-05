@@ -75,6 +75,12 @@ command = "$HOME/dotfiles/herdr/.local/bin/herdr-move-workspace down"
 description = "move workspace down"
 
 [[keys.command]]
+key = "alt+n"
+type = "shell"
+command = "$HOME/dotfiles/herdr/.local/bin/herdr-next-attention"
+description = "focus next agent waiting"
+
+[[keys.command]]
 key = "prefix+t"
 type = "shell"
 command = "$HOME/dotfiles/herdr/.local/bin/herdr-toggle-split"
