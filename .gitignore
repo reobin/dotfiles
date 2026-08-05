@@ -1,4 +1,5 @@
 claude/.claude/*
+!claude/.claude/keybindings.json
 !claude/.claude/settings.json
 !claude/.claude/statusline.sh
 herdr/.config/herdr/herdr-client.log
