@@ -63,6 +63,18 @@ navigate_pane_up = "k"
 navigate_pane_right = "l"
 
 [[keys.command]]
+key = "alt+shift+k"
+type = "shell"
+command = "$HOME/dotfiles/herdr/.local/bin/herdr-move-workspace up"
+description = "move workspace up"
+
+[[keys.command]]
+key = "alt+shift+j"
+type = "shell"
+command = "$HOME/dotfiles/herdr/.local/bin/herdr-move-workspace down"
+description = "move workspace down"
+
+[[keys.command]]
 key = "prefix+t"
 type = "shell"
 command = "$HOME/dotfiles/herdr/.local/bin/herdr-toggle-split"

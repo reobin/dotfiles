@@ -1,0 +1,57 @@
+#!/bin/sh
+
+set -eu
+
+# workspace.move inserts before whichever workspace currently sits at
+# insert_index, so moving down one slot means aiming two slots ahead.
+case "${1:-}" in
+  up) offset=-1 ;;
+  down) offset=2 ;;
+  *)
+    printf 'usage: %s <up|down>\n' "${0##*/}" >&2
+    exit 2
+    ;;
+esac
+
+request="$(
+  herdr workspace list |
+  jq -c --argjson offset "$offset" '
+    .result.workspaces as $workspaces
+    | ($workspaces | map(.focused) | index(true)) as $from
+    | ($from + $offset) as $to
+    | if $from == null or $to < 0 or $to > ($workspaces | length) then
+        empty
+      else
+        {
+          id: "1",
+          method: "workspace.move",
+          params: {
+            workspace_id: $workspaces[$from].workspace_id,
+            insert_index: $to
+          }
+        }
+      end
+  '
+)"
+
+if [ -z "$request" ]; then
+  exit 0
+fi
+
+# The client has no `workspace move`, so the move itself goes over the socket.
+response="$(
+  printf '%s\n' "$request" |
+  nc -U "${HERDR_SOCKET_PATH:-$HOME/.config/herdr/herdr.sock}" |
+  head -1
+)"
+
+error="$(printf '%s' "$response" | jq -r '.error.message // empty')"
+
+if [ -z "$response" ]; then
+  error="no response from the herdr socket"
+fi
+
+if [ -n "$error" ]; then
+  herdr notification show "move workspace" --body "$error" --sound none >/dev/null || true
+  exit 1
+fi
