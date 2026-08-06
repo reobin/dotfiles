@@ -93,6 +93,12 @@ command = "$HOME/dotfiles/herdr/.local/bin/herdr-close-other-panes"
 description = "close other panes"
 
 [[keys.command]]
+key = "alt+s"
+type = "shell"
+command = "$HOME/dotfiles/herdr/.local/bin/herdr-sidetrack"
+description = "sidetrack this conversation"
+
+[[keys.command]]
 key = "prefix+p"
 type = "popup"
 command = "$SHELL"

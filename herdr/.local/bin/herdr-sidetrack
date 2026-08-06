@@ -1,0 +1,226 @@
+#!/bin/sh
+
+set -eu
+
+notify() {
+  herdr notification show "sidetrack" --body "$1" --sound none >/dev/null 2>&1 || true
+}
+
+die() {
+  notify "$1"
+  exit 1
+}
+
+panes="$(herdr pane list)" || die "herdr is not responding"
+
+# Prefer the calling pane when this runs from inside one, and fall back to the
+# UI-focused pane, which is what a keybinding gets.
+pane="$(
+  printf '%s' "$panes" |
+  jq -r --arg env "${HERDR_PANE_ID:-}" '
+    .result.panes as $panes
+    | (
+        [$panes[] | select(.pane_id == $env)] + [$panes[] | select(.focused == true)]
+      )[0] // empty
+    | [
+        .pane_id,
+        .tab_id,
+        .workspace_id,
+        .cwd,
+        (.agent // ""),
+        (.agent_session.value // ""),
+        (.terminal_title_stripped // "")
+      ]
+    | @tsv
+  '
+)"
+
+[ -n "$pane" ] || die "no pane to sidetrack from"
+
+pane_id="$(printf '%s\n' "$pane" | cut -f1)"
+tab_id="$(printf '%s\n' "$pane" | cut -f2)"
+workspace="$(printf '%s\n' "$pane" | cut -f3)"
+cwd="$(printf '%s\n' "$pane" | cut -f4)"
+agent="$(printf '%s\n' "$pane" | cut -f5)"
+session="$(printf '%s\n' "$pane" | cut -f6)"
+title="$(printf '%s\n' "$pane" | cut -f7)"
+
+[ "$agent" = "claude" ] || die "focused pane is not running claude"
+[ -n "$session" ] || die "no claude session recorded for $pane_id"
+
+transcript="$(find "$HOME/.claude/projects" -name "$session.jsonl" -print 2>/dev/null | head -n 1)"
+[ -n "$transcript" ] || die "no transcript on disk for $session"
+
+# Effort is session state, not a setting, so the transcript is the only place a
+# detached script can read it from.
+effort="$(
+  tail -n 400 "$transcript" |
+  jq -rs 'map(select(.effort != null) | .effort) | last // empty' 2>/dev/null || true
+)"
+
+# Fork from the last completed turn rather than the live tail. Fired mid-turn the
+# transcript ends on a user message with no reply, and resuming that would take
+# the parent's in-flight prompt as a live instruction and act on it in this same
+# checkout. Trimming to the last end_turn leaves nothing dangling to continue,
+# and drops the last-prompt record that carries the pending text.
+#
+# Permission mode is appended from the whole transcript rather than the trimmed
+# range, so flipping to plan mid-turn and sidetracking cannot hand the clone the
+# older, looser mode.
+fork_id="$(uuidgen | tr '[:upper:]' '[:lower:]')"
+fork_file="$(dirname "$transcript")/$fork_id.jsonl"
+
+jq -c -s --arg sid "$fork_id" '
+  [ .[] | select(.type == "user" or .type == "assistant" or .type == "system") ] as $msgs
+  | ([ .[] | select(.type == "permission-mode") ] | last) as $mode
+  | [
+      $msgs
+      | to_entries[]
+      | select(.value.type == "assistant" and .value.message.stop_reason == "end_turn")
+      | .key
+    ] as $ends
+  | if ($ends | length) == 0 then
+      empty
+    else
+      ($msgs[0:(($ends | last) + 1)] + (if $mode then [$mode] else [] end))[]
+      | .sessionId = $sid
+      | (if has("session_id") then .session_id = $sid else . end)
+    end
+' "$transcript" >"$fork_file" || {
+  rm -f "$fork_file"
+  die "could not read the transcript for $session"
+}
+
+if [ ! -s "$fork_file" ]; then
+  rm -f "$fork_file"
+  die "no completed turn to fork from yet"
+fi
+
+# Every failure from here on would otherwise leave the trimmed transcript behind,
+# where it shows up as a phantom entry in Claude's own /resume picker.
+trap 'rm -f "$fork_file"' EXIT HUP INT TERM
+
+# Claude's own session title, cut to three words, is the only thing telling the
+# clone apart from its parent on screen.
+slug="$(
+  printf '%s' "$title" |
+  tr '[:upper:]' '[:lower:]' |
+  tr -c 'a-z0-9' ' ' |
+  awk '{ n = NF < 3 ? NF : 3; s = ""; for (i = 1; i <= n; i++) s = s (i > 1 ? "-" : "") $i; print s }'
+)"
+[ -n "$slug" ] || slug="fork"
+
+base="$(printf 'sidetrack-%s' "$slug" | cut -c1-32)"
+name="$base"
+suffix=2
+while herdr agent get "$name" >/dev/null 2>&1; do
+  name="$(printf '%s-%s' "$(printf '%s' "$base" | cut -c1-30)" "$suffix")"
+  suffix=$((suffix + 1))
+  [ "$suffix" -le 9 ] || die "too many sidetracks named $base"
+done
+
+layout="$(herdr pane layout --pane "$pane_id")" ||
+  die "could not read the layout for $pane_id"
+
+rect="$(
+  printf '%s' "$layout" |
+  jq -r --arg p "$pane_id" '
+    .result.layout.panes[] | select(.pane_id == $p) | [.rect.width, .rect.height] | @tsv
+  '
+)"
+
+width="$(printf '%s\n' "$rect" | cut -f1)"
+height="$(printf '%s\n' "$rect" | cut -f2)"
+[ -n "$width" ] && [ -n "$height" ] || die "no layout rect for $pane_id"
+
+panes_in_tab="$(
+  printf '%s' "$panes" |
+  jq -r --arg t "$tab_id" '[.result.panes[] | select(.tab_id == $t)] | length'
+)"
+
+# Alone in the tab, the pane is full width and has room to sit side by side.
+# Once it is sharing, halving the width again would leave columns too narrow to
+# read, so stack instead.
+if [ "$panes_in_tab" -le 1 ]; then
+  direction="right"
+  half="$((width / 2))"
+  floor=20
+else
+  direction="down"
+  half="$((height / 2))"
+  floor=6
+fi
+
+# Focus lands with the pane, not with the agent. Claude needs a few seconds to
+# boot and replay, and waiting them out before moving is what made this feel
+# slow: the keypress looked like it had done nothing. Arriving in the empty pane
+# up front puts that wait in front of you instead of in front of the keypress.
+if [ "$half" -ge "$floor" ]; then
+  placement="split $direction"
+  created="$(herdr pane split "$pane_id" --direction "$direction" --ratio 0.5 --cwd "$cwd" --focus)" ||
+    die "could not split $pane_id"
+  new_pane="$(printf '%s' "$created" | jq -r '.result.pane.pane_id')"
+else
+  placement="new tab"
+  created="$(herdr tab create --workspace "$workspace" --cwd "$cwd" --label "$name" --focus)" ||
+    die "could not create a tab in $workspace"
+  new_pane="$(printf '%s' "$created" | jq -r '.result.root_pane.pane_id')"
+fi
+
+if [ -z "$new_pane" ] || [ "$new_pane" = "null" ]; then
+  die "could not place a pane ($placement)"
+fi
+
+# A fresh pane is still running its shell's startup files, and `agent start`
+# rejects it with agent_pane_busy until the prompt is up. Nothing masks that
+# latency here the way tool-call round trips do, so wait the shell out: ready is
+# the shell being the only thing in its own foreground process group.
+ready=0
+attempt=0
+while [ "$attempt" -lt 100 ]; do
+  if herdr pane process-info --pane "$new_pane" 2>/dev/null |
+    jq -e '
+      .result.process_info
+      | .shell_pid as $shell
+      | ([.foreground_processes[] | select(.pid != $shell)] | length) == 0
+    ' >/dev/null 2>&1; then
+    ready=1
+    break
+  fi
+  attempt=$((attempt + 1))
+  sleep 0.1
+done
+
+[ "$ready" -eq 1 ] || die "shell never came up in $new_pane; pane left open"
+
+# The trimmed file is already a new session id, so --fork-session would be a
+# second fork of a conversation nobody is holding open.
+set -- --resume "$fork_id"
+[ -n "$effort" ] && set -- "$@" --effort "$effort"
+
+# `agent start` reports failure in its JSON body, not its exit status, so the
+# body is what decides. A full MCP roster plus a replayed conversation can take
+# over a minute.
+started=""
+attempt=0
+while [ "$attempt" -lt 20 ]; do
+  started="$(herdr agent start "$name" --kind claude --pane "$new_pane" \
+    --timeout 180000 -- "$@" 2>&1 || true)"
+  case "$started" in
+    *'"type":"agent_started"'*) break ;;
+    *agent_pane_busy*) ;;
+    *) break ;;
+  esac
+  started=""
+  attempt=$((attempt + 1))
+  sleep 0.25
+done
+
+case "$started" in
+  *'"type":"agent_started"'*) ;;
+  *) die "claude did not come up in $new_pane; pane left open" ;;
+esac
+
+# The clone owns the transcript now. Focus already moved with the pane, and
+# pulling it back here would yank you out of wherever you went during the boot.
+trap - EXIT HUP INT TERM
