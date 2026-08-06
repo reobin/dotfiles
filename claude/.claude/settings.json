@@ -1,6 +1,8 @@
 {
   "env": {
-    "DISABLE_ERROR_REPORTING": "1"
+    "DISABLE_ERROR_REPORTING": "1",
+    "BROWSER": "none",
+    "GH_BROWSER": "open"
   },
   "permissions": {
     "defaultMode": "auto"
