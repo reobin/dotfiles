@@ -23,6 +23,7 @@
 [core]
 	editor = nvim
 [wt]
+	basedir = ../{gitroot}-wt
 	copyignored = true
 	copyuntracked = true
 	copymodified = true
