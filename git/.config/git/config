@@ -23,6 +23,7 @@
   bc = !"$HOME/.config/git/scripts/branch-cleanup"
 [core]
 	editor = nvim
+	pager = delta
 [sequence]
 	editor = nvim
 [init]
@@ -36,6 +37,8 @@
 	colorMoved = plain       # Highlight moved blocks in diffs
 	mnemonicPrefix = true    # More intuitive refs in diff output
 	tool = nvimdiff
+[interactive]
+	diffFilter = delta --color-only   # Keep delta's colors in `add -p`
 [commit]
 	verbose = true           # Include diff comment in commit message template
 	gpgsign = true
