@@ -1,6 +1,12 @@
 #!/usr/bin/env bash
 
+# Clears an unmanaged ~/.gitconfig, including the symlink left by the old
+# git/.gitconfig package file. Everything global now lives in .config/git.
 rm -f ~/.gitconfig
-rm -f ~/.config/git/ignore
+
+# stow folds ~/.config/git into a symlink pointing back at this repo, so an
+# unguarded rm through that path deletes the tracked source. Only clear a real
+# unmanaged file.
+[[ -L ~/.config/git ]] || rm -f ~/.config/git/ignore
 
 stow git

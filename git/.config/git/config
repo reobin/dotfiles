@@ -21,6 +21,10 @@
   shd = stash drop
   l = log
   bc = !"$HOME/.config/git/scripts/branch-cleanup"
+[core]
+	editor = nvim
+[sequence]
+	editor = nvim
 [init]
 	defaultBranch = main
 [pull]
@@ -34,6 +38,7 @@
 	tool = nvimdiff
 [commit]
 	verbose = true           # Include diff comment in commit message template
+	gpgsign = true
 [column]
 	ui = auto 			     # Output in columns when possible
 [branch]
@@ -49,12 +54,14 @@
 	signingkey = ~/.ssh/id_ed25519.pub
 [gpg]
 	format = ssh
-[commit]
-	gpgsign = true
+[gpg "ssh"]
+	allowedSignersFile = ~/.config/git/allowed_signers
 [wt]
+	basedir = ../{gitroot}-wt
 	copyignored = true
 	copyuntracked = true
 	copymodified = true
+	nocopy = node_modules/
 	hook = mise trust .
 [credential]
 	helper = cache --timeout=604800
