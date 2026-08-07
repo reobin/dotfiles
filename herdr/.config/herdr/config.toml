@@ -75,6 +75,18 @@ command = "$HOME/dotfiles/herdr/.local/bin/herdr-move-workspace down"
 description = "move workspace down"
 
 [[keys.command]]
+key = "alt+shift+h"
+type = "shell"
+command = "$HOME/dotfiles/herdr/.local/bin/herdr-move-tab left"
+description = "move tab left"
+
+[[keys.command]]
+key = "alt+shift+l"
+type = "shell"
+command = "$HOME/dotfiles/herdr/.local/bin/herdr-move-tab right"
+description = "move tab right"
+
+[[keys.command]]
 key = "alt+n"
 type = "shell"
 command = "$HOME/dotfiles/herdr/.local/bin/herdr-next-attention"

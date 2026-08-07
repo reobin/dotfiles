@@ -1,0 +1,63 @@
+#!/bin/sh
+
+set -eu
+
+# tab.move inserts before whichever tab currently sits at insert_index, so
+# moving right one slot means aiming two slots ahead.
+case "${1:-}" in
+  left) offset=-1 ;;
+  right) offset=2 ;;
+  *)
+    printf 'usage: %s <left|right>\n' "${0##*/}" >&2
+    exit 2
+    ;;
+esac
+
+request="$(
+  herdr tab list |
+  jq -c --argjson offset "$offset" '
+    .result.tabs as $all
+    | ($all | map(select(.focused)) | first) as $focused
+    | if $focused == null then
+        empty
+      else
+        ($all | map(select(.workspace_id == $focused.workspace_id))) as $tabs
+        | ($tabs | map(.tab_id) | index($focused.tab_id)) as $from
+        | ($from + $offset) as $to
+        | if $to < 0 or $to > ($tabs | length) then
+            empty
+          else
+            {
+              id: "1",
+              method: "tab.move",
+              params: {
+                tab_id: $focused.tab_id,
+                insert_index: $to
+              }
+            }
+          end
+      end
+  '
+)"
+
+if [ -z "$request" ]; then
+  exit 0
+fi
+
+# The client has no `tab move`, so the move itself goes over the socket.
+response="$(
+  printf '%s\n' "$request" |
+  nc -U "${HERDR_SOCKET_PATH:-$HOME/.config/herdr/herdr.sock}" |
+  head -1
+)"
+
+error="$(printf '%s' "$response" | jq -r '.error.message // empty')"
+
+if [ -z "$response" ]; then
+  error="no response from the herdr socket"
+fi
+
+if [ -n "$error" ]; then
+  herdr notification show "move tab" --body "$error" --sound none >/dev/null || true
+  exit 1
+fi
