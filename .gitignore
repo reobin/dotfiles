@@ -2,6 +2,11 @@ claude/.claude/*
 !claude/.claude/keybindings.json
 !claude/.claude/settings.json
 !claude/.claude/statusline.sh
+# hooks/ holds both tracked hooks and herdr-agent-state.sh, which
+# `herdr integration install claude` generates, so it stays ignored.
+!claude/.claude/hooks/
+claude/.claude/hooks/*
+!claude/.claude/hooks/skip-cypress.sh
 herdr/.config/herdr/herdr-client.log
 herdr/.config/herdr/herdr-server.log
 herdr/.config/herdr/session.json
