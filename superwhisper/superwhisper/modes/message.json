@@ -1,0 +1,33 @@
+{
+  "activationApps" : [
+
+  ],
+  "activationSites" : [
+
+  ],
+  "autocapitalizeInsert" : true,
+  "contextFromActiveApplication" : false,
+  "contextFromClipboard" : false,
+  "contextFromSelection" : false,
+  "contextTemplate" : "Use the copied text as context to complete this task.\n\nCopied text: ",
+  "description" : "",
+  "diarize" : false,
+  "iconName" : "",
+  "key" : "message",
+  "language" : "en",
+  "languageModelID" : "sl-1",
+  "literalPunctuation" : false,
+  "name" : "Message",
+  "prompt" : "",
+  "promptExamples" : [
+
+  ],
+  "realtimeOutput" : false,
+  "script" : "",
+  "scriptEnabled" : false,
+  "translateToEnglish" : false,
+  "type" : "message",
+  "useSystemAudio" : false,
+  "version" : 1,
+  "voiceModelID" : "sv-1"
+}
