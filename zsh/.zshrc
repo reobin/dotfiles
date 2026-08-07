@@ -31,6 +31,7 @@ source ~/.config/zsh/aws.zsh
 source ~/.config/zsh/cursor.zsh
 source ~/.config/zsh/history.zsh
 source ~/.config/zsh/completion.zsh
+source ~/.config/zsh/fzf.zsh
 source ~/.config/zsh/theme.zsh
 
 zsh_cached_eval starship starship init zsh
@@ -42,3 +43,6 @@ zsh_cached_eval zoxide zoxide init zsh --cmd cd
 
 # Not cacheable: `mise activate` bakes the activation-time PATH into its output.
 eval "$(mise activate zsh)"
+
+# Last: both plugins wrap the ZLE widgets that exist when they load.
+source ~/.config/zsh/plugins.zsh
