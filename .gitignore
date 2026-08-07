@@ -7,6 +7,8 @@ claude/.claude/*
 !claude/.claude/hooks/
 claude/.claude/hooks/*
 !claude/.claude/hooks/skip-cypress.sh
+herdr/.config/herdr/config.toml
+herdr/.config/herdr/config.toml.tmp.*
 herdr/.config/herdr/herdr-client.log
 herdr/.config/herdr/herdr-server.log
 herdr/.config/herdr/session.json

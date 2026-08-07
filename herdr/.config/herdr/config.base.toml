@@ -3,14 +3,11 @@ onboarding = false
 [theme]
 name = "terminal"
 
-[theme.custom]
-# accent = "cyan"
-overlay0 = "darkgray"
-# mauve = "cyan"
-# green = "green"
-# yellow = "yellow"
-# red = "red"
-# peach = "yellow"
+# This file is the base. tt concatenates it with tt/themes/<name>/herdr.toml
+# to produce config.toml, which is what Herdr actually reads, so edit this file
+# and not that one. The theme fragment owns `[theme.custom]`: overlay0 paints
+# inactive pane borders and dimmed hint text, and no single gray is recessive
+# on both paper and ink backgrounds.
 
 [terminal]
 new_cwd = "follow"

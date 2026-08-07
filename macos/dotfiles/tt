@@ -18,4 +18,21 @@ cp -f ~/.config/tt/themes/"$tt_theme"/nvim.lua ~/.config/tt/active/nvim.lua
 cp -f ~/.config/tt/themes/"$tt_theme"/ghostty.conf ~/.config/ghostty/themes/terminal-active
 printf '%s\n' "$tt_theme" > ~/.config/tt/current
 
+# Same Herdr config `tt` generates, so a fresh machine has one before the first
+# theme switch. Herdr never reads config.base.toml directly.
+if [[ -r ~/.config/herdr/config.base.toml && -r ~/.config/tt/themes/$tt_theme/herdr.toml ]]; then
+  # Staged and renamed like the `tt` path does it: this is the fresh-machine
+  # bootstrap, so a truncated config.toml here has no previous good version to
+  # fall back to.
+  herdr_tmp=~/.config/herdr/config.toml.tmp.$$
+  {
+    cat ~/.config/herdr/config.base.toml &&
+      printf '\n# appended by tt from tt/themes/%s/herdr.toml\n' "$tt_theme" &&
+      cat ~/.config/tt/themes/"$tt_theme"/herdr.toml
+  } > "$herdr_tmp" &&
+    mv -f "$herdr_tmp" ~/.config/herdr/config.toml ||
+    rm -f "$herdr_tmp"
+  unset herdr_tmp
+fi
+
 unset tt_theme

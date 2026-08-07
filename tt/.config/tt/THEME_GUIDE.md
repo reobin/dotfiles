@@ -9,6 +9,7 @@ Each theme lives in `themes/<name>/` with:
 
 * `ghostty.conf` - terminal palette and surface colors
 * `nvim.lua` - Neovim colorscheme metadata
+* `herdr.toml` - Herdr color overrides for this theme
 
 Each `ghostty.conf` must declare a static wallpaper color:
 
@@ -42,6 +43,22 @@ Avoid using real white for `7` or `15` in light themes. Avoid using real black
 for `0` or `8` in light themes. Those choices tend to break Herdr sidebar
 selection and Starship prompt contrast.
 
+## Herdr Overrides
+
+`tt` concatenates `~/.config/herdr/config.base.toml` and this theme's
+`herdr.toml` into `~/.config/herdr/config.toml`, then reloads Herdr. Herdr
+allows one `[theme.custom]` block, so it lives here rather than in the `herdr`
+package, and only this file may declare it.
+
+Every theme must set `overlay0`, which Herdr uses for both inactive pane
+borders and dimmed hint text:
+
+* aim for a contrast ratio near 2.1:1 against the theme background
+* keep the hue in the theme's family, warm on paper themes and cool on ink ones
+
+Much lower and the hint text disappears. Much higher and the inactive border
+starts competing with the active one, which Herdr paints in `accent` (ANSI 4).
+
 ## Taste
 
 Prefer retro palettes with restraint:
@@ -60,10 +77,11 @@ Avoid adding a theme unless it looks good in all four places:
 
 ## Add Checklist
 
-1. Create `themes/<name>/ghostty.conf` and `nvim.lua`.
+1. Create `themes/<name>/ghostty.conf`, `nvim.lua`, and `herdr.toml`.
 2. Add the Neovim plugin only if no existing plugin provides the colorscheme.
-3. Mirror the Ghostty palette to `ghostty/.config/ghostty/themes/terminal-<name>`.
+3. Mirror the Ghostty palette to `tt/.config/ghostty/themes/terminal-<name>`. It
+   belongs to the `tt` package, not `ghostty`, so `macos/dotfiles/tt` restows it.
 4. Add a static `# wallpaper-color = #RRGGBB` to `ghostty.conf` and its mirror.
 5. Run `tt <name>` or choose it with `tt`.
-6. Open Herdr and verify sidebar contrast.
+6. Open Herdr and verify sidebar contrast and active vs inactive pane borders.
 7. Open Neovim and verify startup has no Lazy errors.

@@ -2,6 +2,36 @@ __terminal_theme_root() {
   print -r -- "${XDG_CONFIG_HOME:-$HOME/.config}/tt"
 }
 
+# Herdr allows one `[theme.custom]` block, but `overlay0` has to be recessive
+# against the active background and no single gray is recessive on both paper
+# and ink. So the block lives per theme and gets concatenated onto the base
+# config here. The result is config.toml, Herdr's own default path, so a
+# running server picks it up on reload without needing a restart.
+__terminal_theme_apply_herdr() {
+  emulate -L zsh
+  setopt local_options no_aliases
+
+  local theme_dir="$1" herdr_dir tmp
+  herdr_dir="${XDG_CONFIG_HOME:-$HOME/.config}/herdr"
+
+  [[ -r "$herdr_dir/config.base.toml" ]] || return 1
+  [[ -r "$theme_dir/herdr.toml" ]] || return 1
+
+  tmp="$herdr_dir/config.toml.tmp.$$"
+
+  # `return` from inside the group would exit the function past the cleanup and
+  # strand the temp file, and herdr_dir is a stow symlink back into the dotfiles
+  # repo, so chain on && and let the group's own status reach the cleanup.
+  {
+    command cat "$herdr_dir/config.base.toml" &&
+      print &&
+      print -r -- "# appended by tt from tt/themes/${theme_dir:t}/herdr.toml" &&
+      command cat "$theme_dir/herdr.toml"
+  } > "$tmp" || { command rm -f "$tmp"; return 1 }
+
+  command mv -f "$tmp" "$herdr_dir/config.toml" || { command rm -f "$tmp"; return 1 }
+}
+
 __terminal_theme_apply_env() {
   local root
   root="$(__terminal_theme_root)"
@@ -402,6 +432,7 @@ tt() {
   __terminal_theme_apply_system_appearance "$themes_dir/$theme" || true
   __terminal_theme_apply_wallpaper "$themes_dir/$theme" || true
   __terminal_theme_ensure_ghostty_active_theme "$ghostty_config" || true
+  __terminal_theme_apply_herdr "$themes_dir/$theme" || true
 
   __terminal_theme_apply_env
 
