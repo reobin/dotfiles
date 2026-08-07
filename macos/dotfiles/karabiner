@@ -2,6 +2,16 @@
 
 set -eu
 
+# Karabiner-Elements writes ~/.config/karabiner itself the first time it runs.
+# stow cannot fold a link over a real directory, so it would fail and take the
+# whole init with it. The repo copy wins, but the existing profile is moved
+# aside rather than deleted.
+if [[ -e ~/.config/karabiner && ! -L ~/.config/karabiner ]]; then
+  echo "moving unmanaged Karabiner config to ~/.config/karabiner.before-dotfiles" >&2
+  rm -rf ~/.config/karabiner.before-dotfiles
+  mv ~/.config/karabiner ~/.config/karabiner.before-dotfiles
+fi
+
 stow karabiner
 
 mkdir -p ~/.config/karabiner
