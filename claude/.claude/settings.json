@@ -51,6 +51,7 @@
       }
     }
   },
+  "effortLevel": "high",
   "remote": {
     "defaultEnvironmentId": "env_01FEEXG2YVgrSU375srfc8oT"
   },
@@ -71,5 +72,5 @@
       }
     }
   },
-  "effortLevel": "high"
+  "skipWorkflowUsageWarning": true
 }
