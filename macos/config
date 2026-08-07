@@ -18,6 +18,17 @@ defaults write com.apple.dock autohide-time-modifier -int 0
 defaults write com.apple.Dock autohide-delay -float 0.0001
 killall Dock
 
+# Show every file extension, and the full path in Finder window footers.
+defaults write -g AppleShowAllExtensions -bool true
+defaults write com.apple.finder ShowPathbar -bool true
+killall Finder || true
+
+# Keep screenshots and Cmd-Shift-5 recordings off the Desktop.
+SCREENSHOT_DIRECTORY="$HOME/Pictures/Screenshots"
+mkdir -p "$SCREENSHOT_DIRECTORY"
+defaults write com.apple.screencapture location "$SCREENSHOT_DIRECTORY"
+killall SystemUIServer || true
+
 # Keep the machine awake on AC power, but still let the displays blank on
 # idle (~15 min). This only covers idle sleep; the keep-awake daemon owns the
 # lid. Battery power keeps a normal sleep timeout after the display blanks.
