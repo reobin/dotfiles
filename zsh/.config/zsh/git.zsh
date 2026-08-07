@@ -62,22 +62,15 @@ gd() {
     return 1
   fi
 
-  if command -v gum >/dev/null 2>&1; then
-    gum confirm --default=true "Remove worktree and branch?" || {
+  printf 'Remove worktree and branch? [Y/n] '
+  read -r reply
+  case "$reply" in
+    ''|[Yy]|[Yy][Ee][Ss]) ;;
+    *)
       print "Cancelled."
       return 0
-    }
-  else
-    printf 'Remove worktree and branch? [Y/n] '
-    read -r reply
-    case "$reply" in
-      ''|[Yy]|[Yy][Ee][Ss]) ;;
-      *)
-        print "Cancelled."
-        return 0
-        ;;
-    esac
-  fi
+      ;;
+  esac
 
   branch="$(git branch --show-current)"
 
