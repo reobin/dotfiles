@@ -38,7 +38,6 @@
         "ctrl+shift+_": "chat:undo",
         "ctrl+x ctrl+e": "chat:externalEditor",
         "ctrl+g": "chat:externalEditor",
-        "ctrl+e": "chat:externalEditor",
         "ctrl+s": "chat:stash",
         "ctrl+v": "chat:imagePaste",
         "space": "voice:pushToTalk"
