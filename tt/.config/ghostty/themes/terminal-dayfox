@@ -1,0 +1,22 @@
+# wallpaper-color = #9A8CAE
+palette = 0=#F6F2EE
+palette = 1=#A5222F
+palette = 2=#396847
+palette = 3=#AC5402
+palette = 4=#2848A9
+palette = 5=#6E33CE
+palette = 6=#287980
+palette = 7=#3D2B5A
+palette = 8=#E4DCD4
+palette = 9=#B3434E
+palette = 10=#577F63
+palette = 11=#B86E28
+palette = 12=#4863B6
+palette = 13=#8452D5
+palette = 14=#488D93
+palette = 15=#643F61
+background = #F6F2EE
+foreground = #3D2B5A
+cursor-color = #3D2B5A
+selection-background = #E7D2BE
+selection-foreground = #3D2B5A

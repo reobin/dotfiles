@@ -1,0 +1,22 @@
+# wallpaper-color = #2D4F56
+palette = 0=#152528
+palette = 1=#E85C51
+palette = 2=#7AA4A1
+palette = 3=#FDA47F
+palette = 4=#5A93AA
+palette = 5=#AD5C7C
+palette = 6=#A1CDD8
+palette = 7=#EBEBEB
+palette = 8=#4E5157
+palette = 9=#EB746B
+palette = 10=#8EB2AF
+palette = 11=#FDB292
+palette = 12=#73A3B7
+palette = 13=#B97490
+palette = 14=#AFD4DE
+palette = 15=#EEEEEE
+background = #152528
+foreground = #E6EAEA
+cursor-color = #E6EAEA
+selection-background = #293E40
+selection-foreground = #E6EAEA
