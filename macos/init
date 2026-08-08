@@ -19,7 +19,6 @@ fi
 
 echo "trusting non-official Homebrew formulae"
 brew trust --formula k1low/tap/git-wt
-brew trust --formula tursodatabase/tap/turso
 
 echo "installing Homebrew packages"
 brew bundle --file "$DOTFILES_DIRECTORY/brew/Brewfile"
@@ -29,4 +28,3 @@ echo "running macOS config"
 
 . "$INSTALL_DIRECTORY/daemons/install"
 . "$INSTALL_DIRECTORY/dotfiles/install"
-. "$INSTALL_DIRECTORY/integrations/install"

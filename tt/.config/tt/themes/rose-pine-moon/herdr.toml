@@ -1,8 +1,0 @@
-# Herdr color overrides for this theme, merged into the generated Herdr config
-# by `tt`. See THEME_GUIDE.md.
-#
-# overlay0 paints inactive pane borders and dimmed hint text, so it is pinned at
-# roughly 2.1:1 against this theme's background: recessive next to the accent-lit
-# active border, still legible as text.
-[theme.custom]
-overlay0 = "#565368"

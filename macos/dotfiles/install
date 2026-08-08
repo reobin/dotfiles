@@ -12,15 +12,9 @@ CONFIGS=(
   ghostty
   herdr
   karabiner
-  lazygit
   mise
-  tt
   nvim
-  opencode
-  claude
-  codex
   starship
-  superwhisper
   zsh
 )
 

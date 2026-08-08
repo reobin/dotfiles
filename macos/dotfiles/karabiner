@@ -2,10 +2,8 @@
 
 set -eu
 
-# Karabiner-Elements writes ~/.config/karabiner itself the first time it runs.
-# stow cannot fold a link over a real directory, so it would fail and take the
-# whole init with it. The repo copy wins, but the existing profile is moved
-# aside rather than deleted.
+# Karabiner-Elements creates ~/.config/karabiner on first launch. Move that
+# unmanaged directory aside so stow can install the repo-managed version.
 if [[ -e ~/.config/karabiner && ! -L ~/.config/karabiner ]]; then
   echo "moving unmanaged Karabiner config to ~/.config/karabiner.before-dotfiles" >&2
   rm -rf ~/.config/karabiner.before-dotfiles
@@ -72,7 +70,6 @@ for rule_path in rule_paths:
         rules.append(rule)
 
 complex_modifications["rules"] = rules
-
 target_path.write_text(json.dumps(config, indent=2) + "\n")
 PY
 

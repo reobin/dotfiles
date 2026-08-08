@@ -1,6 +1,6 @@
-# `reobin/dotfiles` (macOS)
+# `reobin/dotfiles` (macOS remote box)
 
-Ever evolving dotfiles for macOS.
+Minimal macOS setup for a network-accessible remote box.
 
 ## Get started
 
@@ -12,8 +12,8 @@ cd $HOME/dotfiles
 
 ## Manual steps
 
-Everything is handled by `./macos/init` except the Helium extension, which
-Chromium only loads through the browser UI:
+Everything in the initial setup is handled by `./macos/init`.
 
-1. Open `chrome://extensions` in Helium and enable developer mode.
-2. Load unpacked, then select `helium/extensions/tab-keys`.
+The setup installs Homebrew CLI tools, Ghostty, Herdr, Neovim, and the
+repository-managed shell and Git configuration. Hermes and service-specific
+integrations are intentionally not installed yet.

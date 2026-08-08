@@ -7,28 +7,11 @@
         {
           "from": {
             "key_code": "caps_lock",
-            "modifiers": {
-              "optional": [
-                "any"
-              ]
-            }
+            "modifiers": {"optional": ["any"]}
           },
-          "to": [
-            {
-              "key_code": "left_control",
-              "lazy": true
-            }
-          ],
-          "to_if_alone": [
-            {
-              "key_code": "escape"
-            }
-          ],
-          "to_if_held_down": [
-            {
-              "key_code": "left_control"
-            }
-          ],
+          "to": [{"key_code": "left_control", "lazy": true}],
+          "to_if_alone": [{"key_code": "escape"}],
+          "to_if_held_down": [{"key_code": "left_control"}],
           "parameters": {
             "basic.to_if_alone_timeout_milliseconds": 250,
             "basic.to_if_held_down_threshold_milliseconds": 1
@@ -38,98 +21,41 @@
         {
           "from": {
             "key_code": "h",
-            "modifiers": {
-              "mandatory": [
-                "left_control"
-              ],
-              "optional": [
-                "any"
-              ]
-            }
+            "modifiers": {"mandatory": ["left_control"], "optional": ["any"]}
           },
-          "to": [
-            {
-              "key_code": "left_arrow",
-              "modifiers": []
-            }
-          ],
+          "to": [{"key_code": "left_arrow", "modifiers": []}],
           "type": "basic"
         },
         {
           "from": {
             "key_code": "j",
-            "modifiers": {
-              "mandatory": [
-                "left_control"
-              ],
-              "optional": [
-                "any"
-              ]
-            }
+            "modifiers": {"mandatory": ["left_control"], "optional": ["any"]}
           },
-          "to": [
-            {
-              "key_code": "down_arrow",
-              "modifiers": []
-            }
-          ],
+          "to": [{"key_code": "down_arrow", "modifiers": []}],
           "type": "basic"
         },
         {
           "from": {
             "key_code": "k",
-            "modifiers": {
-              "mandatory": [
-                "left_control"
-              ],
-              "optional": [
-                "any"
-              ]
-            }
+            "modifiers": {"mandatory": ["left_control"], "optional": ["any"]}
           },
-          "to": [
-            {
-              "key_code": "up_arrow",
-              "modifiers": []
-            }
-          ],
+          "to": [{"key_code": "up_arrow", "modifiers": []}],
           "type": "basic"
         },
         {
           "from": {
             "key_code": "l",
-            "modifiers": {
-              "mandatory": [
-                "left_control"
-              ],
-              "optional": [
-                "any"
-              ]
-            }
+            "modifiers": {"mandatory": ["left_control"], "optional": ["any"]}
           },
-          "to": [
-            {
-              "key_code": "right_arrow",
-              "modifiers": []
-            }
-          ],
+          "to": [{"key_code": "right_arrow", "modifiers": []}],
           "type": "basic"
         },
         {
           "from": {
             "key_code": "right_control",
-            "modifiers": {
-              "optional": [
-                "any"
-              ]
-            }
+            "modifiers": {"optional": ["any"]}
           },
-          "to": [
-            {
-              "key_code": "left_gui",
-              "lazy": true
-            }
-          ],
+          "to": [{"key_code": "left_gui", "lazy": true}],
           "type": "basic"
         }
       ]

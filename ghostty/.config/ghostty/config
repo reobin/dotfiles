@@ -16,5 +16,3 @@ cursor-style = underline
 shell-integration-features = no-cursor
 cursor-invert-fg-bg = true
 adjust-cursor-thickness = 2
-
-theme = terminal-active

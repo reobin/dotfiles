@@ -39,3 +39,4 @@ sudo pmset -a powernap 0
 sudo pmset -a tcpkeepalive 1
 sudo pmset -c standby 0
 sudo pmset -c womp 1
+sudo pmset -c autorestart 1
