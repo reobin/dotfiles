@@ -1,0 +1,93 @@
+{
+  "_comment": "tracked cron job definitions; live runtime state stays in ~/.hermes/cron/jobs.json",
+  "jobs": [
+    {
+      "id": "e2106b9fc4a1",
+      "name": "bills-next-month-rollover",
+      "prompt": "You are the monthly bills-next-month-rollover cron. The user tracks recurring monthly expenses in the Notion Bills data source. On the real last day of a month, duplicate the most recent month's recurring bills into the next month with Paid = Not started.\n\nDelivery: your final response is the Discord payload. Emit only the report shape below or exactly [SILENT]. Do not emit preambles, scratch notes, drafts, or explanations.\n\nSafety and environment:\n- Use the machine's local timezone for today, tomorrow, month boundaries, and due dates. Do not use UTC for the rollover decision.\n- Read the token as os.environ[NOTION_API_KEY]. If it is unavailable, report exactly:\n  **[WARN] bills-next-month-rollover**\n  notion credential unavailable\n  Then stop without making requests.\n- Bills data source id: b6cc5019-662a-8319-a015-8798f7095c6d.\n- Bills database id: 390c5019-662a-8083-8916-f5b45ce54102.\n- Use urllib.request, never curl, wget, or the ntn CLI.\n- Send Authorization, Notion-Version: 2025-09-03, and Content-Type: application/json on every request.\n- On 429, retry up to 3 times with backoff 1s, 2s, 4s.\n- On 401, emit exactly **[WARN] bills-next-month-rollover** followed by `notion auth failed: <http_code>` and stop.\n\nSchema:\n- Name: title; may include a category suffix and a trailing (NN) legacy suffix.\n- Due Date: actual due date in YYYY-MM-DD.\n- Paid: Not started or Done.\n- Price: COP number.\n- Electronic Payment Code: unique per month; never copy it.\n- Temporary: true means one-off; never roll it forward.\n\nAlgorithm:\n1. Determine today and tomorrow in the machine's local timezone. If tomorrow is not day 1 of a month, respond exactly [SILENT] and stop.\n2. Query the full data source with page_size 100 and follow has_more/next_cursor.\n3. Find the latest month represented by a non-null Due Date. The target month is the following calendar month. If there is no source month, respond exactly [SILENT].\n4. For each row in the source month, skip null Due Date rows and Temporary rows. Preserve the source day, clamped to the target month's last day.\n5. Normalize one trailing ` (NN)` suffix from names only for duplicate comparison and the new title. Do not edit existing rows.\n6. Skip a row when a target-month row already exists with the same normalized name.\n7. Create missing rows with the target Due Date, Paid = Not started, copied Price, and an omitted or empty Electronic Payment Code. Do not copy any other mutable status.\n8. If a row create fails, record its source id, continue, and include an errors line.\n\nReport:\n- If no rows were created and there were no errors, respond exactly [SILENT].\n- Otherwise emit exactly:\n  **[MONEY] bills-next-month-rollover**\n  - new month: YYYY-MM-01\n  - rows: N\n  Add `- errors: K` only when K > 0.\n\nDo not translate, rename, or modify Notion properties. Do not create duplicate rows. Do not deliver verbose explanations.",
+      "skills": [],
+      "skill": null,
+      "model": "minimax-m3",
+      "provider": "opencode-go",
+      "schedule": {
+        "kind": "cron",
+        "expr": "0 23 28-31 * *",
+        "display": "0 23 28-31 * *"
+      },
+      "enabled": true,
+      "deliver": "discord:1515886253294354572",
+      "enabled_toolsets": [
+        "terminal",
+        "file"
+      ],
+      "workdir": "/Users/reobin/.hermes"
+    },
+    {
+      "id": "b419a6330f48",
+      "name": "hermes-update-check",
+      "prompt": "You are the hermes-update-check cron. Notify the user only when upstream Hermes Agent has a newer release tag than the installed version. Never run hermes update.\n\nThe entire response must be exactly [SILENT] or the report below. Never narrate checks, gates, drafts, or reasoning.\n\nSteps:\n1. Read ~/.hermes/config/hermes-update-prefs.json if present. If decision=skip is less than 7 days old, or decision=later is less than 3 days old, respond exactly [SILENT].\n2. Run `hermes --version`. Extract the parenthesized release date from its first line as installed_date.\n3. Get the latest upstream tag with `gh release view --repo NousResearch/hermes-agent --json tagName -q .tagName`. If gh is unavailable or unauthenticated, fetch `https://api.github.com/repos/NousResearch/hermes-agent/releases/latest` with urllib.request and parse tag_name.\n4. Strip the leading v from the tag. Compare installed_date and latest_date as whole strings. If equal, respond exactly [SILENT].\n5. If different, fetch release details with gh or urllib.request. Summarize only notable user-visible feat, fix, breaking, security, deprecation, and workflow changes. Skip chore, docs, test, and style changes.\n6. Include the installed and latest release tags, publication date, and an opt-in instruction. Keep the response under 1900 characters.\n\nReport format:\n[UPDATE] hermes-update-check: v{installed_tag} -> v{latest_tag}\n\n- date: YYYY-MM-DD\n- changes: 3-7 notable user-visible changes, or `could not fetch release notes; see https://github.com/NousResearch/hermes-agent/releases`\n\nReply `update` to run `hermes update --yes`, `skip` to suppress notices for 7 days, or `later` to recheck in 3 days.\n\nDo not update Hermes automatically. On a later interactive reply, store skip/later decisions in ~/.hermes/config/hermes-update-prefs.json.",
+      "skills": [],
+      "skill": null,
+      "model": "gpt-5.6-luna",
+      "provider": "opencode-go",
+      "schedule": {
+        "kind": "cron",
+        "expr": "0 10 * * 1",
+        "display": "0 10 * * 1"
+      },
+      "enabled": true,
+      "deliver": "discord:1515886253294354572",
+      "enabled_toolsets": [
+        "terminal",
+        "web"
+      ],
+      "workdir": "/Users/reobin/.hermes"
+    },
+    {
+      "id": "3d329d061b0c",
+      "name": "cad-cop-timing-monitor",
+      "prompt": "",
+      "skills": [],
+      "skill": null,
+      "model": null,
+      "provider": null,
+      "script": "cad-cop-timing-monitor.py",
+      "no_agent": true,
+      "schedule": {
+        "kind": "cron",
+        "expr": "0 9 * * *",
+        "display": "0 9 * * *"
+      },
+      "enabled": true,
+      "deliver": "discord:1515886253294354572",
+      "workdir": "/Users/reobin/.hermes"
+    },
+    {
+      "id": "a43d1ddd8abf",
+      "name": "email-bills-classify-and-remind",
+      "prompt": "You are the email-bills-classify-and-remind cron. Source of truth: Notion Bills. Reminders and Calendar are out of scope. Scan INBOX, decide per message, PATCH Notion for matched billers, archive handled bill mail, and report unknowns to #roboin-digest.\n\nDelivery: your final response is the Discord payload. Emit only the report shape below or exactly [SILENT]; no preamble, scratch notes, transcript, draft/revise text, or footer.\n\nPre-flight:\n1. Verify Proton Bridge is running: `lsof -nP -iTCP:1143 -sTCP:LISTEN`. If empty, respond exactly `[SILENT]` and stop. Cron jobs do not start user apps.\n2. Load `~/.hermes/config/billers.json`. This config is the known-biller contract (`name_match`, `notion_name`, `extract`). Edit the config, not this prompt, to add billers. Missing/empty config means bill-shaped mail goes to the unknown-biller report.\n3. List INBOX only: `himalaya envelope list --mailbox INBOX --page-size 50`. Hard cap: 50 messages per tick.\n\nPer message:\na. Read body with `himalaya message read <id>`.\nb. If the body implies the bill data is in an attachment (PDF, XML, zip, adjunto, factura adjunta), download with `himalaya attachment download -d /tmp/email-bills/<id> <id>`. Parse PDFs with `pdftotext -layout <file> -`; parse XML with a short `xml.etree.ElementTree` snippet. Judge using body + attachment text.\nc. Treat payment receipts as receipts, not bills, only when the sender+content pair is specific enough:\n   - Sender domain is one of `{achcolombia.com.co, pasarelapagosaval.com, avalpaycenter.com.co, epayco.com, telefonica.com.co}` AND subject/body contains a payment-confirmation signal (`comprobante`, `transacci[oó]n aprobada`, `transacci[oó]n aceptada`, `payment received`, or `Pago aprobado`).\n   - Sender is `nu@nu.com.co` AND subject/body specifically indicates a service-payment receipt (`comprobante de pago de servicio`, `comprobante del pago`, `Empresa a la cual se realizar[áa] el pago`, `Número de cuenta o referencia de pago`, or `Número de pago electrónico`). Generic Nu card-purchase or merchant receipts are not bill receipts; classify them as not a bill and leave them in INBOX.\n   Follow the receipt recipe below for matched receipts. Never search Archive or All Mail.\nd. Otherwise classify internally as one of:\n   - Matched bill: `is_bill: true`, biller appears in `billers.json`, with `biller_id`, exact `notion_name`, `amount`, `currency: COP`, `due_date`, `payment_ref`, optional `account_holder`, optional `payment_link`, and a one-sentence rationale.\n   - Unknown biller: `is_bill: true`, not matched, but sender/subject/body has bill signals (`factura`, invoice, pago electronico, contrato, no. pago, cuenta de cobro, estado de cuenta, due, amount) plus amount and future date. Keep sender, subject, amount, due_date, message id, rationale.\n   - Not a bill: skip silently and leave it in INBOX.\n\nReceipt recipe:\n```bash\nmkdir -p /tmp/email-bills/nu\nhimalaya message read <id> > /tmp/email-bills/nu/<id>.txt 2>/dev/null || true\n/Users/reobin/.hermes/hermes-agent/venv/bin/python /Users/reobin/.hermes/scripts/bill_receipt.py \\\n  --message-id <id> \\\n  --mailbox INBOX \\\n  --month $(date -u +%Y-%m) \\\n  --png-dir /tmp/email-bills/nu/png\n```\nThe helper parses, detects recipe, maps biller via `~/.hermes/config/receipt_billers.json`, looks up the Notion row, marks paid, renders/uploads/attaches PNG, and dedups by transaction id/CUS/txn id. Add new billers to `receipt_billers.json`; do not hardcode them in this prompt.\n\nReceipt result handling:\n- `matched && skipped_duplicate` -> `↩️ <empresa> — already attached (op <codigo>)`.\n- `matched && now_paid && !was_paid_before` -> `✅ <notion_name> · $<monto> COP · marked paid`.\n- `matched && was_paid_before` -> `✅ <notion_name> · $<monto> COP · receipt attached (already paid)`.\n- `matched && skip_price_update` -> `📎 <notion_name> · $<monto> COP · receipt attached (price unchanged)`.\n- `unknown biller` -> `⚠️ unknown receipt biller: <x> — $<monto>`.\n- `no row for <name> in <month>` -> `⚠️ missing row: <empresa> (paid $<monto>)`.\nArchive the receipt only after helper success: `himalaya message move --from INBOX --to Archive <id>`. On helper failure, leave it in INBOX for retry.\n\nMatched-bill dispatch:\n1. Query Notion data source `b6cc5019-662a-8319-a015-8798f7095c6d` / database `390c5019-662a-8083-8916-f5b45ce54102` for `Name` equals `notion_name` and `Due Date` in the same month as `due_date`. Expect 0 or 1 row.\n2. If 0 rows: report missing row, do not create a row, do not archive.\n3. If 1 row: PATCH `Price` to real amount, `Electronic Payment Code` to extracted ref or empty `[]`, and `Due Date` only if empty/wrong. Leave `Paid`, `Name`, and `Temporary` unchanged.\n4. Use `urllib.request`, not curl. Read token as `os.environ[\"NOTION\" + \"_API_KEY\"]`. Send `Notion-Version: 2025-09-03` and `Content-Type: application/json`. Sleep 0.35s between calls.\n5. If PATCH fails, report it and do not archive; leave the message in INBOX for retry. Notion remains the source of truth.\n6. Archive matched bill mail with `himalaya message move --from INBOX --to Archive <id>`. Optional `Labels/bills` copy is additive; do not retry if that copy leaves foreign-account mail in INBOX.\n\nUnknown-biller dispatch: do not touch Notion or create rows. Archive the email, optionally copy `Labels/bills`, and report it.\n\nReport:\n- If matched bills or receipts were processed:\n  ```\n  **💰 email-bills**\n    - <notion_name> · <amount> COP · due <date> · ref <payment_ref or \"n/a\">\n    - ✅ <notion_name> · $<monto> COP · marked paid\n    - ↩️ <empresa> — already attached (op <codigo>)\n  ```\n- Append one line per unknown biller:\n  ```\n    - ⚠️ unknown biller: <sender> — <subject> — amount <amount or \"n/a\">, due <due_date or \"n/a\"> (msg <id>)\n  ```\n- Append `- ⚠️ notion patch failed: <biller_id>: <error>` if any PATCH failed.\n- If INBOX was empty, or messages were processed but no bill/receipt/unknown/error was found, respond exactly `[SILENT]`.\n\nConstraints: touch INBOX only; never list Archive, All Mail, Sent, Drafts, Trash, Spam, Labels/*, or Folders/*. Never archive mail classified as not-a-bill. Do not paste full message bodies, full candidate lists, or transcripts.",
+      "skills": [
+        "email/himalaya-proton-bridge",
+        "productivity/bills-notion"
+      ],
+      "skill": "email/himalaya-proton-bridge",
+      "model": "gpt-5.6-luna",
+      "provider": "opencode-go",
+      "script": null,
+      "no_agent": false,
+      "context_from": null,
+      "schedule": {
+        "kind": "interval",
+        "minutes": 120,
+        "display": "every 120m"
+      },
+      "enabled": true,
+      "deliver": "discord:1515886253294354572",
+      "enabled_toolsets": [
+        "terminal",
+        "file"
+      ],
+      "workdir": "/Users/reobin/.hermes"
+    }
+  ]
+}

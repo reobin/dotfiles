@@ -1,0 +1,22 @@
+[accounts.proton]
+email = "me@reobin.dev"
+display-name = "reobin"
+default = true
+
+imap.server = "imap://127.0.0.1:1143"
+imap.starttls = true
+imap.tls.cert = "/Users/reobin/.config/himalaya/proton-bridge-cert.pem"
+imap.sasl.login.username = "me@reobin.dev"
+imap.sasl.login.password.command = "security find-generic-password -a 'me@reobin.dev' -s 'hermes-proton-bridge' -w"
+
+smtp.server = "smtp://127.0.0.1:1025"
+smtp.starttls = true
+smtp.tls.cert = "/Users/reobin/.config/himalaya/proton-bridge-cert.pem"
+smtp.sasl.login.username = "me@reobin.dev"
+smtp.sasl.login.password.command = "security find-generic-password -a 'me@reobin.dev' -s 'hermes-proton-bridge' -w"
+
+[mailbox.alias]
+inbox = "INBOX"
+sent = "Sent"
+drafts = "Drafts"
+trash = "Trash"

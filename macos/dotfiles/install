@@ -10,7 +10,9 @@ cd "$DOTFILES_DIRECTORY"
 CONFIGS=(
   git
   ghostty
+  hermes
   herdr
+  himalaya
   karabiner
   mise
   nvim

@@ -1,0 +1,17 @@
+#!/usr/bin/env bash
+
+set -euo pipefail
+
+if [[ -x "$HOME/.hermes/hermes-agent/venv/bin/hermes" ]]; then
+  echo "Hermes is already installed"
+  exit 0
+fi
+
+# Use the upstream installer so Hermes manages its own uv/Python environment and
+# can update itself with `hermes update`.
+curl -fsSL https://hermes-agent.nousresearch.com/install.sh | bash
+
+if ! command -v hermes >/dev/null 2>&1; then
+  echo "Hermes installed, but the current shell cannot find it yet" >&2
+  echo "Start a new shell or source the PATH change made by the installer" >&2
+fi

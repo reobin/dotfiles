@@ -23,6 +23,9 @@ brew trust --formula k1low/tap/git-wt
 echo "installing Homebrew packages"
 brew bundle --file "$DOTFILES_DIRECTORY/brew/Brewfile"
 
+echo "installing Hermes"
+. "$INSTALL_DIRECTORY/hermes/install"
+
 echo "running macOS config"
 "$INSTALL_DIRECTORY/config"
 

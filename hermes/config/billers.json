@@ -1,0 +1,39 @@
+{
+  "$schema_comment": "billers.json — biller → Notion row map for the email-bills-classify-and-remind cron. Edit this file when a new biller needs to be recognized. Each entry: sender/subject patterns to match, the exact Notion Name to find, and the extraction recipe to use for the attachment (emcali-pdf, claro-html, tigo-html, gas-pdf, ...). The cron loads this file at the top of every tick. New billers are added by the unknown-biller digest report path: when an email comes in that looks like a bill but matches no entry, the cron reports it to #roboin-digest so a human can add the row + the billers.json entry.",
+  "$how_to_add": {
+    "1": "Look at the digest report (sender + subject + amount if known).",
+    "2": "In Notion Bills DB, confirm there is (or create) a row whose Name matches the biller. Use the existing emoji convention (e.g. \"Claro 🛜\").",
+    "3": "Add an entry below: name_match = list of sender-domain / subject substrings that uniquely identify this biller; notion_name = exact Name in the DB; extract = which recipe in the cron prompt to follow for parsing the attachment.",
+    "4": "Commit the change to the hermes config repo. The next cron tick picks it up."
+  },
+  "billers": [
+    {
+      "id": "emcali",
+      "name_match": ["emcali", "factura digital", "890399003"],
+      "notion_name": "Utilities ⚡️",
+      "extract": "emcali-pdf",
+      "notes": "Cali utility bill. Body is a tracking-link stub; data is in Factura_EmCali_*.zip (UBL XML has cbc:AccountingCostCode = No. Pago Electrónico). PDF has the same 9-digit code on page 1 upper-right. Account holder: Diana Maria Vargas Castellanos, contract 47041524. Bill period (Mes Cuenta) is one month before the due date — e.g. June bill is due in early July."
+    },
+    {
+      "id": "nu",
+      "name_match": ["nu@nu.com.co", "comprobante de pago de servicio"],
+      "notion_name": null,
+      "extract": "nu-html-body",
+      "notes": "Nu Colombia payment receipts. Subject is always 'Tu comprobante de pago de servicio.' Body has the biller (Empresa) and amount (Monto). There is NO PDF/XML attachment — the body IS the receipt. The cron dispatches to bill_receipt.py which renders a phone-friendly PNG screenshot of the receipt, uploads it to Notion, and appends it as a file block on the matching row. Notion name is NOT hardcoded here — the receipt's 'Empresa' field is mapped to a Notion Name at render time via the EMPRESA_TO_NOTION dict in bill_receipt.py. Known mappings: 'Tigo Móvil' -> 'Tigo 📱', 'Claro Hogar' -> 'Claro 🛜', 'Acueducto Y Energia - Emcali' -> 'Utilities ⚡️'. The cron marks the row Paid=Done if not already and PATCHes Price to the real amount. Idempotency: each comprobante has a unique 'Código de operación' (UUID); if that code is already present in any block on the page, the cron skips the attach (no duplicate screenshots on re-passes). Distinguish from 'Pagaste en <merchant> con Cuenta Nu' (card purchases, NOT bills) — different subject, not matched by name_match."
+    },
+    {
+      "id": "gdo",
+      "name_match": ["facturacionelectronica@gdo.com.co", "gdo.com.co", "GASES DE OCCIDENTE"],
+      "notion_name": "Gas 🔥",
+      "extract": "gdo-xml",
+      "notes": "GASES DE OCCIDENTE S. A. E.S.P. (NIT 800167643) — natural-gas biller for the Cali house. Sender domain is `gdo.com.co`; the literal sender address is `facturacionelectronica@gdo.com.co`. Subject follows a tracking-link stub shape: `<NIT>;<RAZON_SOCIAL>;<DOCUMENT_NUMBER>;<CODE>;<RAZON_SOCIAL>;` (e.g. `800167643;GASES DE OCCIDENTE S. A. EMPRESA DE SERVICIOS PUBLICOS;GDO32601764;01;GASES DE OCCIDENTE S. A. EMPRESA DE SERVICIOS PUBLICOS;`). Body is an HTML stub with due date (e.g. `18/JUL/2026`), 7-digit ref (e.g. `2361169`), and total (e.g. `57,785`). Real billable data is in the ZIP attachment (`<NIT><DATE>...<DOCUMENT_NUMBER>.zip`) which contains `<REF>_<MMYYYY>_<DOC>.pdf` and `ad<NIT><DOC>.xml`. The PDF has the human-readable bill (3+ pages, layout from DIAN Colombian electronic invoice standard); the XML has all fields in clean tags inside the embedded `<CustomData>` block of the inner Invoice. EXTRACT FROM XML (preferred over PDF — structured): `<CUPON_REFERENCIA>` = 9-digit electronic payment code (equivalent to EMCALI's `No. Pago Electrónico`); `<TOTAL_PAY>` = total COP; `<DATE_LIMITED_PER>` = due date in `DD/MMM/YYYY` format (e.g. `18/JUL/2026`). FALLBACK TO PDF if XML is malformed: `pdftotext -layout`, then grep for `57,785` and the 9-digit ref near the `Código de referencia para pago electrónico` label. Account holder is `DIANA MARIA VARGAS CASTELLANOS`, contract `<NUMERO_CONTRATO>` 2361169. If a row for the current month doesn't exist, report `missing row` (do not auto-create — user controls that). Pattern modeled on the EMCALI flow (see references/emcali-bill-extraction.md) but the field labels are GDO-specific. Confirmed working with the 2026-07-08 bill (msg 1314, ref `384772848`, amount `57,785`, due `2026-07-18`)."
+    },
+    {
+      "id": "claro",
+      "name_match": ["facturasclarocol@claro.com.co", "notificacionescartera@claro.com.co", "claro.com.co", "COMCEL S.A.", "CLARO;HOGAR", "Claro Hogar"],
+      "notion_name": "Claro 🛜",
+      "extract": "claro-xml",
+      "notes": "COMCEL S.A. (Claro Colombia, NIT 800153993) — internet/TV/home service for the Cali house. Account number 53517534. TWO sender types cover the same Notion row: (1) main billing from `facturasclarocol@claro.com.co` with subject shape `<NIT>;<RAZON_SOCIAL>;<REF>;<CODE>;<SERVICE_LABEL>;` (e.g. `800153993;COMCEL S.A.;R1157335414;01;CLARO;HOGAR`) and body containing `NO. DE CUENTA:`, `MES:`, `VALOR A PAGAR:`, `FECHA DE PAGO:`; (2) dunning/collections from `notificacionescartera@claro.com.co` with subject `Tu factura de servicios Claro hogar está en mora...` and body containing `No. de Cuenta`, `Mes`, `Valor a pagar`. ZIP attachment is `<NIT><DATE>...<REF>.zip` with `<REF>.pdf` (PASSWORD-PROTECTED — do not attempt pdftotext without the customer's NIT/account number) and `fv<NIT>...<REF>.xml`. The XML is the safe extraction source. EXTRACT FROM XML: `<cbc:ID>` (top-level) = the R-prefixed payment ref (e.g. `R1157335414`); the body's `VALOR A PAGAR` field is the canonical total (the XML's `<cbc:PayableAmount>` is the current-cycle only and may differ from the body's total by a previous-balance carry-over — always prefer the body's `VALOR A PAGAR`). Due date: main bills say `FECHA DE PAGO INMEDIATA` (no real due date — use the bill's `Mes` field for month-matching); dunning notices have an explicit `Fecha límite de pago`. GOTCHA — the body's `VALOR A PAGAR` (e.g. 186,768) is OFTEN higher than the XML's `<cbc:PayableAmount>` (e.g. 174,068) when there's a carried-over balance. If a dunning notice arrives for a different amount than the main bill, treat it as a SEPARATE bill with its own due date — do NOT silently add it to the main bill's row Price. PATCH the row's Price to the dunning's amount if and only if no main-bill email has been processed for the same month yet, and report a one-line `⚠️ multiple Claro bills for <month>: main $<main> + dunning $<dunning> — verify with carrier` so the user can reconcile. The receipt path (Nu comprobantes → `Claro 🛜`) is already wired in `receipt_billers.json` (entry `claro-hogar`); no change needed there."
+    }
+  ]
+}

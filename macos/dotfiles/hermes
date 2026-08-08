@@ -1,0 +1,20 @@
+#!/usr/bin/env bash
+
+HERMES_DIRECTORY="$HOME/.hermes"
+CONFIG_SOURCE="$HOME/dotfiles/hermes/config.yaml"
+SCRIPT_SOURCE="$HOME/dotfiles/hermes/scripts/cad-cop-timing-monitor.py"
+HERMES_SOURCE="$HOME/dotfiles/hermes"
+
+mkdir -p "$HERMES_DIRECTORY"
+ln -sfn "$CONFIG_SOURCE" "$HERMES_DIRECTORY/config.yaml"
+mkdir -p "$HERMES_DIRECTORY/scripts"
+cp "$SCRIPT_SOURCE" "$HERMES_DIRECTORY/scripts/cad-cop-timing-monitor.py"
+mkdir -p "$HERMES_DIRECTORY/config"
+cp "$HERMES_SOURCE/config/billers.json" "$HERMES_DIRECTORY/config/billers.json"
+cp "$HERMES_SOURCE/config/receipt_billers.json" "$HERMES_DIRECTORY/config/receipt_billers.json"
+cp "$HERMES_SOURCE/scripts/bill_receipt.py" "$HERMES_DIRECTORY/scripts/bill_receipt.py"
+mkdir -p "$HERMES_DIRECTORY/skills/email" "$HERMES_DIRECTORY/skills/productivity"
+rm -rf "$HERMES_DIRECTORY/skills/email/himalaya-proton-bridge"
+rm -rf "$HERMES_DIRECTORY/skills/productivity/bills-notion"
+cp -R "$HERMES_SOURCE/skills/email/himalaya-proton-bridge" "$HERMES_DIRECTORY/skills/email/himalaya-proton-bridge"
+cp -R "$HERMES_SOURCE/skills/productivity/bills-notion" "$HERMES_DIRECTORY/skills/productivity/bills-notion"
