@@ -20,8 +20,9 @@ and runtime state stay in `~/.hermes` and are not committed here.
 
 ## Hermes
 
-Run `./macos/init` to install Hermes using the upstream installer and stow the
-safe local baseline. Then complete the interactive provider setup:
+Run `./macos/init` to install Hermes using the upstream installer. Keep Hermes
+configuration and skills in the separate Hermes repository. Then complete the
+interactive provider setup:
 
 ```sh
 hermes setup
