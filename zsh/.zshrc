@@ -44,5 +44,5 @@ zsh_cached_eval zoxide zoxide init zsh --cmd cd
 # Not cacheable: `mise activate` bakes the activation-time PATH into its output.
 eval "$(mise activate zsh)"
 
-# Last: both plugins wrap the ZLE widgets that exist when they load.
+# Last: autosuggestions wraps the ZLE widgets that exist when it loads.
 source ~/.config/zsh/plugins.zsh

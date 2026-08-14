@@ -46,9 +46,8 @@ zsh_cached_eval() {
 # The copy lives in the cache rather than next to the original, which keeps
 # generated files out of the Homebrew prefix. Only pass files that survive being
 # relocated: ZERO below is a plugin-manager convention, honored just by plugins
-# that open with the `0="${${ZERO:-...}...}"` idiom (fast-syntax-highlighting
-# does, and needs it to find its own siblings). One reading ${0:h} directly gets
-# the cache directory and breaks, so leave those to a plain `source`.
+# that open with the `0="${${ZERO:-...}...}"` idiom. One reading ${0:h} directly
+# gets the cache directory and breaks, so leave those to a plain `source`.
 #
 # `cp -p` carries the original's mtime onto the copy, so the two match exactly
 # while the copy is current and the check below is a version comparison rather
