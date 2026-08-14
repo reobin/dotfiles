@@ -29,4 +29,5 @@ echo "running macOS config"
 
 . "$INSTALL_DIRECTORY/daemons/install"
 . "$INSTALL_DIRECTORY/dotfiles/install"
+. "$INSTALL_DIRECTORY/extensions/install"
 . "$INSTALL_DIRECTORY/integrations/install"

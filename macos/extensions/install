@@ -1,0 +1,26 @@
+#!/usr/bin/env bash
+
+set -eu
+
+if ! command -v gh >/dev/null 2>&1; then
+  echo "Skipping gh extensions (gh is not installed)" >&2
+  return 0
+fi
+
+GH_EXTENSIONS=(
+  github/gh-stack
+)
+
+# `gh extension list` reports the source repository in its second column, so the
+# owner/name pair is what tells an installed extension apart from a same-named
+# one published by someone else.
+GH_EXTENSION_STATUS="$(gh extension list)"
+
+for extension in "${GH_EXTENSIONS[@]}"; do
+  if grep -q "$extension" <<<"$GH_EXTENSION_STATUS"; then
+    echo "gh $extension extension is already installed"
+  else
+    echo "installing gh $extension extension"
+    gh extension install "$extension"
+  fi
+done
