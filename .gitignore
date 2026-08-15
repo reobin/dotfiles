@@ -16,15 +16,10 @@ herdr/.config/herdr/release-notes.json
 herdr/.config/herdr/.plugins.lock
 herdr/.config/herdr/plugins.json
 herdr/.config/herdr/plugins/
-herdr/.local/bin/bunx
-herdr/.local/bin/claude
-herdr/.local/bin/herdr
-herdr/.local/bin/analyze-traffic-conditions
-herdr/.local/bin/feature-callout-implementer
-herdr/.local/bin/interpret-load-test-results
-herdr/.local/bin/plan-load-test
-herdr/.local/bin/pr-dashboard
-herdr/.local/bin/slackcli
+# ~/.local/bin is a stow link into this directory, and this repo is public, so
+# anything installed there has to be ignored by default rather than named.
+herdr/.local/bin/*
+!herdr/.local/bin/herdr-*
 opencode/.config/opencode/plugins/herdr-agent-state.js
 opencode/.config/opencode/AGENTS.md
 opencode/.config/opencode/commands/
