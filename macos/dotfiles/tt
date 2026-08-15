@@ -22,17 +22,18 @@ printf '%s\n' "$tt_theme" > ~/.config/tt/current
 # theme switch. Herdr never reads config.base.toml directly.
 #
 # Call the generator rather than keep a second copy of it here, which is free to
-# fall behind it. theme.zsh is stowed after this script in macos/dotfiles/install,
-# so it is sourced out of the repo rather than ~.
-theme_zsh="$DOTFILES_DIRECTORY/zsh/.config/zsh/theme.zsh"
-if [[ -r $theme_zsh ]]; then
+# fall behind it. tt.zsh is stowed after this script in macos/dotfiles/install,
+# so it is sourced out of the repo rather than ~. theme.zsh only loads tt.zsh on
+# the first `tt` call, so source the generator's own file directly.
+tt_zsh="$DOTFILES_DIRECTORY/zsh/.config/zsh/tt.zsh"
+if [[ -r $tt_zsh ]]; then
   # Both paths go through the environment: the theme name reaches this script
   # from a file, so it is not this script's business to decide it cannot contain
   # anything zsh would rather read as code.
-  TT_THEME_ZSH="$theme_zsh" TT_THEME_DIR="$HOME/.config/tt/themes/$tt_theme" \
+  TT_THEME_ZSH="$tt_zsh" TT_THEME_DIR="$HOME/.config/tt/themes/$tt_theme" \
     zsh -c 'source "$TT_THEME_ZSH"; __terminal_theme_apply_herdr "$TT_THEME_DIR"' ||
     echo "tt: no herdr config.toml written; the first \`tt\` run makes one" >&2
 fi
-unset theme_zsh
+unset tt_zsh
 
 unset tt_theme
