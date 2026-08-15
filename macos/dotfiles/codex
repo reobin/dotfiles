@@ -24,6 +24,10 @@ mkdir -p "$(dirname "$TARGET")"
 tmp="$(mktemp)"
 root_tmp="$(mktemp)"
 tables_tmp="$(mktemp)"
+# This script is sourced, so the trap that covers the window between mktemp and
+# mv is installed on the caller's shell. Remember what was there and put it back
+# below rather than clearing EXIT, which is not this script's to give away.
+previous_exit_trap="$(trap -p EXIT)"
 trap 'rm -f "$tmp" "$root_tmp" "$tables_tmp"' EXIT
 
 if [[ -s "$TARGET" ]]; then
@@ -91,7 +95,8 @@ fi
 
 mv "$tmp" "$TARGET"
 rm -f "$root_tmp" "$tables_tmp"
-trap - EXIT
+eval "${previous_exit_trap:-trap - EXIT}"
+unset previous_exit_trap
 
 cp "$AUTO_PROFILE_SOURCE" "$AUTO_PROFILE_TARGET"
 
