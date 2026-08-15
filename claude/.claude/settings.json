@@ -11,12 +11,12 @@
   "hooks": {
     "PreToolUse": [
       {
-        "matcher": "Bash|Task|Agent",
+        "matcher": "Bash|Task|Agent|Write|Edit|MultiEdit|NotebookEdit",
         "hooks": [
           {
             "type": "command",
-            "command": "bash '/Users/reobin/.claude/hooks/skip-cypress.sh'",
-            "timeout": 10
+            "command": "bash -c 'h=\"$HOME/.claude/hooks/local-guard.sh\"; [ -f \"$h\" ] || exit 0; exec bash \"$h\"'",
+            "timeout": 15
           }
         ]
       }

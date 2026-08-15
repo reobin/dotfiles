@@ -4,8 +4,4 @@
 # it has to stay a real directory. Folding it would make it a symlink into this
 # repo, where any write to ~/.claude/<file> hits the tracked source instead.
 
-# Tracked hooks predate being tracked, so an unmanaged real file can be sitting
-# where stow wants its link. Clear those, leaving generated hooks alone.
-[[ -L ~/.claude/hooks/skip-cypress.sh ]] || rm -f ~/.claude/hooks/skip-cypress.sh
-
 stow --no-folding claude

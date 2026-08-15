@@ -2,11 +2,11 @@ claude/.claude/*
 !claude/.claude/keybindings.json
 !claude/.claude/settings.json
 !claude/.claude/statusline.sh
-# hooks/ holds both tracked hooks and herdr-agent-state.sh, which
-# `herdr integration install claude` generates, so it stays ignored.
-!claude/.claude/hooks/
-claude/.claude/hooks/*
-!claude/.claude/hooks/skip-cypress.sh
+# No hook stays in this repo. settings.json points PreToolUse at
+# ~/.claude/hooks/local-guard.sh, which dispatches to whatever machine-local
+# policies exist and exits quietly where there are none. The policies
+# themselves are private, so this repo carries the wiring and nothing else.
+claude/.claude/hooks/
 herdr/.config/herdr/config.toml
 herdr/.config/herdr/config.toml.tmp.*
 herdr/.config/herdr/herdr-client.log
