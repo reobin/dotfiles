@@ -1,13 +1,9 @@
-# The half of `tt` that only runs when `tt` runs. theme.zsh loads this on the
-# first call; nothing sources it at shell startup. macos/dotfiles/tt also sources
-# it directly to reach __terminal_theme_apply_herdr on a fresh machine, so
-# everything that function needs has to stay in this file.
+# The half of `tt` that only runs when `tt` runs. theme.zsh loads it on the first
+# call; macos/dotfiles/tt sources it directly for __terminal_theme_apply_herdr.
 #
-# The dependency is one-way apart from `tt` itself, which reaches back to
-# theme.zsh for __terminal_theme_root and __terminal_theme_apply_env. Sourcing
-# this file on its own is therefore only safe for the entry points that do not
-# go through `tt`: __terminal_theme_apply_herdr, and __terminal_theme_preview in
-# the fzf subshell below.
+# `tt` here reaches back to theme.zsh for __terminal_theme_root and
+# __terminal_theme_apply_env, so sourcing this file alone is only safe for the
+# entry points that skip it: apply_herdr, and preview in the fzf subshell.
 
 # Read a sidebar color out of the theme's palette rather than pinning a copy per
 # theme, which would be free to drift from the colorscheme it belongs to. Callers

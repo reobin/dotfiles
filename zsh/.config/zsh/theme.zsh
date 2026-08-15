@@ -28,11 +28,8 @@ __terminal_theme_complete() {
   compadd -a themes
 }
 
-# The rest of tt is the fzf preview renderer, the wallpaper generator, the
-# AppleScript toggles and the Herdr templater, none of which a shell reaches
-# without the user typing `tt`. It lives in tt.zsh and is parsed on the first
-# call rather than in every interactive shell. %x is this file, so the sibling
-# resolves the same whether zsh got here through the stow link or the repo.
+# %x is this file, so the sibling resolves the same through the stow link or the
+# repo.
 tt() {
   local impl="${${(%):-%x}:A:h}/tt.zsh"
 
