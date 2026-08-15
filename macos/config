@@ -16,7 +16,7 @@ defaults write -g KeyRepeat -int 1
 # Make Dock autohide feel instant.
 defaults write com.apple.dock autohide-time-modifier -int 0
 defaults write com.apple.Dock autohide-delay -float 0.0001
-killall Dock
+killall Dock || true
 
 # Show every file extension, and the full path in Finder window footers.
 defaults write -g AppleShowAllExtensions -bool true
