@@ -27,7 +27,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "bash '/Users/reobin/.claude/hooks/herdr-agent-state.sh' session",
+            "command": "bash \"$HOME/.claude/hooks/herdr-agent-state.sh\" session",
             "timeout": 10
           }
         ]
@@ -36,7 +36,7 @@
   },
   "statusLine": {
     "type": "command",
-    "command": "bash '/Users/reobin/.claude/statusline.sh'"
+    "command": "bash \"$HOME/.claude/statusline.sh\""
   },
   "enabledPlugins": {
     "Notion@claude-plugins-official": true,
