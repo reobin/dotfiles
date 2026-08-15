@@ -2,7 +2,6 @@
 
 set -eu
 
-DOTFILES_DIRECTORY="$HOME/dotfiles"
 DAEMONS_DIRECTORY="$DOTFILES_DIRECTORY/macos/daemons"
 
 # The plist points at the script in this repo, so only the plist is copied out.

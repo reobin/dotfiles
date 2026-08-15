@@ -2,7 +2,11 @@
 
 set -eu
 
-DOTFILES_DIRECTORY="$HOME/dotfiles"
+# Taken from this script's own path rather than assumed, so ./macos/init works
+# from any cwd and from a clone that is not ~/dotfiles. Everything below is
+# sourced into this shell, so exporting it once is enough for all of it.
+DOTFILES_DIRECTORY="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+export DOTFILES_DIRECTORY
 INSTALL_DIRECTORY="$DOTFILES_DIRECTORY/macos"
 
 # config and daemons/install need sudo, and they run after a brew bundle that can

@@ -7,8 +7,6 @@ if ! command -v herdr >/dev/null 2>&1; then
   return 0
 fi
 
-DOTFILES_DIRECTORY="$HOME/dotfiles"
-
 SPACE_TOKENS_ID="reobin.space-tokens"
 SPACE_TOKENS_DIR="$DOTFILES_DIRECTORY/herdr/.config/herdr/space-tokens"
 
