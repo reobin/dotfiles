@@ -1,1 +1,5 @@
 promptToReturnFromSubprocess: false
+git:
+  diffRenderers:
+    - colorArg: always
+      command: delta --paging=never
