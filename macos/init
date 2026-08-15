@@ -5,6 +5,33 @@ set -eu
 DOTFILES_DIRECTORY="$HOME/dotfiles"
 INSTALL_DIRECTORY="$DOTFILES_DIRECTORY/macos"
 
+# config and daemons/install need sudo, and they run after a brew bundle that can
+# take longer than sudo's credential timeout. Ask up front, then refresh in the
+# background so the rest of the run never stops for a password.
+if ! sudo -v; then
+  echo "macos/init needs sudo for macos/config and macos/daemons/install" >&2
+  exit 1
+fi
+
+# Job control gives the keepalive its own process group, so stopping it takes the
+# sleep it is blocked in along with it instead of orphaning that for a minute.
+# Job control also means bash would announce the kill as a terminated job, and
+# that reads like a failure in the middle of an otherwise quiet run, so drop the
+# job as soon as its pid is known. The process group outlives the job table entry.
+set -m
+while true; do sudo -n true; sleep 60; done 2>/dev/null &
+SUDO_KEEPALIVE_PID=$!
+disown
+set +m
+
+stop_sudo_keepalive() {
+  [[ -n "${SUDO_KEEPALIVE_PID:-}" ]] || return 0
+  kill -- "-$SUDO_KEEPALIVE_PID" 2>/dev/null || true
+  SUDO_KEEPALIVE_PID=""
+}
+
+trap stop_sudo_keepalive EXIT
+
 if ! command -v brew >/dev/null 2>&1; then
   echo "installing Homebrew"
   NONINTERACTIVE=1 /bin/bash -c \
@@ -28,6 +55,13 @@ echo "running macOS config"
 "$INSTALL_DIRECTORY/config"
 
 . "$INSTALL_DIRECTORY/daemons/install"
+
+# Last sudo user. The scripts below are sourced into this shell and one of them
+# manages an EXIT trap of its own, so the cleanup above cannot be counted on past
+# here. Stop the keepalive while this is still the only trap in play.
+stop_sudo_keepalive
+trap - EXIT
+
 . "$INSTALL_DIRECTORY/dotfiles/install"
 . "$INSTALL_DIRECTORY/extensions/install"
 . "$INSTALL_DIRECTORY/integrations/install"
