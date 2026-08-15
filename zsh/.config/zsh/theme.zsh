@@ -2,6 +2,37 @@ __terminal_theme_root() {
   print -r -- "${XDG_CONFIG_HOME:-$HOME/.config}/tt"
 }
 
+# Read a sidebar color out of the theme's palette rather than pinning a copy per
+# theme, which would be free to drift from the colorscheme it belongs to. Callers
+# pass the ANSI slot: the bright one on ink backgrounds, the normal one on paper,
+# where bright colors wash out. See tt/THEME_GUIDE.md for which slots and why.
+__terminal_theme_palette_color() {
+  emulate -L zsh
+  setopt local_options no_aliases
+
+  local theme_dir="$1" dark_slot="$2" light_slot="$3" ghostty_file bg slot line
+
+  ghostty_file="$theme_dir/ghostty.conf"
+  [[ -r "$ghostty_file" ]] || return 1
+
+  bg="$(__terminal_theme_background "$theme_dir")" || return 1
+
+  if __terminal_theme_is_light "$bg"; then
+    slot="$light_slot"
+  else
+    slot="$dark_slot"
+  fi
+
+  while IFS= read -r line; do
+    if [[ "$line" =~ "^palette[[:space:]]*=[[:space:]]*$slot=(#[0-9A-Fa-f]{6})" ]]; then
+      print -r -- "$match[1]"
+      return 0
+    fi
+  done < "$ghostty_file"
+
+  return 1
+}
+
 # Herdr allows one `[theme.custom]` block, but `overlay0` has to be recessive
 # against the active background and no single gray is recessive on both paper
 # and ink. So the block lives per theme and gets concatenated onto the base
@@ -11,11 +42,24 @@ __terminal_theme_apply_herdr() {
   emulate -L zsh
   setopt local_options no_aliases
 
-  local theme_dir="$1" herdr_dir tmp
+  local theme_dir="$1" herdr_dir tmp hot done_color
   herdr_dir="${XDG_CONFIG_HOME:-$HOME/.config}/herdr"
 
   [[ -r "$herdr_dir/config.base.toml" ]] || return 1
   [[ -r "$theme_dir/herdr.toml" ]] || return 1
+
+  # A theme missing one of these still gets a working config rather than a
+  # placeholder reaching Herdr as a color, but the fallback belongs to no
+  # palette, so say so instead of quietly shipping it.
+  if ! hot="$(__terminal_theme_palette_color "$theme_dir" 9 1)"; then
+    hot="#E05252"
+    print -u2 -- "tt: no red in ${theme_dir:t}/ghostty.conf palette, using $hot"
+  fi
+
+  if ! done_color="$(__terminal_theme_palette_color "$theme_dir" 10 2)"; then
+    done_color="#4FA76A"
+    print -u2 -- "tt: no green in ${theme_dir:t}/ghostty.conf palette, using $done_color"
+  fi
 
   tmp="$herdr_dir/config.toml.tmp.$$"
 
@@ -23,11 +67,21 @@ __terminal_theme_apply_herdr() {
   # strand the temp file, and herdr_dir is a stow symlink back into the dotfiles
   # repo, so chain on && and let the group's own status reach the cleanup.
   {
-    command cat "$herdr_dir/config.base.toml" &&
+    command sed -e "s/\"@hot\"/\"$hot\"/g" -e "s/\"@done\"/\"$done_color\"/g" "$herdr_dir/config.base.toml" &&
       print &&
       print -r -- "# appended by tt from tt/themes/${theme_dir:t}/herdr.toml" &&
       command cat "$theme_dir/herdr.toml"
   } > "$tmp" || { command rm -f "$tmp"; return 1 }
+
+  # The fallbacks above cover a palette that cannot be read, not a placeholder the
+  # sed above did not match, and an unsubstituted one reaches Herdr as a color,
+  # which costs the whole file rather than the row. Keep the config that is
+  # already in place instead of replacing it with one Herdr will refuse.
+  if command grep -qE '^[^#]*"@(hot|done)"' "$tmp"; then
+    print -u2 -- "tt: unsubstituted placeholder in herdr/config.base.toml, keeping the current config.toml"
+    command rm -f "$tmp"
+    return 1
+  fi
 
   command mv -f "$tmp" "$herdr_dir/config.toml" || { command rm -f "$tmp"; return 1 }
 }

@@ -59,6 +59,24 @@ borders and dimmed hint text:
 Much lower and the hint text disappears. Much higher and the inactive border
 starts competing with the active one, which Herdr paints in `accent` (ANSI 4).
 
+The sidebar also needs two colors of its own: a loud one for the rows that flag
+an agent waiting on you, and a calm one for the rows that say an agent finished.
+Nothing declares them. `tt` reads them out of `ghostty.conf` and substitutes them
+into the `@hot` and `@done` placeholders in `config.base.toml`, because sidebar
+rows accept a hex foreground and nothing else and cannot name a `[theme.custom]`
+color.
+
+The slots it reads are ANSI red and green, already the theme's alarm and success
+colors:
+
+* `palette 9` and `palette 10` on dark backgrounds
+* `palette 1` and `palette 2` on light ones, where the bright pair washes out
+
+So a theme gets both for free, and they cannot drift from the palette. Keep all
+four slots legible against the background and it works out. A theme missing one
+still gets a working config, but `tt` warns and falls back to a color that
+belongs to no palette.
+
 ## Taste
 
 Prefer retro palettes with restraint:

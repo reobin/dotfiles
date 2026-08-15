@@ -8,6 +8,15 @@ platforms = ["linux", "macos"]
 # Startup refreshes once after the session is restored; the event hooks keep it
 # current after that. Nothing here is a daemon, so there is no live clock: the
 # lines change when Herdr sees something change.
+#
+# Two events are left out on purpose. pane.updated is the only one that carries a
+# title change, and an agent row is a title, but a working agent rewrites its own
+# title several times a second to animate the frame in front of it, and the frame
+# is what refresh.sh strips. Subscribing would buy a fresher line with a full
+# refresh per animation tick, nearly all of them computing the same tokens twice,
+# so a new title waits for the next status change instead.
+# workspace.metadata_updated is what this plugin itself causes, so subscribing to
+# it would hand the plugin its own output back.
 [[startup]]
 command = ["sh", "refresh.sh"]
 
@@ -47,10 +56,38 @@ command = ["sh", "refresh.sh"]
 on = "tab.renamed"
 command = ["sh", "refresh.sh"]
 
+# Slots hold panes in pane order and a tab label prefixes the ones it owns, so
+# reordering tabs reorders the rows.
+[[events]]
+on = "tab.moved"
+command = ["sh", "refresh.sh"]
+
 [[events]]
 on = "workspace.created"
 command = ["sh", "refresh.sh"]
 
 [[events]]
 on = "workspace.closed"
+command = ["sh", "refresh.sh"]
+
+# Renaming a space is how the title row learns the half of the name that is not
+# the repo, so this is the one event a rename has to reach for the row to change
+# under it. It is also still the row's last fallback for a space with no repo and
+# no pane to read a cwd from.
+[[events]]
+on = "workspace.renamed"
+command = ["sh", "refresh.sh"]
+
+# The title row prefers the repo name, and that comes from the worktree the space
+# is linked to, which is not necessarily known by the time it is created.
+[[events]]
+on = "worktree.created"
+command = ["sh", "refresh.sh"]
+
+[[events]]
+on = "worktree.opened"
+command = ["sh", "refresh.sh"]
+
+[[events]]
+on = "worktree.removed"
 command = ["sh", "refresh.sh"]

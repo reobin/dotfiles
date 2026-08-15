@@ -120,6 +120,12 @@ mouse_capture = true
 confirm_close = false
 prompt_new_tab_name = false
 
+# A tab sits inside a space you already know, so it can wait for a name. A space
+# gets only the checkout basename for free, which is the repo again for every
+# space opened on a main checkout, so asking here is what gives it the label the
+# title row joins to the repo name.
+prompt_new_workspace_name = true
+
 # Agent and command lines need the room; 36 is also the default max width.
 sidebar_width = 36
 
@@ -133,30 +139,51 @@ hide_tab_bar_when_single_tab = true
 
 agent_panel_sort = "spaces"
 
-# Each space is one block: name, branch, then a line per pane with what it is
-# running. The title and a1..a4 tokens come from space-tokens/refresh.sh; rows
+# Each space is one block: name, branch, then one line per pane with what it is
+# running. The title and a1..a6 tokens come from space-tokens/refresh.sh; rows
 # with no value disappear, so a block is only as tall as it has content. Drag
 # the sidebar's section divider to the bottom to starve the agents panel.
 #
-# $title stands in for the built-in workspace token because labels are bare
-# basenames; it names the repo instead, and the branch row says which checkout.
+# $title stands in for the built-in workspace token, which renders a label that
+# is a bare basename until someone changes it. It is the repo name, joined to the
+# label by refresh.sh when the label is one somebody chose, and the branch row
+# under it says which checkout. Joining there rather than giving the label its
+# own token keeps the separator this script's to pick and costs no second column.
+#
+# Color says what the pane wants from you, and a style belongs to a whole token,
+# so each thing a line can be needs its own. Blocked is an agent holding a
+# question open, so it goes loud and bold. Done is finished work that can wait,
+# so it takes the calm color instead of the alarm one. Everything else stays in
+# the ordinary foreground.
+#
+# Never two tokens with a value on the same row: Herdr joins the ones that render
+# with " · ", so a glyph and its text side by side come out as "✓ · title". That
+# is why done cannot be a colored glyph next to plain text, and why refresh.sh
+# sets exactly one token per slot and clears the others. Rows that hold several
+# are safe only because at most one of them is ever set.
+#
+# Herdr allows 16 rows here and this uses all 16, so a slot gets two.
+#
+# @hot and @done are placeholders tt fills in from the theme's palette. See
+# tt/THEME_GUIDE.md for why they are placeholders and not theme color names.
 [ui.sidebar.spaces]
 row_gap = 1
 rows = [
   ["state_icon", { token = "$title", bold = true }],
   ["branch", "git_status"],
-  [{ token = "$a1_hot", bold = true }],
-  ["$a1"],
-  ["$a1_title"],
-  [{ token = "$a2_hot", bold = true }],
-  ["$a2"],
-  ["$a2_title"],
-  [{ token = "$a3_hot", bold = true }],
-  ["$a3"],
-  ["$a3_title"],
-  [{ token = "$a4_hot", bold = true }],
-  ["$a4"],
-  ["$a4_title"],
+  [{ token = "$a1_blocked", bold = true, fg = "@hot" }],
+  [{ token = "$a1_done", fg = "@done" }, "$a1"],
+  [{ token = "$a2_blocked", bold = true, fg = "@hot" }],
+  [{ token = "$a2_done", fg = "@done" }, "$a2"],
+  [{ token = "$a3_blocked", bold = true, fg = "@hot" }],
+  [{ token = "$a3_done", fg = "@done" }, "$a3"],
+  [{ token = "$a4_blocked", bold = true, fg = "@hot" }],
+  [{ token = "$a4_done", fg = "@done" }, "$a4"],
+  [{ token = "$a5_blocked", bold = true, fg = "@hot" }],
+  [{ token = "$a5_done", fg = "@done" }, "$a5"],
+  [{ token = "$a6_blocked", bold = true, fg = "@hot" }],
+  [{ token = "$a6_done", fg = "@done" }, "$a6"],
+  [{ token = "$more_blocked", bold = true, fg = "@hot" }],
   ["$more"],
 ]
 
