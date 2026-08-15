@@ -18,7 +18,6 @@ CONFIGS=(
   nvim
   opencode
   claude
-  codex
   starship
   superwhisper
   zsh
