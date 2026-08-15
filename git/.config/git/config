@@ -67,6 +67,6 @@
 	nocopy = node_modules/
 	hook = mise trust .
 [credential]
-	helper = cache --timeout=604800
+	helper = osxkeychain
 [merge]
 	tool = nvimdiff
