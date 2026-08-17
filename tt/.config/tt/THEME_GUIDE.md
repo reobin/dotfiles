@@ -15,6 +15,10 @@ Each `ghostty.conf` must declare a static wallpaper color:
 
 * `# wallpaper-color = #RRGGBB`
 
+`tt` paints the desktop with a subtle vertical gradient rather than a flat fill.
+The declared color is the top of the screen and the gradient only deepens from
+there, so pick the brightest the desktop should ever get, not an average.
+
 Mirror `ghostty.conf` to `ghostty/.config/ghostty/themes/terminal-<name>` or
 `.config/ghostty/themes/terminal-<name>` inside this package so Ghostty can
 load it directly. Do not duplicate a mirror already owned by the `ghostty`
