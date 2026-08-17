@@ -25,7 +25,8 @@
 # `title` stands in for the label on the title row: the repo name when the space
 # is in a git repo, the directory name otherwise. Labels are bare basenames, so a
 # worktree label says nothing about which repo it belongs to; the branch row
-# under the title is what tells one checkout of a repo from another.
+# under the title is what tells one checkout of a repo from another. Two spaces on
+# one checkout share a title, so the lower one takes a number.
 #
 # Usage: refresh.sh         report the current panes
 #        refresh.sh clear    remove every token this script owns
@@ -196,35 +197,51 @@ plan="$(
       def clear_but($slot; $keep):
         [slots_of($slot)[] | select(IN($keep[]) | not) | ("--clear-token", .)];
 
-      .result.workspaces[]
-      | . as $workspace
+      def title_of($workspace):
+        ($panes.result.panes | map(select(.workspace_id == $workspace.workspace_id))) as $mine
+        | ($repos[$workspace.workspace_id] // {}) as $git
+        | ($git.name // "") as $repo
+        | ($mine[0].cwd // "") as $cwd
+        | ($workspace.label // "") as $label
+        # The title row renders this instead of the label, so every space has to
+        # come out with a name: repo, else the directory it sits in, else the
+        # label for a space with no pane to read a cwd from.
+        | ([$repo, ($cwd | basename), $label] | map(select(. != "")) | first // "") as $where
+        # What Herdr would be putting in the label if nobody had named the space.
+        # Read off the checkout rather than the pane cwd, which moves with every
+        # cd and would make a space look named for having been walked into.
+        | ((if ($git.path // "") != "" then $git.path else $cwd end) | basename) as $unnamed
+        # Two signals, because neither covers the other. The session file is
+        # exact but Herdr flushes it about five seconds after a rename, so it
+        # cannot be what makes a rename show up; a label differing from the
+        # basename covers those seconds, and the file covers a name that happens
+        # to equal it. A space nobody named trips neither, its label being that
+        # basename already.
+        | (($named[$workspace.workspace_id] // false) or $label != $unnamed) as $chosen
+        # A chosen label joins the name rather than replacing it: the repo says
+        # where you are and the label says which of them this is. One that
+        # already matches the name renders it once, so it is not worth a second
+        # column.
+        | if $chosen and $label != "" and $label != $where
+          then "\($where) · \($label)"
+          else $where
+          end;
+
+      # Sidebar order, so the numbers run top to bottom and closing or moving a
+      # space renumbers the ones sharing its title. A number says which of these,
+      # not which one; a space worth referring to is worth renaming.
+      [.result.workspaces[] | { workspace: ., title: title_of(.) }]
+      | (reduce .[] as $entry ({ seen: {}, out: [] };
+          $entry.title as $t
+          | (if $t == "" then 0 else (.seen[$t] // 0) + 1 end) as $n
+          | (if $t == "" then . else .seen[$t] = $n end)
+          | .out += [$entry | .title = (if $n > 1 then "\($t) \($n)" else $t end)]
+        ) | .out)
+      | .[]
+      | .title as $title
+      | .workspace as $workspace
       | ($panes.result.panes | map(select(.workspace_id == $workspace.workspace_id))) as $mine
       | ($tabs[$workspace.workspace_id] // {}) as $tab_labels
-      | ($repos[$workspace.workspace_id] // {}) as $git
-      | ($git.name // "") as $repo
-      | ($mine[0].cwd // "") as $cwd
-      | ($workspace.label // "") as $label
-      # The title row renders this instead of the label, so every space has to
-      # come out with a name: repo, else the directory it sits in, else the label
-      # for a space with no pane to read a cwd from.
-      | ([$repo, ($cwd | basename), $label] | map(select(. != "")) | first // "") as $where
-      # What Herdr would be putting in the label if nobody had named the space.
-      # Read off the checkout rather than the pane cwd, which moves with every cd
-      # and would make a space look named for having been walked into.
-      | ((if ($git.path // "") != "" then $git.path else $cwd end) | basename) as $unnamed
-      # Two signals, because neither covers the other. The session file is exact
-      # but Herdr flushes it about five seconds after a rename, so it cannot be
-      # what makes a rename show up; a label differing from the basename covers
-      # those seconds, and the file covers a name that happens to equal it. A
-      # space nobody named trips neither, its label being that basename already.
-      | (($named[$workspace.workspace_id] // false) or $label != $unnamed) as $chosen
-      # A chosen label joins the name rather than replacing it: the repo says
-      # where you are and the label says which of them this is. One that already
-      # matches the name renders it once, so it is not worth a second column.
-      | (if $chosen and $label != "" and $label != $where
-         then "\($where) · \($label)"
-         else $where
-         end) as $title
       | [if $title == "" then ["--clear-token", "title"] else ["--token", "title=\($title)"] end]
       + [
           range(1; $slots + 1) as $slot

@@ -120,11 +120,11 @@ mouse_capture = true
 confirm_close = false
 prompt_new_tab_name = false
 
-# A tab sits inside a space you already know, so it can wait for a name. A space
-# gets only the checkout basename for free, which is the repo again for every
-# space opened on a main checkout, so asking here is what gives it the label the
-# title row joins to the repo name.
-prompt_new_workspace_name = true
+# Both prompts land before there is anything to name, so what gets typed is a
+# placeholder. The title row says which repo, the branch row which checkout, and
+# refresh.sh numbers the case those two miss, which is two spaces on one
+# checkout. A space that earns a name gets one later, from rename_workspace.
+prompt_new_workspace_name = false
 
 # Agent and command lines need the room; 36 is also the default max width.
 sidebar_width = 36
