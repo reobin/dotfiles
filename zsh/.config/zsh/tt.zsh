@@ -176,18 +176,27 @@ __terminal_theme_wallpaper_color() {
   return 1
 }
 
-# The wallpaper color anchors a vertical gradient rather than filling the desktop
-# flat. It is the ceiling, not the midpoint: the top of the screen is the declared
-# color and the gradient only deepens from there, so no part of the desktop is
-# brighter than the theme asked for and the surface reads darker overall.
+# The wallpaper color anchors a diagonal gradient rather than filling the desktop
+# flat. It is the ceiling, not the midpoint: the top-left corner is the declared
+# color and the gradient only deepens toward the bottom-right, so no part of the
+# desktop is brighter than the theme asked for and the surface reads darker overall.
 #
 # The span is a percentage of the color's own brightness rather than a count of RGB
 # levels. Fixed levels carry on a dark wallpaper color and vanish on a mid-tone
-# one, because the eye judges a brightness step against what it sits on.
+# one, because the eye judges a brightness step against what it sits on. The
+# diagonal spreads the same span over a longer run than a vertical one, so it wants
+# a larger number to land with the same weight.
 #
-# All three land in the cache name, so changing one here regenerates rather than
+# The ramp is the share of the diagonal the transition actually happens over, and
+# it is what makes the gradient read without darkening anything. Spending the span
+# evenly across the whole diagonal is a slope too shallow to see; holding the
+# corners flat and spending it over the middle steepens the part of the run the eye
+# is on while both ends stay exactly where they were.
+#
+# All four land in the cache name, so changing one here regenerates rather than
 # serving the old image.
-__terminal_theme_wallpaper_span=18
+__terminal_theme_wallpaper_span=30
+__terminal_theme_wallpaper_ramp=55
 __terminal_theme_wallpaper_width=2048
 __terminal_theme_wallpaper_height=1280
 
@@ -195,7 +204,7 @@ __terminal_theme_generate_wallpaper() {
   emulate -L zsh
   setopt local_options no_aliases
 
-  local theme_dir="$1" theme hex body cache_dir wallpaper tmp_ppm tmp_png span size
+  local theme_dir="$1" theme hex body cache_dir wallpaper tmp_ppm tmp_png span ramp size
   local -u upper_body
 
   command -v perl >/dev/null 2>&1 || return 1
@@ -206,12 +215,13 @@ __terminal_theme_generate_wallpaper() {
   [[ "$hex" == \#[[:xdigit:]][[:xdigit:]][[:xdigit:]][[:xdigit:]][[:xdigit:]][[:xdigit:]] ]] || return 1
 
   span="$__terminal_theme_wallpaper_span"
+  ramp="$__terminal_theme_wallpaper_ramp"
   body="${hex#\#}"
   upper_body="$body"
   size="${__terminal_theme_wallpaper_width}x${__terminal_theme_wallpaper_height}"
   cache_dir="${XDG_CACHE_HOME:-$HOME/.cache}/tt/wallpapers"
-  wallpaper="$cache_dir/$theme-$upper_body-$size-grad$span.png"
-  tmp_ppm="$cache_dir/$theme-$upper_body-$size-grad$span.ppm.$$"
+  wallpaper="$cache_dir/$theme-$upper_body-$size-grad$span-ramp$ramp.png"
+  tmp_ppm="$cache_dir/$theme-$upper_body-$size-grad$span-ramp$ramp.ppm.$$"
   tmp_png="$wallpaper.$$"
 
   if [[ -r "$wallpaper" ]]; then
@@ -222,29 +232,41 @@ __terminal_theme_generate_wallpaper() {
   command mkdir -p "$cache_dir" || return 1
 
   # Scale the channels together instead of adding a flat offset, which would walk
-  # the hue toward gray at the light end. Then dither: a couple of dozen levels
-  # spread over a screen height is a band every fifty-odd pixels, and trading that
-  # for noise a pixel wide is the whole reason the gradient looks like a gradient.
+  # the hue toward gray at the light end. Then dither: a few dozen levels spread
+  # corner to corner is a band every hundred-odd pixels, and trading that for noise
+  # a pixel wide is the whole reason the gradient looks like a gradient.
   perl -e '
-    my ($out, $hex, $width, $height, $percent) = @ARGV;
+    my ($out, $hex, $width, $height, $percent, $ramp) = @ARGV;
     $hex =~ s/^#//;
     my @base = map { hex($_) } ($hex =~ /(..)(..)(..)/);
     my $span = $percent / 100;
+    my $steep = 100 / ($ramp < 1 ? 1 : $ramp);
     my @dither = (0, 4, 2, 6, 1, 5, 3, 7);
-    my $tiles = int($width / 8) + 1;
+    my $diag = $width + $height - 2;
 
-    open my $fh, ">:raw", $out or die "cannot write $out: $!";
-    print {$fh} "P6\n$width $height\n255\n";
+    # Depth runs on x + y, which makes every row the one above it shifted a pixel
+    # along. So build the whole diagonal once and cut each row out of it, rather
+    # than walking two and a half million pixels. Two strips, because the dither
+    # phase flips on alternating rows and a single strip would lay the pattern
+    # down in unbroken 45 degree lines.
+    my @strip;
+    for my $parity (0, 1) {
+      my $pixels = "";
 
-    for my $y (0 .. $height - 1) {
-      my $t = $height > 1 ? $y / ($height - 1) : 0;
-      my $scale = 1 - $span * $t;
-      my $shift = ($y % 2) * 4;
-      my $row = "";
+      for my $d (0 .. $diag) {
+        my $t = $diag > 0 ? $d / $diag : 0;
 
-      for my $i (0 .. 7) {
-        my $threshold = ($dither[($i + $shift) % 8] + 0.5) / 8;
-        $row .= pack("C3", map {
+        # Pull the run in around the middle, then round the shoulders off. The
+        # clamp alone would leave a crease where it bites, and a crease in a flat
+        # field is more visible than the gradient it belongs to.
+        my $u = 0.5 + ($t - 0.5) * $steep;
+        $u = $u < 0 ? 0 : $u > 1 ? 1 : $u;
+        $u = $u * $u * (3 - 2 * $u);
+
+        my $scale = 1 - $span * $u;
+        my $threshold = ($dither[($d + 4 * $parity) % 8] + 0.5) / 8;
+
+        $pixels .= pack("C3", map {
           my $v = $_ * $scale;
           my $level = int($v);
           $level++ if $v - $level > $threshold;
@@ -252,12 +274,19 @@ __terminal_theme_generate_wallpaper() {
         } @base);
       }
 
-      print {$fh} substr($row x $tiles, 0, $width * 3);
+      $strip[$parity] = $pixels;
+    }
+
+    open my $fh, ">:raw", $out or die "cannot write $out: $!";
+    print {$fh} "P6\n$width $height\n255\n";
+
+    for my $y (0 .. $height - 1) {
+      print {$fh} substr($strip[$y % 2], $y * 3, $width * 3);
     }
 
     close $fh;
   ' "$tmp_ppm" "$hex" \
-    "$__terminal_theme_wallpaper_width" "$__terminal_theme_wallpaper_height" "$span" ||
+    "$__terminal_theme_wallpaper_width" "$__terminal_theme_wallpaper_height" "$span" "$ramp" ||
     { command rm -f "$tmp_ppm"; return 1 }
 
   # Convert to a sibling and rename, so an interrupted or concurrent run cannot
