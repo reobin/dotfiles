@@ -20,6 +20,7 @@
   shp = stash pop
   shd = stash drop
   l = log
+  d = diff
   bc = !"$HOME/.config/git/scripts/branch-cleanup"
 [core]
 	editor = nvim
@@ -32,6 +33,8 @@
 	rebase = true 			 # Rebase (instead of merge) on pull
 [push]
 	autoSetupRemote = true   # Automatically set upstream branch on push
+[pager]
+	diff = hunk pager        # Review `git diff` in hunk; delta keeps log and show
 [diff]
 	algorithm = histogram    # Clearer diffs on moved/edited lines
 	colorMoved = plain       # Highlight moved blocks in diffs

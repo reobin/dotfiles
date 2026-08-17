@@ -1,0 +1,22 @@
+#!/usr/bin/env bash
+
+if ! command -v hunk >/dev/null 2>&1; then
+  echo "Skipping hunk-review skill (hunk is not installed)" >&2
+  return 0
+fi
+
+# The formula ships hunk's own skill. `hunk skill path` answers with a versioned
+# Cellar path that a link would follow into a dangling reference on the next
+# upgrade, so this goes through brew's opt prefix instead.
+HUNK_SKILL_SOURCE="$(brew --prefix hunk)/libexec/skills/hunk-review"
+HUNK_SKILL_TARGET="$HOME/.claude/skills/hunk-review"
+
+# A real directory here is a skill installed by something else, and overwriting
+# it would throw that away.
+if [[ -e "$HUNK_SKILL_TARGET" && ! -L "$HUNK_SKILL_TARGET" ]]; then
+  echo "Skipping hunk-review skill ($HUNK_SKILL_TARGET is not a link)" >&2
+else
+  mkdir -p "$(dirname "$HUNK_SKILL_TARGET")"
+  ln -sfn "$HUNK_SKILL_SOURCE" "$HUNK_SKILL_TARGET"
+  echo "linked hunk-review skill -> $HUNK_SKILL_TARGET"
+fi

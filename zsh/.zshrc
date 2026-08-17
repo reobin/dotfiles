@@ -13,6 +13,7 @@ alias mkdir='mkdir -vp'
 alias h='herdr'
 alias g='git'
 alias lg='lazygit'
+alias d='hunk diff --watch'
 alias n='nvim'
 
 export DOTFILES="$HOME/dotfiles"

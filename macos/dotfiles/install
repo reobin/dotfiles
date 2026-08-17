@@ -10,6 +10,7 @@ CONFIGS=(
   git
   ghostty
   herdr
+  hunk
   karabiner
   lazygit
   mise

@@ -1,0 +1,37 @@
+#!/usr/bin/env bash
+
+if ! command -v herdr >/dev/null 2>&1; then
+  echo "Skipping herdr skill (herdr is not installed)" >&2
+  return 0
+fi
+
+# herdr prints its skill instead of shipping a file, so this one is written out
+# rather than linked, and rewritten every run to follow the installed version.
+HERDR_SKILL_DIRECTORY="$HOME/.agents/skills/herdr"
+HERDR_SKILL_TARGET="$HOME/.claude/skills/herdr"
+
+mkdir -p "$HERDR_SKILL_DIRECTORY"
+
+# Through a sibling temp file, so a failed `herdr --skill` cannot leave a
+# truncated skill in place of the working one.
+HERDR_SKILL_TEMPORARY="$(mktemp "$HERDR_SKILL_DIRECTORY/.SKILL.md.XXXXXX")"
+
+if herdr --skill >"$HERDR_SKILL_TEMPORARY"; then
+  chmod 644 "$HERDR_SKILL_TEMPORARY"
+  mv "$HERDR_SKILL_TEMPORARY" "$HERDR_SKILL_DIRECTORY/SKILL.md"
+  echo "wrote herdr skill -> $HERDR_SKILL_DIRECTORY/SKILL.md"
+else
+  rm -f "$HERDR_SKILL_TEMPORARY"
+  echo "Skipping herdr skill (herdr --skill failed)" >&2
+  return 0
+fi
+
+# A real directory here is a skill installed by something else, and overwriting
+# it would throw that away.
+if [[ -e "$HERDR_SKILL_TARGET" && ! -L "$HERDR_SKILL_TARGET" ]]; then
+  echo "Skipping herdr skill link ($HERDR_SKILL_TARGET is not a link)" >&2
+else
+  mkdir -p "$(dirname "$HERDR_SKILL_TARGET")"
+  ln -sfn "$HERDR_SKILL_DIRECTORY" "$HERDR_SKILL_TARGET"
+  echo "linked herdr skill -> $HERDR_SKILL_TARGET"
+fi

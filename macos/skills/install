@@ -1,0 +1,24 @@
+#!/usr/bin/env bash
+
+set -eu
+
+INSTALL_DIRECTORY="$DOTFILES_DIRECTORY/macos"
+
+# Skills a tool ships with itself, linked into the agents that read them. Skills
+# written by hand live in the ai repo instead.
+SKILLS=(
+  herdr
+  hunk
+)
+
+for skill in "${SKILLS[@]}"; do
+  script="$INSTALL_DIRECTORY/skills/$skill"
+
+  if [[ ! -f "$script" ]]; then
+    echo "Skipping $skill (missing: $script)" >&2
+    continue
+  fi
+
+  echo "installing skills for $skill"
+  source "$script"
+done

@@ -66,3 +66,4 @@ trap - EXIT
 . "$INSTALL_DIRECTORY/dotfiles/install"
 . "$INSTALL_DIRECTORY/extensions/install"
 . "$INSTALL_DIRECTORY/integrations/install"
+. "$INSTALL_DIRECTORY/skills/install"
