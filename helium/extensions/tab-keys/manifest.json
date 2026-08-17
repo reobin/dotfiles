@@ -2,7 +2,7 @@
   "manifest_version": 3,
   "name": "Tab keys",
   "version": "1.0.0",
-  "description": "Switch tabs with option+j/k and reorder them with option+shift+j/k.",
+  "description": "Switch tabs with option+j/k, jump by group with option+h/l, and reorder them with option+shift+j/k.",
   "background": {
     "service_worker": "background.js"
   },
@@ -14,6 +14,12 @@
     "switch-previous": {
       "suggested_key": { "mac": "Alt+K" },
       "description": "Switch to the previous tab"
+    },
+    "switch-group-next": {
+      "description": "Switch to the next group or ungrouped tab"
+    },
+    "switch-group-previous": {
+      "description": "Switch to the previous group or ungrouped tab"
     },
     "move-next": {
       "suggested_key": { "mac": "Alt+Shift+J" },

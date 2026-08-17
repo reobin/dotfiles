@@ -3,9 +3,28 @@ const NO_GROUP = -1;
 const COMMANDS = {
   "switch-next": { offset: 1, move: false },
   "switch-previous": { offset: -1, move: false },
+  "switch-group-next": { offset: 1, move: false, byGroup: true },
+  "switch-group-previous": { offset: -1, move: false, byGroup: true },
   "move-next": { offset: 1, move: true },
   "move-previous": { offset: -1, move: true },
 };
+
+// A group is one stop, its first tab; an ungrouped tab is a stop of its own.
+async function switchByGroup(tabs, active, offset) {
+  const stops = tabs.filter(
+    (tab, index) => tab.groupId === NO_GROUP || tab.groupId !== tabs[index - 1]?.groupId,
+  );
+
+  const current = stops.findLast((tab) => tab.index <= active.index);
+
+  // From inside a group, going back lands on its first tab: that stop was never
+  // stopped on, so skipping past it would put the group head out of reach.
+  const step = offset < 0 && current !== active ? 0 : offset;
+  const next = stops.indexOf(current) + step;
+  const target = stops[(next + stops.length) % stops.length];
+
+  await chrome.tabs.update(target.id, { active: true });
+}
 
 chrome.commands.onCommand.addListener(async (command) => {
   const action = COMMANDS[command];
@@ -14,6 +33,11 @@ chrome.commands.onCommand.addListener(async (command) => {
   const tabs = await chrome.tabs.query({ currentWindow: true });
   const active = tabs.find((tab) => tab.active);
   if (!active) return;
+
+  if (action.byGroup) {
+    await switchByGroup(tabs, active, action.offset);
+    return;
+  }
 
   // Chromium silently clamps a move across the pinned boundary, which would
   // make the shortcut a dead key there. Moves stay inside the active tab's own
