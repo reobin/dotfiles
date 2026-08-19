@@ -40,16 +40,7 @@
   },
   "enabledPlugins": {
     "Notion@claude-plugins-official": true,
-    "mattpocock-skills@mattpocock": true,
     "rust-analyzer-lsp@claude-plugins-official": true
-  },
-  "extraKnownMarketplaces": {
-    "mattpocock": {
-      "source": {
-        "source": "github",
-        "repo": "mattpocock/skills"
-      }
-    }
   },
   "effortLevel": "high",
   "remote": {
