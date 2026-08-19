@@ -5,11 +5,23 @@ if ! command -v hunk >/dev/null 2>&1; then
   return 0
 fi
 
-# The formula ships hunk's own skill. `hunk skill path` answers with a versioned
-# Cellar path that a link would follow into a dangling reference on the next
-# upgrade, so this goes through brew's opt prefix instead.
-HUNK_SKILL_SOURCE="$(brew --prefix hunk)/libexec/skills/hunk-review"
+# hunk ships its own skill, and `hunk skill path` is the only thing that knows
+# where: the answer moves with the version and with whether hunk came from brew or
+# from mise. mise has no equivalent of brew's opt prefix, so the link follows a
+# versioned path and dangles between a hunk upgrade and the next run of this
+# script. A skill that stops loading is easier to notice than a stale one.
+if ! HUNK_SKILL_MANIFEST="$(hunk skill path)"; then
+  echo "Skipping hunk-review skill (hunk skill path failed)" >&2
+  return 0
+fi
+
+HUNK_SKILL_SOURCE="$(dirname "$HUNK_SKILL_MANIFEST")"
 HUNK_SKILL_TARGET="$HOME/.claude/skills/hunk-review"
+
+if [[ ! -d "$HUNK_SKILL_SOURCE" ]]; then
+  echo "Skipping hunk-review skill (missing: $HUNK_SKILL_SOURCE)" >&2
+  return 0
+fi
 
 # A real directory here is a skill installed by something else, and overwriting
 # it would throw that away.

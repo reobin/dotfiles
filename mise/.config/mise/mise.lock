@@ -249,6 +249,65 @@ checksum = "sha256:77cb5afd6c8fcaaaf3bc28e474ec01c209331ad08094e20d7f8aa9b0bb78d
 url = "https://github.com/herdrdev/herdr/releases/download/v0.8.0/herdr-macos-x86_64"
 url_api = "https://api.github.com/repos/herdrdev/herdr/releases/assets/500422626"
 
+[[tools.hunk]]
+version = "0.19.0"
+backend = "aqua:modem-dev/hunk"
+
+[tools.hunk."platforms.linux-arm64"]
+checksum = "sha256:2f5dc255fbf47d594ed31afdec088f02831e442281d55405930163c8e20a5edf"
+url = "https://github.com/modem-dev/hunk/releases/download/v0.19.0/hunkdiff-linux-arm64.tar.gz"
+url_api = "https://api.github.com/repos/modem-dev/hunk/releases/assets/517164664"
+
+[tools.hunk."platforms.linux-arm64-musl"]
+checksum = "sha256:2f5dc255fbf47d594ed31afdec088f02831e442281d55405930163c8e20a5edf"
+url = "https://github.com/modem-dev/hunk/releases/download/v0.19.0/hunkdiff-linux-arm64.tar.gz"
+url_api = "https://api.github.com/repos/modem-dev/hunk/releases/assets/517164664"
+
+[tools.hunk."platforms.linux-x64"]
+checksum = "sha256:d4d942fedc05b8bb5173e2913e545406a5d9412ba0ddb88f8e7f4dcd77fd0602"
+url = "https://github.com/modem-dev/hunk/releases/download/v0.19.0/hunkdiff-linux-x64.tar.gz"
+url_api = "https://api.github.com/repos/modem-dev/hunk/releases/assets/517164661"
+
+[tools.hunk."platforms.linux-x64-baseline"]
+checksum = "sha256:d4d942fedc05b8bb5173e2913e545406a5d9412ba0ddb88f8e7f4dcd77fd0602"
+url = "https://github.com/modem-dev/hunk/releases/download/v0.19.0/hunkdiff-linux-x64.tar.gz"
+url_api = "https://api.github.com/repos/modem-dev/hunk/releases/assets/517164661"
+
+[tools.hunk."platforms.linux-x64-musl"]
+checksum = "sha256:d4d942fedc05b8bb5173e2913e545406a5d9412ba0ddb88f8e7f4dcd77fd0602"
+url = "https://github.com/modem-dev/hunk/releases/download/v0.19.0/hunkdiff-linux-x64.tar.gz"
+url_api = "https://api.github.com/repos/modem-dev/hunk/releases/assets/517164661"
+
+[tools.hunk."platforms.linux-x64-musl-baseline"]
+checksum = "sha256:d4d942fedc05b8bb5173e2913e545406a5d9412ba0ddb88f8e7f4dcd77fd0602"
+url = "https://github.com/modem-dev/hunk/releases/download/v0.19.0/hunkdiff-linux-x64.tar.gz"
+url_api = "https://api.github.com/repos/modem-dev/hunk/releases/assets/517164661"
+
+[tools.hunk."platforms.macos-arm64"]
+checksum = "sha256:7eece6982cb1461c0c22f9d70a41b0fb8094d965ef02dc22f838abc0de71a429"
+url = "https://github.com/modem-dev/hunk/releases/download/v0.19.0/hunkdiff-darwin-arm64.tar.gz"
+url_api = "https://api.github.com/repos/modem-dev/hunk/releases/assets/517164666"
+
+[tools.hunk."platforms.macos-x64"]
+checksum = "sha256:e379460cd0ecccbd0f109b98bdedca129055cfffa000bc68dd8255531616db31"
+url = "https://github.com/modem-dev/hunk/releases/download/v0.19.0/hunkdiff-darwin-x64.tar.gz"
+url_api = "https://api.github.com/repos/modem-dev/hunk/releases/assets/517164663"
+
+[tools.hunk."platforms.macos-x64-baseline"]
+checksum = "sha256:e379460cd0ecccbd0f109b98bdedca129055cfffa000bc68dd8255531616db31"
+url = "https://github.com/modem-dev/hunk/releases/download/v0.19.0/hunkdiff-darwin-x64.tar.gz"
+url_api = "https://api.github.com/repos/modem-dev/hunk/releases/assets/517164663"
+
+[tools.hunk."platforms.windows-x64"]
+checksum = "sha256:cf73aa99a3f0f0529d3157eb829720085f2efc04cfcc17efb69600a006ee87d1"
+url = "https://github.com/modem-dev/hunk/releases/download/v0.19.0/hunkdiff-windows-x64.tar.gz"
+url_api = "https://api.github.com/repos/modem-dev/hunk/releases/assets/517164662"
+
+[tools.hunk."platforms.windows-x64-baseline"]
+checksum = "sha256:cf73aa99a3f0f0529d3157eb829720085f2efc04cfcc17efb69600a006ee87d1"
+url = "https://github.com/modem-dev/hunk/releases/download/v0.19.0/hunkdiff-windows-x64.tar.gz"
+url_api = "https://api.github.com/repos/modem-dev/hunk/releases/assets/517164662"
+
 [[tools.node]]
 version = "22.23.2"
 backend = "core:node"
@@ -300,6 +359,65 @@ url = "https://nodejs.org/dist/v22.23.2/node-v22.23.2-win-x64.zip"
 [[tools."npm:ntn"]]
 version = "0.22.4"
 backend = "npm:ntn"
+
+[[tools.opencode]]
+version = "1.18.18"
+backend = "aqua:anomalyco/opencode"
+
+[tools.opencode."platforms.linux-arm64"]
+checksum = "sha256:dcb1b5ec5687b43f87749560021f9203f3809e0ce5ae44ff9be8ae17083fe4ba"
+url = "https://github.com/anomalyco/opencode/releases/download/v1.18.18/opencode-linux-arm64.tar.gz"
+url_api = "https://api.github.com/repos/anomalyco/opencode/releases/assets/512198871"
+
+[tools.opencode."platforms.linux-arm64-musl"]
+checksum = "sha256:38a7504dab35007c70d2cdf89870b4be63faa60667318a90338798d34f53eab1"
+url = "https://github.com/anomalyco/opencode/releases/download/v1.18.18/opencode-linux-arm64-musl.tar.gz"
+url_api = "https://api.github.com/repos/anomalyco/opencode/releases/assets/512198930"
+
+[tools.opencode."platforms.linux-x64"]
+checksum = "sha256:0cddc222418b8553669905a8980c0cda7088f00da24d83d6ac76b01c9fdb2aaf"
+url = "https://github.com/anomalyco/opencode/releases/download/v1.18.18/opencode-linux-x64.tar.gz"
+url_api = "https://api.github.com/repos/anomalyco/opencode/releases/assets/512198862"
+
+[tools.opencode."platforms.linux-x64-baseline"]
+checksum = "sha256:0cddc222418b8553669905a8980c0cda7088f00da24d83d6ac76b01c9fdb2aaf"
+url = "https://github.com/anomalyco/opencode/releases/download/v1.18.18/opencode-linux-x64.tar.gz"
+url_api = "https://api.github.com/repos/anomalyco/opencode/releases/assets/512198862"
+
+[tools.opencode."platforms.linux-x64-musl"]
+checksum = "sha256:60279c62d2182aa4279cea4d5a84d23437f8074042cbbed4a2bfa70e5acbd193"
+url = "https://github.com/anomalyco/opencode/releases/download/v1.18.18/opencode-linux-x64-musl.tar.gz"
+url_api = "https://api.github.com/repos/anomalyco/opencode/releases/assets/512198876"
+
+[tools.opencode."platforms.linux-x64-musl-baseline"]
+checksum = "sha256:60279c62d2182aa4279cea4d5a84d23437f8074042cbbed4a2bfa70e5acbd193"
+url = "https://github.com/anomalyco/opencode/releases/download/v1.18.18/opencode-linux-x64-musl.tar.gz"
+url_api = "https://api.github.com/repos/anomalyco/opencode/releases/assets/512198876"
+
+[tools.opencode."platforms.macos-arm64"]
+checksum = "sha256:7d668bf26496fec8686d4e51ebb1ac2bd2e393f0c1620aa696c4c242a9e5806a"
+url = "https://github.com/anomalyco/opencode/releases/download/v1.18.18/opencode-darwin-arm64.zip"
+url_api = "https://api.github.com/repos/anomalyco/opencode/releases/assets/512198799"
+
+[tools.opencode."platforms.macos-x64"]
+checksum = "sha256:9581bd7683a7528456179fb11e3377d9ef568e10a935611a2c6722e349454d83"
+url = "https://github.com/anomalyco/opencode/releases/download/v1.18.18/opencode-darwin-x64.zip"
+url_api = "https://api.github.com/repos/anomalyco/opencode/releases/assets/512198795"
+
+[tools.opencode."platforms.macos-x64-baseline"]
+checksum = "sha256:9581bd7683a7528456179fb11e3377d9ef568e10a935611a2c6722e349454d83"
+url = "https://github.com/anomalyco/opencode/releases/download/v1.18.18/opencode-darwin-x64.zip"
+url_api = "https://api.github.com/repos/anomalyco/opencode/releases/assets/512198795"
+
+[tools.opencode."platforms.windows-x64"]
+checksum = "sha256:c6d265376fdb93164013671b0cf402410184f73c34fc15d82d40a16a745b15f4"
+url = "https://github.com/anomalyco/opencode/releases/download/v1.18.18/opencode-windows-x64.zip"
+url_api = "https://api.github.com/repos/anomalyco/opencode/releases/assets/512201969"
+
+[tools.opencode."platforms.windows-x64-baseline"]
+checksum = "sha256:c6d265376fdb93164013671b0cf402410184f73c34fc15d82d40a16a745b15f4"
+url = "https://github.com/anomalyco/opencode/releases/download/v1.18.18/opencode-windows-x64.zip"
+url_api = "https://api.github.com/repos/anomalyco/opencode/releases/assets/512201969"
 
 [[tools.pnpm]]
 version = "11.22.0"
@@ -362,6 +480,121 @@ provenance = "github-attestations"
 [[tools.rust]]
 version = "1.97.1"
 backend = "core:rust"
+
+[[tools.turso]]
+version = "1.0.32"
+backend = "aqua:tursodatabase/turso-cli"
+
+[tools.turso."platforms.linux-arm64"]
+checksum = "sha256:672f29e8f77b4c30a5f31c04fe0d5636d29fb1bb5be1137c40234bb2e76c2150"
+url = "https://github.com/tursodatabase/turso-cli/releases/download/v1.0.32/turso-cli_Linux_arm64.tar.gz"
+url_api = "https://api.github.com/repos/tursodatabase/turso-cli/releases/assets/518489486"
+
+[tools.turso."platforms.linux-arm64-musl"]
+checksum = "sha256:672f29e8f77b4c30a5f31c04fe0d5636d29fb1bb5be1137c40234bb2e76c2150"
+url = "https://github.com/tursodatabase/turso-cli/releases/download/v1.0.32/turso-cli_Linux_arm64.tar.gz"
+url_api = "https://api.github.com/repos/tursodatabase/turso-cli/releases/assets/518489486"
+
+[tools.turso."platforms.linux-x64"]
+checksum = "sha256:c35acbcad8e2e7a32580fe380adc4658d3032ddc56d25396b9b123aa4a704107"
+url = "https://github.com/tursodatabase/turso-cli/releases/download/v1.0.32/turso-cli_Linux_x86_64.tar.gz"
+url_api = "https://api.github.com/repos/tursodatabase/turso-cli/releases/assets/518489481"
+
+[tools.turso."platforms.linux-x64-baseline"]
+checksum = "sha256:c35acbcad8e2e7a32580fe380adc4658d3032ddc56d25396b9b123aa4a704107"
+url = "https://github.com/tursodatabase/turso-cli/releases/download/v1.0.32/turso-cli_Linux_x86_64.tar.gz"
+url_api = "https://api.github.com/repos/tursodatabase/turso-cli/releases/assets/518489481"
+
+[tools.turso."platforms.linux-x64-musl"]
+checksum = "sha256:c35acbcad8e2e7a32580fe380adc4658d3032ddc56d25396b9b123aa4a704107"
+url = "https://github.com/tursodatabase/turso-cli/releases/download/v1.0.32/turso-cli_Linux_x86_64.tar.gz"
+url_api = "https://api.github.com/repos/tursodatabase/turso-cli/releases/assets/518489481"
+
+[tools.turso."platforms.linux-x64-musl-baseline"]
+checksum = "sha256:c35acbcad8e2e7a32580fe380adc4658d3032ddc56d25396b9b123aa4a704107"
+url = "https://github.com/tursodatabase/turso-cli/releases/download/v1.0.32/turso-cli_Linux_x86_64.tar.gz"
+url_api = "https://api.github.com/repos/tursodatabase/turso-cli/releases/assets/518489481"
+
+[tools.turso."platforms.macos-arm64"]
+checksum = "sha256:f180b794032f29b4ab44ad7451b2be661cd581311119ff5160359d2562d5f2be"
+url = "https://github.com/tursodatabase/turso-cli/releases/download/v1.0.32/turso-cli_Darwin_arm64.tar.gz"
+url_api = "https://api.github.com/repos/tursodatabase/turso-cli/releases/assets/518489484"
+
+[tools.turso."platforms.macos-x64"]
+checksum = "sha256:d6ba8b73d7cafff8b6a318215f19a6933fe3fca6a74960b7c8ad42758eebbd6e"
+url = "https://github.com/tursodatabase/turso-cli/releases/download/v1.0.32/turso-cli_Darwin_x86_64.tar.gz"
+url_api = "https://api.github.com/repos/tursodatabase/turso-cli/releases/assets/518489482"
+
+[tools.turso."platforms.macos-x64-baseline"]
+checksum = "sha256:d6ba8b73d7cafff8b6a318215f19a6933fe3fca6a74960b7c8ad42758eebbd6e"
+url = "https://github.com/tursodatabase/turso-cli/releases/download/v1.0.32/turso-cli_Darwin_x86_64.tar.gz"
+url_api = "https://api.github.com/repos/tursodatabase/turso-cli/releases/assets/518489482"
+
+[[tools.typst]]
+version = "0.15.1"
+backend = "aqua:typst/typst"
+
+[tools.typst."platforms.linux-arm64"]
+checksum = "sha256:5aa8d74a3d906e60ea12a66ac2f37f8eef1b14cbad7182a745e393a10c23dcee"
+url = "https://github.com/typst/typst/releases/download/v0.15.1/typst-aarch64-unknown-linux-musl.tar.xz"
+url_api = "https://api.github.com/repos/typst/typst/releases/assets/480300408"
+
+[tools.typst."platforms.linux-arm64-musl"]
+checksum = "sha256:5aa8d74a3d906e60ea12a66ac2f37f8eef1b14cbad7182a745e393a10c23dcee"
+url = "https://github.com/typst/typst/releases/download/v0.15.1/typst-aarch64-unknown-linux-musl.tar.xz"
+url_api = "https://api.github.com/repos/typst/typst/releases/assets/480300408"
+
+[tools.typst."platforms.linux-x64"]
+checksum = "sha256:a6d077d0a95eed5a2eba715b2dae06be954f624ccbf85758a03f389ded33118c"
+url = "https://github.com/typst/typst/releases/download/v0.15.1/typst-x86_64-unknown-linux-musl.tar.xz"
+url_api = "https://api.github.com/repos/typst/typst/releases/assets/480300761"
+
+[tools.typst."platforms.linux-x64-baseline"]
+checksum = "sha256:a6d077d0a95eed5a2eba715b2dae06be954f624ccbf85758a03f389ded33118c"
+url = "https://github.com/typst/typst/releases/download/v0.15.1/typst-x86_64-unknown-linux-musl.tar.xz"
+url_api = "https://api.github.com/repos/typst/typst/releases/assets/480300761"
+
+[tools.typst."platforms.linux-x64-musl"]
+checksum = "sha256:a6d077d0a95eed5a2eba715b2dae06be954f624ccbf85758a03f389ded33118c"
+url = "https://github.com/typst/typst/releases/download/v0.15.1/typst-x86_64-unknown-linux-musl.tar.xz"
+url_api = "https://api.github.com/repos/typst/typst/releases/assets/480300761"
+
+[tools.typst."platforms.linux-x64-musl-baseline"]
+checksum = "sha256:a6d077d0a95eed5a2eba715b2dae06be954f624ccbf85758a03f389ded33118c"
+url = "https://github.com/typst/typst/releases/download/v0.15.1/typst-x86_64-unknown-linux-musl.tar.xz"
+url_api = "https://api.github.com/repos/typst/typst/releases/assets/480300761"
+
+[tools.typst."platforms.macos-arm64"]
+checksum = "sha256:48f62ed034aa3a7978309579ac6ca00045e2ef0da73114e8af27cfd8e74dc05a"
+url = "https://github.com/typst/typst/releases/download/v0.15.1/typst-aarch64-apple-darwin.tar.xz"
+url_api = "https://api.github.com/repos/typst/typst/releases/assets/480299147"
+
+[tools.typst."platforms.macos-x64"]
+checksum = "sha256:7f9fdd9584866245de9a79e0add8f9236fae6f40a8a45e2c4771ccc14db4e0fa"
+url = "https://github.com/typst/typst/releases/download/v0.15.1/typst-x86_64-apple-darwin.tar.xz"
+url_api = "https://api.github.com/repos/typst/typst/releases/assets/480300018"
+
+[tools.typst."platforms.macos-x64-baseline"]
+checksum = "sha256:7f9fdd9584866245de9a79e0add8f9236fae6f40a8a45e2c4771ccc14db4e0fa"
+url = "https://github.com/typst/typst/releases/download/v0.15.1/typst-x86_64-apple-darwin.tar.xz"
+url_api = "https://api.github.com/repos/typst/typst/releases/assets/480300018"
+
+[tools.typst."platforms.windows-x64"]
+checksum = "sha256:19ce3551153c2fe7ee9fa2f95208310c8f4d3209fedb699e0333faf8913f6736"
+url = "https://github.com/typst/typst/releases/download/v0.15.1/typst-x86_64-pc-windows-msvc.zip"
+url_api = "https://api.github.com/repos/typst/typst/releases/assets/480303335"
+
+[tools.typst."platforms.windows-x64-baseline"]
+checksum = "sha256:19ce3551153c2fe7ee9fa2f95208310c8f4d3209fedb699e0333faf8913f6736"
+url = "https://github.com/typst/typst/releases/download/v0.15.1/typst-x86_64-pc-windows-msvc.zip"
+url_api = "https://api.github.com/repos/typst/typst/releases/assets/480303335"
+
+[[tools."ubi:k1LoW/git-wt"]]
+version = "0.29.1"
+backend = "ubi:k1LoW/git-wt"
+
+[tools."ubi:k1LoW/git-wt"."platforms.macos-arm64-git-wt"]
+checksum = "blake3:45fd4115c9855c5ea9a8f63a959249b04ab1d27a9b4c197ddd884a4b710eb125"
 
 [[tools.vercel]]
 version = "59.1.3"

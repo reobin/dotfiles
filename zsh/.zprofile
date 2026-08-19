@@ -12,6 +12,11 @@ path=(
   $HOME/.cargo/bin(N-/)
   $HOME/.local/bin(N-/)
   /opt/homebrew/opt/libpq/bin(N-/)
+  # Fallback only: `mise activate` prepends the real install dirs in .zshrc, so
+  # these shims are last and cover login shells that never reach it. Only login
+  # shells read this file at all, so GUI apps and non-interactive shells still see
+  # no mise; that would need a .zshenv, which does not exist yet.
+  $HOME/.local/share/mise/shims(N-/)
   $path
 )
 

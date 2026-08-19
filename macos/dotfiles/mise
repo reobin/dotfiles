@@ -5,3 +5,8 @@ rm -rf ~/.config/mise
 stow mise
 
 mise install
+
+# zsh/.zprofile is what normally does this, and it has not been sourced by this
+# run. The scripts after this one are sourced into the same shell and gate on
+# `command -v` for tools that mise owns, so the shims have to be reachable here.
+eval "$(mise activate bash --shims)"

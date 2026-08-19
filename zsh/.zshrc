@@ -24,8 +24,6 @@ export GIT_EDITOR='nvim'
 
 source ~/.config/zsh/cache.zsh
 
-zsh_cached_eval git-wt git-wt --init zsh
-
 bindkey -e
 
 source ~/.config/zsh/git.zsh
@@ -45,6 +43,11 @@ zsh_cached_eval zoxide zoxide init zsh --cmd cd
 
 # Not cacheable: `mise activate` bakes the activation-time PATH into its output.
 eval "$(mise activate zsh)"
+
+# After `mise activate`, so zsh_cached_eval keys the cache on the versioned
+# binary. Before it, git-wt resolves to a shim whose mtime never changes, so
+# an upgrade would keep sourcing the previous version's init.
+zsh_cached_eval git-wt git-wt --init zsh
 
 # Last: autosuggestions wraps the ZLE widgets that exist when it loads.
 source ~/.config/zsh/plugins.zsh
