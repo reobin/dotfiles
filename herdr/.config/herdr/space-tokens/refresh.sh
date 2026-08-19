@@ -18,6 +18,10 @@
 # word nor the agent kind earns a column next to it. The kind stands in only for
 # an agent that has not set a title yet.
 #
+# A Claude pane that has gone idle with background work still running -- an agent
+# it launched, a Monitor, a command it backgrounded -- is not done, whatever its
+# status says, so its glyph becomes ◐, and a second task in flight numbers it.
+#
 # Panes without an agent get a single line naming their foreground command, so a
 # dev server or an editor reads as part of the space the way it does in thud.
 # Set processes=0 to list only agents.
@@ -173,10 +177,104 @@ if [ "$processes" -eq 1 ]; then
   done
 fi
 
+# A Claude turn ends while the work it started keeps running: an agent it
+# launched, a Monitor it armed, a command it put in the background. The pane goes
+# idle the moment the turn ends, so the row calls that done and the still-running
+# half of it is invisible. Count what the session has in flight and the row can
+# say so.
+#
+# Claude gives every background task a file at <session>/tasks/<id>.output and
+# announces every one that ends back into its own transcript as <task-id>. What
+# has a file and no announcement is still running. Some ends leave no marker at
+# all -- a Monitor timing out, a task stopped from the UI -- so a file nothing has
+# written to in $stale_after seconds is read as one of those rather than believed
+# forever. Going stale is not itself an event, though: nothing here runs on a
+# clock, so a row holding a count for one of those ends keeps it until the next
+# Herdr event refreshes the plugin.
+#
+# The directory comes first because it is a handful of stats, and it decides
+# whether the transcript, which is megabytes, is worth opening at all. Panes that
+# are working or blocked are skipped: those rows already say to look.
+stale_after=1800
+now="$(date +%s)"
+pending='{}'
+while IFS=' ' read -r pane session; do
+  [ -n "$session" ] || continue
+
+  tasks=""
+  for base in "${TMPDIR:-/tmp}" /tmp /private/tmp; do
+    for dir in "$base"/claude-*/*/"$session"/tasks; do
+      if [ -d "$dir" ]; then
+        tasks="$dir"
+        break
+      fi
+    done
+    [ -z "$tasks" ] || break
+  done
+  [ -n "$tasks" ] || continue
+
+  fresh=""
+  for output in "$tasks"/*.output; do
+    [ -f "$output" ] || continue
+    # BSD stat and GNU stat spell this differently and the plugin runs on both.
+    # GNU goes first because it is the one that fails cleanly: BSD rejects -c as an
+    # illegal option, while GNU reads -f as --file-system, which takes no argument,
+    # so %m becomes an operand and the filesystem report lands on stdout.
+    mtime="$(stat -c %Y "$output" 2>/dev/null || stat -f %m "$output" 2>/dev/null)" || continue
+    [ "$((now - mtime))" -lt "$stale_after" ] || continue
+    id="${output##*/}"
+    fresh="$fresh${fresh:+
+}${id%.output}"
+  done
+  [ -n "$fresh" ] || continue
+
+  # One pass over the transcript for the few ids in hand, as fixed strings. A
+  # session whose transcript has moved or been cleaned counts every fresh file,
+  # which overstates by whatever ended in the last $stale_after seconds.
+  transcript=""
+  for candidate in "$HOME/.claude/projects"/*/"$session.jsonl"; do
+    if [ -r "$candidate" ]; then
+      transcript="$candidate"
+      break
+    fi
+  done
+
+  announced=""
+  if [ -n "$transcript" ]; then
+    announced="$(
+      # Task ids carry no whitespace, so splitting the list on it is safe.
+      # shellcheck disable=SC2086
+      printf '<task-id>%s\n' $fresh |
+        grep -o -F -f - "$transcript" 2>/dev/null |
+        sed 's/^<task-id>//' |
+        sort -u
+    )" || announced=""
+  fi
+
+  count=0
+  # shellcheck disable=SC2086
+  for id in $fresh; do
+    if [ -n "$announced" ] && printf '%s\n' "$announced" | grep -qxF "$id"; then
+      continue
+    fi
+    count=$((count + 1))
+  done
+  [ "$count" -gt 0 ] || continue
+
+  pending="$(printf '%s' "$pending" | jq -c --arg pane "$pane" --argjson count "$count" '. + { ($pane): $count }')"
+done <<EOF
+$(printf '%s' "$panes" | jq -r '
+  .result.panes[]
+  | select(.agent_status == "done" or .agent_status == "idle")
+  | select((.agent_session.kind // "") == "id")
+  | "\(.pane_id) \(.agent_session.value)"
+')
+EOF
+
 plan="$(
   printf '%s' "$workspaces" |
     jq -r --argjson panes "$panes" --argjson tabs "$tabs" --argjson commands "$commands" --argjson slots "$slots" \
-      --argjson repos "$repos" --argjson named "$named" --argjson batch "$batch" '
+      --argjson repos "$repos" --argjson named "$named" --argjson pending "$pending" --argjson batch "$batch" '
       # Every status gets its own glyph. Bold marks the blocked row, and it also
       # marks the title row, so it cannot be what tells done from working.
       def mark:
@@ -253,11 +351,21 @@ plan="$(
               ($pane.terminal_title_stripped // "" | sub("^[^\\p{L}\\p{N}]+\\s+"; "")) as $title
               | (if $title == "" then $pane.agent else $title end) as $what
               | ([$tab_labels[$pane.tab_id] // empty, $what] | join(" · ")) as $rest
-              | ($pane.agent_status | mark) as $icon
+              | ($pending[$pane.pane_id] // 0) as $waiting
+              # An agent with work still running behind it is not the done agent
+              # the status says it is, so it takes neither that glyph nor the calm
+              # color that says this one can wait. A count rides on the glyph
+              # rather than the end of the line, which is a title and gets
+              # truncated; one is what the glyph already means, so only a second
+              # task is worth the column.
+              | (if $waiting > 1 then "◐\($waiting)"
+                 elif $waiting == 1 then "◐"
+                 else ($pane.agent_status | mark)
+                 end) as $icon
               | if $pane.agent_status == "blocked" then
                   ["--token", "a\($slot)_blocked=\($icon) \($rest)"]
                   + clear_but($slot; ["a\($slot)_blocked"])
-                elif $pane.agent_status == "done" then
+                elif $pane.agent_status == "done" and $waiting == 0 then
                   # done is the same idle agent as below, only its work has not
                   # been seen yet. Focusing the tab, which splitting a pane does,
                   # turns one into the other, so the two have to read as the same
@@ -278,9 +386,14 @@ plan="$(
                # The same glyphs the slots use, so the overflow line says what is
                # in it without spending the columns to spell the statuses out.
                ([$hidden[] | select(.agent_status == "blocked")] | length) as $blocked
-               | ([$hidden[] | select(.agent_status == "done")] | length) as $done
+               # A pane counted as waiting is not also counted as done, or the
+               # same agent shows up twice in a line whose whole job is a tally.
+               | ([$hidden[] | select(($pending[.pane_id] // 0) > 0)] | length) as $waiting
+               | ([$hidden[] | select(.agent_status == "done")
+                             | select(($pending[.pane_id] // 0) == 0)] | length) as $done
                | ([
                    (if $blocked > 0 then "\($blocked)◆" else empty end),
+                   (if $waiting > 0 then "\($waiting)◐" else empty end),
                    (if $done > 0 then "\($done)✓" else empty end)
                  ] | join(" ")) as $flags
                | (if $flags == "" then "" else " · \($flags)" end) as $tail

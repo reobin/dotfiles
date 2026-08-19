@@ -155,7 +155,9 @@ agent_panel_sort = "spaces"
 # so each thing a line can be needs its own. Blocked is an agent holding a
 # question open, so it goes loud and bold. Done is finished work that can wait,
 # so it takes the calm color instead of the alarm one. Everything else stays in
-# the ordinary foreground.
+# the ordinary foreground, including an idle agent that still has background work
+# running: refresh.sh keeps that one out of the done token, because the calm
+# color is a claim there is nothing left to wait for.
 #
 # Never two tokens with a value on the same row: Herdr joins the ones that render
 # with " · ", so a glyph and its text side by side come out as "✓ · title". That
