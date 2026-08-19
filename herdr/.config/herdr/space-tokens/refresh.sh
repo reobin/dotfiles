@@ -25,8 +25,9 @@
 # `title` stands in for the label on the title row: the repo name when the space
 # is in a git repo, the directory name otherwise. Labels are bare basenames, so a
 # worktree label says nothing about which repo it belongs to; the branch row
-# under the title is what tells one checkout of a repo from another. Two spaces on
-# one checkout share a title, so the lower one takes a number.
+# under the title is what tells one checkout of a repo from another. Spaces that
+# still share a title after that render it identically; the pane lines under each
+# one say which is which, and a space worth referring to is worth renaming.
 #
 # Usage: refresh.sh         report the current panes
 #        refresh.sh clear    remove every token this script owns
@@ -227,19 +228,9 @@ plan="$(
           else $where
           end;
 
-      # Sidebar order, so the numbers run top to bottom and closing or moving a
-      # space renumbers the ones sharing its title. A number says which of these,
-      # not which one; a space worth referring to is worth renaming.
-      [.result.workspaces[] | { workspace: ., title: title_of(.) }]
-      | (reduce .[] as $entry ({ seen: {}, out: [] };
-          $entry.title as $t
-          | (if $t == "" then 0 else (.seen[$t] // 0) + 1 end) as $n
-          | (if $t == "" then . else .seen[$t] = $n end)
-          | .out += [$entry | .title = (if $n > 1 then "\($t) \($n)" else $t end)]
-        ) | .out)
-      | .[]
-      | .title as $title
-      | .workspace as $workspace
+      .result.workspaces[]
+      | . as $workspace
+      | title_of(.) as $title
       | ($panes.result.panes | map(select(.workspace_id == $workspace.workspace_id))) as $mine
       | ($tabs[$workspace.workspace_id] // {}) as $tab_labels
       | [if $title == "" then ["--clear-token", "title"] else ["--token", "title=\($title)"] end]

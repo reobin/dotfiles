@@ -121,9 +121,10 @@ confirm_close = false
 prompt_new_tab_name = false
 
 # Both prompts land before there is anything to name, so what gets typed is a
-# placeholder. The title row says which repo, the branch row which checkout, and
-# refresh.sh numbers the case those two miss, which is two spaces on one
-# checkout. A space that earns a name gets one later, from rename_workspace.
+# placeholder. The title row says which repo and the branch row which checkout,
+# and two spaces on one checkout are told apart by the pane lines under them
+# rather than by a number. A space that earns a name gets one later, from
+# rename_workspace.
 prompt_new_workspace_name = false
 
 # Agent and command lines need the room; 36 is also the default max width.
