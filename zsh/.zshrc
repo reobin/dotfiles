@@ -18,6 +18,10 @@ alias n='nvim'
 
 export DOTFILES="$HOME/dotfiles"
 
+# Corepack asks for confirmation before downloading a pinned package manager,
+# and that prompt blocks forever in a shell with no tty.
+export COREPACK_ENABLE_DOWNLOAD_PROMPT=0
+
 export EDITOR='nvim'
 export VISUAL='nvim'
 export GIT_EDITOR='nvim'

@@ -3,6 +3,7 @@ auto_install = true
 lockfile = true
 legacy_version_file = true
 idiomatic_version_file_enable_tools = ["node", "yarn"]
+node.corepack = true
 
 [tools]
 node = "22"
@@ -15,7 +16,6 @@ hunk = "latest"
 "npm:ntn" = "latest"
 "ubi:k1LoW/git-wt" = "latest"
 opencode = "latest"
-pnpm = "latest"
 rust = "latest"
 turso = "latest"
 typst = "latest"
