@@ -37,6 +37,10 @@ new_tab = "prefix+c"
 rename_tab = "prefix+shift+t"
 previous_tab = "alt+h"
 next_tab = "alt+l"
+
+move_tab_previous = "alt+shift+h"
+move_tab_next = "alt+shift+l"
+
 switch_tab = "alt+1..9"
 close_tab = "prefix+q"
 
@@ -54,6 +58,11 @@ close_pane = "prefix+x"
 zoom = "prefix+f"
 resize_mode = "prefix+r"
 
+resize_pane_left = "prefix+ctrl+h"
+resize_pane_down = "prefix+ctrl+j"
+resize_pane_up = "prefix+ctrl+k"
+resize_pane_right = "prefix+ctrl+l"
+
 navigate_pane_left = "h"
 navigate_pane_down = "j"
 navigate_pane_up = "k"
@@ -70,18 +79,6 @@ key = "alt+shift+j"
 type = "shell"
 command = "$HOME/dotfiles/herdr/.local/bin/herdr-move-workspace down"
 description = "move workspace down"
-
-[[keys.command]]
-key = "alt+shift+h"
-type = "shell"
-command = "$HOME/dotfiles/herdr/.local/bin/herdr-move-tab left"
-description = "move tab left"
-
-[[keys.command]]
-key = "alt+shift+l"
-type = "shell"
-command = "$HOME/dotfiles/herdr/.local/bin/herdr-move-tab right"
-description = "move tab right"
 
 [[keys.command]]
 key = "alt+n"
