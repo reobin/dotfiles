@@ -66,10 +66,12 @@ starts competing with the active one, which Herdr paints in `accent` (ANSI 4).
 Every theme must also set `sidebar_bg` and `selection_bg`, both of which Herdr
 gained in 0.8.2:
 
-* `sidebar_bg` is the sidebar background. Take the theme background down six
-  points of HSL lightness and keep the hue, which is about twice the step
-  Catppuccin puts between `base` and `mantle`. Down and never up: a lifted panel
-  competes with the panes in front of it.
+* `sidebar_bg` is the sidebar background. Take the theme background down a little
+  over two points of HSL lightness and keep the hue, a bit under the step
+  Catppuccin puts between `base` and `mantle`. The spaces list should read as its
+  own surface without its edge landing as a seam down the screen. Three points was
+  a seam and one and a half read as nothing, so this sits between them. Down and
+  never up: a lifted panel competes with the panes in front of it.
 * `selection_bg` is the row the navigate cursor sits on. Use this theme's
   `selection-background` from `ghostty.conf`. It is already a highlight that
   reads without shouting, it cannot drift from the palette, and it stays distinct
