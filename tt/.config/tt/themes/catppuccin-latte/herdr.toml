@@ -4,5 +4,16 @@
 # overlay0 paints inactive pane borders and dimmed hint text, so it is pinned at
 # roughly 2.1:1 against this theme's background: recessive next to the accent-lit
 # active border, still legible as text.
+#
+# sidebar_bg sits one step under the background, so the spaces list reads as its
+# own surface rather than as part of the pane area. It goes down and not up: a
+# lifted panel competes with the panes in front of it.
+#
+# selection_bg paints the navigate cursor, which has to stay apart from the fill
+# on the active space and agent rows. This theme's terminal selection color is
+# already a highlight that reads without shouting, so the cursor takes it instead
+# of a color belonging to no palette.
 [theme.custom]
 overlay0 = "#A3A8B8"
+sidebar_bg = "#DCE1E9"
+selection_bg = "#CCD0DA"

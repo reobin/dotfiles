@@ -63,6 +63,18 @@ borders and dimmed hint text:
 Much lower and the hint text disappears. Much higher and the inactive border
 starts competing with the active one, which Herdr paints in `accent` (ANSI 4).
 
+Every theme must also set `sidebar_bg` and `selection_bg`, both of which Herdr
+gained in 0.8.2:
+
+* `sidebar_bg` is the sidebar background. Take the theme background down six
+  points of HSL lightness and keep the hue, which is about twice the step
+  Catppuccin puts between `base` and `mantle`. Down and never up: a lifted panel
+  competes with the panes in front of it.
+* `selection_bg` is the row the navigate cursor sits on. Use this theme's
+  `selection-background` from `ghostty.conf`. It is already a highlight that
+  reads without shouting, it cannot drift from the palette, and it stays distinct
+  from the fill Herdr paints on the active space and agent rows.
+
 The sidebar also needs two colors of its own: a loud one for the rows that flag
 an agent waiting on you, and a calm one for the rows that say an agent finished.
 Nothing declares them. `tt` reads them out of `ghostty.conf` and substitutes them
@@ -105,5 +117,6 @@ Avoid adding a theme unless it looks good in all four places:
    belongs to the `tt` package, not `ghostty`, so `macos/dotfiles/tt` restows it.
 4. Add a static `# wallpaper-color = #RRGGBB` to `ghostty.conf` and its mirror.
 5. Run `tt <name>` or choose it with `tt`.
-6. Open Herdr and verify sidebar contrast and active vs inactive pane borders.
+6. Open Herdr and verify sidebar contrast, the navigate cursor, and active vs
+   inactive pane borders.
 7. Open Neovim and verify startup has no Lazy errors.
