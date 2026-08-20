@@ -138,6 +138,77 @@ checksum = "sha256:f435123fcfc637598a9d70332bc1244a58cb5bc471897e21508ed3e6b8db8
 url = "https://github.com/anthropics/claude-code/releases/download/v2.1.233/claude-win32-x64.zip"
 url_api = "https://api.github.com/repos/anthropics/claude-code/releases/assets/514776856"
 
+[[tools."github:k1LoW/git-wt"]]
+version = "0.29.1"
+backend = "github:k1LoW/git-wt"
+
+[tools."github:k1LoW/git-wt"."platforms.linux-arm64"]
+checksum = "sha256:8416f674ec29ac19d26045369fda77013d105a7c82c0699f010f44582fdc6860"
+url = "https://github.com/k1LoW/git-wt/releases/download/v0.29.1/git-wt_v0.29.1_linux_arm64.tar.gz"
+url_api = "https://api.github.com/repos/k1LoW/git-wt/releases/assets/513764456"
+provenance = "github-attestations"
+
+[tools."github:k1LoW/git-wt"."platforms.linux-arm64-musl"]
+checksum = "sha256:8416f674ec29ac19d26045369fda77013d105a7c82c0699f010f44582fdc6860"
+url = "https://github.com/k1LoW/git-wt/releases/download/v0.29.1/git-wt_v0.29.1_linux_arm64.tar.gz"
+url_api = "https://api.github.com/repos/k1LoW/git-wt/releases/assets/513764456"
+provenance = "github-attestations"
+
+[tools."github:k1LoW/git-wt"."platforms.linux-x64"]
+checksum = "sha256:37178ebc756598a9b28e76ef65e8931226a5faf9784b72b1596bdb0e7c15bb23"
+url = "https://github.com/k1LoW/git-wt/releases/download/v0.29.1/git-wt_v0.29.1_linux_amd64.tar.gz"
+url_api = "https://api.github.com/repos/k1LoW/git-wt/releases/assets/513764467"
+provenance = "github-attestations"
+
+[tools."github:k1LoW/git-wt"."platforms.linux-x64-baseline"]
+checksum = "sha256:37178ebc756598a9b28e76ef65e8931226a5faf9784b72b1596bdb0e7c15bb23"
+url = "https://github.com/k1LoW/git-wt/releases/download/v0.29.1/git-wt_v0.29.1_linux_amd64.tar.gz"
+url_api = "https://api.github.com/repos/k1LoW/git-wt/releases/assets/513764467"
+provenance = "github-attestations"
+
+[tools."github:k1LoW/git-wt"."platforms.linux-x64-musl"]
+checksum = "sha256:37178ebc756598a9b28e76ef65e8931226a5faf9784b72b1596bdb0e7c15bb23"
+url = "https://github.com/k1LoW/git-wt/releases/download/v0.29.1/git-wt_v0.29.1_linux_amd64.tar.gz"
+url_api = "https://api.github.com/repos/k1LoW/git-wt/releases/assets/513764467"
+provenance = "github-attestations"
+
+[tools."github:k1LoW/git-wt"."platforms.linux-x64-musl-baseline"]
+checksum = "sha256:37178ebc756598a9b28e76ef65e8931226a5faf9784b72b1596bdb0e7c15bb23"
+url = "https://github.com/k1LoW/git-wt/releases/download/v0.29.1/git-wt_v0.29.1_linux_amd64.tar.gz"
+url_api = "https://api.github.com/repos/k1LoW/git-wt/releases/assets/513764467"
+provenance = "github-attestations"
+
+[tools."github:k1LoW/git-wt"."platforms.macos-arm64"]
+checksum = "sha256:9fccd453cb5c7f33a5ea079b659291d03d052eb57eb3daf2c8aac5f539c9e290"
+url = "https://github.com/k1LoW/git-wt/releases/download/v0.29.1/git-wt_v0.29.1_darwin_arm64.zip"
+url_api = "https://api.github.com/repos/k1LoW/git-wt/releases/assets/513764449"
+provenance = "github-attestations"
+provenance_verified = true
+
+[tools."github:k1LoW/git-wt"."platforms.macos-x64"]
+checksum = "sha256:130ed324b7c9d8ff5b1a677664605e549f8577248abe50b9eef0077598f5dfa0"
+url = "https://github.com/k1LoW/git-wt/releases/download/v0.29.1/git-wt_v0.29.1_darwin_amd64.zip"
+url_api = "https://api.github.com/repos/k1LoW/git-wt/releases/assets/513764447"
+provenance = "github-attestations"
+
+[tools."github:k1LoW/git-wt"."platforms.macos-x64-baseline"]
+checksum = "sha256:130ed324b7c9d8ff5b1a677664605e549f8577248abe50b9eef0077598f5dfa0"
+url = "https://github.com/k1LoW/git-wt/releases/download/v0.29.1/git-wt_v0.29.1_darwin_amd64.zip"
+url_api = "https://api.github.com/repos/k1LoW/git-wt/releases/assets/513764447"
+provenance = "github-attestations"
+
+[tools."github:k1LoW/git-wt"."platforms.windows-x64"]
+checksum = "sha256:54c22befa874dcdadb0f14bceb6faecd6b47b25cb90f5bad42776f8f4d7dfb24"
+url = "https://github.com/k1LoW/git-wt/releases/download/v0.29.1/git-wt_v0.29.1_windows_amd64.tar.gz"
+url_api = "https://api.github.com/repos/k1LoW/git-wt/releases/assets/513764446"
+provenance = "github-attestations"
+
+[tools."github:k1LoW/git-wt"."platforms.windows-x64-baseline"]
+checksum = "sha256:54c22befa874dcdadb0f14bceb6faecd6b47b25cb90f5bad42776f8f4d7dfb24"
+url = "https://github.com/k1LoW/git-wt/releases/download/v0.29.1/git-wt_v0.29.1_windows_amd64.tar.gz"
+url_api = "https://api.github.com/repos/k1LoW/git-wt/releases/assets/513764446"
+provenance = "github-attestations"
+
 [[tools."github:leohenon/opencode-vim"]]
 version = "1.18.4-ocv.4.9"
 backend = "github:leohenon/opencode-vim"
@@ -530,13 +601,6 @@ url_api = "https://api.github.com/repos/typst/typst/releases/assets/480303335"
 checksum = "sha256:19ce3551153c2fe7ee9fa2f95208310c8f4d3209fedb699e0333faf8913f6736"
 url = "https://github.com/typst/typst/releases/download/v0.15.1/typst-x86_64-pc-windows-msvc.zip"
 url_api = "https://api.github.com/repos/typst/typst/releases/assets/480303335"
-
-[[tools."ubi:k1LoW/git-wt"]]
-version = "0.29.1"
-backend = "ubi:k1LoW/git-wt"
-
-[tools."ubi:k1LoW/git-wt"."platforms.macos-arm64-git-wt"]
-checksum = "blake3:45fd4115c9855c5ea9a8f63a959249b04ab1d27a9b4c197ddd884a4b710eb125"
 
 [[tools.vercel]]
 version = "59.1.3"
