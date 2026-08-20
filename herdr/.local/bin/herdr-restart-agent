@@ -1,0 +1,75 @@
+#!/bin/sh
+
+set -eu
+
+notify() {
+  herdr notification show "restart agent" --body "$1" --sound none >/dev/null 2>&1 || true
+}
+
+die() {
+  notify "$1"
+  exit 1
+}
+
+interrupt() {
+  herdr pane send-keys "$1" ctrl+c >/dev/null 2>&1 || true
+}
+
+prompt_ready() {
+  herdr pane process-info --pane "$1" 2>/dev/null |
+    jq -e '.result.process_info
+      | .shell_pid as $shell
+      | ([.foreground_processes[] | select(.pid != $shell)] | length) == 0' >/dev/null 2>&1
+}
+
+session_effort() {
+  tail -n 400 "$1" |
+    jq -rs 'map(select(.effort != null) | .effort) | last // empty' 2>/dev/null || true
+}
+
+panes="$(herdr pane list)" || die "herdr is not responding"
+
+pane="$(
+  printf '%s' "$panes" |
+  jq -r --arg env "${HERDR_PANE_ID:-}" '
+    .result.panes as $panes
+    | (
+        [$panes[] | select(.pane_id == $env)] + [$panes[] | select(.focused == true)]
+      )[0] // empty
+    | [.pane_id, (.agent // ""), (.agent_session.value // ""), (.agent_status // "")]
+    | @tsv
+  '
+)"
+
+[ -n "$pane" ] || die "no pane to restart"
+
+pane_id="$(printf '%s\n' "$pane" | cut -f1)"
+agent="$(printf '%s\n' "$pane" | cut -f2)"
+session="$(printf '%s\n' "$pane" | cut -f3)"
+status="$(printf '%s\n' "$pane" | cut -f4)"
+
+[ "$agent" = "claude" ] || die "focused pane is not running claude"
+[ -n "$session" ] || die "no claude session recorded for $pane_id"
+[ "$status" != "working" ] || die "claude is mid-turn; interrupt it first"
+
+transcript="$(find "$HOME/.claude/projects" -name "$session.jsonl" -print 2>/dev/null | head -n 1)"
+[ -n "$transcript" ] || die "no transcript on disk for $session"
+
+interrupt "$pane_id"
+sleep 0.05
+interrupt "$pane_id"
+
+attempt=0
+until prompt_ready "$pane_id"; do
+  attempt=$((attempt + 1))
+  [ "$attempt" -lt 200 ] || die "$pane_id is busy; run: claude --resume $session"
+  [ "$((attempt % 10))" -ne 0 ] || interrupt "$pane_id"
+  sleep 0.05
+done
+
+effort="$(session_effort "$transcript")"
+
+cmd="claude --resume $session"
+[ -n "$effort" ] && cmd="$cmd --effort $effort"
+
+herdr pane run "$pane_id" "$cmd" >/dev/null || die "could not restart claude in $pane_id"

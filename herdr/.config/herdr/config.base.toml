@@ -104,6 +104,14 @@ type = "shell"
 command = "$HOME/dotfiles/herdr/.local/bin/herdr-sidetrack"
 description = "sidetrack this conversation"
 
+# A pane garbled by a fullscreen toggle survives claude's own repaints, /resume
+# and ctrl+l alike, so clearing it takes a new process.
+[[keys.command]]
+key = "alt+r"
+type = "shell"
+command = "$HOME/dotfiles/herdr/.local/bin/herdr-restart-agent"
+description = "restart claude on the same session"
+
 [[keys.command]]
 key = "prefix+p"
 type = "popup"
