@@ -165,6 +165,11 @@ hide_tab_bar_when_single_tab = true
 
 agent_panel_sort = "spaces"
 
+# Dots carry state in hue alone. state_icon and the navigator marks take
+# distinct shapes instead, which survive a theme swap; the reds and greens in
+# the rows below are retuned for every palette.
+status_indicators = "symbols"
+
 # Each space is one block: name, branch, then one line per pane with what it is
 # running. The title and a1..a6 tokens come from space-tokens/refresh.sh; rows
 # with no value disappear, so a block is only as tall as it has content. Drag
