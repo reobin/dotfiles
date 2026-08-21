@@ -21,6 +21,8 @@ herdr/.config/herdr/plugins/
 herdr/.local/bin/*
 !herdr/.local/bin/herdr-*
 opencode/.config/opencode/plugins/herdr-agent-state.js
+opencode/.config/opencode/herdr-tui-session.js
+opencode/.config/opencode/tui.jsonc
 opencode/.config/opencode/AGENTS.md
 opencode/.config/opencode/commands/
 opencode/.config/opencode/skills/

@@ -22,6 +22,31 @@ else
   herdr plugin link "$SPACE_TOKENS_DIR"
 fi
 
+HERDR_PLUGINS=(
+  "jhochenbaum.hunkdiff jhochenbaum/herdr-hunk-diff"
+)
+
+PLUGIN_STATUS="$(herdr plugin list)"
+
+for plugin in "${HERDR_PLUGINS[@]}"; do
+  read -r plugin_id plugin_repo <<<"$plugin"
+
+  if grep -q "$plugin_id" <<<"$PLUGIN_STATUS"; then
+    echo "Herdr $plugin_id plugin is already installed"
+    continue
+  fi
+
+  if ! command -v node >/dev/null 2>&1; then
+    echo "Skipping Herdr $plugin_id plugin (node is not installed)" >&2
+    continue
+  fi
+
+  echo "installing Herdr $plugin_id plugin"
+  herdr plugin install "$plugin_repo" --yes
+done
+
+unset plugin plugin_id plugin_repo
+
 INTEGRATION_STATUS="$(herdr integration status)"
 
 # Each agent reports its state through a hook written into that agent's own
