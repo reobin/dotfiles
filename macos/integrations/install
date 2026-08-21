@@ -47,6 +47,29 @@ done
 
 unset plugin plugin_id plugin_repo
 
+HUNKDIFF_ID="jhochenbaum.hunkdiff"
+HUNK_SHIM="${XDG_DATA_HOME:-$HOME/.local/share}/mise/shims/hunk"
+
+# Left alone, the plugin runs a hunkdiff it bundles, which trails the one mise
+# manages and the git pager and review skill drive. The shim is the stable path
+# to that one; mise's install paths carry the version and dangle on upgrade.
+if ! grep -q "$HUNKDIFF_ID" <<<"$(herdr plugin list)"; then
+  echo "Skipping Herdr $HUNKDIFF_ID config ($HUNKDIFF_ID is not installed)" >&2
+elif [[ ! -x "$HUNK_SHIM" ]]; then
+  echo "Skipping Herdr $HUNKDIFF_ID config (missing: $HUNK_SHIM)" >&2
+else
+  HUNKDIFF_CONFIG_DIR="$(herdr plugin config-dir "$HUNKDIFF_ID")"
+  mkdir -p "$HUNKDIFF_CONFIG_DIR"
+
+  cat >"$HUNKDIFF_CONFIG_DIR/config.toml" <<EOF
+# written by macos/integrations/install
+[hunk]
+bin = "$HUNK_SHIM"
+EOF
+
+  echo "pinned Herdr $HUNKDIFF_ID to $HUNK_SHIM"
+fi
+
 INTEGRATION_STATUS="$(herdr integration status)"
 
 # Each agent reports its state through a hook written into that agent's own
