@@ -81,63 +81,63 @@ checksum = "sha256:b929c54a9badb104a16dedd23aab6152c86793ae653d4e6b13983ffd0c882
 url = "https://github.com/oven-sh/bun/releases/download/bun-v1.4.0/bun-windows-x64-baseline.zip"
 
 [[tools.claude]]
-version = "2.1.237"
+version = "2.1.238"
 backend = "aqua:anthropics/claude-code"
 
 [tools.claude."platforms.linux-arm64"]
-checksum = "sha256:aa99b5672ec5ac1ba0e5536ab4cab23df0080022df25ae0b84e8a678dbbabe5a"
-url = "https://github.com/anthropics/claude-code/releases/download/v2.1.237/claude-linux-arm64.tar.gz"
-url_api = "https://api.github.com/repos/anthropics/claude-code/releases/assets/521491800"
+checksum = "sha256:304d1cb6043935f2cd95e14b7a85843220d3e71afdd0dc8b1f4e90b574d4c9cb"
+url = "https://github.com/anthropics/claude-code/releases/download/v2.1.238/claude-linux-arm64.tar.gz"
+url_api = "https://api.github.com/repos/anthropics/claude-code/releases/assets/522593179"
 
 [tools.claude."platforms.linux-arm64-musl"]
-checksum = "sha256:c95d775170a1c69d2fd2cd2a0ffcdba4989f006f4735304c7529125233a50207"
-url = "https://github.com/anthropics/claude-code/releases/download/v2.1.237/claude-linux-arm64-musl.tar.gz"
-url_api = "https://api.github.com/repos/anthropics/claude-code/releases/assets/521491798"
+checksum = "sha256:667805f1b4db68acace5b4b8e5ac9eb9b4d53b701f5d7a59be6a6bb5dec66d0c"
+url = "https://github.com/anthropics/claude-code/releases/download/v2.1.238/claude-linux-arm64-musl.tar.gz"
+url_api = "https://api.github.com/repos/anthropics/claude-code/releases/assets/522593183"
 
 [tools.claude."platforms.linux-x64"]
-checksum = "sha256:fe1c47e3309c731b6c9b382599603df3784b00d65a2236f46c867fc55436adfa"
-url = "https://github.com/anthropics/claude-code/releases/download/v2.1.237/claude-linux-x64.tar.gz"
-url_api = "https://api.github.com/repos/anthropics/claude-code/releases/assets/521491870"
+checksum = "sha256:1504400055a4427392cf27ccb3f93b4aa9566b6dadd1dfd98279cd25f79ce490"
+url = "https://github.com/anthropics/claude-code/releases/download/v2.1.238/claude-linux-x64.tar.gz"
+url_api = "https://api.github.com/repos/anthropics/claude-code/releases/assets/522593336"
 
 [tools.claude."platforms.linux-x64-baseline"]
-checksum = "sha256:fe1c47e3309c731b6c9b382599603df3784b00d65a2236f46c867fc55436adfa"
-url = "https://github.com/anthropics/claude-code/releases/download/v2.1.237/claude-linux-x64.tar.gz"
-url_api = "https://api.github.com/repos/anthropics/claude-code/releases/assets/521491870"
+checksum = "sha256:1504400055a4427392cf27ccb3f93b4aa9566b6dadd1dfd98279cd25f79ce490"
+url = "https://github.com/anthropics/claude-code/releases/download/v2.1.238/claude-linux-x64.tar.gz"
+url_api = "https://api.github.com/repos/anthropics/claude-code/releases/assets/522593336"
 
 [tools.claude."platforms.linux-x64-musl"]
-checksum = "sha256:a63ae57fa25754afd20f5cf0f6255ddac5a53cf3d2346dd499be00e74634c6d3"
-url = "https://github.com/anthropics/claude-code/releases/download/v2.1.237/claude-linux-x64-musl.tar.gz"
-url_api = "https://api.github.com/repos/anthropics/claude-code/releases/assets/521491799"
+checksum = "sha256:baed502f65721ec099f68b5aea86a3bc105e45474dcaa0821b77fd59a83fe629"
+url = "https://github.com/anthropics/claude-code/releases/download/v2.1.238/claude-linux-x64-musl.tar.gz"
+url_api = "https://api.github.com/repos/anthropics/claude-code/releases/assets/522593180"
 
 [tools.claude."platforms.linux-x64-musl-baseline"]
-checksum = "sha256:a63ae57fa25754afd20f5cf0f6255ddac5a53cf3d2346dd499be00e74634c6d3"
-url = "https://github.com/anthropics/claude-code/releases/download/v2.1.237/claude-linux-x64-musl.tar.gz"
-url_api = "https://api.github.com/repos/anthropics/claude-code/releases/assets/521491799"
+checksum = "sha256:baed502f65721ec099f68b5aea86a3bc105e45474dcaa0821b77fd59a83fe629"
+url = "https://github.com/anthropics/claude-code/releases/download/v2.1.238/claude-linux-x64-musl.tar.gz"
+url_api = "https://api.github.com/repos/anthropics/claude-code/releases/assets/522593180"
 
 [tools.claude."platforms.macos-arm64"]
-checksum = "sha256:cc5c73476727d8a8232eab949c19e3cd1ada2a3e51767b954eccd1ab752c9563"
-url = "https://github.com/anthropics/claude-code/releases/download/v2.1.237/claude-darwin-arm64.tar.gz"
-url_api = "https://api.github.com/repos/anthropics/claude-code/releases/assets/521491796"
+checksum = "sha256:342ca2606ee1f37c8ce9bc3e3b71b23b6f3fd48f9974f389cd71ec32c9c65858"
+url = "https://github.com/anthropics/claude-code/releases/download/v2.1.238/claude-darwin-arm64.tar.gz"
+url_api = "https://api.github.com/repos/anthropics/claude-code/releases/assets/522593184"
 
 [tools.claude."platforms.macos-x64"]
-checksum = "sha256:9850f5507a99596cf3f96bb33e6eb6f1478eb0f1063a97e9b72858aebdaca576"
-url = "https://github.com/anthropics/claude-code/releases/download/v2.1.237/claude-darwin-x64.tar.gz"
-url_api = "https://api.github.com/repos/anthropics/claude-code/releases/assets/521491797"
+checksum = "sha256:79e5a4707513ca9d0f811d400356faa58e80ae9add0809bacf641597e64d0f3c"
+url = "https://github.com/anthropics/claude-code/releases/download/v2.1.238/claude-darwin-x64.tar.gz"
+url_api = "https://api.github.com/repos/anthropics/claude-code/releases/assets/522593185"
 
 [tools.claude."platforms.macos-x64-baseline"]
-checksum = "sha256:9850f5507a99596cf3f96bb33e6eb6f1478eb0f1063a97e9b72858aebdaca576"
-url = "https://github.com/anthropics/claude-code/releases/download/v2.1.237/claude-darwin-x64.tar.gz"
-url_api = "https://api.github.com/repos/anthropics/claude-code/releases/assets/521491797"
+checksum = "sha256:79e5a4707513ca9d0f811d400356faa58e80ae9add0809bacf641597e64d0f3c"
+url = "https://github.com/anthropics/claude-code/releases/download/v2.1.238/claude-darwin-x64.tar.gz"
+url_api = "https://api.github.com/repos/anthropics/claude-code/releases/assets/522593185"
 
 [tools.claude."platforms.windows-x64"]
-checksum = "sha256:c9ddd1452d439b2bb6c496832dc4dca16f2093e9ceac8b307f235c46c64a80e1"
-url = "https://github.com/anthropics/claude-code/releases/download/v2.1.237/claude-win32-x64.zip"
-url_api = "https://api.github.com/repos/anthropics/claude-code/releases/assets/521491875"
+checksum = "sha256:aaa1bde5d30de551386dbddda3b6bb741683462c9452a1375eea86edce06a4a4"
+url = "https://github.com/anthropics/claude-code/releases/download/v2.1.238/claude-win32-x64.zip"
+url_api = "https://api.github.com/repos/anthropics/claude-code/releases/assets/522593342"
 
 [tools.claude."platforms.windows-x64-baseline"]
-checksum = "sha256:c9ddd1452d439b2bb6c496832dc4dca16f2093e9ceac8b307f235c46c64a80e1"
-url = "https://github.com/anthropics/claude-code/releases/download/v2.1.237/claude-win32-x64.zip"
-url_api = "https://api.github.com/repos/anthropics/claude-code/releases/assets/521491875"
+checksum = "sha256:aaa1bde5d30de551386dbddda3b6bb741683462c9452a1375eea86edce06a4a4"
+url = "https://github.com/anthropics/claude-code/releases/download/v2.1.238/claude-win32-x64.zip"
+url_api = "https://api.github.com/repos/anthropics/claude-code/releases/assets/522593342"
 
 [[tools."github:k1LoW/git-wt"]]
 version = "0.29.1"
@@ -433,63 +433,63 @@ version = "0.22.8"
 backend = "npm:ntn"
 
 [[tools.opencode]]
-version = "1.18.19"
+version = "1.18.20"
 backend = "aqua:anomalyco/opencode"
 
 [tools.opencode."platforms.linux-arm64"]
-checksum = "sha256:506f98a1f618551f1f6fc5dcf591f824bef9d6819d40b27928ad7febcb7c363b"
-url = "https://github.com/anomalyco/opencode/releases/download/v1.18.19/opencode-linux-arm64.tar.gz"
-url_api = "https://api.github.com/repos/anomalyco/opencode/releases/assets/521836933"
+checksum = "sha256:4c85612e92e8bca95628cadf7dcd92d4150105954004758b2910f868d97ba741"
+url = "https://github.com/anomalyco/opencode/releases/download/v1.18.20/opencode-linux-arm64.tar.gz"
+url_api = "https://api.github.com/repos/anomalyco/opencode/releases/assets/523422343"
 
 [tools.opencode."platforms.linux-arm64-musl"]
-checksum = "sha256:cf5732a2665da6db7331fd4bff37a32eed71d684fef5e0956c0e29254600136b"
-url = "https://github.com/anomalyco/opencode/releases/download/v1.18.19/opencode-linux-arm64-musl.tar.gz"
-url_api = "https://api.github.com/repos/anomalyco/opencode/releases/assets/521836940"
+checksum = "sha256:53f53b670f7849082fdc3bf4dc7bae8a047be07dc3fff5cd710ae766d2b47383"
+url = "https://github.com/anomalyco/opencode/releases/download/v1.18.20/opencode-linux-arm64-musl.tar.gz"
+url_api = "https://api.github.com/repos/anomalyco/opencode/releases/assets/523422346"
 
 [tools.opencode."platforms.linux-x64"]
-checksum = "sha256:7bb35487c55f9957f5d91ae60be6fa49fc8f74629c210c1719ed75fdbf7e2bd9"
-url = "https://github.com/anomalyco/opencode/releases/download/v1.18.19/opencode-linux-x64.tar.gz"
-url_api = "https://api.github.com/repos/anomalyco/opencode/releases/assets/521837205"
+checksum = "sha256:8603214aa1e2e18f9312360c9360dfae6174f5cff6dc4f72b6045c80608af4d4"
+url = "https://github.com/anomalyco/opencode/releases/download/v1.18.20/opencode-linux-x64.tar.gz"
+url_api = "https://api.github.com/repos/anomalyco/opencode/releases/assets/523422470"
 
 [tools.opencode."platforms.linux-x64-baseline"]
-checksum = "sha256:7bb35487c55f9957f5d91ae60be6fa49fc8f74629c210c1719ed75fdbf7e2bd9"
-url = "https://github.com/anomalyco/opencode/releases/download/v1.18.19/opencode-linux-x64.tar.gz"
-url_api = "https://api.github.com/repos/anomalyco/opencode/releases/assets/521837205"
+checksum = "sha256:8603214aa1e2e18f9312360c9360dfae6174f5cff6dc4f72b6045c80608af4d4"
+url = "https://github.com/anomalyco/opencode/releases/download/v1.18.20/opencode-linux-x64.tar.gz"
+url_api = "https://api.github.com/repos/anomalyco/opencode/releases/assets/523422470"
 
 [tools.opencode."platforms.linux-x64-musl"]
-checksum = "sha256:71eaeb20f2dc55a6d22ea1dabf659db513d02cd65f58b4a29e4c9f45b0d529ac"
-url = "https://github.com/anomalyco/opencode/releases/download/v1.18.19/opencode-linux-x64-musl.tar.gz"
-url_api = "https://api.github.com/repos/anomalyco/opencode/releases/assets/521836944"
+checksum = "sha256:46f1bb9351624a3eeeaf6ee6251b3c9fc5dec5291b68a515cf3097a84d539efe"
+url = "https://github.com/anomalyco/opencode/releases/download/v1.18.20/opencode-linux-x64-musl.tar.gz"
+url_api = "https://api.github.com/repos/anomalyco/opencode/releases/assets/523422334"
 
 [tools.opencode."platforms.linux-x64-musl-baseline"]
-checksum = "sha256:71eaeb20f2dc55a6d22ea1dabf659db513d02cd65f58b4a29e4c9f45b0d529ac"
-url = "https://github.com/anomalyco/opencode/releases/download/v1.18.19/opencode-linux-x64-musl.tar.gz"
-url_api = "https://api.github.com/repos/anomalyco/opencode/releases/assets/521836944"
+checksum = "sha256:46f1bb9351624a3eeeaf6ee6251b3c9fc5dec5291b68a515cf3097a84d539efe"
+url = "https://github.com/anomalyco/opencode/releases/download/v1.18.20/opencode-linux-x64-musl.tar.gz"
+url_api = "https://api.github.com/repos/anomalyco/opencode/releases/assets/523422334"
 
 [tools.opencode."platforms.macos-arm64"]
-checksum = "sha256:0026326bd77a3277ab3726be237410b19389f7829e8bb3c82dfaf9044162067c"
-url = "https://github.com/anomalyco/opencode/releases/download/v1.18.19/opencode-darwin-arm64.zip"
-url_api = "https://api.github.com/repos/anomalyco/opencode/releases/assets/521836784"
+checksum = "sha256:b483e547c029b4f0ba381f0d0c5b420bec48c24c2bbec1fb7f22252bae83da46"
+url = "https://github.com/anomalyco/opencode/releases/download/v1.18.20/opencode-darwin-arm64.zip"
+url_api = "https://api.github.com/repos/anomalyco/opencode/releases/assets/523422194"
 
 [tools.opencode."platforms.macos-x64"]
-checksum = "sha256:ee495d7c30263c2cecb81a4558a9c4d29ac7b27c1df822e9d344a69cb56a75c3"
-url = "https://github.com/anomalyco/opencode/releases/download/v1.18.19/opencode-darwin-x64.zip"
-url_api = "https://api.github.com/repos/anomalyco/opencode/releases/assets/521836928"
+checksum = "sha256:abff81c995a137273526044b528ae0dc66b1aafdebd47198a875e7700a571340"
+url = "https://github.com/anomalyco/opencode/releases/download/v1.18.20/opencode-darwin-x64.zip"
+url_api = "https://api.github.com/repos/anomalyco/opencode/releases/assets/523422273"
 
 [tools.opencode."platforms.macos-x64-baseline"]
-checksum = "sha256:ee495d7c30263c2cecb81a4558a9c4d29ac7b27c1df822e9d344a69cb56a75c3"
-url = "https://github.com/anomalyco/opencode/releases/download/v1.18.19/opencode-darwin-x64.zip"
-url_api = "https://api.github.com/repos/anomalyco/opencode/releases/assets/521836928"
+checksum = "sha256:abff81c995a137273526044b528ae0dc66b1aafdebd47198a875e7700a571340"
+url = "https://github.com/anomalyco/opencode/releases/download/v1.18.20/opencode-darwin-x64.zip"
+url_api = "https://api.github.com/repos/anomalyco/opencode/releases/assets/523422273"
 
 [tools.opencode."platforms.windows-x64"]
-checksum = "sha256:4381328bf6d611996c33d98daef27e89d274cb8391709fa1e36723f1d2899877"
-url = "https://github.com/anomalyco/opencode/releases/download/v1.18.19/opencode-windows-x64.zip"
-url_api = "https://api.github.com/repos/anomalyco/opencode/releases/assets/521839250"
+checksum = "sha256:057fe1bca56e71a133c1df7a0fa86573f0f9dcd84ee57dafaac053cda91a158b"
+url = "https://github.com/anomalyco/opencode/releases/download/v1.18.20/opencode-windows-x64.zip"
+url_api = "https://api.github.com/repos/anomalyco/opencode/releases/assets/523424615"
 
 [tools.opencode."platforms.windows-x64-baseline"]
-checksum = "sha256:4381328bf6d611996c33d98daef27e89d274cb8391709fa1e36723f1d2899877"
-url = "https://github.com/anomalyco/opencode/releases/download/v1.18.19/opencode-windows-x64.zip"
-url_api = "https://api.github.com/repos/anomalyco/opencode/releases/assets/521839250"
+checksum = "sha256:057fe1bca56e71a133c1df7a0fa86573f0f9dcd84ee57dafaac053cda91a158b"
+url = "https://github.com/anomalyco/opencode/releases/download/v1.18.20/opencode-windows-x64.zip"
+url_api = "https://api.github.com/repos/anomalyco/opencode/releases/assets/523424615"
 
 [[tools.rust]]
 version = "1.98.0"
