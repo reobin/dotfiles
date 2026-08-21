@@ -127,6 +127,12 @@ command = "jhochenbaum.hunkdiff.send-review"
 description = "send review to agent"
 
 [[keys.command]]
+key = "prefix+shift+d"
+type = "plugin_action"
+command = "jhochenbaum.hunkdiff.review:branch"
+description = "review this branch against its base"
+
+[[keys.command]]
 key = "prefix+p"
 type = "popup"
 command = "$SHELL"

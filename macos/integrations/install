@@ -63,6 +63,9 @@ else
 
   cat >"$HUNKDIFF_CONFIG_DIR/config.toml" <<EOF
 # written by macos/integrations/install
+[review]
+default_target = "working"
+
 [hunk]
 bin = "$HUNK_SHIM"
 EOF
