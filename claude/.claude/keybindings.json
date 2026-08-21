@@ -5,7 +5,6 @@
     {
       "context": "Global",
       "bindings": {
-        "ctrl+t": "app:toggleTodos",
         "ctrl+o": "app:toggleTranscript",
         "ctrl+shift+b": "app:toggleBrief",
         "ctrl+r": "history:search",
