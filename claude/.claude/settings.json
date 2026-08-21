@@ -47,8 +47,10 @@
     "defaultEnvironmentId": "env_01FEEXG2YVgrSU375srfc8oT"
   },
   "tui": "default",
+  "skipWorkflowUsageWarning": true,
   "theme": "auto",
   "editorMode": "normal",
+  "verbose": false,
   "terminalProgressBarEnabled": true,
   "remoteControlAtStartup": true,
   "agentPushNotifEnabled": true,
@@ -63,5 +65,5 @@
       }
     }
   },
-  "skipWorkflowUsageWarning": true
+  "outputStyle": "Concise"
 }
