@@ -1,0 +1,76 @@
+{
+  "title": "App launch layer",
+  "rules": [
+    {
+      "description": "Use tab held as an app launch layer",
+      "manipulators": [
+        {
+          "from": {
+            "key_code": "tab"
+          },
+          "to": [
+            {
+              "set_variable": {
+                "name": "app_launch_layer",
+                "value": 1
+              }
+            }
+          ],
+          "to_after_key_up": [
+            {
+              "set_variable": {
+                "name": "app_launch_layer",
+                "value": 0
+              }
+            }
+          ],
+          "to_if_alone": [
+            {
+              "key_code": "tab"
+            }
+          ],
+          "parameters": {
+            "basic.to_if_alone_timeout_milliseconds": 250
+          },
+          "type": "basic"
+        },
+        {
+          "conditions": [
+            {
+              "name": "app_launch_layer",
+              "type": "variable_if",
+              "value": 1
+            }
+          ],
+          "from": {
+            "key_code": "j"
+          },
+          "to": [
+            {
+              "shell_command": "/usr/bin/open -a /Applications/Ghostty.app"
+            }
+          ],
+          "type": "basic"
+        },
+        {
+          "conditions": [
+            {
+              "name": "app_launch_layer",
+              "type": "variable_if",
+              "value": 1
+            }
+          ],
+          "from": {
+            "key_code": "k"
+          },
+          "to": [
+            {
+              "shell_command": "/usr/bin/open -a /Applications/Helium.app"
+            }
+          ],
+          "type": "basic"
+        }
+      ]
+    }
+  ]
+}

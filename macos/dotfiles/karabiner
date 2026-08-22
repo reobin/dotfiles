@@ -21,7 +21,8 @@ if [[ -d "/Applications/Karabiner-Elements.app" ]]; then
 fi
 
 python3 - "$HOME/.config/karabiner/karabiner.json" \
-  "$DOTFILES_DIRECTORY/karabiner/.config/karabiner/assets/complex_modifications/caps-escape-hjkl-arrows.json" <<'PY'
+  "$DOTFILES_DIRECTORY/karabiner/.config/karabiner/assets/complex_modifications/caps-escape-hjkl-arrows.json" \
+  "$DOTFILES_DIRECTORY/karabiner/.config/karabiner/assets/complex_modifications/app-launch-layer.json" <<'PY'
 import json
 import pathlib
 import sys
