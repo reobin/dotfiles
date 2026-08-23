@@ -19,6 +19,7 @@ CONFIGS=(
   opencode
   claude
   starship
+  surfingkeys
   superwhisper
   zsh
 )
