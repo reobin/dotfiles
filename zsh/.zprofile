@@ -7,16 +7,14 @@ zsh_cached_eval brew /opt/homebrew/bin/brew shellenv zsh
 # prepended again rather than once per process tree.
 path=(
   $HOME/bin(N-/)
+  # Ahead of /opt/homebrew/bin so a login shell that never reaches .zshrc still
+  # resolves mise-managed tools first. `mise activate` there replaces these with
+  # the real install dirs.
+  $HOME/.local/share/mise/shims(N-/)
   /opt/homebrew/bin(N-/)
-  $HOME/.opencode/bin(N-/)
   $HOME/.cargo/bin(N-/)
   $HOME/.local/bin(N-/)
   /opt/homebrew/opt/libpq/bin(N-/)
-  # Fallback only: `mise activate` prepends the real install dirs in .zshrc, so
-  # these shims are last and cover login shells that never reach it. Only login
-  # shells read this file at all, so GUI apps and non-interactive shells still see
-  # no mise; that would need a .zshenv, which does not exist yet.
-  $HOME/.local/share/mise/shims(N-/)
   $path
 )
 
