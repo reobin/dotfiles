@@ -17,6 +17,14 @@ platforms = ["linux", "macos"]
 # so a new title waits for the next status change instead.
 # workspace.metadata_updated is what this plugin itself causes, so subscribing to
 # it would hand the plugin its own output back.
+#
+# Four more are left out because refresh.sh takes no arguments and recomputes
+# every space on every run, so an event that always fires beside one already
+# listed here only buys a second identical pass. workspace.created and
+# tab.created land within 3ms of the pane.created that comes with them,
+# workspace.closed within 1ms of pane.closed, and worktree.opened covers the
+# late repo name worktree.created was here for. tab.closed stays: it has been
+# seen firing with no pane.closed beside it.
 [[startup]]
 command = ["sh", "refresh.sh"]
 
@@ -45,10 +53,6 @@ on = "pane.exited"
 command = ["sh", "refresh.sh"]
 
 [[events]]
-on = "tab.created"
-command = ["sh", "refresh.sh"]
-
-[[events]]
 on = "tab.closed"
 command = ["sh", "refresh.sh"]
 
@@ -62,14 +66,6 @@ command = ["sh", "refresh.sh"]
 on = "tab.moved"
 command = ["sh", "refresh.sh"]
 
-[[events]]
-on = "workspace.created"
-command = ["sh", "refresh.sh"]
-
-[[events]]
-on = "workspace.closed"
-command = ["sh", "refresh.sh"]
-
 # Renaming a space is how the title row learns the half of the name that is not
 # the repo, so this is the one event a rename has to reach for the row to change
 # under it. It is also still the row's last fallback for a space with no repo and
@@ -80,10 +76,6 @@ command = ["sh", "refresh.sh"]
 
 # The title row prefers the repo name, and that comes from the worktree the space
 # is linked to, which is not necessarily known by the time it is created.
-[[events]]
-on = "worktree.created"
-command = ["sh", "refresh.sh"]
-
 [[events]]
 on = "worktree.opened"
 command = ["sh", "refresh.sh"]
