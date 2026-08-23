@@ -107,7 +107,7 @@ description = "sidetrack this conversation"
 # A pane garbled by a fullscreen toggle survives claude's own repaints, /resume
 # and ctrl+l alike, so clearing it takes a new process.
 [[keys.command]]
-key = "alt+r"
+key = "alt+c"
 type = "shell"
 command = "$HOME/dotfiles/herdr/.local/bin/herdr-restart-agent"
 description = "restart claude on the same session"
@@ -115,13 +115,13 @@ description = "restart claude on the same session"
 # hunkdiff's own `setup-keys` writes into config.toml, which tt regenerates
 # from this file, so its bindings live here instead.
 [[keys.command]]
-key = "alt+d"
+key = "alt+r"
 type = "plugin_action"
 command = "jhochenbaum.hunkdiff.review"
 description = "review agent changes"
 
 [[keys.command]]
-key = "alt+shift+d"
+key = "alt+shift+r"
 type = "plugin_action"
 command = "jhochenbaum.hunkdiff.send-review"
 description = "send review to agent"
