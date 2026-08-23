@@ -15,6 +15,7 @@ alias g='git'
 alias lg='lazygit'
 alias d='hunk diff --watch'
 alias n='nvim'
+alias db='nvim -c DBUI'
 
 export DOTFILES="$HOME/dotfiles"
 
