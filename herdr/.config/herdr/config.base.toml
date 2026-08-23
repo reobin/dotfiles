@@ -142,6 +142,12 @@ description = "floating pane"
 
 [ui]
 mouse_capture = true
+
+# A wheel notch is the only scroll Herdr sizes from config; page keys are always
+# a full page. The karabiner rule behind alt+u sends notches, so this number is
+# what makes that chord land on roughly half a screen. It costs the trackpad,
+# which now moves 8 lines a notch, and that trade is the point.
+mouse_scroll_lines = 8
 confirm_close = false
 prompt_new_tab_name = false
 
