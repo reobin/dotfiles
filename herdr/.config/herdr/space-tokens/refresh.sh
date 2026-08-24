@@ -1,37 +1,10 @@
 #!/bin/sh
 
-# Report one sidebar line per pane onto each Herdr space, thud.sh style.
+# Report one sidebar line per pane onto each Herdr space.
 #
-# Herdr's expanded sidebar is a spaces list plus an agents panel, and a space
-# row can only render workspace-level values. So the per-pane lines live here:
-# this script turns `pane list` into workspace metadata tokens, and
+# A space row can only render workspace-level values, so the per-pane lines live
+# here: this turns `pane list` into workspace metadata tokens, and
 # [ui.sidebar.spaces] in config.toml decides where those tokens go.
-#
-# Slots are fixed because rows are: a1..a6 hold the first six panes of a space in
-# pane order, each with the token variants that decide how far the loud color
-# reaches into the row. Panes past the last slot are counted in `more` instead of
-# being dropped silently, and that count says how many of them are waiting, so
-# nothing needing attention can hide in there.
-#
-# An agent's line is its terminal title. What the agent is doing is what the line
-# is for, and the state icon already carries the status, so neither the status
-# word nor the agent kind earns a column next to it. The kind stands in only for
-# an agent that has not set a title yet.
-#
-# A Claude pane that has gone idle with background work still running -- an agent
-# it launched, a Monitor, a command it backgrounded -- is not done, whatever its
-# status says, so its glyph becomes ◐, and a second task in flight numbers it.
-#
-# Panes without an agent get a single line naming their foreground command, so a
-# dev server or an editor reads as part of the space the way it does in thud.
-# Set processes=0 to list only agents.
-#
-# `title` stands in for the label on the title row: the repo name when the space
-# is in a git repo, the directory name otherwise. Labels are bare basenames, so a
-# worktree label says nothing about which repo it belongs to; the branch row
-# under the title is what tells one checkout of a repo from another. Spaces that
-# still share a title after that render it identically; the pane lines under each
-# one say which is which, and a space worth referring to is worth renaming.
 #
 # Usage: refresh.sh         report the current panes
 #        refresh.sh clear    remove every token this script owns
@@ -40,16 +13,13 @@ set -eu
 
 herdr="${HERDR_BIN_PATH:-herdr}"
 source_id="space-tokens"
-# Six is the ceiling, not a preference: [ui.sidebar.spaces] has no rows left to
-# give one. Raising this alone reports tokens no row renders; raising both puts
-# the config over Herdr's row cap, which it answers by throwing the whole file
-# away and running on defaults.
+# Capped by the rows [ui.sidebar.spaces] has to give. Raising both puts the config
+# over Herdr's row cap, which it answers by discarding the file and using defaults.
 slots=6
 processes=1
 
-# A report may carry at most 16 tokens, and a full space owns more than that, so
-# every write here goes out in batches of this size. Exceeding it fails the whole
-# report, and nothing logs that, so the sidebar just stops changing.
+# A report may carry at most 16 tokens. Exceeding it fails the whole report and
+# nothing logs that, so the sidebar just stops changing.
 batch=16
 
 workspaces="$("$herdr" workspace list)"
@@ -89,10 +59,6 @@ fi
 
 panes="$("$herdr" pane list)"
 
-# Tab labels only mean something once a space has more than one tab, so ask for
-# them only then. One extra call per multi-tab space, none in the common case.
-# A space can close between the two calls, and every failure here is a name this
-# run does without, so none of them are worth a line in the plugin log.
 tabs='{}'
 for workspace in $(printf '%s' "$workspaces" | jq -r '.result.workspaces[] | select(.tab_count > 1) | .workspace_id'); do
   list="$("$herdr" tab list --workspace "$workspace" 2>/dev/null)" || continue
@@ -104,18 +70,10 @@ for workspace in $(printf '%s' "$workspaces" | jq -r '.result.workspaces[] | sel
   )"
 done
 
-# Which repo a space belongs to is not in its path in any reliable way, and Herdr
-# already tracks it, so ask. Spaces outside a repo report no name and fall back
-# to their directory below. One call per space.
-#
 # The same answer carries the checkout this space is open on, which the title row
-# needs below, so it is kept here rather than bought with a second call. The
-# space's own worktree is the entry claiming it; a space on the main checkout
-# claims none, and the repo root is that same directory anyway.
-#
-# A space outside a repo answers with an error rather than an empty name, so that
-# error is the expected answer for those spaces and would otherwise be logged on
-# every run, once per space, until a real failure had nowhere left to stand out.
+# needs below. A space outside a repo answers with an error rather than an empty
+# name, so that error is the expected answer for those spaces and would otherwise
+# be logged on every run, once per space.
 repos='{}'
 for workspace in $(printf '%s' "$workspaces" | jq -r '.result.workspaces[].workspace_id'); do
   info="$("$herdr" worktree list --workspace "$workspace" 2>/dev/null)" || continue
@@ -135,13 +93,8 @@ done
 # Which spaces someone has named. The socket cannot say: it answers with the
 # custom name when there is one and the checkout basename when there is not, in
 # the same field, so a space named after its own checkout is invisible there.
-# `git wt` names a worktree directory after its branch, so a label taken from
-# that branch lands on exactly that collision. This file has the answer, because
-# it carries custom_name only for the spaces that have one.
-#
-# Herdr's own state file rather than an API, so it is a hint and not the answer:
-# a shape that changes under it or no file at all falls back to {} and costs
-# nothing the label comparison below does not already catch.
+# This is Herdr's own state file rather than an API, so a shape that changes under
+# it or no file at all falls back to {}, leaving only the label comparison below.
 session_file="${XDG_CONFIG_HOME:-$HOME/.config}/herdr/session.json"
 named='{}'
 if [ -r "$session_file" ]; then
@@ -151,10 +104,8 @@ if [ -r "$session_file" ]; then
   )" || named='{}'
 fi
 
-# Agent panes name themselves; anything else has to be asked what it is running.
-# The process group leader is the command that was typed, so `pnpm start` reads
-# as `pnpm start` rather than the node process it became. A pane can exit between
-# `pane list` and this call, which costs this run one label and nothing else.
+# The process group leader is the command that was typed, so `pnpm start` reads as
+# `pnpm start` rather than the node process it became.
 commands='{}'
 if [ "$processes" -eq 1 ]; then
   for pane in $(printf '%s' "$panes" | jq -r '.result.panes[] | select(.agent == null) | .pane_id'); do
@@ -177,24 +128,13 @@ if [ "$processes" -eq 1 ]; then
   done
 fi
 
-# A Claude turn ends while the work it started keeps running: an agent it
-# launched, a Monitor it armed, a command it put in the background. The pane goes
-# idle the moment the turn ends, so the row calls that done and the still-running
-# half of it is invisible. Count what the session has in flight and the row can
-# say so.
-#
-# Claude gives every background task a file at <session>/tasks/<id>.output and
-# announces every one that ends back into its own transcript as <task-id>. What
-# has a file and no announcement is still running. Some ends leave no marker at
-# all -- a Monitor timing out, a task stopped from the UI -- so a file nothing has
-# written to in $stale_after seconds is read as one of those rather than believed
-# forever. Going stale is not itself an event, though: nothing here runs on a
-# clock, so a row holding a count for one of those ends keeps it until the next
-# Herdr event refreshes the plugin.
-#
-# The directory comes first because it is a handful of stats, and it decides
-# whether the transcript, which is megabytes, is worth opening at all. Panes that
-# are working or blocked are skipped: those rows already say to look.
+# A Claude turn ends while the work it started keeps running, so the pane goes
+# idle and the row calls it done. Claude gives every background task a file at
+# <session>/tasks/<id>.output and announces every one that ends back into its own
+# transcript as <task-id>, so what has a file and no announcement is still
+# running. Some ends leave no marker at all -- a Monitor timing out, a task
+# stopped from the UI -- so a file nothing has written to in $stale_after seconds
+# is read as one of those rather than believed forever.
 stale_after=1800
 now="$(date +%s)"
 pending='{}'
@@ -216,10 +156,10 @@ while IFS=' ' read -r pane session; do
   fresh=""
   for output in "$tasks"/*.output; do
     [ -f "$output" ] || continue
-    # BSD stat and GNU stat spell this differently and the plugin runs on both.
-    # GNU goes first because it is the one that fails cleanly: BSD rejects -c as an
-    # illegal option, while GNU reads -f as --file-system, which takes no argument,
-    # so %m becomes an operand and the filesystem report lands on stdout.
+    # BSD and GNU stat spell this differently and the plugin runs on both. GNU
+    # goes first because it is the one that fails cleanly: BSD rejects -c as an
+    # illegal option, while GNU reads -f as --file-system, which takes no
+    # argument, so %m becomes an operand and its report lands on stdout.
     mtime="$(stat -c %Y "$output" 2>/dev/null || stat -f %m "$output" 2>/dev/null)" || continue
     [ "$((now - mtime))" -lt "$stale_after" ] || continue
     id="${output##*/}"
@@ -228,9 +168,6 @@ while IFS=' ' read -r pane session; do
   done
   [ -n "$fresh" ] || continue
 
-  # One pass over the transcript for the few ids in hand, as fixed strings. A
-  # session whose transcript has moved or been cleaned counts every fresh file,
-  # which overstates by whatever ended in the last $stale_after seconds.
   transcript=""
   for candidate in "$HOME/.claude/projects"/*/"$session.jsonl"; do
     if [ -r "$candidate" ]; then
@@ -275,23 +212,18 @@ plan="$(
   printf '%s' "$workspaces" |
     jq -r --argjson panes "$panes" --argjson tabs "$tabs" --argjson commands "$commands" --argjson slots "$slots" \
       --argjson repos "$repos" --argjson named "$named" --argjson pending "$pending" --argjson batch "$batch" '
-      # Every status gets its own glyph. Bold marks the blocked row, and it also
-      # marks the title row, so it cannot be what tells done from working.
       def mark:
-        if . == "blocked" then "◆"
-        elif . == "working" then "●"
+        if . == "blocked" then "×"
+        elif . == "working" then "◐"
         elif . == "done" then "✓"
         elif . == "idle" then "○"
         else "·"
         end;
 
-      # Last segment of a path, tolerating a trailing slash and an empty string.
       def basename: (. / "/") | map(select(. != "")) | last // "";
 
-      # A slot owns one token per color a line can take, and [ui.sidebar.spaces]
-      # explains which. Rows are static, so the color is chosen by which token
-      # carries a value: set one and clear the rest, or the row renders both
-      # joined by " · ".
+      # Rows are static, so the color is chosen by which token carries a value:
+      # set one and clear the rest, or the row renders both joined by " · ".
       def slots_of($slot): ["a\($slot)", "a\($slot)_blocked", "a\($slot)_done"];
       def clear_but($slot; $keep):
         [slots_of($slot)[] | select(IN($keep[]) | not) | ("--clear-token", .)];
@@ -302,25 +234,18 @@ plan="$(
         | ($git.name // "") as $repo
         | ($mine[0].cwd // "") as $cwd
         | ($workspace.label // "") as $label
-        # The title row renders this instead of the label, so every space has to
-        # come out with a name: repo, else the directory it sits in, else the
-        # label for a space with no pane to read a cwd from.
         | ([$repo, ($cwd | basename), $label] | map(select(. != "")) | first // "") as $where
-        # What Herdr would be putting in the label if nobody had named the space.
-        # Read off the checkout rather than the pane cwd, which moves with every
-        # cd and would make a space look named for having been walked into.
-        | ((if ($git.path // "") != "" then $git.path else $cwd end) | basename) as $unnamed
-        # Two signals, because neither covers the other. The session file is
-        # exact but Herdr flushes it about five seconds after a rename, so it
-        # cannot be what makes a rename show up; a label differing from the
-        # basename covers those seconds, and the file covers a name that happens
-        # to equal it. A space nobody named trips neither, its label being that
-        # basename already.
-        | (($named[$workspace.workspace_id] // false) or $label != $unnamed) as $chosen
-        # A chosen label joins the name rather than replacing it: the repo says
-        # where you are and the label says which of them this is. One that
-        # already matches the name renders it once, so it is not worth a second
-        # column.
+        # Herdr walks to the checkout rather than arriving at it: for about half a
+        # second after a cd the label is the basename of the directory itself.
+        # Both spellings count as unnamed, or a refresh landing inside that window
+        # takes the difference for a name and staples the directory to the row.
+        | [((if ($git.path // "") != "" then $git.path else $cwd end) | basename),
+           ($cwd | basename)] as $unnamed
+        # Two signals: the session file is exact but Herdr flushes it seconds
+        # after a rename, and a label differing from the basename covers those
+        # seconds. A space nobody named trips neither.
+        | (($named[$workspace.workspace_id] // false)
+           or ($unnamed | index($label)) == null) as $chosen
         | if $chosen and $label != "" and $label != $where
           then "\($where) · \($label)"
           else $where
@@ -341,36 +266,25 @@ plan="$(
               ([$tab_labels[$pane.tab_id] // empty, $commands[$pane.pane_id] // "shell"] | join(" · ")) as $rest
               | ["--token", "a\($slot)=· \($rest)"] + clear_but($slot; ["a\($slot)"])
             else
-              # Kind, not the agent name: names are long and usually repeat the
-              # space label. It stands in only where there is no title to show.
-              # Claude puts a spinner frame at the front of its title, and Herdr
-              # does not count that as decoration to strip. Next to the state
-              # mark it reads as a second, contradicting status glyph, so drop a
-              # leading run of symbols. A bracketed prefix like [wip] survives:
-              # the run has to reach whitespace without passing a letter first.
+              # Claude prefixes its title with a spinner frame, which reads as a
+              # second, contradicting status glyph next to the mark. Dropping a
+              # leading run of symbols that reaches whitespace without passing a
+              # letter spares a bracketed prefix like [wip].
               ($pane.terminal_title_stripped // "" | sub("^[^\\p{L}\\p{N}]+\\s+"; "")) as $title
               | (if $title == "" then $pane.agent else $title end) as $what
               | ([$tab_labels[$pane.tab_id] // empty, $what] | join(" · ")) as $rest
               | ($pending[$pane.pane_id] // 0) as $waiting
-              # An agent with work still running behind it is not the done agent
-              # the status says it is, so it takes neither that glyph nor the calm
-              # color that says this one can wait. A count rides on the glyph
-              # rather than the end of the line, which is a title and gets
-              # truncated; one is what the glyph already means, so only a second
-              # task is worth the column.
-              | (if $waiting > 1 then "◐\($waiting)"
-                 elif $waiting == 1 then "◐"
+              # The count rides on the glyph rather than the end of the line,
+              # which is a title and gets truncated. One is what the glyph already
+              # means, so only a second task is worth the column.
+              | (if $waiting > 1 then "\("working" | mark)\($waiting)"
+                 elif $waiting == 1 then ("working" | mark)
                  else ($pane.agent_status | mark)
                  end) as $icon
               | if $pane.agent_status == "blocked" then
                   ["--token", "a\($slot)_blocked=\($icon) \($rest)"]
                   + clear_but($slot; ["a\($slot)_blocked"])
                 elif $pane.agent_status == "done" and $waiting == 0 then
-                  # done is the same idle agent as below, only its work has not
-                  # been seen yet. Focusing the tab, which splitting a pane does,
-                  # turns one into the other, so the two have to read as the same
-                  # line with a different glyph. Anything else makes an agent
-                  # rename itself as you work beside it.
                   ["--token", "a\($slot)_done=\($icon) \($rest)"]
                   + clear_but($slot; ["a\($slot)_done"])
                 else
@@ -383,8 +297,6 @@ plan="$(
            | if ($hidden | length) == 0 then
                ["--clear-token", "more", "--clear-token", "more_blocked"]
              else
-               # The same glyphs the slots use, so the overflow line says what is
-               # in it without spending the columns to spell the statuses out.
                ([$hidden[] | select(.agent_status == "blocked")] | length) as $blocked
                # A pane counted as waiting is not also counted as done, or the
                # same agent shows up twice in a line whose whole job is a tally.
@@ -392,14 +304,12 @@ plan="$(
                | ([$hidden[] | select(.agent_status == "done")
                              | select(($pending[.pane_id] // 0) == 0)] | length) as $done
                | ([
-                   (if $blocked > 0 then "\($blocked)◆" else empty end),
-                   (if $waiting > 0 then "\($waiting)◐" else empty end),
-                   (if $done > 0 then "\($done)✓" else empty end)
+                   (if $blocked > 0 then "\($blocked)\("blocked" | mark)" else empty end),
+                   (if $waiting > 0 then "\($waiting)\("working" | mark)" else empty end),
+                   (if $done > 0 then "\($done)\("done" | mark)" else empty end)
                  ] | join(" ")) as $flags
                | (if $flags == "" then "" else " · \($flags)" end) as $tail
                | "+\($hidden | length) more\($tail)" as $line
-               # An agent folded into the count is still waiting on you, so the
-               # overflow line takes the loud row a slot would have given it.
                | (if $blocked > 0 then
                     ["--token", "more_blocked=\($line)", "--clear-token", "more"]
                   else
@@ -407,10 +317,10 @@ plan="$(
                   end)
              end]
       # One line per report rather than per space, because a space owns more
-      # tokens than one report may carry. Each group above is a whole slot, and
-      # groups are packed rather than sliced: the set and the clears for a slot
-      # have to land in the same report, or between the two the sidebar draws the
-      # new line and the leftover one together on the row they share.
+      # tokens than one report may carry. Groups are packed rather than sliced:
+      # the set and the clears for a slot have to land in the same report, or
+      # between the two the sidebar draws the new line and the leftover one
+      # together on the row they share.
       | reduce .[] as $group ([];
           if length == 0 or ((.[-1] | length) + ($group | length)) > ($batch * 2)
           then . + [$group]
@@ -418,18 +328,16 @@ plan="$(
           end)
       | .[]
       | [$workspace.workspace_id] + .
-      # One argument per line, then a blank line to end the report. An argument
-      # holds spaces and a token value holds whatever an agent put in its title,
-      # so nothing here may go back through word splitting or a quoting pass.
+      # An argument holds spaces and a token value holds whatever an agent put in
+      # its title, so nothing here may go back through word splitting.
       | (.[], "")
     '
 )"
 
 printf '%s\n' "$plan" |
   {
-    # Rebuild each report by appending a line at a time, which is the one way to
-    # carry arguments with spaces through POSIX sh without re-parsing them. The
-    # first is the space, matching the argument order the command already took.
+    # Appending a line at a time is the one way to carry arguments with spaces
+    # through POSIX sh without re-parsing them.
     set --
     while IFS= read -r arg; do
       if [ -n "$arg" ]; then

@@ -38,6 +38,7 @@ source ~/.config/zsh/history.zsh
 source ~/.config/zsh/completion.zsh
 source ~/.config/zsh/fzf.zsh
 source ~/.config/zsh/theme.zsh
+source ~/.config/zsh/herdr.zsh
 
 zsh_cached_eval starship starship init zsh
 # starship always sets RPROMPT, but no right_format is configured, so it spawns

@@ -5,26 +5,13 @@ min_herdr_version = "0.7.0"
 description = "Report one sidebar line per agent on each space"
 platforms = ["linux", "macos"]
 
-# Startup refreshes once after the session is restored; the event hooks keep it
-# current after that. Nothing here is a daemon, so there is no live clock: the
-# lines change when Herdr sees something change.
-#
-# Two events are left out on purpose. pane.updated is the only one that carries a
-# title change, and an agent row is a title, but a working agent rewrites its own
-# title several times a second to animate the frame in front of it, and the frame
-# is what refresh.sh strips. Subscribing would buy a fresher line with a full
-# refresh per animation tick, nearly all of them computing the same tokens twice,
-# so a new title waits for the next status change instead.
-# workspace.metadata_updated is what this plugin itself causes, so subscribing to
-# it would hand the plugin its own output back.
-#
-# Four more are left out because refresh.sh takes no arguments and recomputes
-# every space on every run, so an event that always fires beside one already
-# listed here only buys a second identical pass. workspace.created and
-# tab.created land within 3ms of the pane.created that comes with them,
-# workspace.closed within 1ms of pane.closed, and worktree.opened covers the
-# late repo name worktree.created was here for. tab.closed stays: it has been
+# refresh.sh takes no arguments and recomputes every space, so events that always
+# fire beside one already listed here are left out. tab.closed stays: it has been
 # seen firing with no pane.closed beside it.
+#
+# pane.updated, the only event carrying a title or cwd change, is published on the
+# socket API but rejected at plugin link time, so a cd arrives from the chpwd hook
+# in zsh/.config/zsh/herdr.zsh instead.
 [[startup]]
 command = ["sh", "refresh.sh"]
 
@@ -60,22 +47,14 @@ command = ["sh", "refresh.sh"]
 on = "tab.renamed"
 command = ["sh", "refresh.sh"]
 
-# Slots hold panes in pane order and a tab label prefixes the ones it owns, so
-# reordering tabs reorders the rows.
 [[events]]
 on = "tab.moved"
 command = ["sh", "refresh.sh"]
 
-# Renaming a space is how the title row learns the half of the name that is not
-# the repo, so this is the one event a rename has to reach for the row to change
-# under it. It is also still the row's last fallback for a space with no repo and
-# no pane to read a cwd from.
 [[events]]
 on = "workspace.renamed"
 command = ["sh", "refresh.sh"]
 
-# The title row prefers the repo name, and that comes from the worktree the space
-# is linked to, which is not necessarily known by the time it is created.
 [[events]]
 on = "worktree.opened"
 command = ["sh", "refresh.sh"]
