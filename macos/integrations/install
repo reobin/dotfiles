@@ -44,6 +44,7 @@ else
 fi
 
 install_herdr_plugin reobin.close-other-panes reobin/herdr-close-other-panes
+install_herdr_plugin to4iki.unread-jump to4iki/herdr-unread-jump
 
 unset -f install_herdr_plugin
 
