@@ -172,8 +172,8 @@ hide_tab_bar_when_single_tab = true
 agent_panel_sort = "spaces"
 
 # Dots carry state in hue alone. state_icon and the navigator marks take
-# distinct shapes instead, which survive a theme swap; the reds and greens in
-# the rows below are retuned for every palette.
+# distinct shapes instead, which survive a theme swap; the state colors in the
+# rows below are retuned for every palette.
 status_indicators = "symbols"
 
 # Each space is one block: name, branch, then one line per pane with what it is
@@ -188,42 +188,37 @@ status_indicators = "symbols"
 # own token keeps the separator this script's to pick and costs no second column.
 #
 # Color says what the pane wants from you, and a style belongs to a whole token,
-# so each thing a line can be needs its own. Blocked is an agent holding a
-# question open, so it goes loud and bold. Done is finished work that can wait,
-# so it takes the calm color instead of the alarm one. Everything else stays in
-# the ordinary foreground, including an idle agent that still has background work
-# running: refresh.sh keeps that one out of the done token, because the calm
-# color is a claim there is nothing left to wait for.
+# so each thing a line can be needs its own. The three that carry a color are the
+# three state_icon itself colors, so a pane line reads the same way as the space
+# row above it: blocked goes loud and bold, working takes the busy color, and done
+# takes the calm one. Idle is the only state left in the ordinary foreground,
+# which is what makes a finished space look finished. An idle agent with
+# background work still running counts as working rather than done, because the
+# calm color is a claim there is nothing left to wait for.
 #
 # Never two tokens with a value on the same row: Herdr joins the ones that render
 # with " · ", so a glyph and its text side by side come out as "✓ · title". That
-# is why done cannot be a colored glyph next to plain text, and why refresh.sh
-# sets exactly one token per slot and clears the others. Rows that hold several
-# are safe only because at most one of them is ever set.
+# is why the color goes on the whole line and not on the glyph alone, and why
+# refresh.sh sets exactly one token per slot and clears the others. A row holds
+# every state a slot can be in, which is safe only because at most one is set.
 #
-# Herdr allows 16 rows here and this uses all 16, so a slot gets two.
+# Herdr allows 16 rows here and this uses 9, so raising `slots` in refresh.sh
+# costs one row each up to 13.
 #
-# @hot and @done are placeholders tt fills in from the theme's palette. See
-# tt/THEME_GUIDE.md for why they are placeholders and not theme color names.
+# @hot, @working and @done are placeholders tt fills in from the theme's palette.
+# See tt/THEME_GUIDE.md for why they are placeholders and not theme color names.
 [ui.sidebar.spaces]
 row_gap = 1
 rows = [
   ["state_icon", { token = "$title", bold = true }],
   ["branch", "git_status"],
-  [{ token = "$a1_blocked", bold = true, fg = "@hot" }],
-  [{ token = "$a1_done", fg = "@done" }, "$a1"],
-  [{ token = "$a2_blocked", bold = true, fg = "@hot" }],
-  [{ token = "$a2_done", fg = "@done" }, "$a2"],
-  [{ token = "$a3_blocked", bold = true, fg = "@hot" }],
-  [{ token = "$a3_done", fg = "@done" }, "$a3"],
-  [{ token = "$a4_blocked", bold = true, fg = "@hot" }],
-  [{ token = "$a4_done", fg = "@done" }, "$a4"],
-  [{ token = "$a5_blocked", bold = true, fg = "@hot" }],
-  [{ token = "$a5_done", fg = "@done" }, "$a5"],
-  [{ token = "$a6_blocked", bold = true, fg = "@hot" }],
-  [{ token = "$a6_done", fg = "@done" }, "$a6"],
-  [{ token = "$more_blocked", bold = true, fg = "@hot" }],
-  ["$more"],
+  [{ token = "$a1_blocked", bold = true, fg = "@hot" }, { token = "$a1_working", fg = "@working" }, { token = "$a1_done", fg = "@done" }, "$a1"],
+  [{ token = "$a2_blocked", bold = true, fg = "@hot" }, { token = "$a2_working", fg = "@working" }, { token = "$a2_done", fg = "@done" }, "$a2"],
+  [{ token = "$a3_blocked", bold = true, fg = "@hot" }, { token = "$a3_working", fg = "@working" }, { token = "$a3_done", fg = "@done" }, "$a3"],
+  [{ token = "$a4_blocked", bold = true, fg = "@hot" }, { token = "$a4_working", fg = "@working" }, { token = "$a4_done", fg = "@done" }, "$a4"],
+  [{ token = "$a5_blocked", bold = true, fg = "@hot" }, { token = "$a5_working", fg = "@working" }, { token = "$a5_done", fg = "@done" }, "$a5"],
+  [{ token = "$a6_blocked", bold = true, fg = "@hot" }, { token = "$a6_working", fg = "@working" }, { token = "$a6_done", fg = "@done" }, "$a6"],
+  [{ token = "$more_blocked", bold = true, fg = "@hot" }, "$more"],
 ]
 
 [ui.toast]

@@ -77,23 +77,31 @@ gained in 0.8.2:
   reads without shouting, it cannot drift from the palette, and it stays distinct
   from the fill Herdr paints on the active space and agent rows.
 
-The sidebar also needs two colors of its own: a loud one for the rows that flag
-an agent waiting on you, and a calm one for the rows that say an agent finished.
-Nothing declares them. `tt` reads them out of `ghostty.conf` and substitutes them
-into the `@hot` and `@done` placeholders in `config.base.toml`, because sidebar
-rows accept a hex foreground and nothing else and cannot name a `[theme.custom]`
-color.
+The sidebar also needs three colors of its own: a loud one for the rows that flag
+an agent waiting on you, a busy one for the rows that say an agent is still going,
+and a calm one for the rows that say an agent finished. Nothing declares them.
+`tt` reads them out of `ghostty.conf` and substitutes them into the `@hot`,
+`@working` and `@done` placeholders in `config.base.toml`, because sidebar rows
+accept a hex foreground and nothing else and cannot name a `[theme.custom]` color.
 
-The slots it reads are ANSI red and green, already the theme's alarm and success
-colors:
+The slots it reads are ANSI red, yellow and green, already the theme's alarm,
+attention and success colors:
 
-* `palette 9` and `palette 10` on dark backgrounds
-* `palette 1` and `palette 2` on light ones, where the bright pair washes out
+* `palette 9`, `palette 11` and `palette 10` on dark backgrounds
+* `palette 1`, `palette 3` and `palette 2` on light ones, where the bright trio
+  washes out
 
-So a theme gets both for free, and they cannot drift from the palette. Keep all
-four slots legible against the background and it works out. A theme missing one
-still gets a working config, but `tt` warns and falls back to a color that
-belongs to no palette.
+So a theme gets all three for free, and they cannot drift from the palette. The
+slot is taken as the theme gives it, contrast included: catppuccin-latte puts
+`#DF8E1D` in its yellow and `#EFF1F5` in its background, so its busy rows sit at
+2.2:1 and read washed out. A theme missing a slot still gets a working config,
+but `tt` warns and falls back to a color that belongs to no palette.
+
+Reading the slot rather than picking a color per theme means the busy color is
+whatever the theme put in its yellow, which is not always yellow: carbonfox has a
+cyan there and terafox a peach. That is the trade the slot rule buys, and both
+still land distinct from that theme's own red and green, which is the only thing
+the row needs.
 
 ## Taste
 

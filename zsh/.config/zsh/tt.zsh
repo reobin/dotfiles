@@ -45,7 +45,7 @@ __terminal_theme_apply_herdr() {
   emulate -L zsh
   setopt local_options no_aliases
 
-  local theme_dir="$1" herdr_dir tmp hot done_color
+  local theme_dir="$1" herdr_dir tmp hot working done_color
   herdr_dir="${XDG_CONFIG_HOME:-$HOME/.config}/herdr"
 
   [[ -r "$herdr_dir/config.base.toml" ]] || return 1
@@ -59,6 +59,11 @@ __terminal_theme_apply_herdr() {
     print -u2 -- "tt: no red in ${theme_dir:t}/ghostty.conf palette, using $hot"
   fi
 
+  if ! working="$(__terminal_theme_palette_color "$theme_dir" 11 3)"; then
+    working="#C9A227"
+    print -u2 -- "tt: no yellow in ${theme_dir:t}/ghostty.conf palette, using $working"
+  fi
+
   if ! done_color="$(__terminal_theme_palette_color "$theme_dir" 10 2)"; then
     done_color="#4FA76A"
     print -u2 -- "tt: no green in ${theme_dir:t}/ghostty.conf palette, using $done_color"
@@ -70,7 +75,8 @@ __terminal_theme_apply_herdr() {
   # strand the temp file, and herdr_dir is a stow symlink back into the dotfiles
   # repo, so chain on && and let the group's own status reach the cleanup.
   {
-    command sed -e "s/\"@hot\"/\"$hot\"/g" -e "s/\"@done\"/\"$done_color\"/g" "$herdr_dir/config.base.toml" &&
+    command sed -e "s/\"@hot\"/\"$hot\"/g" -e "s/\"@working\"/\"$working\"/g" \
+      -e "s/\"@done\"/\"$done_color\"/g" "$herdr_dir/config.base.toml" &&
       print &&
       print -r -- "# appended by tt from tt/themes/${theme_dir:t}/herdr.toml" &&
       command cat "$theme_dir/herdr.toml"
@@ -80,7 +86,7 @@ __terminal_theme_apply_herdr() {
   # sed above did not match, and an unsubstituted one reaches Herdr as a color,
   # which costs the whole file rather than the row. Keep the config that is
   # already in place instead of replacing it with one Herdr will refuse.
-  if command grep -qE '^[^#]*"@(hot|done)"' "$tmp"; then
+  if command grep -qE '^[^#]*"@(hot|working|done)"' "$tmp"; then
     print -u2 -- "tt: unsubstituted placeholder in herdr/config.base.toml, keeping the current config.toml"
     command rm -f "$tmp"
     return 1

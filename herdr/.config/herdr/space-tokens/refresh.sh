@@ -13,8 +13,9 @@ set -eu
 
 herdr="${HERDR_BIN_PATH:-herdr}"
 source_id="space-tokens"
-# Capped by the rows [ui.sidebar.spaces] has to give. Raising both puts the config
-# over Herdr's row cap, which it answers by discarding the file and using defaults.
+# Capped by the rows [ui.sidebar.spaces] has to give, which leaves room up to 13.
+# Past that the config goes over Herdr's row cap, which it answers by discarding
+# the file and using defaults.
 slots=6
 processes=1
 
@@ -28,7 +29,7 @@ if [ "${1:-}" = "clear" ]; then
   names=""
   slot=1
   while [ "$slot" -le "$slots" ]; do
-    names="$names a$slot a${slot}_blocked a${slot}_done"
+    names="$names a$slot a${slot}_blocked a${slot}_working a${slot}_done"
     slot=$((slot + 1))
   done
   names="$names more more_blocked title"
@@ -224,7 +225,7 @@ plan="$(
 
       # Rows are static, so the color is chosen by which token carries a value:
       # set one and clear the rest, or the row renders both joined by " · ".
-      def slots_of($slot): ["a\($slot)", "a\($slot)_blocked", "a\($slot)_done"];
+      def slots_of($slot): ["a\($slot)", "a\($slot)_blocked", "a\($slot)_working", "a\($slot)_done"];
       def clear_but($slot; $keep):
         [slots_of($slot)[] | select(IN($keep[]) | not) | ("--clear-token", .)];
 
@@ -281,16 +282,13 @@ plan="$(
                  elif $waiting == 1 then ("working" | mark)
                  else ($pane.agent_status | mark)
                  end) as $icon
-              | if $pane.agent_status == "blocked" then
-                  ["--token", "a\($slot)_blocked=\($icon) \($rest)"]
-                  + clear_but($slot; ["a\($slot)_blocked"])
-                elif $pane.agent_status == "done" and $waiting == 0 then
-                  ["--token", "a\($slot)_done=\($icon) \($rest)"]
-                  + clear_but($slot; ["a\($slot)_done"])
-                else
-                  ["--token", "a\($slot)=\($icon) \($rest)"]
-                  + clear_but($slot; ["a\($slot)"])
-                end
+              | (if $pane.agent_status == "blocked" then "a\($slot)_blocked"
+                 elif $waiting > 0 or $pane.agent_status == "working" then "a\($slot)_working"
+                 elif $pane.agent_status == "done" then "a\($slot)_done"
+                 else "a\($slot)"
+                 end) as $slot_token
+              | ["--token", "\($slot_token)=\($icon) \($rest)"]
+                + clear_but($slot; [$slot_token])
             end
         ]
         + [$mine[$slots:] as $hidden
@@ -300,7 +298,8 @@ plan="$(
                ([$hidden[] | select(.agent_status == "blocked")] | length) as $blocked
                # A pane counted as waiting is not also counted as done, or the
                # same agent shows up twice in a line whose whole job is a tally.
-               | ([$hidden[] | select(($pending[.pane_id] // 0) > 0)] | length) as $waiting
+               | ([$hidden[] | select(($pending[.pane_id] // 0) > 0
+                                      or .agent_status == "working")] | length) as $waiting
                | ([$hidden[] | select(.agent_status == "done")
                              | select(($pending[.pane_id] // 0) == 0)] | length) as $done
                | ([
