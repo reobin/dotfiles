@@ -71,37 +71,37 @@ navigate_pane_right = "l"
 [[keys.command]]
 key = "alt+shift+k"
 type = "shell"
-command = "$HOME/dotfiles/herdr/.local/bin/herdr-move-workspace up"
+command = "$HOME/.local/bin/herdr-move-workspace up"
 description = "move workspace up"
 
 [[keys.command]]
 key = "alt+shift+j"
 type = "shell"
-command = "$HOME/dotfiles/herdr/.local/bin/herdr-move-workspace down"
+command = "$HOME/.local/bin/herdr-move-workspace down"
 description = "move workspace down"
 
 [[keys.command]]
 key = "alt+n"
 type = "shell"
-command = "$HOME/dotfiles/herdr/.local/bin/herdr-next-attention"
+command = "$HOME/.local/bin/herdr-next-attention"
 description = "focus next agent waiting"
 
 [[keys.command]]
 key = "prefix+t"
 type = "shell"
-command = "$HOME/dotfiles/herdr/.local/bin/herdr-toggle-split"
+command = "$HOME/.local/bin/herdr-toggle-split"
 description = "toggle split direction"
 
 [[keys.command]]
 key = "prefix+o"
 type = "shell"
-command = "$HOME/dotfiles/herdr/.local/bin/herdr-close-other-panes"
+command = "$HOME/.local/bin/herdr-close-other-panes"
 description = "close other panes"
 
 [[keys.command]]
 key = "alt+s"
 type = "shell"
-command = "$HOME/dotfiles/herdr/.local/bin/herdr-sidetrack"
+command = "$HOME/.local/bin/herdr-sidetrack"
 description = "sidetrack this conversation"
 
 # A pane garbled by a fullscreen toggle survives claude's own repaints, /resume
@@ -109,7 +109,7 @@ description = "sidetrack this conversation"
 [[keys.command]]
 key = "alt+c"
 type = "shell"
-command = "$HOME/dotfiles/herdr/.local/bin/herdr-restart-agent"
+command = "$HOME/.local/bin/herdr-restart-agent"
 description = "restart claude on the same session"
 
 # hunkdiff's own `setup-keys` writes into config.toml, which tt regenerates
