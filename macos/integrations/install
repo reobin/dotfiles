@@ -22,32 +22,31 @@ else
   herdr plugin link "$SPACE_TOKENS_DIR"
 fi
 
-HERDR_PLUGINS=(
-  "jhochenbaum.hunkdiff jhochenbaum/herdr-hunk-diff"
-)
+HUNKDIFF_ID="jhochenbaum.hunkdiff"
 
-PLUGIN_STATUS="$(herdr plugin list)"
+install_herdr_plugin() {
+  local plugin_id="$1" plugin_repo="$2"
 
-for plugin in "${HERDR_PLUGINS[@]}"; do
-  read -r plugin_id plugin_repo <<<"$plugin"
-
-  if grep -q "$plugin_id" <<<"$PLUGIN_STATUS"; then
+  if grep -q "$plugin_id" <<<"$(herdr plugin list)"; then
     echo "Herdr $plugin_id plugin is already installed"
-    continue
-  fi
-
-  if ! command -v node >/dev/null 2>&1; then
-    echo "Skipping Herdr $plugin_id plugin (node is not installed)" >&2
-    continue
+    return 0
   fi
 
   echo "installing Herdr $plugin_id plugin"
   herdr plugin install "$plugin_repo" --yes
-done
+}
 
-unset plugin plugin_id plugin_repo
+# hunkdiff builds with npm and runs every action, event and pane through node.
+if command -v node >/dev/null 2>&1; then
+  install_herdr_plugin "$HUNKDIFF_ID" jhochenbaum/herdr-hunk-diff
+else
+  echo "Skipping Herdr $HUNKDIFF_ID plugin (node is not installed)" >&2
+fi
 
-HUNKDIFF_ID="jhochenbaum.hunkdiff"
+install_herdr_plugin reobin.close-other-panes reobin/herdr-close-other-panes
+
+unset -f install_herdr_plugin
+
 HUNK_SHIM="${XDG_DATA_HOME:-$HOME/.local/share}/mise/shims/hunk"
 
 # Left alone, the plugin runs a hunkdiff it bundles, which trails the one mise

@@ -94,9 +94,8 @@ description = "toggle split direction"
 
 [[keys.command]]
 key = "prefix+o"
-type = "shell"
-command = "$HOME/.local/bin/herdr-close-other-panes"
-description = "close other panes"
+type = "plugin_action"
+command = "reobin.close-other-panes.close-others"
 
 [[keys.command]]
 key = "alt+s"
