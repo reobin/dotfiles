@@ -18,5 +18,5 @@ pane_ids="$(
 )"
 
 if [ -n "$pane_ids" ]; then
-  printf '%s\n' "$pane_ids" | xargs -n 1 herdr pane close
+  printf '%s\n' "$pane_ids" | xargs -n 1 -P 8 herdr pane close
 fi
