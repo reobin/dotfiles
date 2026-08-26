@@ -214,11 +214,17 @@ plan="$(
     jq -r --argjson panes "$panes" --argjson tabs "$tabs" --argjson commands "$commands" --argjson slots "$slots" \
       --argjson repos "$repos" --argjson named "$named" --argjson pending "$pending" --argjson batch "$batch" '
       def mark:
-        if . == "blocked" then "×"
-        elif . == "working" then "◐"
-        elif . == "done" then "✓"
+        if . == "blocked" or . == "working" or . == "done" then "●"
         elif . == "idle" then "○"
         else "·"
+        end;
+
+      # The tally on the +N more row puts all three busy states on one line, which
+      # carries a single color, so there the shape is the only thing telling them apart.
+      def tally:
+        if . == "blocked" then "×"
+        elif . == "done" then "✓"
+        else mark
         end;
 
       def basename: (. / "/") | map(select(. != "")) | last // "";
@@ -305,9 +311,9 @@ plan="$(
                | ([$hidden[] | select(.agent_status == "done")
                              | select(($pending[.pane_id] // 0) == 0)] | length) as $done
                | ([
-                   (if $blocked > 0 then "\($blocked)\("blocked" | mark)" else empty end),
-                   (if $waiting > 0 then "\($waiting)\("working" | mark)" else empty end),
-                   (if $done > 0 then "\($done)\("done" | mark)" else empty end)
+                   (if $blocked > 0 then "\($blocked)\("blocked" | tally)" else empty end),
+                   (if $waiting > 0 then "\($waiting)\("working" | tally)" else empty end),
+                   (if $done > 0 then "\($done)\("done" | tally)" else empty end)
                  ] | join(" ")) as $flags
                | (if $flags == "" then "" else " · \($flags)" end) as $tail
                | "+\($hidden | length) more\($tail)" as $line

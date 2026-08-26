@@ -170,10 +170,11 @@ hide_tab_bar_when_single_tab = true
 
 agent_panel_sort = "spaces"
 
-# Dots carry state in hue alone. state_icon and the navigator marks take
-# distinct shapes instead, which survive a theme swap; the state colors in the
-# rows below are retuned for every palette.
-status_indicators = "symbols"
+# The symbols set marks working with U+25D0, which JetBrains Mono lacks; it comes
+# from Menlo instead and draws a size larger than every glyph beside it. Dots stay
+# in the one font and carry state in hue alone, which the rows below already set
+# and every palette retunes. refresh.sh mirrors the same set.
+status_indicators = "dots"
 
 # Each space is one block: name, branch, then one line per pane with what it is
 # running. The title and a1..a6 tokens come from space-tokens/refresh.sh; rows
@@ -196,7 +197,7 @@ status_indicators = "symbols"
 # calm color is a claim there is nothing left to wait for.
 #
 # Never two tokens with a value on the same row: Herdr joins the ones that render
-# with " · ", so a glyph and its text side by side come out as "✓ · title". That
+# with " · ", so a glyph and its text side by side come out as "● · title". That
 # is why the color goes on the whole line and not on the glyph alone, and why
 # refresh.sh sets exactly one token per slot and clears the others. A row holds
 # every state a slot can be in, which is safe only because at most one is set.
