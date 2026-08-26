@@ -277,8 +277,10 @@ plan="$(
               | ($pending[$pane.pane_id] // 0) as $waiting
               # The count rides on the glyph rather than the end of the line,
               # which is a title and gets truncated. One is what the glyph already
-              # means, so only a second task is worth the column.
-              | (if $waiting > 1 then "\("working" | mark)\($waiting)"
+              # means, so only a second task is worth the column. It leads rather than
+              # trails because a fallback glyph can overrun its cell and paint over the
+              # character after it, and a separator space is safe to overrun.
+              | (if $waiting > 1 then "\($waiting)\("working" | mark)"
                  elif $waiting == 1 then ("working" | mark)
                  else ($pane.agent_status | mark)
                  end) as $icon
