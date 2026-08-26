@@ -1,6 +1,8 @@
 command = /bin/zsh
 
+# Fallback for glyphs SF Mono lacks (◐ U+25D0); the system default is proportional.
 font-family = "SF Mono"
+font-family = "Menlo"
 font-style = Regular
 font-size = 16
 
