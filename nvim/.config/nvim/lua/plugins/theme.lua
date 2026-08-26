@@ -1,4 +1,4 @@
-local active_theme = "carbonfox"
+local active_theme = "nightfox"
 local theme_file = vim.fn.expand("~/.config/tt/active/nvim.lua")
 local ok, theme = pcall(dofile, theme_file)
 
@@ -35,6 +35,11 @@ return {
   {
     "rose-pine/neovim",
     name = "rose-pine",
+    lazy = false,
+    priority = 1000,
+  },
+  {
+    "webhooked/kanso.nvim",
     lazy = false,
     priority = 1000,
   },

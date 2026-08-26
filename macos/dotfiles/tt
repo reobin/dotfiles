@@ -8,9 +8,9 @@ mkdir -p ~/.config/tt/active ~/.config/ghostty/themes
 
 # `current` lives inside the stowed directory, so it outlives the rm above.
 # Seeding it unconditionally would reset the terminal theme on every re-run of
-# ./macos/init; carbonfox is only the first-install default.
+# ./macos/init; nightfox is only the first-install default.
 tt_theme="$(cat ~/.config/tt/current 2>/dev/null || true)"
-[[ -d ~/.config/tt/themes/$tt_theme ]] || tt_theme=carbonfox
+[[ -d ~/.config/tt/themes/$tt_theme ]] || tt_theme=nightfox
 
 rm -f ~/.config/ghostty/themes/terminal-active
 cp -f ~/.config/tt/themes/"$tt_theme"/ghostty.conf ~/.config/tt/active/ghostty.conf

@@ -1,0 +1,44 @@
+# Herdr color overrides for this theme, merged into the generated Herdr config
+# by `tt`. See THEME_GUIDE.md.
+#
+# overlay0 paints inactive pane borders and dimmed hint text, so it is pinned at
+# roughly 2.1:1 against this theme's background: recessive next to the accent-lit
+# active border, still legible as text.
+#
+# sidebar_bg sits a little under the background: enough that the spaces list
+# reads as its own surface, not enough for its edge to land as a seam down the
+# screen. It goes down and not up: a lifted panel competes with the panes in
+# front of it.
+#
+# selection_bg paints the navigate cursor, which has to stay apart from the fill
+# on the active space and agent rows. This theme's terminal selection color is
+# already a highlight that reads without shouting, so the cursor takes it instead
+# of a color belonging to no palette.
+#
+# yellow is the busy color, on Herdr's own state dot and on the agent rows `tt`
+# builds under it. The ANSI yellow this theme would otherwise resolve to is an
+# olive, #77713F, and its green is #6F894E: 33 degrees of hue apart at the same
+# lightness and the same low saturation, so a working row and a done row read as
+# the same color.
+#
+# This is pearlYellow3, #DE9800, held at its own hue and saturation and taken
+# down to 34% lightness. The palette's gold is the right hue and cannot be used
+# as it ships: at 44% lightness it sits at 2.1:1 on this background and reads
+# washed out, and every yellow that holds contrast here is an olive or a brown,
+# because on paper a yellow has to be light to stay yellow. Darkening is the one
+# axis that buys contrast without walking the hue toward orange, and it is the
+# same move kanso makes for its own saturated variants.
+#
+# subtext0 and overlay1 are pearlGray3, the muted tone a seen-and-finished agent
+# takes on both Herdr's state dot and the row `tt` builds under it. It sits at
+# 4.4:1 here against the foreground's 12.9:1, so a finished space recedes without
+# going unreadable. Both keys carry it because Herdr does not document which of
+# the two its idle icon resolves to, and they are adjacent muted tiers whose
+# difference nothing in this sidebar depends on.
+[theme.custom]
+overlay0 = "#ADA79B"
+sidebar_bg = "#EDECE9"
+selection_bg = "#E2E1DF"
+yellow = "#AD7700"
+subtext0 = "#6D6D69"
+overlay1 = "#6D6D69"
