@@ -16,3 +16,11 @@ cursor-invert-fg-bg = true
 adjust-cursor-thickness = 2
 
 theme = terminal-active
+
+# The quick terminal holds the scratch note and nothing else: zsh hands it
+# straight to `note`. quick-terminal-size takes width,height and is absent from
+# `ghostty +show-config`, so the two values are the whole of what documents it.
+keybind = global:cmd+ctrl+alt+shift+n=toggle_quick_terminal
+quick-terminal-position = center
+quick-terminal-size = 640px,640px
+quick-terminal-animation-duration = 0

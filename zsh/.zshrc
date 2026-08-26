@@ -28,6 +28,15 @@ export VISUAL='nvim'
 export GIT_EDITOR='nvim'
 
 source ~/.config/zsh/cache.zsh
+source ~/.config/zsh/note.zsh
+
+# The quick terminal exists only to hold the note, so hand it over before the
+# interactive setup below. nvim needs none of it, and skipping it is what makes
+# `tab n` land in the file rather than in a prompt.
+if [[ -n "${GHOSTTY_QUICK_TERMINAL:-}" ]]; then
+  note
+  exit
+fi
 
 bindkey -e
 

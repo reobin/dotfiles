@@ -260,6 +260,23 @@
                                 "from": { "key_code": "l" },
                                 "to": [{ "shell_command": "/usr/bin/open -a /Applications/Slack.app" }],
                                 "type": "basic"
+                            },
+                            {
+                                "conditions": [
+                                    {
+                                        "name": "app_launch_layer",
+                                        "type": "variable_if",
+                                        "value": 1
+                                    }
+                                ],
+                                "from": { "key_code": "n" },
+                                "to": [
+                                    {
+                                        "key_code": "n",
+                                        "modifiers": ["left_command", "left_control", "left_option", "left_shift"]
+                                    }
+                                ],
+                                "type": "basic"
                             }
                         ]
                     }
