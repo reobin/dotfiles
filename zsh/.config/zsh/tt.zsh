@@ -5,6 +5,45 @@
 # __terminal_theme_apply_env, so sourcing this file alone is only safe for the
 # entry points that skip it: apply_herdr, and preview in the fzf subshell.
 
+# Herdr paints its own state dot from the semantic tokens in `[theme.custom]`, but
+# a sidebar row takes a hex and cannot name one. Read the token out of the theme's
+# herdr.toml and hand the row its value, so the dot and the row it sits above are
+# the same color by construction rather than by two declarations agreeing.
+#
+# A theme that declares no token falls through to the slot rule below, which is
+# the common case: the tokens Herdr resolves from the terminal theme already are
+# the ANSI trio. Declaring one is how a theme fixes a trio that lands too close.
+#
+# `${name}` is braced because a bare `$name` in front of `[[:space:]]` parses as
+# an array subscript, not as the parameter followed by a character class.
+__terminal_theme_custom_color() {
+  emulate -L zsh
+  setopt local_options no_aliases
+
+  local theme_dir="$1" name="$2" line
+
+  [[ -r "$theme_dir/herdr.toml" ]] || return 1
+
+  while IFS= read -r line; do
+    if [[ "$line" =~ "^[[:space:]]*${name}[[:space:]]*=[[:space:]]*[\"'](#[0-9A-Fa-f]{6})[\"']" ]]; then
+      print -r -- "$match[1]"
+      return 0
+    fi
+  done < "$theme_dir/herdr.toml"
+
+  return 1
+}
+
+# Whether the theme names the token at all, which is a different question from
+# whether the value above could be read. Pinning a token the theme also names is
+# a duplicate key, and Herdr answers a duplicate key by discarding the file.
+__terminal_theme_declares_custom_color() {
+  emulate -L zsh
+  setopt local_options no_aliases
+
+  command grep -qE "^[[:space:]]*$2[[:space:]]*=" "$1/herdr.toml"
+}
+
 # Read a sidebar color out of the theme's palette rather than pinning a copy per
 # theme, which would be free to drift from the colorscheme it belongs to. Callers
 # pass the ANSI slot: the bright one on ink backgrounds, the normal one on paper,
@@ -45,7 +84,8 @@ __terminal_theme_apply_herdr() {
   emulate -L zsh
   setopt local_options no_aliases
 
-  local theme_dir="$1" herdr_dir tmp hot working done_color
+  local theme_dir="$1" herdr_dir tmp hot working done_color idle last_table token
+  local -a pinned
   herdr_dir="${XDG_CONFIG_HOME:-$HOME/.config}/herdr"
 
   [[ -r "$herdr_dir/config.base.toml" ]] || return 1
@@ -54,19 +94,54 @@ __terminal_theme_apply_herdr() {
   # A theme missing one of these still gets a working config rather than a
   # placeholder reaching Herdr as a color, but the fallback belongs to no
   # palette, so say so instead of quietly shipping it.
-  if ! hot="$(__terminal_theme_palette_color "$theme_dir" 9 1)"; then
-    hot="#E05252"
-    print -u2 -- "tt: no red in ${theme_dir:t}/ghostty.conf palette, using $hot"
+  #
+  # Whatever each one resolves to also gets pinned onto `[theme.custom]` below,
+  # unless the theme declared it there itself, so Herdr's state dot and the rows
+  # cannot disagree. Only the tokens the theme did not name are appended, and
+  # that question is asked separately from reading the value: a declaration this
+  # cannot parse still has to suppress the pin, or the file carries the key twice.
+  if ! hot="$(__terminal_theme_custom_color "$theme_dir" red)"; then
+    __terminal_theme_declares_custom_color "$theme_dir" red || pinned+=("red")
+    if ! hot="$(__terminal_theme_palette_color "$theme_dir" 9 1)"; then
+      hot="#E05252"
+      print -u2 -- "tt: no red in ${theme_dir:t}/ghostty.conf palette, using $hot"
+    fi
   fi
 
-  if ! working="$(__terminal_theme_palette_color "$theme_dir" 11 3)"; then
-    working="#C9A227"
-    print -u2 -- "tt: no yellow in ${theme_dir:t}/ghostty.conf palette, using $working"
+  if ! working="$(__terminal_theme_custom_color "$theme_dir" yellow)"; then
+    __terminal_theme_declares_custom_color "$theme_dir" yellow || pinned+=("yellow")
+    if ! working="$(__terminal_theme_palette_color "$theme_dir" 11 3)"; then
+      working="#C9A227"
+      print -u2 -- "tt: no yellow in ${theme_dir:t}/ghostty.conf palette, using $working"
+    fi
   fi
 
-  if ! done_color="$(__terminal_theme_palette_color "$theme_dir" 10 2)"; then
-    done_color="#4FA76A"
-    print -u2 -- "tt: no green in ${theme_dir:t}/ghostty.conf palette, using $done_color"
+  if ! done_color="$(__terminal_theme_custom_color "$theme_dir" green)"; then
+    __terminal_theme_declares_custom_color "$theme_dir" green || pinned+=("green")
+    if ! done_color="$(__terminal_theme_palette_color "$theme_dir" 10 2)"; then
+      done_color="#4FA76A"
+      print -u2 -- "tt: no green in ${theme_dir:t}/ghostty.conf palette, using $done_color"
+    fi
+  fi
+
+  # Not a state color and not pinned: `subtext0` is Herdr's muted tone, which it
+  # already uses for the state dot of a seen-and-finished agent, so reading it
+  # brings the row down to the dot rather than pushing the dot up to the row. A
+  # theme that declares none keeps the ordinary foreground every row used to have.
+  if ! idle="$(__terminal_theme_custom_color "$theme_dir" subtext0)" &&
+    ! idle="$(__terminal_theme_conf_color "$theme_dir" foreground)"; then
+    idle="#808080"
+    print -u2 -- "tt: no foreground in ${theme_dir:t}/ghostty.conf, using $idle"
+  fi
+
+  # The pinned keys are appended bare, so they land in whatever table the theme
+  # fragment ended in. That is `[theme.custom]` by the rule that the fragment
+  # declares that block and nothing after it, and a fragment that broke the rule
+  # would silently move Herdr's colors into another table.
+  last_table="$(command grep -o '^\[[^]]*\]' "$theme_dir/herdr.toml" | command tail -1)"
+  if [[ "$last_table" != "[theme.custom]" ]]; then
+    print -u2 -- "tt: ${theme_dir:t}/herdr.toml ends in ${last_table:-no table}, not [theme.custom]"
+    return 1
   fi
 
   tmp="$herdr_dir/config.toml.tmp.$$"
@@ -76,17 +151,29 @@ __terminal_theme_apply_herdr() {
   # repo, so chain on && and let the group's own status reach the cleanup.
   {
     command sed -e "s/\"@hot\"/\"$hot\"/g" -e "s/\"@working\"/\"$working\"/g" \
-      -e "s/\"@done\"/\"$done_color\"/g" "$herdr_dir/config.base.toml" &&
+      -e "s/\"@done\"/\"$done_color\"/g" -e "s/\"@idle\"/\"$idle\"/g" \
+      "$herdr_dir/config.base.toml" &&
       print &&
       print -r -- "# appended by tt from tt/themes/${theme_dir:t}/herdr.toml" &&
-      command cat "$theme_dir/herdr.toml"
+      command cat "$theme_dir/herdr.toml" &&
+      { (( ! $#pinned )) || {
+        print &&
+          print -r -- "# pinned by tt so Herdr's state dot matches the agent rows" &&
+          for token in $pinned; do
+            case "$token" in
+              red) print -r -- "red = \"$hot\"" ;;
+              yellow) print -r -- "yellow = \"$working\"" ;;
+              green) print -r -- "green = \"$done_color\"" ;;
+            esac
+          done
+      } }
   } > "$tmp" || { command rm -f "$tmp"; return 1 }
 
   # The fallbacks above cover a palette that cannot be read, not a placeholder the
   # sed above did not match, and an unsubstituted one reaches Herdr as a color,
   # which costs the whole file rather than the row. Keep the config that is
   # already in place instead of replacing it with one Herdr will refuse.
-  if command grep -qE '^[^#]*"@(hot|working|done)"' "$tmp"; then
+  if command grep -qE '^[^#]*"@(hot|working|done|idle)"' "$tmp"; then
     print -u2 -- "tt: unsubstituted placeholder in herdr/config.base.toml, keeping the current config.toml"
     command rm -f "$tmp"
     return 1
@@ -106,22 +193,29 @@ end tell
 APPLESCRIPT
 }
 
-__terminal_theme_background() {
+# Read a top-level `name = #hex` out of the theme's ghostty.conf. Anchored, so
+# `foreground` does not answer for `selection-foreground`. `${name}` is braced
+# for the same reason as in __terminal_theme_custom_color.
+__terminal_theme_conf_color() {
   emulate -L zsh
   setopt local_options no_aliases
 
-  local theme_dir="$1" line
+  local theme_dir="$1" name="$2" line
 
   [[ -r "$theme_dir/ghostty.conf" ]] || return 1
 
   while IFS= read -r line; do
-    if [[ "$line" =~ '^background[[:space:]]*=[[:space:]]*(#[0-9A-Fa-f]{6})' ]]; then
+    if [[ "$line" =~ "^${name}[[:space:]]*=[[:space:]]*(#[0-9A-Fa-f]{6})" ]]; then
       print -r -- "$match[1]"
       return 0
     fi
   done < "$theme_dir/ghostty.conf"
 
   return 1
+}
+
+__terminal_theme_background() {
+  __terminal_theme_conf_color "$1" background
 }
 
 __terminal_theme_is_light() {

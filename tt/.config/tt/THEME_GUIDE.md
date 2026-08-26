@@ -98,10 +98,65 @@ slot is taken as the theme gives it, contrast included: catppuccin-latte puts
 but `tt` warns and falls back to a color that belongs to no palette.
 
 Reading the slot rather than picking a color per theme means the busy color is
-whatever the theme put in its yellow, which is not always yellow: carbonfox has a
-cyan there and terafox a peach. That is the trade the slot rule buys, and both
-still land distinct from that theme's own red and green, which is the only thing
-the row needs.
+whatever the theme put in its yellow, which is not always yellow: kanso-pearl has
+an olive there. That is the trade the slot rule buys, and it is fine as long as
+the three still land apart, which is the only thing the row needs.
+
+When they do not, the theme sets the token itself in `[theme.custom]`:
+
+* `red = "#RRGGBB"` for the loud color
+* `yellow = "#RRGGBB"` for the busy one
+* `green = "#RRGGBB"` for the calm one
+
+These are Herdr's own semantic tokens, and Herdr paints the state dot on the
+first row of every space from them. `tt` resolves each one from the theme's block
+when it is declared there and from the ANSI slot otherwise, feeds the result to
+the placeholders, and pins whatever it resolved back onto `[theme.custom]` for
+the tokens the theme did not declare. So the dot and the agent rows under it
+always come from one value, whether or not the theme said anything.
+
+That pinning is not redundant with the slot rule. Herdr resolves its own tokens
+from the terminal theme independently, and on a light background it does not
+reach the same slots `tt` does, so a dot and the row under it were free to differ
+by a shade. Declaring the token is now the only thing that decides.
+
+Pinned keys are appended bare at the end of the generated config, which means
+they land in whatever table the theme fragment ended in. That is why the fragment
+must declare `[theme.custom]` and nothing after it; `tt` checks and refuses
+rather than quietly moving Herdr's colors into another table.
+
+A fourth row color is not a state color. An agent that finished and has been
+looked at is `idle` in Herdr's vocabulary, and Herdr draws its dot in a muted
+tone rather than a state one, so a row left in the ordinary foreground came out
+louder than the dot beside it. `tt` fills `@idle` from `subtext0`:
+
+* `subtext0 = "#RRGGBB"` for the muted tone
+
+Aim for roughly 4.5:1 against the theme background, well under the foreground's
+own contrast, so a finished space recedes without going unreadable. A theme that
+declares none falls back to the theme's own `foreground`, which is what every row
+was before this existed, so themes that say nothing are unaffected.
+
+Herdr does not document whether its idle icon resolves to `subtext0` or to
+`overlay1`, so a theme that wants the dot to follow gives both the same value.
+They are adjacent muted tiers and nothing in this sidebar depends on the
+difference. `overlay0` is not one of them and stays where the theme tuned it.
+
+Take the replacement from the colorscheme's own extended palette rather than
+inventing one. Where nothing in that palette both reads right and holds contrast,
+move one of its colors along a single axis and say which: lightness buys contrast
+without walking the hue, and most colorschemes already ship variants derived the
+same way. Say in the comment which two colors were colliding and what the
+replacement buys.
+
+kanso-pearl is the case that earned this. Its yellow `#77713F` and its green
+`#6F894E` sit 33 degrees of hue apart at the same lightness and the same low
+saturation, close enough that a working row and a done row read alike. Its
+extended palette offers no drop-in: `pearlYellow2` is a brown, `pearlOrange` is
+an orange, and `pearlYellow3` is the right hue but sits at 2.1:1 here. On a paper
+background a yellow has to be light to stay yellow, and light is what costs the
+contrast, so its `yellow` is `pearlYellow3` taken down to 34% lightness with its
+hue and saturation untouched.
 
 ## Taste
 

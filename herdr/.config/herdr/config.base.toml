@@ -191,8 +191,8 @@ status_indicators = "dots"
 # so each thing a line can be needs its own. The three that carry a color are the
 # three state_icon itself colors, so a pane line reads the same way as the space
 # row above it: blocked goes loud and bold, working takes the busy color, and done
-# takes the calm one. Idle is the only state left in the ordinary foreground,
-# which is what makes a finished space look finished. An idle agent with
+# takes the calm one. Idle is the only state that carries no state color, and it
+# recedes instead, which is what makes a finished space look finished. An idle agent with
 # background work still running counts as working rather than done, because the
 # calm color is a claim there is nothing left to wait for.
 #
@@ -205,19 +205,25 @@ status_indicators = "dots"
 # Herdr allows 16 rows here and this uses 9, so raising `slots` in refresh.sh
 # costs one row each up to 13.
 #
-# @hot, @working and @done are placeholders tt fills in from the theme's palette.
+# @hot, @working, @done and @idle are placeholders tt fills in from the theme.
 # See tt/THEME_GUIDE.md for why they are placeholders and not theme color names.
+#
+# @idle is the one that is not a state color. Herdr draws its own state dot for a
+# seen-and-finished agent in a muted tone, so a row left in the ordinary
+# foreground came out louder than the dot beside it. It resolves to the theme's
+# `subtext0`, and to the ordinary foreground on a theme that declares none, which
+# is what every row here used to be.
 [ui.sidebar.spaces]
 row_gap = 1
 rows = [
   ["state_icon", { token = "$title", bold = true }],
   ["branch", "git_status"],
-  [{ token = "$a1_blocked", bold = true, fg = "@hot" }, { token = "$a1_working", fg = "@working" }, { token = "$a1_done", fg = "@done" }, "$a1"],
-  [{ token = "$a2_blocked", bold = true, fg = "@hot" }, { token = "$a2_working", fg = "@working" }, { token = "$a2_done", fg = "@done" }, "$a2"],
-  [{ token = "$a3_blocked", bold = true, fg = "@hot" }, { token = "$a3_working", fg = "@working" }, { token = "$a3_done", fg = "@done" }, "$a3"],
-  [{ token = "$a4_blocked", bold = true, fg = "@hot" }, { token = "$a4_working", fg = "@working" }, { token = "$a4_done", fg = "@done" }, "$a4"],
-  [{ token = "$a5_blocked", bold = true, fg = "@hot" }, { token = "$a5_working", fg = "@working" }, { token = "$a5_done", fg = "@done" }, "$a5"],
-  [{ token = "$a6_blocked", bold = true, fg = "@hot" }, { token = "$a6_working", fg = "@working" }, { token = "$a6_done", fg = "@done" }, "$a6"],
+  [{ token = "$a1_blocked", bold = true, fg = "@hot" }, { token = "$a1_working", fg = "@working" }, { token = "$a1_done", fg = "@done" }, { token = "$a1", fg = "@idle" }],
+  [{ token = "$a2_blocked", bold = true, fg = "@hot" }, { token = "$a2_working", fg = "@working" }, { token = "$a2_done", fg = "@done" }, { token = "$a2", fg = "@idle" }],
+  [{ token = "$a3_blocked", bold = true, fg = "@hot" }, { token = "$a3_working", fg = "@working" }, { token = "$a3_done", fg = "@done" }, { token = "$a3", fg = "@idle" }],
+  [{ token = "$a4_blocked", bold = true, fg = "@hot" }, { token = "$a4_working", fg = "@working" }, { token = "$a4_done", fg = "@done" }, { token = "$a4", fg = "@idle" }],
+  [{ token = "$a5_blocked", bold = true, fg = "@hot" }, { token = "$a5_working", fg = "@working" }, { token = "$a5_done", fg = "@done" }, { token = "$a5", fg = "@idle" }],
+  [{ token = "$a6_blocked", bold = true, fg = "@hot" }, { token = "$a6_working", fg = "@working" }, { token = "$a6_done", fg = "@done" }, { token = "$a6", fg = "@idle" }],
   [{ token = "$more_blocked", bold = true, fg = "@hot" }, "$more"],
 ]
 
