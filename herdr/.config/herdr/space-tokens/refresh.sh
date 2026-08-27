@@ -270,7 +270,11 @@ plan="$(
           | if $pane == null then
               clear_but($slot; [])
             elif ($pane.agent // null) == null then
-              ([$tab_labels[$pane.tab_id] // empty, $commands[$pane.pane_id] // "shell"] | join(" · ")) as $rest
+              # A pane that names itself says it better than the process behind it:
+              # the hunk review pane sets a title, where its leader reads as `node
+              # <path to the plugin entrypoint>`.
+              (($pane.title // "" | select(. != "")) // $commands[$pane.pane_id] // "shell") as $what
+              | ([$tab_labels[$pane.tab_id] // empty, $what] | join(" · ")) as $rest
               | ["--token", "a\($slot)=· \($rest)"] + clear_but($slot; ["a\($slot)"])
             else
               # Claude prefixes its title with a spinner frame, which reads as a
