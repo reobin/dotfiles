@@ -29,7 +29,7 @@ if [ "${1:-}" = "clear" ]; then
   names=""
   slot=1
   while [ "$slot" -le "$slots" ]; do
-    names="$names a$slot a${slot}_blocked a${slot}_working a${slot}_done"
+    names="$names a$slot a${slot}_blocked a${slot}_working a${slot}_done a${slot}_pane"
     slot=$((slot + 1))
   done
   names="$names more more_blocked title"
@@ -231,7 +231,8 @@ plan="$(
 
       # Rows are static, so the color is chosen by which token carries a value:
       # set one and clear the rest, or the row renders both joined by " · ".
-      def slots_of($slot): ["a\($slot)", "a\($slot)_blocked", "a\($slot)_working", "a\($slot)_done"];
+      def slots_of($slot): ["a\($slot)", "a\($slot)_blocked", "a\($slot)_working", "a\($slot)_done",
+                            "a\($slot)_pane"];
       def clear_but($slot; $keep):
         [slots_of($slot)[] | select(IN($keep[]) | not) | ("--clear-token", .)];
 
@@ -275,7 +276,9 @@ plan="$(
               # <path to the plugin entrypoint>`.
               (($pane.title // "" | select(. != "")) // $commands[$pane.pane_id] // "shell") as $what
               | ([$tab_labels[$pane.tab_id] // empty, $what] | join(" · ")) as $rest
-              | ["--token", "a\($slot)=· \($rest)"] + clear_but($slot; ["a\($slot)"])
+              # Its own token, so a pane row and an agent row Herdr has no status
+              # for stay separable even though both render plain.
+              | ["--token", "a\($slot)_pane=· \($rest)"] + clear_but($slot; ["a\($slot)_pane"])
             else
               # Claude prefixes its title with a spinner frame, which reads as a
               # second, contradicting status glyph next to the mark. Dropping a
@@ -294,9 +297,14 @@ plan="$(
                  elif $waiting == 1 then ("working" | mark)
                  else ($pane.agent_status | mark)
                  end) as $icon
+              # idle is done-and-seen, so it keeps the calm color and only drops
+              # from ● to ○, which is what Herdr does on the space row above. That
+              # leaves `a$slot` for a status with no state to claim, which is
+              # `unknown`: a · in the plain foreground, like a pane row.
               | (if $pane.agent_status == "blocked" then "a\($slot)_blocked"
                  elif $waiting > 0 or $pane.agent_status == "working" then "a\($slot)_working"
-                 elif $pane.agent_status == "done" then "a\($slot)_done"
+                 elif $pane.agent_status == "done" or $pane.agent_status == "idle"
+                 then "a\($slot)_done"
                  else "a\($slot)"
                  end) as $slot_token
               | ["--token", "\($slot_token)=\($icon) \($rest)"]
@@ -312,7 +320,7 @@ plan="$(
                # same agent shows up twice in a line whose whole job is a tally.
                | ([$hidden[] | select(($pending[.pane_id] // 0) > 0
                                       or .agent_status == "working")] | length) as $waiting
-               | ([$hidden[] | select(.agent_status == "done")
+               | ([$hidden[] | select(.agent_status == "done" or .agent_status == "idle")
                              | select(($pending[.pane_id] // 0) == 0)] | length) as $done
                | ([
                    (if $blocked > 0 then "\($blocked)\("blocked" | tally)" else empty end),

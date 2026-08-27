@@ -3,11 +3,10 @@ onboarding = false
 [theme]
 name = "terminal"
 
-# This file is the base. tt concatenates it with tt/themes/<name>/herdr.toml
-# to produce config.toml, which is what Herdr actually reads, so edit this file
-# and not that one. The theme fragment owns `[theme.custom]`: overlay0 paints
-# inactive pane borders and dimmed hint text, and no single gray is recessive
-# on both paper and ink backgrounds.
+# tt concatenates this file with tt/themes/<name>/herdr.toml to produce
+# config.toml, which is what Herdr reads, so edit this one. The theme fragment
+# owns `[theme.custom]`, because no single overlay0 gray is recessive on both
+# paper and ink backgrounds.
 
 [terminal]
 new_cwd = "follow"
@@ -142,19 +141,16 @@ description = "floating pane"
 [ui]
 mouse_capture = true
 
-# A wheel notch is the only scroll Herdr sizes from config; page keys are always
-# a full page. The karabiner rule behind alt+u sends notches, so this number is
-# what makes that chord land on roughly half a screen. It costs the trackpad,
-# which now moves 8 lines a notch, and that trade is the point.
+# A wheel notch is the only scroll Herdr sizes from config. The karabiner rule
+# behind alt+u sends notches, so this is what makes that chord land on roughly
+# half a screen, at the cost of a coarser trackpad.
 mouse_scroll_lines = 8
 confirm_close = false
 prompt_new_tab_name = false
 
-# Both prompts land before there is anything to name, so what gets typed is a
-# placeholder. The title row says which repo and the branch row which checkout,
-# and two spaces on one checkout are told apart by the pane lines under them
-# rather than by a number. A space that earns a name gets one later, from
-# rename_workspace.
+# The prompt lands before there is anything to name, so what gets typed is a
+# placeholder. The title and branch rows below already say which repo and
+# checkout; a space that earns a name gets one later from rename_workspace.
 prompt_new_workspace_name = false
 
 # Agent and command lines need the room; 36 is also the default max width.
@@ -170,60 +166,46 @@ hide_tab_bar_when_single_tab = true
 
 agent_panel_sort = "spaces"
 
-# The symbols set marks working with U+25D0, which JetBrains Mono lacks; it comes
-# from Menlo instead and draws a size larger than every glyph beside it. Dots stay
-# in the one font and carry state in hue alone, which the rows below already set
-# and every palette retunes. refresh.sh mirrors the same set.
+# The symbols set marks working with U+25D0, which JetBrains Mono lacks, so it
+# falls back to Menlo and draws a size larger than every glyph beside it. Dots
+# stay in the one font. refresh.sh mirrors the same set.
 status_indicators = "dots"
 
-# Each space is one block: name, branch, then one line per pane with what it is
-# running. The title and a1..a6 tokens come from space-tokens/refresh.sh; rows
-# with no value disappear, so a block is only as tall as it has content. Drag
-# the sidebar's section divider to the bottom to starve the agents panel.
+# Each space is one block: title, branch, then one line per pane. The $title and
+# a1..a6 tokens come from space-tokens/refresh.sh; rows with no value disappear,
+# so a block is only as tall as it has content.
 #
-# $title stands in for the built-in workspace token, which renders a label that
-# is a bare basename until someone changes it. It is the repo name, joined to the
-# label by refresh.sh when the label is one somebody chose, and the branch row
-# under it says which checkout. Joining there rather than giving the label its
-# own token keeps the separator this script's to pick and costs no second column.
+# A style belongs to a whole token, so every state a line can be needs its own
+# token. Blocked, working and done carry the three state colors, so a pane line
+# reads like the space row above it. Idle shares the done token: a seen-and-
+# finished agent is still finished, so only its glyph drops from ● to ○.
 #
-# Color says what the pane wants from you, and a style belongs to a whole token,
-# so each thing a line can be needs its own. The three that carry a color are the
-# three state_icon itself colors, so a pane line reads the same way as the space
-# row above it: blocked goes loud and bold, working takes the busy color, and done
-# takes the calm one. Idle is the only state that carries no state color, and it
-# recedes instead, which is what makes a finished space look finished. An idle agent with
-# background work still running counts as working rather than done, because the
-# calm color is a claim there is nothing left to wait for.
+# `$aN` is an agent Herdr reports no status for and `$aN_pane` a pane running no
+# agent. Neither claims a state, so both stay in the plain foreground.
 #
 # Never two tokens with a value on the same row: Herdr joins the ones that render
-# with " · ", so a glyph and its text side by side come out as "● · title". That
-# is why the color goes on the whole line and not on the glyph alone, and why
-# refresh.sh sets exactly one token per slot and clears the others. A row holds
-# every state a slot can be in, which is safe only because at most one is set.
+# with " · ", so a glyph and its text come out as "● · title". refresh.sh sets
+# exactly one token per slot and clears the others, which is the only reason a
+# row can list every state a slot can be in.
 #
-# Herdr allows 16 rows here and this uses 9, so raising `slots` in refresh.sh
-# costs one row each up to 13.
+# Herdr allows 16 rows and this uses 9, so raising `slots` in refresh.sh costs
+# one row each up to 13. A report carries at most 16 tokens and a slot owns five,
+# which is what `batch` in refresh.sh keeps a group under.
 #
-# @hot, @working, @done and @idle are placeholders tt fills in from the theme.
-# See tt/THEME_GUIDE.md for why they are placeholders and not theme color names.
-#
-# @idle is the one that is not a state color. Herdr draws its own state dot for a
-# seen-and-finished agent in a muted tone, so a row left in the ordinary
-# foreground came out louder than the dot beside it. It resolves to the theme's
-# `subtext0`, and to the ordinary foreground on a theme that declares none, which
-# is what every row here used to be.
+# @hot, @working, @done and @idle are placeholders tt fills from the theme's own
+# `[theme.custom]` tokens or its ANSI palette; see tt/THEME_GUIDE.md. @idle is
+# the one that is not a state color and resolves to the ordinary foreground.
 [ui.sidebar.spaces]
 row_gap = 1
 rows = [
   ["state_icon", { token = "$title", bold = true }],
   ["branch", "git_status"],
-  [{ token = "$a1_blocked", bold = true, fg = "@hot" }, { token = "$a1_working", fg = "@working" }, { token = "$a1_done", fg = "@done" }, { token = "$a1", fg = "@idle" }],
-  [{ token = "$a2_blocked", bold = true, fg = "@hot" }, { token = "$a2_working", fg = "@working" }, { token = "$a2_done", fg = "@done" }, { token = "$a2", fg = "@idle" }],
-  [{ token = "$a3_blocked", bold = true, fg = "@hot" }, { token = "$a3_working", fg = "@working" }, { token = "$a3_done", fg = "@done" }, { token = "$a3", fg = "@idle" }],
-  [{ token = "$a4_blocked", bold = true, fg = "@hot" }, { token = "$a4_working", fg = "@working" }, { token = "$a4_done", fg = "@done" }, { token = "$a4", fg = "@idle" }],
-  [{ token = "$a5_blocked", bold = true, fg = "@hot" }, { token = "$a5_working", fg = "@working" }, { token = "$a5_done", fg = "@done" }, { token = "$a5", fg = "@idle" }],
-  [{ token = "$a6_blocked", bold = true, fg = "@hot" }, { token = "$a6_working", fg = "@working" }, { token = "$a6_done", fg = "@done" }, { token = "$a6", fg = "@idle" }],
+  [{ token = "$a1_blocked", bold = true, fg = "@hot" }, { token = "$a1_working", fg = "@working" }, { token = "$a1_done", fg = "@done" }, { token = "$a1", fg = "@idle" }, "$a1_pane"],
+  [{ token = "$a2_blocked", bold = true, fg = "@hot" }, { token = "$a2_working", fg = "@working" }, { token = "$a2_done", fg = "@done" }, { token = "$a2", fg = "@idle" }, "$a2_pane"],
+  [{ token = "$a3_blocked", bold = true, fg = "@hot" }, { token = "$a3_working", fg = "@working" }, { token = "$a3_done", fg = "@done" }, { token = "$a3", fg = "@idle" }, "$a3_pane"],
+  [{ token = "$a4_blocked", bold = true, fg = "@hot" }, { token = "$a4_working", fg = "@working" }, { token = "$a4_done", fg = "@done" }, { token = "$a4", fg = "@idle" }, "$a4_pane"],
+  [{ token = "$a5_blocked", bold = true, fg = "@hot" }, { token = "$a5_working", fg = "@working" }, { token = "$a5_done", fg = "@done" }, { token = "$a5", fg = "@idle" }, "$a5_pane"],
+  [{ token = "$a6_blocked", bold = true, fg = "@hot" }, { token = "$a6_working", fg = "@working" }, { token = "$a6_done", fg = "@done" }, { token = "$a6", fg = "@idle" }, "$a6_pane"],
   [{ token = "$more_blocked", bold = true, fg = "@hot" }, "$more"],
 ]
 

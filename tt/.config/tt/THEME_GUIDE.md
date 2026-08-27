@@ -77,12 +77,11 @@ gained in 0.8.2:
   reads without shouting, it cannot drift from the palette, and it stays distinct
   from the fill Herdr paints on the active space and agent rows.
 
-The sidebar also needs three colors of its own: a loud one for the rows that flag
-an agent waiting on you, a busy one for the rows that say an agent is still going,
-and a calm one for the rows that say an agent finished. Nothing declares them.
-`tt` reads them out of `ghostty.conf` and substitutes them into the `@hot`,
-`@working` and `@done` placeholders in `config.base.toml`, because sidebar rows
-accept a hex foreground and nothing else and cannot name a `[theme.custom]` color.
+The sidebar also needs three colors of its own: a loud one for rows flagging an
+agent waiting on you, a busy one for rows still going, and a calm one for rows
+that finished. Sidebar rows accept a hex foreground and cannot name a
+`[theme.custom]` color, so `tt` reads them out of `ghostty.conf` and substitutes
+them into the `@hot`, `@working` and `@done` placeholders in `config.base.toml`.
 
 The slots it reads are ANSI red, yellow and green, already the theme's alarm,
 attention and success colors:
@@ -91,72 +90,81 @@ attention and success colors:
 * `palette 1`, `palette 3` and `palette 2` on light ones, where the bright trio
   washes out
 
-So a theme gets all three for free, and they cannot drift from the palette. The
-slot is taken as the theme gives it, contrast included: catppuccin-latte puts
-`#DF8E1D` in its yellow and `#EFF1F5` in its background, so its busy rows sit at
-2.2:1 and read washed out. A theme missing a slot still gets a working config,
-but `tt` warns and falls back to a color that belongs to no palette.
+So a theme gets all three for free and they cannot drift from the palette. The
+slot is taken as the theme gives it, contrast included: catppuccin-latte's yellow
+`#DF8E1D` on its `#EFF1F5` background sits at 2.2:1 and reads washed out. A theme
+missing a slot still gets a working config, but `tt` warns and falls back to a
+color that belongs to no palette.
 
-Reading the slot rather than picking a color per theme means the busy color is
-whatever the theme put in its yellow, which is not always yellow: kanso-pearl has
-an olive there. That is the trade the slot rule buys, and it is fine as long as
-the three still land apart, which is the only thing the row needs.
-
-When they do not, the theme sets the token itself in `[theme.custom]`:
+The busy color is whatever the theme put in its yellow, which is not always
+yellow. That is fine as long as the three land apart, which is the only thing the
+row needs. When they do not, the theme sets the token itself in `[theme.custom]`:
 
 * `red = "#RRGGBB"` for the loud color
 * `yellow = "#RRGGBB"` for the busy one
-* `green = "#RRGGBB"` for the calm one
+* `teal = "#RRGGBB"` for the calm one
 
-These are Herdr's own semantic tokens, and Herdr paints the state dot on the
-first row of every space from them. `tt` resolves each one from the theme's block
-when it is declared there and from the ANSI slot otherwise, feeds the result to
-the placeholders, and pins whatever it resolved back onto `[theme.custom]` for
-the tokens the theme did not declare. So the dot and the agent rows under it
-always come from one value, whether or not the theme said anything.
+The calm one is two keys, `teal` and `green`, both set to the theme's green.
+Herdr paints the done dot from `teal` and the idle dot from `green`, and a row
+takes the same color as the dot beside it, so a theme that sets one and not the
+other leaves the other dot on an ANSI color. Herdr documents none of this
+mapping. It is in `src/ui/status.rs`, in `state_label_color`, which `state_icon`
+is the sole dot renderer and takes its color from:
 
-That pinning is not redundant with the slot rule. Herdr resolves its own tokens
-from the terminal theme independently, and on a light background it does not
-reach the same slots `tt` does, so a dot and the row under it were free to differ
-by a shade. Declaring the token is now the only thing that decides.
+| state | seen | glyph | key |
+| --- | --- | --- | --- |
+| blocked | either | `●` | `red` |
+| working | either | `●` | `yellow` |
+| idle | no (done) | `●` | `teal` |
+| idle | yes | `○` | `green` |
+| unknown | either | `·` | `overlay0` |
 
-Pinned keys are appended bare at the end of the generated config, which means
-they land in whatever table the theme fragment ended in. That is why the fragment
-must declare `[theme.custom]` and nothing after it; `tt` checks and refuses
-rather than quietly moving Herdr's colors into another table.
+`tt` resolves each token from the theme's block when declared and from the ANSI
+slot otherwise, feeds the result to the placeholders, and pins whatever it
+resolved back onto `[theme.custom]` for the tokens the theme did not declare.
+Without that pin, Herdr resolves its own tokens independently and does not reach
+the same slots on a light background, so a dot and the row under it were free to
+differ by a shade.
 
-A fourth row color is not a state color. An agent that finished and has been
-looked at is `idle` in Herdr's vocabulary, and Herdr draws its dot in a muted
-tone rather than a state one, so a row left in the ordinary foreground came out
-louder than the dot beside it. `tt` fills `@idle` from `subtext0`:
+Pinned keys are appended bare at the end of the generated config, so they land in
+whatever table the theme fragment ended in. That is why the fragment must declare
+`[theme.custom]` and nothing after it; `tt` checks and refuses rather than
+quietly moving Herdr's colors into another table.
 
-* `subtext0 = "#RRGGBB"` for the muted tone
+An agent that finished and has since been looked at is `idle`. It is still
+finished, so it keeps the calm color and only drops from `●` to `○`, which is
+what Herdr does on the space row above it.
 
-Aim for roughly 4.5:1 against the theme background, well under the foreground's
-own contrast, so a finished space recedes without going unreadable. A theme that
-declares none falls back to the theme's own `foreground`, which is what every row
-was before this existed, so themes that say nothing are unaffected.
+Herdr paints that idle dot from `green` while done reads `teal`, so `tt` pins
+both to the same value and the dot follows the row. Without the pin, Herdr
+resolves each on its own and a theme declaring neither gets a dot at some
+unrelated shade.
 
-Herdr does not document whether its idle icon resolves to `subtext0` or to
-`overlay1`, so a theme that wants the dot to follow gives both the same value.
-They are adjacent muted tiers and nothing in this sidebar depends on the
-difference. `overlay0` is not one of them and stays where the theme tuned it.
+`subtext0` and `overlay1` are not state colors and must not be pinned. They are
+Herdr's recessive text tiers: inactive workspace and agent names read
+`subtext0`, dialog and onboarding hints read `overlay1`. Pinning either to the
+done green paints the whole inactive sidebar, the navigator and the settings
+panel green. A light theme should declare both as a muted gray instead, because
+the terminal palette answers with ANSI gray and white. `overlay0` stays where
+the theme tuned it for inactive borders.
 
-Take the replacement from the colorscheme's own extended palette rather than
-inventing one. Where nothing in that palette both reads right and holds contrast,
-move one of its colors along a single axis and say which: lightness buys contrast
-without walking the hue, and most colorschemes already ship variants derived the
-same way. Say in the comment which two colors were colliding and what the
-replacement buys.
+`@idle` is left for `unknown`, which is Herdr having no status to report. That
+row claims nothing and takes the theme's `foreground`, the same as a pane running
+no agent.
 
-kanso-pearl is the case that earned this. Its yellow `#77713F` and its green
-`#6F894E` sit 33 degrees of hue apart at the same lightness and the same low
-saturation, close enough that a working row and a done row read alike. Its
-extended palette offers no drop-in: `pearlYellow2` is a brown, `pearlOrange` is
-an orange, and `pearlYellow3` is the right hue but sits at 2.1:1 here. On a paper
-background a yellow has to be light to stay yellow, and light is what costs the
-contrast, so its `yellow` is `pearlYellow3` taken down to 34% lightness with its
-hue and saturation untouched.
+Take any replacement color from the colorscheme's own extended palette rather
+than inventing one. Where nothing in that palette both reads right and holds
+contrast, move one of its colors along a single axis and say which in the
+comment, along with the two colors that were colliding.
+
+kanso-pearl is the case that earned this. Its yellow `#77713F` and green
+`#6F894E` sit 33 degrees of hue apart at the same lightness and saturation, close
+enough that a working row and a done row read alike. Its extended palette offers
+no drop-in: `pearlYellow2` is a brown, `pearlOrange` is an orange, and
+`pearlYellow3` is the right hue but sits at 2.1:1 here. On a paper background a
+yellow has to be light to stay yellow, and light is what costs the contrast, so
+its `yellow` is `pearlYellow3` taken down to 34% lightness with hue and
+saturation untouched.
 
 ## Taste
 

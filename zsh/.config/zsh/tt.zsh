@@ -1,18 +1,13 @@
 # The half of `tt` that only runs when `tt` runs. theme.zsh loads it on the first
 # call; macos/dotfiles/tt sources it directly for __terminal_theme_apply_herdr.
 #
-# `tt` here reaches back to theme.zsh for __terminal_theme_root and
+# `tt` reaches back to theme.zsh for __terminal_theme_root and
 # __terminal_theme_apply_env, so sourcing this file alone is only safe for the
-# entry points that skip it: apply_herdr, and preview in the fzf subshell.
+# entry points that skip them: apply_herdr, and preview in the fzf subshell.
 
-# Herdr paints its own state dot from the semantic tokens in `[theme.custom]`, but
-# a sidebar row takes a hex and cannot name one. Read the token out of the theme's
-# herdr.toml and hand the row its value, so the dot and the row it sits above are
-# the same color by construction rather than by two declarations agreeing.
-#
-# A theme that declares no token falls through to the slot rule below, which is
-# the common case: the tokens Herdr resolves from the terminal theme already are
-# the ANSI trio. Declaring one is how a theme fixes a trio that lands too close.
+# Read a `[theme.custom]` token out of the theme's herdr.toml, so a sidebar row
+# (which takes a hex and cannot name a token) gets the same value Herdr paints
+# its state dot from.
 #
 # `${name}` is braced because a bare `$name` in front of `[[:space:]]` parses as
 # an array subscript, not as the parameter followed by a character class.
@@ -34,9 +29,9 @@ __terminal_theme_custom_color() {
   return 1
 }
 
-# Whether the theme names the token at all, which is a different question from
-# whether the value above could be read. Pinning a token the theme also names is
-# a duplicate key, and Herdr answers a duplicate key by discarding the file.
+# Whether the theme names the token at all, separate from whether its value could
+# be parsed: pinning a token the theme also names is a duplicate key, and Herdr
+# answers a duplicate key by discarding the file.
 __terminal_theme_declares_custom_color() {
   emulate -L zsh
   setopt local_options no_aliases
@@ -44,10 +39,9 @@ __terminal_theme_declares_custom_color() {
   command grep -qE "^[[:space:]]*$2[[:space:]]*=" "$1/herdr.toml"
 }
 
-# Read a sidebar color out of the theme's palette rather than pinning a copy per
-# theme, which would be free to drift from the colorscheme it belongs to. Callers
-# pass the ANSI slot: the bright one on ink backgrounds, the normal one on paper,
-# where bright colors wash out. See tt/THEME_GUIDE.md for which slots and why.
+# Read a sidebar color out of the theme's palette so it cannot drift from the
+# colorscheme. Callers pass both ANSI slots: the bright one on ink backgrounds,
+# the normal one on paper, where bright colors wash out.
 __terminal_theme_palette_color() {
   emulate -L zsh
   setopt local_options no_aliases
@@ -75,11 +69,11 @@ __terminal_theme_palette_color() {
   return 1
 }
 
-# Herdr allows one `[theme.custom]` block, but `overlay0` has to be recessive
-# against the active background and no single gray is recessive on both paper
-# and ink. So the block lives per theme and gets concatenated onto the base
-# config here. The result is config.toml, Herdr's own default path, so a
-# running server picks it up on reload without needing a restart.
+# Herdr allows one `[theme.custom]` block and `overlay0` has to be recessive
+# against the active background, which no single gray is on both paper and ink.
+# So the block lives per theme and gets concatenated onto the base config here.
+# The result is config.toml, Herdr's default path, so a running server picks it
+# up on reload.
 __terminal_theme_apply_herdr() {
   emulate -L zsh
   setopt local_options no_aliases
@@ -91,15 +85,10 @@ __terminal_theme_apply_herdr() {
   [[ -r "$herdr_dir/config.base.toml" ]] || return 1
   [[ -r "$theme_dir/herdr.toml" ]] || return 1
 
-  # A theme missing one of these still gets a working config rather than a
-  # placeholder reaching Herdr as a color, but the fallback belongs to no
-  # palette, so say so instead of quietly shipping it.
-  #
-  # Whatever each one resolves to also gets pinned onto `[theme.custom]` below,
-  # unless the theme declared it there itself, so Herdr's state dot and the rows
-  # cannot disagree. Only the tokens the theme did not name are appended, and
-  # that question is asked separately from reading the value: a declaration this
-  # cannot parse still has to suppress the pin, or the file carries the key twice.
+  # Each color resolves from the theme's own token, then the ANSI slot, then a
+  # fallback that belongs to no palette, which is worth a warning. Whatever it
+  # resolves to is also pinned onto `[theme.custom]` below unless the theme named
+  # it, so Herdr's state dot and the rows cannot disagree.
   if ! hot="$(__terminal_theme_custom_color "$theme_dir" red)"; then
     __terminal_theme_declares_custom_color "$theme_dir" red || pinned+=("red")
     if ! hot="$(__terminal_theme_palette_color "$theme_dir" 9 1)"; then
@@ -116,28 +105,32 @@ __terminal_theme_apply_herdr() {
     fi
   fi
 
+  # Herdr splits finished across two keys: done reads `teal` and idle reads
+  # `green` (src/ui/status.rs, state_label_color, which state_icon also colors
+  # the dot from). The rows under both take the done color, so both keys get
+  # pinned to it, and the value still comes from the theme's own `green`. Pin
+  # only what the theme did not declare, asked per key, or the file carries one
+  # twice. Blocked reads `red` and working reads `yellow`; Herdr documents none
+  # of this.
   if ! done_color="$(__terminal_theme_custom_color "$theme_dir" green)"; then
-    __terminal_theme_declares_custom_color "$theme_dir" green || pinned+=("green")
     if ! done_color="$(__terminal_theme_palette_color "$theme_dir" 10 2)"; then
       done_color="#4FA76A"
       print -u2 -- "tt: no green in ${theme_dir:t}/ghostty.conf palette, using $done_color"
     fi
   fi
+  __terminal_theme_declares_custom_color "$theme_dir" green || pinned+=("green")
+  __terminal_theme_declares_custom_color "$theme_dir" teal || pinned+=("teal")
 
-  # Not a state color and not pinned: `subtext0` is Herdr's muted tone, which it
-  # already uses for the state dot of a seen-and-finished agent, so reading it
-  # brings the row down to the dot rather than pushing the dot up to the row. A
-  # theme that declares none keeps the ordinary foreground every row used to have.
-  if ! idle="$(__terminal_theme_custom_color "$theme_dir" subtext0)" &&
-    ! idle="$(__terminal_theme_conf_color "$theme_dir" foreground)"; then
+  # Not a state color: `unknown` is Herdr having no status to report, so that row
+  # claims nothing and takes the ordinary foreground.
+  if ! idle="$(__terminal_theme_conf_color "$theme_dir" foreground)"; then
     idle="#808080"
     print -u2 -- "tt: no foreground in ${theme_dir:t}/ghostty.conf, using $idle"
   fi
 
-  # The pinned keys are appended bare, so they land in whatever table the theme
-  # fragment ended in. That is `[theme.custom]` by the rule that the fragment
-  # declares that block and nothing after it, and a fragment that broke the rule
-  # would silently move Herdr's colors into another table.
+  # Pinned keys are appended bare, so they land in whatever table the fragment
+  # ended in. A fragment that does not end in `[theme.custom]` would silently
+  # move Herdr's colors into another table.
   last_table="$(command grep -o '^\[[^]]*\]' "$theme_dir/herdr.toml" | command tail -1)"
   if [[ "$last_table" != "[theme.custom]" ]]; then
     print -u2 -- "tt: ${theme_dir:t}/herdr.toml ends in ${last_table:-no table}, not [theme.custom]"
@@ -146,9 +139,8 @@ __terminal_theme_apply_herdr() {
 
   tmp="$herdr_dir/config.toml.tmp.$$"
 
-  # `return` from inside the group would exit the function past the cleanup and
-  # strand the temp file, and herdr_dir is a stow symlink back into the dotfiles
-  # repo, so chain on && and let the group's own status reach the cleanup.
+  # `return` inside the group would skip the cleanup and strand the temp file in
+  # herdr_dir, which is a stow symlink into this repo. Chain on && instead.
   {
     command sed -e "s/\"@hot\"/\"$hot\"/g" -e "s/\"@working\"/\"$working\"/g" \
       -e "s/\"@done\"/\"$done_color\"/g" -e "s/\"@idle\"/\"$idle\"/g" \
@@ -164,15 +156,14 @@ __terminal_theme_apply_herdr() {
               red) print -r -- "red = \"$hot\"" ;;
               yellow) print -r -- "yellow = \"$working\"" ;;
               green) print -r -- "green = \"$done_color\"" ;;
+              teal) print -r -- "teal = \"$done_color\"" ;;
             esac
           done
       } }
   } > "$tmp" || { command rm -f "$tmp"; return 1 }
 
-  # The fallbacks above cover a palette that cannot be read, not a placeholder the
-  # sed above did not match, and an unsubstituted one reaches Herdr as a color,
-  # which costs the whole file rather than the row. Keep the config that is
-  # already in place instead of replacing it with one Herdr will refuse.
+  # An unsubstituted placeholder reaches Herdr as a color and costs the whole
+  # file, so keep the config already in place rather than one Herdr will refuse.
   if command grep -qE '^[^#]*"@(hot|working|done|idle)"' "$tmp"; then
     print -u2 -- "tt: unsubstituted placeholder in herdr/config.base.toml, keeping the current config.toml"
     command rm -f "$tmp"
@@ -193,9 +184,8 @@ end tell
 APPLESCRIPT
 }
 
-# Read a top-level `name = #hex` out of the theme's ghostty.conf. Anchored, so
-# `foreground` does not answer for `selection-foreground`. `${name}` is braced
-# for the same reason as in __terminal_theme_custom_color.
+# Anchored so `foreground` does not answer for `selection-foreground`. `${name}`
+# is braced for the same reason as in __terminal_theme_custom_color.
 __terminal_theme_conf_color() {
   emulate -L zsh
   setopt local_options no_aliases
@@ -276,25 +266,16 @@ __terminal_theme_wallpaper_color() {
   return 1
 }
 
-# The wallpaper color anchors a diagonal gradient rather than filling the desktop
-# flat. It is the ceiling, not the midpoint: the top-left corner is the declared
-# color and the gradient only deepens toward the bottom-right, so no part of the
-# desktop is brighter than the theme asked for and the surface reads darker overall.
+# The wallpaper color is the ceiling, not the midpoint: it paints the top-left
+# corner and the diagonal gradient only deepens from there.
 #
-# The span is a percentage of the color's own brightness rather than a count of RGB
-# levels. Fixed levels carry on a dark wallpaper color and vanish on a mid-tone
-# one, because the eye judges a brightness step against what it sits on. The
-# diagonal spreads the same span over a longer run than a vertical one, so it wants
-# a larger number to land with the same weight.
+# `span` is a percentage of the color's own brightness, not a count of RGB levels,
+# because the eye judges a brightness step against what it sits on. `ramp` is the
+# share of the diagonal the transition happens over; holding the corners flat and
+# spending the span over the middle steepens the part the eye is on without
+# darkening either end.
 #
-# The ramp is the share of the diagonal the transition actually happens over, and
-# it is what makes the gradient read without darkening anything. Spending the span
-# evenly across the whole diagonal is a slope too shallow to see; holding the
-# corners flat and spending it over the middle steepens the part of the run the eye
-# is on while both ends stay exactly where they were.
-#
-# All four land in the cache name, so changing one here regenerates rather than
-# serving the old image.
+# All four land in the cache name, so changing one regenerates.
 __terminal_theme_wallpaper_span=30
 __terminal_theme_wallpaper_ramp=55
 __terminal_theme_wallpaper_width=2048
@@ -331,10 +312,9 @@ __terminal_theme_generate_wallpaper() {
 
   command mkdir -p "$cache_dir" || return 1
 
-  # Scale the channels together instead of adding a flat offset, which would walk
-  # the hue toward gray at the light end. Then dither: a few dozen levels spread
-  # corner to corner is a band every hundred-odd pixels, and trading that for noise
-  # a pixel wide is the whole reason the gradient looks like a gradient.
+  # Scale the channels together rather than adding a flat offset, which would walk
+  # the hue toward gray. Then dither: a few dozen levels spread corner to corner
+  # is a visible band every hundred-odd pixels.
   perl -e '
     my ($out, $hex, $width, $height, $percent, $ramp) = @ARGV;
     $hex =~ s/^#//;
@@ -344,11 +324,10 @@ __terminal_theme_generate_wallpaper() {
     my @dither = (0, 4, 2, 6, 1, 5, 3, 7);
     my $diag = $width + $height - 2;
 
-    # Depth runs on x + y, which makes every row the one above it shifted a pixel
-    # along. So build the whole diagonal once and cut each row out of it, rather
-    # than walking two and a half million pixels. Two strips, because the dither
-    # phase flips on alternating rows and a single strip would lay the pattern
-    # down in unbroken 45 degree lines.
+    # Depth runs on x + y, so every row is the one above shifted a pixel along:
+    # build the diagonal once and cut rows out of it. Two strips, because the
+    # dither phase has to flip on alternating rows or the pattern lays down in
+    # unbroken 45 degree lines.
     my @strip;
     for my $parity (0, 1) {
       my $pixels = "";
@@ -356,9 +335,9 @@ __terminal_theme_generate_wallpaper() {
       for my $d (0 .. $diag) {
         my $t = $diag > 0 ? $d / $diag : 0;
 
-        # Pull the run in around the middle, then round the shoulders off. The
-        # clamp alone would leave a crease where it bites, and a crease in a flat
-        # field is more visible than the gradient it belongs to.
+        # Pull the run in around the middle, then round the shoulders off: the
+        # clamp alone leaves a crease where it bites, and a crease in a flat field
+        # is more visible than the gradient.
         my $u = 0.5 + ($t - 0.5) * $steep;
         $u = $u < 0 ? 0 : $u > 1 ? 1 : $u;
         $u = $u * $u * (3 - 2 * $u);
@@ -389,9 +368,8 @@ __terminal_theme_generate_wallpaper() {
     "$__terminal_theme_wallpaper_width" "$__terminal_theme_wallpaper_height" "$span" "$ramp" ||
     { command rm -f "$tmp_ppm"; return 1 }
 
-  # Convert to a sibling and rename, so an interrupted or concurrent run cannot
-  # leave a truncated PNG at the cache path where the read above would take it for
-  # a hit and hand it to osascript on every later switch.
+  # Convert to a sibling and rename, so an interrupted run cannot leave a
+  # truncated PNG at the cache path for the read above to take as a hit.
   if sips -s format png "$tmp_ppm" --out "$tmp_png" >/dev/null 2>&1 &&
     command mv -f "$tmp_png" "$wallpaper"; then
     command rm -f "$tmp_ppm"

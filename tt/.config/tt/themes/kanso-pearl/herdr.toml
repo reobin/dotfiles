@@ -29,12 +29,12 @@
 # axis that buys contrast without walking the hue toward orange, and it is the
 # same move kanso makes for its own saturated variants.
 #
-# subtext0 and overlay1 are pearlGray3, the muted tone a seen-and-finished agent
-# takes on both Herdr's state dot and the row `tt` builds under it. It sits at
-# 4.4:1 here against the foreground's 12.9:1, so a finished space recedes without
-# going unreadable. Both keys carry it because Herdr does not document which of
-# the two its idle icon resolves to, and they are adjacent muted tiers whose
-# difference nothing in this sidebar depends on.
+# subtext0 and overlay1 are pearlGray3, the muted tone Herdr uses for text it
+# wants recessive: inactive workspace and agent names on subtext0, dialog and
+# onboarding hints on overlay1. Neither is a state color. They are pinned
+# because the terminal palette answers with ANSI gray and white, both of which
+# vanish on paper, and at 4.4:1 here against the foreground's 12.9:1 they recede
+# without going unreadable.
 [theme.custom]
 overlay0 = "#ADA79B"
 sidebar_bg = "#EDECE9"
