@@ -65,10 +65,7 @@ lists="$(
     jq -r '
       .result.snapshot as $s
       | ($s.workspaces[] | "ws \(.workspace_id)"),
-        ($s.panes[]
-          | select(.agent == null)
-          | select((.tokens.cmd // "") == "")
-          | "cmd \(.pane_id)"),
+        ($s.panes[] | select(.agent == null) | "cmd \(.pane_id)"),
         ($s.panes[]
           | select(.agent_status == "done" or .agent_status == "idle")
           | select((.agent_session.kind // "") == "id")
@@ -189,11 +186,11 @@ if [ -s "$session_file" ] && [ -r "$session_file" ]; then
   )" || named='{}'
 fi
 
-# What a pane whose shell reported nothing is running. The process group leader is
-# the command that was typed, so `pnpm start` reads as `pnpm start` rather than the
-# node process it became, but a pane sitting at a prompt only ever reads as `shell`.
-# That is what the preexec hook in zsh/.config/zsh/herdr.zsh is for, and this is the
-# fallback for the panes it does not cover.
+# What each pane is running. The process group leader is the command that was
+# typed, so `pnpm start` reads as `pnpm start` rather than the node process it
+# became, and a pane sitting at a prompt reads as `shell`. The preexec and precmd
+# hooks in zsh/.config/zsh/herdr.zsh are what run this script on either side of a
+# command, so the row follows one starting and ending.
 commands='{}'
 if [ "$processes" -eq 1 ] && [ -n "$cmd_panes" ]; then
   commands="$(
@@ -472,14 +469,9 @@ plan="$(
           | if $pane == null then
               clear_but($slot; [])
             elif ($pane.agent // null) == null then
-              # A pane that names itself beats what it is running: the hunk review
+              # A pane that names itself beats the process behind it: the hunk review
               # pane sets a title, where its leader reads as `node <entrypoint path>`.
-              # Then the command its shell last reported, which is a token on the pane
-              # and so outlives the process, keeping the line on the row after it
-              # exits. The process behind the pane is what is left.
-              (($pane.title // "" | select(. != ""))
-               // ($pane.tokens.cmd // "" | select(. != ""))
-               // $commands[$pane.pane_id] // "shell") as $what
+              (($pane.title // "" | select(. != "")) // $commands[$pane.pane_id] // "shell") as $what
               | ([$tab_labels[$pane.tab_id] // empty, $what] | join(" · ")) as $rest
               # Its own token, so a pane row and an agent row Herdr has no status
               # for stay separable even though both render plain.

@@ -64,59 +64,32 @@ __herdr_space_tokens_chpwd() {
 autoload -Uz add-zsh-hook
 add-zsh-hook chpwd __herdr_space_tokens_chpwd
 
-# Put the last command line on the pane row.
+# Refresh the row on either side of a command.
 #
-# The row otherwise names the process behind the pane, which is `shell` for every
-# pane not busy at the moment it was drawn, so a finished `pnpm start` leaves
-# nothing behind. A pane token rides on the pane, outlives the process and dies
-# with the pane; refresh.sh prefers it over the process.
-zmodload -F zsh/datetime p:EPOCHREALTIME 2>/dev/null
-
-__herdr_last_command_preexec() {
+# The row names the process behind the pane, which refresh.sh reads at the moment
+# it runs, and neither a command starting nor a command ending is an event a
+# plugin can hook. These hooks are those events: the first run catches the
+# command, the second finds the prompt back and the row returns to `shell`.
+#
+# Disowned rather than backgrounded so they do not follow the shell to its exit,
+# detached from the terminal, and niced to the floor.
+__herdr_space_tokens_preexec() {
   emulate -L zsh
-  setopt extended_glob
 
-  [[ -n "$HERDR_PANE_ID" ]] || return 0
-
-  # The line as typed, so an alias reads as the alias. Two words, the shape
-  # refresh.sh already takes from a process leader: `pnpm start` stays whole and
-  # `git commit -m ...` reads as `git commit`.
-  local -a words
-  words=(${(z)1})
-
-  # What leads the line is not always the command. `NODE_ENV=production node`
-  # names node, and a redirection carries its target off with it.
-  while (( $#words )); do
-    case "$words[1]" in
-      ([A-Za-z_][A-Za-z0-9_]#=*) shift words ;;
-      ([0-9\&]#(\<|\>)[\<\>\&\|]#) shift words; (( $#words )) && shift words ;;
-      (*) break ;;
-    esac
-  done
-
-  local label="${words[1,2]}"
-  [[ -n "$label" ]] || return 0
-
-  # A command repeated back to back moves no row, and a refresh costs a few
-  # hundred milliseconds of socket round trips.
-  [[ "$label" == "$__herdr_last_command" ]] && return 0
-  typeset -g __herdr_last_command="$label"
-
-  # Herdr keeps the highest sequence a source has reported for a pane and drops
-  # what arrives behind it. Two commands typed in quick succession leave two
-  # reports in flight with nothing else to order them. Milliseconds rather than a
-  # counter, so a shell replaced in place does not start again from behind.
-  local -a seq
-  [[ -n "$EPOCHREALTIME" ]] && seq=(--seq "${${EPOCHREALTIME/./}[1,13]}")
-
-  # The report has to land before the refresh reads the snapshot, hence one
-  # subshell for both. Disowned rather than backgrounded so it does not follow
-  # the shell to its exit, detached from the terminal, and niced to the floor.
-  {
-    "${HERDR_BIN_PATH:-herdr}" pane report-metadata "$HERDR_PANE_ID" \
-      --source last-command "${seq[@]}" --token "cmd=$label" &&
-      nice -n 19 sh "$__herdr_space_tokens_refresh"
-  } </dev/null >/dev/null 2>&1 &!
+  typeset -g __herdr_space_tokens_ran=1
+  nice -n 19 sh "$__herdr_space_tokens_refresh" </dev/null >/dev/null 2>&1 &!
 }
 
-add-zsh-hook preexec __herdr_last_command_preexec
+__herdr_space_tokens_precmd() {
+  emulate -L zsh
+
+  # An empty line at the prompt reaches precmd with no preexec before it, and
+  # nothing has moved since the last run.
+  [[ -n "$__herdr_space_tokens_ran" ]] || return 0
+  unset __herdr_space_tokens_ran
+
+  nice -n 19 sh "$__herdr_space_tokens_refresh" </dev/null >/dev/null 2>&1 &!
+}
+
+add-zsh-hook preexec __herdr_space_tokens_preexec
+add-zsh-hook precmd __herdr_space_tokens_precmd
