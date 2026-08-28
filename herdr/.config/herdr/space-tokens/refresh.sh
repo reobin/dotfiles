@@ -26,6 +26,34 @@ processes=1
 # place that surfaces is `herdr plugin logs list`: the rows just stop changing.
 batch=16
 
+# One writer at a time. Every run recomputes every space from a snapshot it takes
+# at its own start, so two that overlap can finish out of order and leave the
+# older one's rows behind. A run that finds the lock held leaves a mark instead of
+# waiting, and the holder picks it up and goes again, so the last request is still
+# the one that lands.
+state_dir="${XDG_CACHE_HOME:-$HOME/.cache}/herdr/space-tokens"
+lock_dir="$state_dir/lock"
+pending_file="$state_dir/pending"
+mkdir -p "$state_dir"
+
+# Set by the rerun at the bottom, which is handed the lock rather than taking it.
+if [ "${HERDR_SPACE_TOKENS_LOCKED:-}" != 1 ]; then
+  [ "${1:-}" = "clear" ] || : >"$pending_file"
+  if ! mkdir "$lock_dir" 2>/dev/null; then
+    # A run killed outright leaves the directory behind, and without this nothing
+    # would move a row again. No refresh takes a minute.
+    if [ -n "$(find "$lock_dir" -maxdepth 0 -mmin +1 2>/dev/null)" ]; then
+      rmdir "$lock_dir" 2>/dev/null || :
+    fi
+    mkdir "$lock_dir" 2>/dev/null || exit 0
+  fi
+fi
+trap 'rmdir "$lock_dir" 2>/dev/null || :' EXIT
+
+# Consumed before the snapshot below, so a request arriving while this run works
+# marks it again rather than being answered by a snapshot taken before it.
+[ "${1:-}" = "clear" ] || rm -f "$pending_file"
+
 # Workspaces, tabs, panes and the tokens already set, in one call and at one
 # instant: separate lists could disagree about a pane that moved between them.
 snapshot="$("$herdr" api snapshot)"
@@ -37,7 +65,10 @@ lists="$(
     jq -r '
       .result.snapshot as $s
       | ($s.workspaces[] | "ws \(.workspace_id)"),
-        ($s.panes[] | select(.agent == null) | "cmd \(.pane_id)"),
+        ($s.panes[]
+          | select(.agent == null)
+          | select((.tokens.cmd // "") == "")
+          | "cmd \(.pane_id)"),
         ($s.panes[]
           | select(.agent_status == "done" or .agent_status == "idle")
           | select((.agent_session.kind // "") == "id")
@@ -158,8 +189,11 @@ if [ -s "$session_file" ] && [ -r "$session_file" ]; then
   )" || named='{}'
 fi
 
-# The process group leader is the command that was typed, so `pnpm start` reads as
-# `pnpm start` rather than the node process it became.
+# What a pane whose shell reported nothing is running. The process group leader is
+# the command that was typed, so `pnpm start` reads as `pnpm start` rather than the
+# node process it became, but a pane sitting at a prompt only ever reads as `shell`.
+# That is what the preexec hook in zsh/.config/zsh/herdr.zsh is for, and this is the
+# fallback for the panes it does not cover.
 commands='{}'
 if [ "$processes" -eq 1 ] && [ -n "$cmd_panes" ]; then
   commands="$(
@@ -438,9 +472,14 @@ plan="$(
           | if $pane == null then
               clear_but($slot; [])
             elif ($pane.agent // null) == null then
-              # A pane that names itself beats the process behind it: the hunk review
+              # A pane that names itself beats what it is running: the hunk review
               # pane sets a title, where its leader reads as `node <entrypoint path>`.
-              (($pane.title // "" | select(. != "")) // $commands[$pane.pane_id] // "shell") as $what
+              # Then the command its shell last reported, which is a token on the pane
+              # and so outlives the process, keeping the line on the row after it
+              # exits. The process behind the pane is what is left.
+              (($pane.title // "" | select(. != ""))
+               // ($pane.tokens.cmd // "" | select(. != ""))
+               // $commands[$pane.pane_id] // "shell") as $what
               | ([$tab_labels[$pane.tab_id] // empty, $what] | join(" · ")) as $rest
               # Its own token, so a pane row and an agent row Herdr has no status
               # for stay separable even though both render plain.
@@ -548,3 +587,12 @@ printf '%s\n\n' "$plan" |
       set --
     done
   }
+
+# A request that arrived while this run was working. The lock passes to the rerun
+# rather than being released, so nothing slips in between.
+if [ -e "$pending_file" ]; then
+  trap - EXIT
+  HERDR_SPACE_TOKENS_LOCKED=1
+  export HERDR_SPACE_TOKENS_LOCKED
+  exec sh "$0"
+fi
