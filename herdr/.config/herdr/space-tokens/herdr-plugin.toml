@@ -1,7 +1,7 @@
 id = "reobin.space-tokens"
 name = "Space tokens"
 version = "0.1.0"
-min_herdr_version = "0.7.0"
+min_herdr_version = "0.8.0"
 description = "Report one sidebar line per agent on each space"
 platforms = ["linux", "macos"]
 
