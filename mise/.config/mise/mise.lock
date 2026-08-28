@@ -210,68 +210,6 @@ url = "https://github.com/k1LoW/git-wt/releases/download/v0.29.1/git-wt_v0.29.1_
 url_api = "https://api.github.com/repos/k1LoW/git-wt/releases/assets/513764446"
 provenance = "github-attestations"
 
-[[tools."github:leohenon/opencode-vim"]]
-version = "1.18.4-ocv.4.9"
-backend = "github:leohenon/opencode-vim"
-
-[tools."github:leohenon/opencode-vim".options]
-matching_regex = "^ocv-"
-
-[tools."github:leohenon/opencode-vim"."platforms.linux-arm64"]
-checksum = "sha256:aa26a74065a0d3b005e414c2c5a7ff0026b566b3d5fa3d03eb11c5f626befb1f"
-url = "https://github.com/leohenon/opencode-vim/releases/download/v1.18.4-ocv.4.9/ocv-linux-arm64.tar.gz"
-url_api = "https://api.github.com/repos/leohenon/opencode-vim/releases/assets/488405426"
-
-[tools."github:leohenon/opencode-vim"."platforms.linux-arm64-musl"]
-checksum = "sha256:bfe8dfd6cab2a8655fea38b142255ff0ebbf9539d5de436eb78c12a0056a0607"
-url = "https://github.com/leohenon/opencode-vim/releases/download/v1.18.4-ocv.4.9/ocv-linux-arm64-musl.tar.gz"
-url_api = "https://api.github.com/repos/leohenon/opencode-vim/releases/assets/488405424"
-
-[tools."github:leohenon/opencode-vim"."platforms.linux-x64"]
-checksum = "sha256:3a04f6de059176cadba5616b3f76597c821bc2f515d61235a2842c77b60c92c8"
-url = "https://github.com/leohenon/opencode-vim/releases/download/v1.18.4-ocv.4.9/ocv-linux-x64.tar.gz"
-url_api = "https://api.github.com/repos/leohenon/opencode-vim/releases/assets/488405550"
-
-[tools."github:leohenon/opencode-vim"."platforms.linux-x64-baseline"]
-checksum = "sha256:3a04f6de059176cadba5616b3f76597c821bc2f515d61235a2842c77b60c92c8"
-url = "https://github.com/leohenon/opencode-vim/releases/download/v1.18.4-ocv.4.9/ocv-linux-x64.tar.gz"
-url_api = "https://api.github.com/repos/leohenon/opencode-vim/releases/assets/488405550"
-
-[tools."github:leohenon/opencode-vim"."platforms.linux-x64-musl"]
-checksum = "sha256:5e730ccc297eb756b332f76bfca90bb0deba30e847e614ab6268ec03a35cb403"
-url = "https://github.com/leohenon/opencode-vim/releases/download/v1.18.4-ocv.4.9/ocv-linux-x64-musl.tar.gz"
-url_api = "https://api.github.com/repos/leohenon/opencode-vim/releases/assets/488405522"
-
-[tools."github:leohenon/opencode-vim"."platforms.linux-x64-musl-baseline"]
-checksum = "sha256:5e730ccc297eb756b332f76bfca90bb0deba30e847e614ab6268ec03a35cb403"
-url = "https://github.com/leohenon/opencode-vim/releases/download/v1.18.4-ocv.4.9/ocv-linux-x64-musl.tar.gz"
-url_api = "https://api.github.com/repos/leohenon/opencode-vim/releases/assets/488405522"
-
-[tools."github:leohenon/opencode-vim"."platforms.macos-arm64"]
-checksum = "sha256:e693e2f3f894c9e37e8f57469e7f3b847023380b70fba186fc2f51b34f17445e"
-url = "https://github.com/leohenon/opencode-vim/releases/download/v1.18.4-ocv.4.9/ocv-darwin-arm64.zip"
-url_api = "https://api.github.com/repos/leohenon/opencode-vim/releases/assets/488405363"
-
-[tools."github:leohenon/opencode-vim"."platforms.macos-x64"]
-checksum = "sha256:efff8fd24ebd42e2d9275d5ebd8f5e034ee9a2b77d06e6d9ffc21d6865f341df"
-url = "https://github.com/leohenon/opencode-vim/releases/download/v1.18.4-ocv.4.9/ocv-darwin-x64.zip"
-url_api = "https://api.github.com/repos/leohenon/opencode-vim/releases/assets/488405393"
-
-[tools."github:leohenon/opencode-vim"."platforms.macos-x64-baseline"]
-checksum = "sha256:efff8fd24ebd42e2d9275d5ebd8f5e034ee9a2b77d06e6d9ffc21d6865f341df"
-url = "https://github.com/leohenon/opencode-vim/releases/download/v1.18.4-ocv.4.9/ocv-darwin-x64.zip"
-url_api = "https://api.github.com/repos/leohenon/opencode-vim/releases/assets/488405393"
-
-[tools."github:leohenon/opencode-vim"."platforms.windows-x64"]
-checksum = "sha256:c9942f5c229966a18913cfda65ed34681033618316aa7bdf15ddb8112888201a"
-url = "https://github.com/leohenon/opencode-vim/releases/download/v1.18.4-ocv.4.9/ocv-windows-x64.zip"
-url_api = "https://api.github.com/repos/leohenon/opencode-vim/releases/assets/488405607"
-
-[tools."github:leohenon/opencode-vim"."platforms.windows-x64-baseline"]
-checksum = "sha256:c9942f5c229966a18913cfda65ed34681033618316aa7bdf15ddb8112888201a"
-url = "https://github.com/leohenon/opencode-vim/releases/download/v1.18.4-ocv.4.9/ocv-windows-x64.zip"
-url_api = "https://api.github.com/repos/leohenon/opencode-vim/releases/assets/488405607"
-
 [[tools.go]]
 version = "1.27.0"
 backend = "core:go"

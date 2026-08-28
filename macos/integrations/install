@@ -106,8 +106,7 @@ install_herdr_integration() {
   echo "Skipping Herdr $integration integration ($names is not installed)" >&2
 }
 
-# opencode ships the `opencode` command, opencode-vim ships `ocv`.
-install_herdr_integration opencode opencode ocv
+install_herdr_integration opencode opencode
 install_herdr_integration claude claude
 install_herdr_integration codex codex
 
