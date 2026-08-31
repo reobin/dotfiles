@@ -1,0 +1,23 @@
+# Herdr color overrides for this theme, merged into the generated Herdr config
+# by `tt`. See THEME_GUIDE.md.
+#
+# overlay0 paints inactive pane borders and dimmed hint text, so it is pinned at
+# roughly 2.1:1 against this theme's background: recessive next to the accent-lit
+# active border, still legible as text. This is Kanagawa's waveBlue2, its popup
+# border color, at 2.24:1 here. The ink ladder brackets the target without
+# landing on it, sumiInk5 at 1.6:1 and sumiInk6 at 2.6:1, and waveBlue2 is the
+# only shade between them that Wave actually uses as a border.
+#
+# sidebar_bg sits a little under the background: enough that the spaces list
+# reads as its own surface, not enough for its edge to land as a seam down the
+# screen. It goes down and not up: a lifted panel competes with the panes in
+# front of it. The ground is kanso-zen's, so this is kanso-zen's value.
+#
+# selection_bg paints the navigate cursor, which has to stay apart from the fill
+# on the active space and agent rows. This theme's terminal selection color is
+# already a highlight that reads without shouting, so the cursor takes it instead
+# of a color belonging to no palette.
+[theme.custom]
+overlay0 = "#2D4F67"
+sidebar_bg = "#05080B"
+selection_bg = "#223249"
