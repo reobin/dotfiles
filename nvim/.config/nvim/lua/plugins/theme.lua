@@ -58,6 +58,7 @@ return {
       -- #1F1F28, so they land above a ground this dark unless they come with it.
       return {
         colors = {
+          palette = vim.g.kanagawa_palette or {},
           theme = {
             wave = {
               ui = {
