@@ -81,63 +81,63 @@ checksum = "sha256:b929c54a9badb104a16dedd23aab6152c86793ae653d4e6b13983ffd0c882
 url = "https://github.com/oven-sh/bun/releases/download/bun-v1.4.0/bun-windows-x64-baseline.zip"
 
 [[tools.claude]]
-version = "2.1.250"
+version = "2.1.251"
 backend = "aqua:anthropics/claude-code"
 
 [tools.claude."platforms.linux-arm64"]
-checksum = "sha256:3707880f19eeb575d0a4002b6f136c2e4c827d5a8867c468a3da28977b02591e"
-url = "https://github.com/anthropics/claude-code/releases/download/v2.1.250/claude-linux-arm64.tar.gz"
-url_api = "https://api.github.com/repos/anthropics/claude-code/releases/assets/532947125"
+checksum = "sha256:53a4cc28612c6534884019223ee38b9bad5a12814fe8e31d42ea26ff2b169373"
+url = "https://github.com/anthropics/claude-code/releases/download/v2.1.251/claude-linux-arm64.tar.gz"
+url_api = "https://api.github.com/repos/anthropics/claude-code/releases/assets/533990601"
 
 [tools.claude."platforms.linux-arm64-musl"]
-checksum = "sha256:1d5fe12f5a03038abd26f0118ea5cfdefdf1889b49a2b7f46abdcf8328abe74d"
-url = "https://github.com/anthropics/claude-code/releases/download/v2.1.250/claude-linux-arm64-musl.tar.gz"
-url_api = "https://api.github.com/repos/anthropics/claude-code/releases/assets/532947123"
+checksum = "sha256:de4f08a4a4332dfd3b712e5ad0f5c02f44b8fe2da8cafaeee8b1e26a513642a6"
+url = "https://github.com/anthropics/claude-code/releases/download/v2.1.251/claude-linux-arm64-musl.tar.gz"
+url_api = "https://api.github.com/repos/anthropics/claude-code/releases/assets/533990602"
 
 [tools.claude."platforms.linux-x64"]
-checksum = "sha256:c1951ff3879db3a1359cbec244357642814eb679ec683fe6dab0f9fba1c04ab2"
-url = "https://github.com/anthropics/claude-code/releases/download/v2.1.250/claude-linux-x64.tar.gz"
-url_api = "https://api.github.com/repos/anthropics/claude-code/releases/assets/532947255"
+checksum = "sha256:4fda59f47ab17c0e0c831b3144e3025c050397ba37d574388f52e92e1af81c74"
+url = "https://github.com/anthropics/claude-code/releases/download/v2.1.251/claude-linux-x64.tar.gz"
+url_api = "https://api.github.com/repos/anthropics/claude-code/releases/assets/533990718"
 
 [tools.claude."platforms.linux-x64-baseline"]
-checksum = "sha256:c1951ff3879db3a1359cbec244357642814eb679ec683fe6dab0f9fba1c04ab2"
-url = "https://github.com/anthropics/claude-code/releases/download/v2.1.250/claude-linux-x64.tar.gz"
-url_api = "https://api.github.com/repos/anthropics/claude-code/releases/assets/532947255"
+checksum = "sha256:4fda59f47ab17c0e0c831b3144e3025c050397ba37d574388f52e92e1af81c74"
+url = "https://github.com/anthropics/claude-code/releases/download/v2.1.251/claude-linux-x64.tar.gz"
+url_api = "https://api.github.com/repos/anthropics/claude-code/releases/assets/533990718"
 
 [tools.claude."platforms.linux-x64-musl"]
-checksum = "sha256:a8718eabc0fde5effa0cdb8cb78c7efc7e9180f193c3af92b87133a1cf68d4ac"
-url = "https://github.com/anthropics/claude-code/releases/download/v2.1.250/claude-linux-x64-musl.tar.gz"
-url_api = "https://api.github.com/repos/anthropics/claude-code/releases/assets/532947124"
+checksum = "sha256:4466b58d9de65221f305270b16c94cfb02eb2ae56353a97fda0ad28ec0c775e6"
+url = "https://github.com/anthropics/claude-code/releases/download/v2.1.251/claude-linux-x64-musl.tar.gz"
+url_api = "https://api.github.com/repos/anthropics/claude-code/releases/assets/533990603"
 
 [tools.claude."platforms.linux-x64-musl-baseline"]
-checksum = "sha256:a8718eabc0fde5effa0cdb8cb78c7efc7e9180f193c3af92b87133a1cf68d4ac"
-url = "https://github.com/anthropics/claude-code/releases/download/v2.1.250/claude-linux-x64-musl.tar.gz"
-url_api = "https://api.github.com/repos/anthropics/claude-code/releases/assets/532947124"
+checksum = "sha256:4466b58d9de65221f305270b16c94cfb02eb2ae56353a97fda0ad28ec0c775e6"
+url = "https://github.com/anthropics/claude-code/releases/download/v2.1.251/claude-linux-x64-musl.tar.gz"
+url_api = "https://api.github.com/repos/anthropics/claude-code/releases/assets/533990603"
 
 [tools.claude."platforms.macos-arm64"]
-checksum = "sha256:389a3678c85b4b45d06709bc563bc0c72ce37cecdfb2c691cb659f227ede465d"
-url = "https://github.com/anthropics/claude-code/releases/download/v2.1.250/claude-darwin-arm64.tar.gz"
-url_api = "https://api.github.com/repos/anthropics/claude-code/releases/assets/532947126"
+checksum = "sha256:02e1e8f41406ae4f4a6b85f25ce6653bf586478dfe64e4d56e0a21624756141d"
+url = "https://github.com/anthropics/claude-code/releases/download/v2.1.251/claude-darwin-arm64.tar.gz"
+url_api = "https://api.github.com/repos/anthropics/claude-code/releases/assets/533990605"
 
 [tools.claude."platforms.macos-x64"]
-checksum = "sha256:846e061e47482d8482550f10bd1ec4c3e3632926d9832882ebc3a979eaa39841"
-url = "https://github.com/anthropics/claude-code/releases/download/v2.1.250/claude-darwin-x64.tar.gz"
-url_api = "https://api.github.com/repos/anthropics/claude-code/releases/assets/532947122"
+checksum = "sha256:da2b0b631cd3af3053d18aa27c5cfc5626a4ffdb0f92d1b63bca7b85a5edfe80"
+url = "https://github.com/anthropics/claude-code/releases/download/v2.1.251/claude-darwin-x64.tar.gz"
+url_api = "https://api.github.com/repos/anthropics/claude-code/releases/assets/533990604"
 
 [tools.claude."platforms.macos-x64-baseline"]
-checksum = "sha256:846e061e47482d8482550f10bd1ec4c3e3632926d9832882ebc3a979eaa39841"
-url = "https://github.com/anthropics/claude-code/releases/download/v2.1.250/claude-darwin-x64.tar.gz"
-url_api = "https://api.github.com/repos/anthropics/claude-code/releases/assets/532947122"
+checksum = "sha256:da2b0b631cd3af3053d18aa27c5cfc5626a4ffdb0f92d1b63bca7b85a5edfe80"
+url = "https://github.com/anthropics/claude-code/releases/download/v2.1.251/claude-darwin-x64.tar.gz"
+url_api = "https://api.github.com/repos/anthropics/claude-code/releases/assets/533990604"
 
 [tools.claude."platforms.windows-x64"]
-checksum = "sha256:9108943cb1d391e7f275c0774c0a58bbf371c6586fb5a0105e25fb66a0594764"
-url = "https://github.com/anthropics/claude-code/releases/download/v2.1.250/claude-win32-x64.zip"
-url_api = "https://api.github.com/repos/anthropics/claude-code/releases/assets/532947281"
+checksum = "sha256:22e6a1ee55a866750b5a842912ea1d8a90644868456062ca2a31bccc379c960a"
+url = "https://github.com/anthropics/claude-code/releases/download/v2.1.251/claude-win32-x64.zip"
+url_api = "https://api.github.com/repos/anthropics/claude-code/releases/assets/533990740"
 
 [tools.claude."platforms.windows-x64-baseline"]
-checksum = "sha256:9108943cb1d391e7f275c0774c0a58bbf371c6586fb5a0105e25fb66a0594764"
-url = "https://github.com/anthropics/claude-code/releases/download/v2.1.250/claude-win32-x64.zip"
-url_api = "https://api.github.com/repos/anthropics/claude-code/releases/assets/532947281"
+checksum = "sha256:22e6a1ee55a866750b5a842912ea1d8a90644868456062ca2a31bccc379c960a"
+url = "https://github.com/anthropics/claude-code/releases/download/v2.1.251/claude-win32-x64.zip"
+url_api = "https://api.github.com/repos/anthropics/claude-code/releases/assets/533990740"
 
 [[tools."github:k1LoW/git-wt"]]
 version = "0.29.1"
@@ -378,63 +378,63 @@ url = "https://github.com/herdrdev/herdr/releases/download/v0.8.2/herdr-macos-x8
 url_api = "https://api.github.com/repos/herdrdev/herdr/releases/assets/521169110"
 
 [[tools.hunk]]
-version = "0.20.0"
+version = "0.20.1"
 backend = "aqua:modem-dev/hunk"
 
 [tools.hunk."platforms.linux-arm64"]
-checksum = "sha256:1581db1791fe0f721be8f326491b0f5524045503451a2c2b0cf7514e00cdaee5"
-url = "https://github.com/modem-dev/hunk/releases/download/v0.20.0/hunkdiff-linux-arm64.tar.gz"
-url_api = "https://api.github.com/repos/modem-dev/hunk/releases/assets/529321144"
+checksum = "sha256:78b0f47dcc1e848d2a24651dda7e998643c24ff893a22e7e480e9aebeea86565"
+url = "https://github.com/modem-dev/hunk/releases/download/v0.20.1/hunkdiff-linux-arm64.tar.gz"
+url_api = "https://api.github.com/repos/modem-dev/hunk/releases/assets/535228765"
 
 [tools.hunk."platforms.linux-arm64-musl"]
-checksum = "sha256:1581db1791fe0f721be8f326491b0f5524045503451a2c2b0cf7514e00cdaee5"
-url = "https://github.com/modem-dev/hunk/releases/download/v0.20.0/hunkdiff-linux-arm64.tar.gz"
-url_api = "https://api.github.com/repos/modem-dev/hunk/releases/assets/529321144"
+checksum = "sha256:78b0f47dcc1e848d2a24651dda7e998643c24ff893a22e7e480e9aebeea86565"
+url = "https://github.com/modem-dev/hunk/releases/download/v0.20.1/hunkdiff-linux-arm64.tar.gz"
+url_api = "https://api.github.com/repos/modem-dev/hunk/releases/assets/535228765"
 
 [tools.hunk."platforms.linux-x64"]
-checksum = "sha256:3c1a36767a77675133a25ea7a7fded4c11788ce923407f6bf3608f20c06cf0bb"
-url = "https://github.com/modem-dev/hunk/releases/download/v0.20.0/hunkdiff-linux-x64.tar.gz"
-url_api = "https://api.github.com/repos/modem-dev/hunk/releases/assets/529321145"
+checksum = "sha256:889e338a1b0fcfdd69a5ece8d776cab58e0222b9ef4784f2fa519ade87b437c8"
+url = "https://github.com/modem-dev/hunk/releases/download/v0.20.1/hunkdiff-linux-x64.tar.gz"
+url_api = "https://api.github.com/repos/modem-dev/hunk/releases/assets/535228769"
 
 [tools.hunk."platforms.linux-x64-baseline"]
-checksum = "sha256:3c1a36767a77675133a25ea7a7fded4c11788ce923407f6bf3608f20c06cf0bb"
-url = "https://github.com/modem-dev/hunk/releases/download/v0.20.0/hunkdiff-linux-x64.tar.gz"
-url_api = "https://api.github.com/repos/modem-dev/hunk/releases/assets/529321145"
+checksum = "sha256:889e338a1b0fcfdd69a5ece8d776cab58e0222b9ef4784f2fa519ade87b437c8"
+url = "https://github.com/modem-dev/hunk/releases/download/v0.20.1/hunkdiff-linux-x64.tar.gz"
+url_api = "https://api.github.com/repos/modem-dev/hunk/releases/assets/535228769"
 
 [tools.hunk."platforms.linux-x64-musl"]
-checksum = "sha256:3c1a36767a77675133a25ea7a7fded4c11788ce923407f6bf3608f20c06cf0bb"
-url = "https://github.com/modem-dev/hunk/releases/download/v0.20.0/hunkdiff-linux-x64.tar.gz"
-url_api = "https://api.github.com/repos/modem-dev/hunk/releases/assets/529321145"
+checksum = "sha256:889e338a1b0fcfdd69a5ece8d776cab58e0222b9ef4784f2fa519ade87b437c8"
+url = "https://github.com/modem-dev/hunk/releases/download/v0.20.1/hunkdiff-linux-x64.tar.gz"
+url_api = "https://api.github.com/repos/modem-dev/hunk/releases/assets/535228769"
 
 [tools.hunk."platforms.linux-x64-musl-baseline"]
-checksum = "sha256:3c1a36767a77675133a25ea7a7fded4c11788ce923407f6bf3608f20c06cf0bb"
-url = "https://github.com/modem-dev/hunk/releases/download/v0.20.0/hunkdiff-linux-x64.tar.gz"
-url_api = "https://api.github.com/repos/modem-dev/hunk/releases/assets/529321145"
+checksum = "sha256:889e338a1b0fcfdd69a5ece8d776cab58e0222b9ef4784f2fa519ade87b437c8"
+url = "https://github.com/modem-dev/hunk/releases/download/v0.20.1/hunkdiff-linux-x64.tar.gz"
+url_api = "https://api.github.com/repos/modem-dev/hunk/releases/assets/535228769"
 
 [tools.hunk."platforms.macos-arm64"]
-checksum = "sha256:96d298009d8968b2a7859961354d323e13de8f7ecf4e701ac59aab4edcc56bbb"
-url = "https://github.com/modem-dev/hunk/releases/download/v0.20.0/hunkdiff-darwin-arm64.tar.gz"
-url_api = "https://api.github.com/repos/modem-dev/hunk/releases/assets/529321148"
+checksum = "sha256:b710b121df35f9ac9ccef1bdef5e2135747be404b818710313cc3db1c90f84e6"
+url = "https://github.com/modem-dev/hunk/releases/download/v0.20.1/hunkdiff-darwin-arm64.tar.gz"
+url_api = "https://api.github.com/repos/modem-dev/hunk/releases/assets/535228768"
 
 [tools.hunk."platforms.macos-x64"]
-checksum = "sha256:e7458d77524f09bc44d3e90c9dc4ff99c2e98cdd0e10c6d88e4793e000534f40"
-url = "https://github.com/modem-dev/hunk/releases/download/v0.20.0/hunkdiff-darwin-x64.tar.gz"
-url_api = "https://api.github.com/repos/modem-dev/hunk/releases/assets/529321143"
+checksum = "sha256:1e12e824b1cf5e194e3f7b58865cd656ac62ff10aa5e321246c424e19a897290"
+url = "https://github.com/modem-dev/hunk/releases/download/v0.20.1/hunkdiff-darwin-x64.tar.gz"
+url_api = "https://api.github.com/repos/modem-dev/hunk/releases/assets/535228771"
 
 [tools.hunk."platforms.macos-x64-baseline"]
-checksum = "sha256:e7458d77524f09bc44d3e90c9dc4ff99c2e98cdd0e10c6d88e4793e000534f40"
-url = "https://github.com/modem-dev/hunk/releases/download/v0.20.0/hunkdiff-darwin-x64.tar.gz"
-url_api = "https://api.github.com/repos/modem-dev/hunk/releases/assets/529321143"
+checksum = "sha256:1e12e824b1cf5e194e3f7b58865cd656ac62ff10aa5e321246c424e19a897290"
+url = "https://github.com/modem-dev/hunk/releases/download/v0.20.1/hunkdiff-darwin-x64.tar.gz"
+url_api = "https://api.github.com/repos/modem-dev/hunk/releases/assets/535228771"
 
 [tools.hunk."platforms.windows-x64"]
-checksum = "sha256:b441a1a9e19d2222f2453b0dc6541e65a9f4b9914549a1bc30c1ddc8d914540d"
-url = "https://github.com/modem-dev/hunk/releases/download/v0.20.0/hunkdiff-windows-x64.tar.gz"
-url_api = "https://api.github.com/repos/modem-dev/hunk/releases/assets/529321155"
+checksum = "sha256:55c410f8335920a6075549c27f36c29a71552c9de2c70bea20e23a9349563de5"
+url = "https://github.com/modem-dev/hunk/releases/download/v0.20.1/hunkdiff-windows-x64.tar.gz"
+url_api = "https://api.github.com/repos/modem-dev/hunk/releases/assets/535228773"
 
 [tools.hunk."platforms.windows-x64-baseline"]
-checksum = "sha256:b441a1a9e19d2222f2453b0dc6541e65a9f4b9914549a1bc30c1ddc8d914540d"
-url = "https://github.com/modem-dev/hunk/releases/download/v0.20.0/hunkdiff-windows-x64.tar.gz"
-url_api = "https://api.github.com/repos/modem-dev/hunk/releases/assets/529321155"
+checksum = "sha256:55c410f8335920a6075549c27f36c29a71552c9de2c70bea20e23a9349563de5"
+url = "https://github.com/modem-dev/hunk/releases/download/v0.20.1/hunkdiff-windows-x64.tar.gz"
+url_api = "https://api.github.com/repos/modem-dev/hunk/releases/assets/535228773"
 
 [[tools.node]]
 version = "22.23.2"
@@ -485,7 +485,7 @@ checksum = "sha256:1177b4137ba5adaa56354ae40f1080c7450e8ae09cecb47da459d1c52ac99
 url = "https://nodejs.org/dist/v22.23.2/node-v22.23.2-win-x64.zip"
 
 [[tools."npm:ntn"]]
-version = "0.22.10"
+version = "0.22.11"
 backend = "npm:ntn"
 
 [[tools.opencode]]
@@ -719,7 +719,7 @@ url = "https://github.com/typst/typst/releases/download/v0.15.1/typst-x86_64-pc-
 url_api = "https://api.github.com/repos/typst/typst/releases/assets/480303335"
 
 [[tools.vercel]]
-version = "59.9.1"
+version = "59.10.0"
 backend = "npm:vercel"
 
 [tools.vercel.options]
