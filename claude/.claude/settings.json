@@ -5,7 +5,10 @@
     "GH_BROWSER": "open"
   },
   "permissions": {
-    "defaultMode": "auto"
+    "defaultMode": "auto",
+    "allow": [
+      "Bash(gh:*)"
+    ]
   },
   "model": "opus[1m]",
   "hooks": {
