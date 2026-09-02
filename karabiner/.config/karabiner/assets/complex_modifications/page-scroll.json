@@ -1,5 +1,5 @@
 {
-  "title": "Terminal scroll",
+  "title": "Use alt u and alt d to nudge the scrollback and alt shift u and alt shift d to page",
   "rules": [
     {
       "description": "Use alt u and alt d to nudge the scrollback and alt shift u and alt shift d to page",

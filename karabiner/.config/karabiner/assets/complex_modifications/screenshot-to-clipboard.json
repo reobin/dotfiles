@@ -1,0 +1,35 @@
+{
+  "title": "Use command+shift+s for selected-area screenshot to clipboard",
+  "rules": [
+    {
+      "description": "Use command+shift+s for selected-area screenshot to clipboard",
+      "manipulators": [
+        {
+          "from": {
+            "key_code": "s",
+            "modifiers": {
+              "mandatory": [
+                "left_gui",
+                "left_shift"
+              ],
+              "optional": [
+                "any"
+              ]
+            }
+          },
+          "to": [
+            {
+              "key_code": "4",
+              "modifiers": [
+                "left_gui",
+                "left_control",
+                "left_shift"
+              ]
+            }
+          ],
+          "type": "basic"
+        }
+      ]
+    }
+  ]
+}

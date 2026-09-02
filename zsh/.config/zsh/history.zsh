@@ -2,12 +2,10 @@ HISTFILE=${ZDOTDIR:-$HOME}/.zsh_history
 HISTSIZE=100000
 SAVEHIST=100000
 
-setopt APPEND_HISTORY
 setopt HIST_IGNORE_ALL_DUPS
 setopt HIST_IGNORE_SPACE
 setopt HIST_SAVE_NO_DUPS
 setopt HIST_VERIFY
-setopt INC_APPEND_HISTORY
 setopt SHARE_HISTORY
 
 autoload -Uz up-line-or-beginning-search down-line-or-beginning-search edit-command-line

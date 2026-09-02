@@ -1,5 +1,5 @@
 {
-  "title": "Caps escape and hjkl arrows",
+  "title": "Use caps lock as navigation layer and escape on tap",
   "rules": [
     {
       "description": "Use caps lock as navigation layer and escape on tap",

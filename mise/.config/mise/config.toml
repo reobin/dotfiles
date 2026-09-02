@@ -1,7 +1,6 @@
 [settings]
 auto_install = true
 lockfile = true
-legacy_version_file = true
 idiomatic_version_file_enable_tools = ["node", "yarn"]
 node.corepack = true
 
