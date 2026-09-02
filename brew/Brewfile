@@ -1,5 +1,6 @@
 brew "eza"
 brew "fzf"
+brew "fzf-tab"
 brew "gh"
 brew "git-delta"
 brew "imagemagick"
