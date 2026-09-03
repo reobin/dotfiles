@@ -22,7 +22,7 @@ theme = terminal-active
 # `ghostty +show-config`, so the two values are the whole of what documents it.
 keybind = global:cmd+ctrl+alt+shift+n=toggle_quick_terminal
 quick-terminal-position = center
-quick-terminal-size = 640px,640px
+quick-terminal-size = 1024px,846px
 quick-terminal-animation-duration = 0
 
 # macOS restores a quick terminal without GHOSTTY_QUICK_TERMINAL set, and toggling
