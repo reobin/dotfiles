@@ -2,7 +2,7 @@
   "manifest_version": 3,
   "name": "Tab keys",
   "version": "1.0.0",
-  "description": "Switch tabs with option+j/k, jump by group with option+h/l, and reorder them with option+shift+j/k.",
+  "description": "Switch tabs with option+j/k, jump by group with option+h/l, reorder them with option+shift+j/k, close the rest with option+o.",
   "background": {
     "service_worker": "background.js"
   },
@@ -28,6 +28,9 @@
     "move-previous": {
       "suggested_key": { "mac": "Alt+Shift+K" },
       "description": "Move the tab toward the start"
+    },
+    "close-others": {
+      "description": "Close every other tab"
     }
   }
 }

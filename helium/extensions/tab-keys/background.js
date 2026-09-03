@@ -27,6 +27,17 @@ async function switchByGroup(tabs, active, offset) {
 }
 
 chrome.commands.onCommand.addListener(async (command) => {
+  if (command === "close-others") {
+    const others = await chrome.tabs.query({
+      currentWindow: true,
+      active: false,
+      pinned: false,
+    });
+
+    await chrome.tabs.remove(others.map((tab) => tab.id));
+    return;
+  }
+
   const action = COMMANDS[command];
   if (!action) return;
 

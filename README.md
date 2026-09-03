@@ -19,9 +19,10 @@ Chromium only wires up through the browser UI.
 
 1. Open `chrome://extensions` in Helium and enable developer mode.
 2. Load unpacked, then select `helium/extensions/tab-keys`.
-3. Open `chrome://extensions/shortcuts` and bind the two group commands to
-   `option+l` and `option+h`. Chromium suggests at most four shortcuts, and the
-   `j`/`k` pairs already take them.
+3. Open `chrome://extensions/shortcuts` and bind the group commands to
+   `option+l` and `option+h`, and the close-others command to `option+o`.
+   Chromium suggests at most four shortcuts, and the `j`/`k` pairs already take
+   them.
 
 ### Surfingkeys
 
