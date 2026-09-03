@@ -4,11 +4,16 @@
     "BROWSER": "none",
     "GH_BROWSER": "open"
   },
+  "attribution": {
+    "commit": "",
+    "pr": "",
+    "sessionUrl": false
+  },
   "permissions": {
-    "defaultMode": "auto",
     "allow": [
       "Bash(gh:*)"
-    ]
+    ],
+    "defaultMode": "auto"
   },
   "model": "opus[1m]",
   "hooks": {
@@ -69,9 +74,5 @@
       }
     }
   },
-  "attribution": {
-    "commit": "",
-    "pr": "",
-    "sessionUrl": false
-  }
+  "autoMemoryEnabled": false
 }
