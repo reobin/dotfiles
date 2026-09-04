@@ -484,12 +484,7 @@ plan="$(
               | (if $title == "" then $pane.agent else $title end) as $what
               | ([$tab_labels[$pane.tab_id] // empty, $what] | join(" · ")) as $rest
               | ($pending[$pane.pane_id] // 0) as $waiting
-              # The count rides on the glyph, not the end of the line, which is a
-              # title and gets truncated. One task is what the glyph already means, so
-              # only a second is worth the column. It leads because a fallback glyph
-              # can overrun its cell, and a separator space is safe to overrun.
-              | (if $waiting > 1 then "\($waiting)\("working" | mark)"
-                 elif $waiting == 1 then ("working" | mark)
+              | (if $waiting > 0 then ("working" | mark)
                  else ($pane.agent_status | mark)
                  end) as $icon
               # idle is done-and-seen: it keeps the calm color and only drops from ●
