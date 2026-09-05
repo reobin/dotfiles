@@ -55,7 +55,8 @@
   "remote": {
     "defaultEnvironmentId": "env_01FEEXG2YVgrSU375srfc8oT"
   },
-  "tui": "default",
+  "tui": "fullscreen",
+  "autoMemoryEnabled": false,
   "skipWorkflowUsageWarning": true,
   "theme": "auto",
   "editorMode": "normal",
@@ -73,6 +74,5 @@
         "callbackPort": 3118
       }
     }
-  },
-  "autoMemoryEnabled": false
+  }
 }
