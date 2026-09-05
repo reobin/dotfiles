@@ -386,65 +386,6 @@ checksum = "sha256:0ab3d0fe1434d55757997542b978c771d642987bb15a7130f4160f0db3882
 url = "https://github.com/herdrdev/herdr/releases/download/v0.8.2/herdr-windows-x86_64.zip"
 url_api = "https://api.github.com/repos/herdrdev/herdr/releases/assets/521169109"
 
-[[tools.hunk]]
-version = "0.21.0"
-backend = "aqua:modem-dev/hunk"
-
-[tools.hunk."platforms.linux-arm64"]
-checksum = "sha256:dcbaa951113174ab7e72580848027b986d05667362ed41b6ee33e7d7dc97ee37"
-url = "https://github.com/modem-dev/hunk/releases/download/v0.21.0/hunkdiff-linux-arm64.tar.gz"
-url_api = "https://api.github.com/repos/modem-dev/hunk/releases/assets/541386487"
-
-[tools.hunk."platforms.linux-arm64-musl"]
-checksum = "sha256:dcbaa951113174ab7e72580848027b986d05667362ed41b6ee33e7d7dc97ee37"
-url = "https://github.com/modem-dev/hunk/releases/download/v0.21.0/hunkdiff-linux-arm64.tar.gz"
-url_api = "https://api.github.com/repos/modem-dev/hunk/releases/assets/541386487"
-
-[tools.hunk."platforms.linux-x64"]
-checksum = "sha256:7aee989da0e55465dec02fbee788e6bbe0fc1e303fae08184dabc0bd236278a4"
-url = "https://github.com/modem-dev/hunk/releases/download/v0.21.0/hunkdiff-linux-x64.tar.gz"
-url_api = "https://api.github.com/repos/modem-dev/hunk/releases/assets/541386488"
-
-[tools.hunk."platforms.linux-x64-baseline"]
-checksum = "sha256:7aee989da0e55465dec02fbee788e6bbe0fc1e303fae08184dabc0bd236278a4"
-url = "https://github.com/modem-dev/hunk/releases/download/v0.21.0/hunkdiff-linux-x64.tar.gz"
-url_api = "https://api.github.com/repos/modem-dev/hunk/releases/assets/541386488"
-
-[tools.hunk."platforms.linux-x64-musl"]
-checksum = "sha256:7aee989da0e55465dec02fbee788e6bbe0fc1e303fae08184dabc0bd236278a4"
-url = "https://github.com/modem-dev/hunk/releases/download/v0.21.0/hunkdiff-linux-x64.tar.gz"
-url_api = "https://api.github.com/repos/modem-dev/hunk/releases/assets/541386488"
-
-[tools.hunk."platforms.linux-x64-musl-baseline"]
-checksum = "sha256:7aee989da0e55465dec02fbee788e6bbe0fc1e303fae08184dabc0bd236278a4"
-url = "https://github.com/modem-dev/hunk/releases/download/v0.21.0/hunkdiff-linux-x64.tar.gz"
-url_api = "https://api.github.com/repos/modem-dev/hunk/releases/assets/541386488"
-
-[tools.hunk."platforms.macos-arm64"]
-checksum = "sha256:a3f053af663df0d222e550f4e64ef5455e953f03f140782c855186a6d9992bb9"
-url = "https://github.com/modem-dev/hunk/releases/download/v0.21.0/hunkdiff-darwin-arm64.tar.gz"
-url_api = "https://api.github.com/repos/modem-dev/hunk/releases/assets/541386485"
-
-[tools.hunk."platforms.macos-x64"]
-checksum = "sha256:a7cb0d11970b0ee5f2c64e8a59a91ee70ac98e7eaa48b5dd1367afdbdbbca33e"
-url = "https://github.com/modem-dev/hunk/releases/download/v0.21.0/hunkdiff-darwin-x64.tar.gz"
-url_api = "https://api.github.com/repos/modem-dev/hunk/releases/assets/541386489"
-
-[tools.hunk."platforms.macos-x64-baseline"]
-checksum = "sha256:a7cb0d11970b0ee5f2c64e8a59a91ee70ac98e7eaa48b5dd1367afdbdbbca33e"
-url = "https://github.com/modem-dev/hunk/releases/download/v0.21.0/hunkdiff-darwin-x64.tar.gz"
-url_api = "https://api.github.com/repos/modem-dev/hunk/releases/assets/541386489"
-
-[tools.hunk."platforms.windows-x64"]
-checksum = "sha256:874b10ea2729832849f9c773bf4b227d18512c491be59f7bda3984b32a045aa9"
-url = "https://github.com/modem-dev/hunk/releases/download/v0.21.0/hunkdiff-windows-x64.tar.gz"
-url_api = "https://api.github.com/repos/modem-dev/hunk/releases/assets/541386505"
-
-[tools.hunk."platforms.windows-x64-baseline"]
-checksum = "sha256:874b10ea2729832849f9c773bf4b227d18512c491be59f7bda3984b32a045aa9"
-url = "https://github.com/modem-dev/hunk/releases/download/v0.21.0/hunkdiff-windows-x64.tar.gz"
-url_api = "https://api.github.com/repos/modem-dev/hunk/releases/assets/541386505"
-
 [[tools.node]]
 version = "22.23.2"
 backend = "core:node"

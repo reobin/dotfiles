@@ -469,8 +469,8 @@ plan="$(
           | if $pane == null then
               clear_but($slot; [])
             elif ($pane.agent // null) == null then
-              # A pane that names itself beats the process behind it: the hunk review
-              # pane sets a title, where its leader reads as `node <entrypoint path>`.
+              # A pane that names itself beats the process behind it: the reviewr
+              # pane sets a title, where its leader reads as `herdr-reviewr`.
               (($pane.title // "" | select(. != "")) // $commands[$pane.pane_id] // "shell") as $what
               | ([$tab_labels[$pane.tab_id] // empty, $what] | join(" · ")) as $rest
               # Its own token, so a pane row and an agent row Herdr has no status

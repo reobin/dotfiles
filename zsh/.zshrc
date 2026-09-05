@@ -13,7 +13,7 @@ alias mkdir='mkdir -vp'
 alias h='herdr'
 alias g='git'
 alias lg='lazygit'
-alias d='hunk diff --watch'
+alias d='herdr-reviewr'
 alias n='nvim'
 alias db='nvim -c DBUI'
 

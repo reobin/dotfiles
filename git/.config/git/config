@@ -40,8 +40,6 @@
 	autostash = true         # Let `pull.rebase` work on a dirty tree
 [fetch]
 	prune = true             # Drop remote-tracking refs that are gone
-[pager]
-	diff = hunk pager        # Review `git diff` in hunk; delta keeps log and show
 [diff]
 	algorithm = histogram    # Clearer diffs on moved/edited lines
 	colorMoved = plain       # Highlight moved blocks in diffs

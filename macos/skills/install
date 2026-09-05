@@ -8,7 +8,6 @@ INSTALL_DIRECTORY="$DOTFILES_DIRECTORY/macos"
 # written by hand live in the ai repo instead.
 SKILLS=(
   herdr
-  hunk
 )
 
 for skill in "${SKILLS[@]}"; do

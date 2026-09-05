@@ -22,7 +22,7 @@ else
   herdr plugin link "$SPACE_TOKENS_DIR"
 fi
 
-HUNKDIFF_ID="jhochenbaum.hunkdiff"
+REVIEWR_ID="persiyanov.reviewr"
 
 install_herdr_plugin() {
   local plugin_id="$1" plugin_repo="$2"
@@ -36,41 +36,26 @@ install_herdr_plugin() {
   herdr plugin install "$plugin_repo" --yes
 }
 
-# hunkdiff builds with npm and runs every action, event and pane through node.
-if command -v node >/dev/null 2>&1; then
-  install_herdr_plugin "$HUNKDIFF_ID" jhochenbaum/herdr-hunk-diff
-else
-  echo "Skipping Herdr $HUNKDIFF_ID plugin (node is not installed)" >&2
-fi
-
 install_herdr_plugin reobin.close-other-panes reobin/herdr-close-other-panes
 install_herdr_plugin to4iki.unread-jump to4iki/herdr-unread-jump
+install_herdr_plugin "$REVIEWR_ID" persiyanov/herdr-reviewr
 
 unset -f install_herdr_plugin
 
-HUNK_SHIM="${XDG_DATA_HOME:-$HOME/.local/share}/mise/shims/hunk"
-
-# Left alone, the plugin runs a hunkdiff it bundles, which trails the one mise
-# manages and the git pager and review skill drive. The shim is the stable path
-# to that one; mise's install paths carry the version and dangle on upgrade.
-if ! grep -q "$HUNKDIFF_ID" <<<"$(herdr plugin list)"; then
-  echo "Skipping Herdr $HUNKDIFF_ID config ($HUNKDIFF_ID is not installed)" >&2
-elif [[ ! -x "$HUNK_SHIM" ]]; then
-  echo "Skipping Herdr $HUNKDIFF_ID config (missing: $HUNK_SHIM)" >&2
+# reviewr ships prebuilt binaries, so it needs no toolchain and no node. Left
+# alone it opens itself in every worktree workspace.
+if ! grep -q "$REVIEWR_ID" <<<"$(herdr plugin list)"; then
+  echo "Skipping Herdr $REVIEWR_ID config ($REVIEWR_ID is not installed)" >&2
 else
-  HUNKDIFF_CONFIG_DIR="$(herdr plugin config-dir "$HUNKDIFF_ID")"
-  mkdir -p "$HUNKDIFF_CONFIG_DIR"
+  REVIEWR_CONFIG_DIR="$(herdr plugin config-dir "$REVIEWR_ID")"
+  mkdir -p "$REVIEWR_CONFIG_DIR"
 
-  cat >"$HUNKDIFF_CONFIG_DIR/config.toml" <<EOF
+  cat >"$REVIEWR_CONFIG_DIR/config.toml" <<EOF
 # written by macos/integrations/install
-[review]
-default_target = "working"
-
-[hunk]
-bin = "$HUNK_SHIM"
+auto_open = false
 EOF
 
-  echo "pinned Herdr $HUNKDIFF_ID to $HUNK_SHIM"
+  echo "configured Herdr $REVIEWR_ID"
 fi
 
 INTEGRATION_STATUS="$(herdr integration status)"

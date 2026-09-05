@@ -20,6 +20,7 @@ herdr/.config/herdr/plugins/
 # anything installed there has to be ignored by default rather than named.
 herdr/.local/bin/*
 !herdr/.local/bin/herdr-*
+herdr/.local/bin/herdr-reviewr
 opencode/.config/opencode/plugins/herdr-agent-state.js
 opencode/.config/opencode/herdr-tui-session.js
 opencode/.config/opencode/tui.jsonc

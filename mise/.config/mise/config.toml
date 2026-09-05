@@ -10,7 +10,6 @@ aws-cli = { version = "latest", symlink_bins = true }
 bun = "latest"
 claude = "latest"
 herdr = "latest"
-hunk = "latest"
 "npm:ntn" = "latest"
 "github:k1LoW/git-wt" = "latest"
 go = "latest"
