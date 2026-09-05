@@ -1,6 +1,6 @@
 # `reobin/dotfiles` (macOS)
 
-Ever evolving dotfiles for macOS.
+Ever evolving dotfiles for macOS. Personal setup, take what you like.
 
 ## Get started
 
