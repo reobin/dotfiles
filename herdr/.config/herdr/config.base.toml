@@ -127,10 +127,6 @@ description = "floating pane"
 [ui]
 mouse_capture = true
 
-# A wheel notch is the only scroll Herdr sizes from config. The karabiner rule
-# behind alt+u sends notches, so this is what makes that chord land on roughly
-# half a screen, at the cost of a coarser trackpad.
-mouse_scroll_lines = 8
 confirm_close = false
 prompt_new_tab_name = false
 
