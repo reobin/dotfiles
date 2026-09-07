@@ -1,0 +1,20 @@
+#!/usr/bin/env bash
+# ~/.local/bin is a whole-dir symlink to herdr/.local/bin, so a plain
+# `stow gdrive` cannot link this package's bins. Link the tracked script
+# into the live bin dir instead.
+set -eu
+
+# `drive` collides with the community drive CLI, so this ships as `gdrive`.
+# Drop the old link left by the previous name.
+if [[ -L "$DOTFILES_DIRECTORY/herdr/.local/bin/drive" ]]; then
+  rm -f "$DOTFILES_DIRECTORY/herdr/.local/bin/drive"
+fi
+
+ln -sfn "$DOTFILES_DIRECTORY/gdrive/.local/bin/gdrive" \
+  "$DOTFILES_DIRECTORY/herdr/.local/bin/gdrive"
+
+# The config dir was ~/.config/drive before the rename. Move it, don't
+# re-auth: the grant lives server-side, the tokens move with the files.
+if [[ -d "$HOME/.config/drive" && ! -e "$HOME/.config/gdrive" ]]; then
+  mv "$HOME/.config/drive" "$HOME/.config/gdrive"
+fi

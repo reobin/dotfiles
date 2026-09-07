@@ -1,0 +1,497 @@
+#!/usr/bin/env python3
+"""Direct Google Drive access over the REST API. No MCP involved.
+
+Setup:
+  1. Google Cloud project with only the Drive API enabled.
+  2. OAuth consent screen: External, yourself as test user, scopes
+      https://www.googleapis.com/auth/drive
+      https://www.googleapis.com/auth/drive.readonly
+      https://www.googleapis.com/auth/drive.file
+  3. OAuth client of type "Desktop app".
+  4. Run `gdrive auth`, sign in, done. Tokens live in ~/.config/gdrive/.
+
+Usage:
+  gdrive auth [--client-id ID] [--client-secret SECRET]
+  gdrive ls [-n 20]
+  gdrive search QUERY
+  gdrive meta FILE_ID
+  gdrive read FILE_ID
+  gdrive download FILE_ID -o PATH
+  gdrive mkdir NAME [--parent FOLDER_ID]
+  gdrive upload PATH [--parent FOLDER_ID] [--name NAME]
+  gdrive rename FILE_ID NEW_NAME
+  gdrive move FILE_ID --to FOLDER_ID
+  gdrive trash FILE_ID
+  gdrive delete FILE_ID
+"""
+
+import http.server
+import json
+import os
+import sys
+import urllib.error
+import urllib.parse
+import urllib.request
+import webbrowser
+
+CONF_DIR = os.path.expanduser("~/.config/gdrive")
+CONF_FILE = os.path.join(CONF_DIR, "config.json")
+TOKEN_FILE = os.path.join(CONF_DIR, "token.json")
+SCOPES = (
+    "https://www.googleapis.com/auth/drive"
+    " https://www.googleapis.com/auth/drive.readonly"
+    " https://www.googleapis.com/auth/drive.file"
+)
+AUTH_URL = "https://accounts.google.com/o/oauth2/v2/auth"
+TOKEN_URL = "https://oauth2.googleapis.com/token"
+API = "https://www.googleapis.com/drive/v3"
+
+EXPORT_MIME = {
+    "application/vnd.google-apps.document": "text/plain",
+    "application/vnd.google-apps.spreadsheet": "text/csv",
+    "application/vnd.google-apps.presentation": "text/plain",
+    "application/vnd.google-apps.drawing": "image/png",
+}
+
+
+def load_json(path):
+    with open(path) as f:
+        return json.load(f)
+
+
+def save_private(path, data):
+    os.makedirs(CONF_DIR, exist_ok=True)
+    with open(path, "w") as f:
+        json.dump(data, f, indent=2)
+    os.chmod(path, 0o600)
+
+
+def need_auth():
+    if not (os.path.exists(CONF_FILE) and os.path.exists(TOKEN_FILE)):
+        sys.exit("Not signed in. Run `gdrive auth` first.")
+
+
+def require_args(args, n, usage):
+    if len(args) < n:
+        sys.exit("Usage: gdrive " + usage)
+
+
+def escape_query(value):
+    return value.replace("\\", "\\\\").replace("'", "\\'")
+
+
+def api_error(action, e):
+    try:
+        detail = json.load(e)
+        msg = detail.get("error", {}).get("message", "")
+    except Exception:
+        msg = e.read().decode(errors="replace") if hasattr(e, "read") else str(e)
+    sys.exit("%s failed (HTTP %s): %s" % (action, getattr(e, "code", "?"), msg))
+
+
+def post_form(url, params):
+    data = urllib.parse.urlencode(params).encode()
+    req = urllib.request.Request(url, data=data)
+    try:
+        with urllib.request.urlopen(req, timeout=60) as r:
+            return json.load(r)
+    except urllib.error.HTTPError as e:
+        api_error("Token request", e)
+
+
+def cmd_auth(args):
+    import argparse
+
+    p = argparse.ArgumentParser()
+    p.add_argument("--client-id")
+    p.add_argument("--client-secret", default="")
+    ns = p.parse_args(args)
+
+    try:
+        conf = load_json(CONF_FILE) if os.path.exists(CONF_FILE) else {}
+    except (OSError, ValueError):
+        conf = {}
+    client_id = ns.client_id or conf.get("client_id") or input("OAuth client ID: ").strip()
+    client_secret = ns.client_secret or conf.get("client_secret", "")
+    if not client_secret:
+        try:
+            client_secret = input("OAuth client secret (enter to skip): ").strip()
+        except EOFError:
+            client_secret = ""
+
+    code_holder = {}
+
+    class Handler(http.server.BaseHTTPRequestHandler):
+        def do_GET(self):
+            qs = urllib.parse.parse_qs(urllib.parse.urlparse(self.path).query)
+            if "code" in qs:
+                code_holder["code"] = qs["code"][0]
+                self.send_response(200)
+                self.end_headers()
+                self.wfile.write(b"Signed in. Return to the terminal.")
+            else:
+                self.send_response(400)
+                self.end_headers()
+                self.wfile.write(b"Missing code.")
+
+        def log_message(self, *a):
+            pass
+
+    server = http.server.HTTPServer(("127.0.0.1", 0), Handler)
+    port = server.server_address[1]
+    redirect = "http://127.0.0.1:%d/" % port
+
+    params = {
+        "client_id": client_id,
+        "redirect_uri": redirect,
+        "response_type": "code",
+        "scope": SCOPES,
+        "access_type": "offline",
+        "prompt": "consent",
+    }
+    url = AUTH_URL + "?" + urllib.parse.urlencode(params)
+    print("Opening browser for sign-in. If it does not open, visit:")
+    print(url)
+    webbrowser.open(url)
+    print("Waiting for callback...")
+    while "code" not in code_holder:
+        server.handle_request()
+
+    token_params = {
+        "code": code_holder["code"],
+        "client_id": client_id,
+        "redirect_uri": redirect,
+        "grant_type": "authorization_code",
+    }
+    if client_secret:
+        token_params["client_secret"] = client_secret
+    tok = post_form(TOKEN_URL, token_params)
+    if "refresh_token" not in tok:
+        sys.exit("No refresh token returned. Remove the app grant and retry.")
+    save_private(CONF_FILE, {"client_id": client_id, "client_secret": client_secret})
+    save_private(
+        TOKEN_FILE,
+        {
+            "refresh_token": tok["refresh_token"],
+            "access_token": tok.get("access_token", ""),
+            "expires_at": 0,
+        },
+    )
+    print("Saved to %s" % TOKEN_FILE)
+
+
+def access_token():
+    import time
+
+    need_auth()
+    try:
+        conf = load_json(CONF_FILE)
+        tok = load_json(TOKEN_FILE)
+    except (OSError, ValueError):
+        sys.exit("Config unreadable. Run `gdrive auth` again.")
+    if tok.get("access_token") and tok.get("expires_at", 0) > time.time() + 60:
+        return tok["access_token"]
+    client_id = conf.get("client_id")
+    refresh_token = tok.get("refresh_token")
+    if not client_id or not refresh_token:
+        sys.exit("Config incomplete. Run `gdrive auth` again.")
+    params = {
+        "client_id": client_id,
+        "grant_type": "refresh_token",
+        "refresh_token": refresh_token,
+    }
+    if conf.get("client_secret"):
+        params["client_secret"] = conf["client_secret"]
+    try:
+        fresh = post_form(TOKEN_URL, params)
+    except Exception as e:
+        sys.exit("Refresh failed (%s). Run `gdrive auth` again." % e)
+    tok["access_token"] = fresh["access_token"]
+    tok["expires_at"] = time.time() + fresh.get("expires_in", 3600)
+    save_private(TOKEN_FILE, tok)
+    return tok["access_token"]
+
+
+def api(path, params=None, out_binary=False):
+    qs = urllib.parse.urlencode(params or {})
+    req = urllib.request.Request(
+        API + path + ("?" + qs if qs else ""),
+        headers={"Authorization": "Bearer " + access_token()},
+    )
+    try:
+        with urllib.request.urlopen(req, timeout=60) as r:
+            if out_binary:
+                return r.read()
+            return json.load(r)
+    except urllib.error.HTTPError as e:
+        api_error("Request", e)
+
+
+def show_files(files):
+    for f in files:
+        print("%s  %s  [%s]" % (f["id"], f.get("name", "?"), f.get("mimeType", "?")))
+
+
+def api_mut(method, path, params=None, body=None, content_type="application/json"):
+    qs = urllib.parse.urlencode(params or {})
+    if isinstance(body, dict):
+        body = json.dumps(body).encode()
+        content_type = "application/json"
+    req = urllib.request.Request(
+        API + path + ("?" + qs if qs else ""),
+        data=body,
+        headers={
+            "Authorization": "Bearer " + access_token(),
+            "Content-Type": content_type,
+        },
+        method=method,
+    )
+    try:
+        with urllib.request.urlopen(req, timeout=60) as r:
+            raw = r.read()
+            return json.loads(raw) if raw else None
+    except urllib.error.HTTPError as e:
+        api_error("Request", e)
+
+
+def cmd_ls(args):
+    import argparse
+
+    p = argparse.ArgumentParser()
+    p.add_argument("-n", type=int, default=20)
+    p.add_argument("folder", nargs="?")
+    ns = p.parse_args(args)
+    params = {
+        "pageSize": ns.n,
+        "orderBy": "recency",
+        "fields": "files(id,name,mimeType)",
+        "includeItemsFromAllDrives": "true",
+        "supportsAllDrives": "true",
+    }
+    if ns.folder:
+        params["q"] = "'%s' in parents and trashed=false" % escape_query(ns.folder)
+    show_files(api("/files", params).get("files", []))
+
+
+def cmd_search(args):
+    import argparse
+
+    p = argparse.ArgumentParser()
+    p.add_argument("-n", type=int, default=20)
+    p.add_argument("query", nargs="+")
+    ns = p.parse_args(args)
+    q = escape_query(" ".join(ns.query))
+    show_files(
+        api(
+            "/files",
+            {
+                "q": "name contains '%s' and trashed=false" % q,
+                "pageSize": ns.n,
+                "fields": "files(id,name,mimeType)",
+                "includeItemsFromAllDrives": "true",
+                "supportsAllDrives": "true",
+            },
+        ).get("files", [])
+    )
+
+
+def cmd_meta(args):
+    require_args(args, 1, "meta FILE_ID")
+    print(json.dumps(api("/files/" + args[0], {"fields": "*", "supportsAllDrives": "true"}), indent=2))
+
+
+def cmd_read(args):
+    require_args(args, 1, "read FILE_ID")
+    file_id = args[0]
+    meta = api("/files/" + file_id, {"fields": "id,name,mimeType", "supportsAllDrives": "true"})
+    mime = meta.get("mimeType", "")
+    if mime in EXPORT_MIME:
+        data = api(
+            "/files/%s/export" % file_id,
+            {"mimeType": EXPORT_MIME[mime]},
+            out_binary=True,
+        )
+    else:
+        data = api("/files/" + file_id, {"alt": "media", "supportsAllDrives": "true"}, out_binary=True)
+    sys.stdout.buffer.write(data)
+
+
+def cmd_download(args):
+    import argparse
+
+    p = argparse.ArgumentParser()
+    p.add_argument("file_id")
+    p.add_argument("-o", required=True)
+    ns = p.parse_args(args)
+    meta = api("/files/" + ns.file_id, {"fields": "id,name,mimeType", "supportsAllDrives": "true"})
+    mime = meta.get("mimeType", "")
+    if mime in EXPORT_MIME:
+        data = api(
+            "/files/%s/export" % ns.file_id,
+            {"mimeType": EXPORT_MIME[mime]},
+            out_binary=True,
+        )
+    else:
+        data = api("/files/" + ns.file_id, {"alt": "media", "supportsAllDrives": "true"}, out_binary=True)
+    with open(os.path.expanduser(ns.o), "wb") as f:
+        f.write(data)
+    print("Saved %d bytes to %s" % (len(data), ns.o))
+
+
+def cmd_mkdir(args):
+    import argparse
+
+    p = argparse.ArgumentParser()
+    p.add_argument("name")
+    p.add_argument("--parent")
+    ns = p.parse_args(args)
+    meta = {"name": ns.name, "mimeType": "application/vnd.google-apps.folder"}
+    if ns.parent:
+        meta["parents"] = [ns.parent]
+    created = api_mut("POST", "/files", {"fields": "id,name", "supportsAllDrives": "true"}, meta)
+    print("%s  %s" % (created["id"], created["name"]))
+
+
+def cmd_upload(args):
+    import argparse
+    import http.client
+    import mimetypes
+
+    p = argparse.ArgumentParser()
+    p.add_argument("path")
+    p.add_argument("--parent")
+    p.add_argument("--name")
+    ns = p.parse_args(args)
+    local = os.path.expanduser(ns.path)
+    name = ns.name or os.path.basename(local)
+    meta = {"name": name}
+    if ns.parent:
+        meta["parents"] = [ns.parent]
+    boundary = "drive-upload-boundary"
+    mime = mimetypes.guess_type(local)[0] or "application/octet-stream"
+    prefix = (
+        ("--" + boundary + "\r\nContent-Type: application/json; charset=UTF-8\r\n\r\n").encode()
+        + json.dumps(meta).encode()
+        + ("\r\n--" + boundary + "\r\nContent-Type: %s\r\n\r\n" % mime).encode()
+    )
+    suffix = ("\r\n--" + boundary + "--").encode()
+    try:
+        size = os.path.getsize(local)
+    except OSError as e:
+        sys.exit("upload failed: cannot read %s (%s)" % (local, e))
+    qs = urllib.parse.urlencode(
+        {"uploadType": "multipart", "fields": "id,name", "supportsAllDrives": "true"}
+    )
+    conn = http.client.HTTPSConnection("www.googleapis.com", timeout=120)
+    try:
+        conn.putrequest("POST", "/drive/v3/files?" + qs)
+        conn.putheader("Authorization", "Bearer " + access_token())
+        conn.putheader("Content-Type", "multipart/related; boundary=" + boundary)
+        conn.putheader("Content-Length", str(len(prefix) + size + len(suffix)))
+        conn.endheaders()
+        conn.send(prefix)
+        try:
+            with open(local, "rb") as f:
+                while True:
+                    chunk = f.read(1024 * 1024)
+                    if not chunk:
+                        break
+                    conn.send(chunk)
+        except OSError as e:
+            sys.exit("upload failed: cannot read %s (%s)" % (local, e))
+        conn.send(suffix)
+        resp = conn.getresponse()
+        raw = resp.read()
+    finally:
+        conn.close()
+    if resp.status >= 400:
+        try:
+            detail = json.loads(raw)
+            msg = detail.get("error", {}).get("message", "")
+        except Exception:
+            msg = raw.decode(errors="replace")
+        sys.exit("upload failed (HTTP %s): %s" % (resp.status, msg))
+    created = json.loads(raw) if raw else {}
+    print("%s  %s" % (created["id"], created["name"]))
+
+
+def cmd_rename(args):
+    require_args(args, 2, "rename FILE_ID NEW_NAME")
+    file_id, new_name = args[0], args[1]
+    updated = api_mut(
+        "PATCH",
+        "/files/" + file_id,
+        {"fields": "id,name", "supportsAllDrives": "true"},
+        {"name": new_name},
+    )
+    print("%s  %s" % (updated["id"], updated["name"]))
+
+
+def cmd_move(args):
+    import argparse
+
+    p = argparse.ArgumentParser()
+    p.add_argument("file_id")
+    p.add_argument("--to", required=True)
+    ns = p.parse_args(args)
+    current = api("/files/" + ns.file_id, {"fields": "parents", "supportsAllDrives": "true"})
+    params = {
+        "fields": "id,name,parents",
+        "addParents": ns.to,
+        "supportsAllDrives": "true",
+    }
+    previous = ",".join(current.get("parents", []))
+    if previous:
+        params["removeParents"] = previous
+    moved = api_mut("PATCH", "/files/" + ns.file_id, params, {})
+    print("%s  %s -> %s" % (moved["id"], moved["name"], ",".join(moved.get("parents", []))))
+
+
+def cmd_trash(args):
+    require_args(args, 1, "trash FILE_ID")
+    file_id = args[0]
+    api_mut("PATCH", "/files/" + file_id, {"supportsAllDrives": "true"}, {"trashed": True})
+    print("Trashed %s" % file_id)
+
+
+def cmd_delete(args):
+    require_args(args, 1, "delete FILE_ID")
+    file_id = args[0]
+    api_mut("DELETE", "/files/" + file_id, {"supportsAllDrives": "true"})
+    print("Deleted %s" % file_id)
+
+
+def main():
+    if len(sys.argv) < 2:
+        sys.exit(__doc__)
+    cmd, rest = sys.argv[1], sys.argv[2:]
+    if cmd == "auth":
+        cmd_auth(rest)
+    elif cmd == "ls":
+        cmd_ls(rest)
+    elif cmd == "search":
+        cmd_search(rest)
+    elif cmd == "meta":
+        cmd_meta(rest)
+    elif cmd == "read":
+        cmd_read(rest)
+    elif cmd == "download":
+        cmd_download(rest)
+    elif cmd == "mkdir":
+        cmd_mkdir(rest)
+    elif cmd == "upload":
+        cmd_upload(rest)
+    elif cmd == "rename":
+        cmd_rename(rest)
+    elif cmd == "move":
+        cmd_move(rest)
+    elif cmd == "trash":
+        cmd_trash(rest)
+    elif cmd == "delete":
+        cmd_delete(rest)
+    else:
+        sys.exit("Unknown command: %s" % cmd)
+
+
+if __name__ == "__main__":
+    main()

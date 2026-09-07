@@ -1,0 +1,32 @@
+#!/usr/bin/env bash
+
+if ! command -v gdrive >/dev/null 2>&1 && [[ ! -x "$DOTFILES_DIRECTORY/herdr/.local/bin/gdrive" ]]; then
+  echo "Skipping gdrive skill (gdrive is not installed)" >&2
+  return 0
+fi
+
+# The skill source lives in the gdrive package. Link it into the skill
+# directories the agents read.
+GDRIVE_SKILL_SOURCE="$DOTFILES_DIRECTORY/gdrive/SKILL.md"
+GDRIVE_SKILL_DIRECTORY="$HOME/.agents/skills/gdrive"
+GDRIVE_SKILL_TARGET="$HOME/.claude/skills/gdrive"
+
+mkdir -p "$GDRIVE_SKILL_DIRECTORY" "$(dirname "$GDRIVE_SKILL_TARGET")"
+
+# A real file here is a skill written by hand, and overwriting it would throw
+# that away.
+if [[ -e "$GDRIVE_SKILL_DIRECTORY/SKILL.md" && ! -L "$GDRIVE_SKILL_DIRECTORY/SKILL.md" ]]; then
+  echo "Skipping gdrive skill link ($GDRIVE_SKILL_DIRECTORY/SKILL.md is not a link)" >&2
+else
+  ln -sfn "$GDRIVE_SKILL_SOURCE" "$GDRIVE_SKILL_DIRECTORY/SKILL.md"
+  echo "linked gdrive skill -> $GDRIVE_SKILL_DIRECTORY/SKILL.md"
+fi
+
+# A real directory here is a skill installed by something else, and overwriting
+# it would throw that away.
+if [[ -e "$GDRIVE_SKILL_TARGET" && ! -L "$GDRIVE_SKILL_TARGET" ]]; then
+  echo "Skipping gdrive skill link ($GDRIVE_SKILL_TARGET is not a link)" >&2
+else
+  ln -sfn "$GDRIVE_SKILL_DIRECTORY" "$GDRIVE_SKILL_TARGET"
+  echo "linked gdrive skill -> $GDRIVE_SKILL_TARGET"
+fi
