@@ -13,6 +13,13 @@
 # screen. It goes down and not up: a lifted panel competes with the panes in
 # front of it. The ground is kanso-zen's, so this is kanso-zen's value.
 #
+# active_row_bg paints the active space and focused agent rows. Without it the
+# fill falls back to the terminal theme default, a gray that belongs to no
+# palette. This is Wave's own #1F1F28 ground at 1.2:1 over the background, a
+# step up from the sidebar without reaching the navigate cursor at 1.3:1 under
+# it, so the cursor still reads on top. The neutral ink also stays apart from
+# the blue cursor by hue, not just lightness.
+#
 # selection_bg paints the navigate cursor, which has to stay apart from the fill
 # on the active space and agent rows. This theme's terminal selection color is
 # already a highlight that reads without shouting, so the cursor takes it instead
@@ -20,4 +27,5 @@
 [theme.custom]
 overlay0 = "#2D4F67"
 sidebar_bg = "#05080B"
+active_row_bg = "#1F1F28"
 selection_bg = "#223249"
