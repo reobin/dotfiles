@@ -173,6 +173,77 @@ __terminal_theme_apply_herdr() {
   command mv -f "$tmp" "$herdr_dir/config.toml" || { command rm -f "$tmp"; return 1 }
 }
 
+# reviewr paints its own palette and has no auto light/dark detection, so tt
+# maps each terminal theme to one reviewr palette. The mapping lives in the
+# theme's `reviewr-theme` file (a single theme name); a theme without one, or
+# with one naming nothing reviewr knows, falls back by background lightness.
+# The config file is reviewr's own and keeps every other key - tt only sets
+# `theme`, so reviewr re-reads it on its next refresh with nothing to restart.
+__terminal_theme_apply_reviewr() {
+  emulate -L zsh
+  setopt local_options no_aliases
+
+  local theme_dir="$1" config_dir config_file tmp bg
+  local reviewr_theme=""
+  local -a known
+  known=(catppuccin catppuccin-latte catppuccin-frappe catppuccin-macchiato
+    dracula nord gruvbox gruvbox-light one-dark one-light solarized
+    solarized-light github-light monokai tokyo-night tokyo-night-day rose-pine
+    rose-pine-dawn)
+
+  if [[ -r "$theme_dir/reviewr-theme" ]]; then
+    reviewr_theme="$(command head -1 "$theme_dir/reviewr-theme" 2>/dev/null | command tr -d '[:space:]')"
+  fi
+  if (( ${known[(I)$reviewr_theme]} == 0 )); then
+    [[ -n "$reviewr_theme" ]] && print -u2 -- "tt: unknown reviewr theme '$reviewr_theme' in ${theme_dir:t}, falling back by lightness"
+    reviewr_theme=""
+    if bg="$(__terminal_theme_background "$theme_dir")" && __terminal_theme_is_light "$bg"; then
+      reviewr_theme="catppuccin-latte"
+    else
+      reviewr_theme="catppuccin"
+    fi
+  fi
+
+  if command -v herdr >/dev/null 2>&1; then
+    config_dir="$(herdr plugin config-dir persiyanov.reviewr 2>/dev/null | command tr -d '[:space:]')"
+  fi
+  [[ -n "$config_dir" ]] || config_dir="${XDG_CONFIG_HOME:-$HOME/.config}/herdr/plugins/config/persiyanov.reviewr"
+  config_file="$config_dir/config.toml"
+
+  command mkdir -p "$config_dir" || return 1
+
+  if [[ ! -r "$config_file" ]]; then
+    {
+      print -r -- "# written by tt from tt/themes/${theme_dir:t}/reviewr-theme"
+      print -r -- "# auto_open is owned by macos/integrations/install; tt only sets theme."
+      print -r -- "auto_open = false"
+      print -r -- "theme = \"$reviewr_theme\""
+    } > "$config_file" || return 1
+    return 0
+  fi
+
+  tmp="$config_file.tmp.$$"
+  REVIEW_THEME="$reviewr_theme" REVIEW_NAME="${theme_dir:t}" command awk '
+    BEGIN { done = 0 }
+    $0 ~ /^theme[[:space:]]*=/ {
+      if (!done) {
+        print "theme = \"" ENVIRON["REVIEW_THEME"] "\""
+        done = 1
+      }
+      next
+    }
+    { print }
+    END {
+      if (!done) {
+        print ""
+        print "# set by tt from tt/themes/" ENVIRON["REVIEW_NAME"] "/reviewr-theme"
+        print "theme = \"" ENVIRON["REVIEW_THEME"] "\""
+      }
+    }
+  ' "$config_file" > "$tmp" || { command rm -f "$tmp"; return 1 }
+  command mv -f "$tmp" "$config_file" || { command rm -f "$tmp"; return 1 }
+}
+
 __terminal_theme_reload_ghostty() {
   [[ "${TERM_PROGRAM:-}" == "ghostty" ]] || return 1
   command -v osascript >/dev/null 2>&1 || return 1
@@ -619,6 +690,7 @@ tt() {
   __terminal_theme_apply_wallpaper "$themes_dir/$theme" || true
   __terminal_theme_ensure_ghostty_active_theme "$ghostty_config" || true
   __terminal_theme_apply_herdr "$themes_dir/$theme" || true
+  __terminal_theme_apply_reviewr "$themes_dir/$theme" || true
 
   __terminal_theme_apply_env
 

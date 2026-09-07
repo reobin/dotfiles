@@ -50,10 +50,18 @@ else
   REVIEWR_CONFIG_DIR="$(herdr plugin config-dir "$REVIEWR_ID")"
   mkdir -p "$REVIEWR_CONFIG_DIR"
 
+  # tt owns the `theme` key; keep whatever it (or the user) set so a re-run of
+  # ./macos/init never drops reviewr back to its dark default.
+  REVIEWR_THEME="$(grep -E '^theme[[:space:]]*=' "$REVIEWR_CONFIG_DIR/config.toml" 2>/dev/null | tail -1 || true)"
+
   cat >"$REVIEWR_CONFIG_DIR/config.toml" <<EOF
 # written by macos/integrations/install
 auto_open = false
 EOF
+
+  if [[ -n "$REVIEWR_THEME" ]]; then
+    printf '%s\n' "$REVIEWR_THEME" >>"$REVIEWR_CONFIG_DIR/config.toml"
+  fi
 
   echo "configured Herdr $REVIEWR_ID"
 fi

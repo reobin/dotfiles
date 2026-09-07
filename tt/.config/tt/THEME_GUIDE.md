@@ -10,6 +10,9 @@ Each theme lives in `themes/<name>/` with:
 * `ghostty.conf` - terminal palette and surface colors
 * `nvim.lua` - Neovim colorscheme metadata
 * `herdr.toml` - Herdr color overrides for this theme
+* `reviewr-theme` - the one `herdr-reviewr` palette this theme maps to (a single
+  theme name; `tt` falls back to `catppuccin-latte` on light backgrounds and
+  `catppuccin` on dark ones when it is missing)
 
 Each `ghostty.conf` must declare a static wallpaper color:
 
@@ -184,7 +187,7 @@ Avoid adding a theme unless it looks good in all four places:
 
 ## Add Checklist
 
-1. Create `themes/<name>/ghostty.conf`, `nvim.lua`, and `herdr.toml`.
+1. Create `themes/<name>/ghostty.conf`, `nvim.lua`, `herdr.toml`, and `reviewr-theme`.
 2. Add the Neovim plugin only if no existing plugin provides the colorscheme.
 3. Mirror the Ghostty palette to `tt/.config/ghostty/themes/terminal-<name>`. It
    belongs to the `tt` package, not `ghostty`, so `macos/dotfiles/tt` restows it.
