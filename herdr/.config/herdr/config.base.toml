@@ -146,6 +146,15 @@ pane_scrollbars = false
 
 hide_tab_bar_when_single_tab = true
 
+# The Herdr tab bar is hidden on single-tab workspaces, so this is the only
+# context readout Ghostty's own tab bar gets. terminal_title arrives with
+# spinner frames stripped; an empty one renders as nothing.
+window_title = "{workspace}: {terminal_title}"
+
+# Only the zoom pill: the tab bar itself only shows with 2+ tabs, and a clock
+# would duplicate the shell prompt.
+tab_bar_right = [{ type = "zoom" }]
+
 agent_panel_sort = "spaces"
 
 # The symbols set marks working with U+25D0, which JetBrains Mono lacks, so it
