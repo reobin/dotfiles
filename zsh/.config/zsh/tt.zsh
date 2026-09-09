@@ -215,8 +215,9 @@ __terminal_theme_apply_reviewr() {
   if [[ ! -r "$config_file" ]]; then
     {
       print -r -- "# written by tt from tt/themes/${theme_dir:t}/reviewr-theme"
-      print -r -- "# auto_open is owned by macos/integrations/install; tt only sets theme."
+      print -r -- "# auto_open and navigator_position are owned by macos/integrations/install; tt only sets theme."
       print -r -- "auto_open = false"
+      print -r -- "navigator_position = \"left\""
       print -r -- "theme = \"$reviewr_theme\""
     } > "$config_file" || return 1
     return 0

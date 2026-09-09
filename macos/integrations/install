@@ -57,6 +57,7 @@ else
   cat >"$REVIEWR_CONFIG_DIR/config.toml" <<EOF
 # written by macos/integrations/install
 auto_open = false
+navigator_position = "left"
 EOF
 
   if [[ -n "$REVIEWR_THEME" ]]; then
