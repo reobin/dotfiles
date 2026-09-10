@@ -13,6 +13,15 @@
       "bindings": {
         "escape": null
       }
+    },
+    {
+      "context": "Scroll",
+      "bindings": {
+        "alt+u": "scroll:halfPageUp",
+        "alt+d": "scroll:halfPageDown",
+        "alt+shift+u": "scroll:top",
+        "alt+shift+d": "scroll:bottom"
+      }
     }
   ]
 }
