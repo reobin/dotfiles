@@ -10,3 +10,6 @@ mise install
 # run. The scripts after this one are sourced into the same shell and gate on
 # `command -v` for tools that mise owns, so the shims have to be reachable here.
 eval "$(mise activate bash --shims)"
+
+# default to yarn 4; per-repo packageManager field still selects yarn 1 via corepack
+corepack prepare yarn@stable --activate
