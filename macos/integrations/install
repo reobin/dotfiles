@@ -24,15 +24,38 @@ fi
 
 REVIEWR_ID="persiyanov.reviewr"
 
+# `herdr plugin install` updates an already-installed plugin in place and keeps
+# its config dir, so the ref check is only about cost: a reinstall re-runs the
+# plugin's build commands, and herdr-arrange compiles Go on every one.
 install_herdr_plugin() {
   local plugin_id="$1" plugin_repo="$2"
+  local installed remote repo_url
 
-  if grep -q "$plugin_id" <<<"$(herdr plugin list)"; then
-    echo "Herdr $plugin_id plugin is already installed"
-    return 0
+  installed="$(herdr plugin list --json |
+    jq -r --arg id "$plugin_id" \
+      '.result.plugins[] | select(.plugin_id == $id) | .source.resolved_commit // ""')"
+
+  if [[ -n "$installed" ]]; then
+    # install takes owner/repo[/subdir]; only the first two segments are the repo.
+    repo_url="https://github.com/$(cut -d/ -f1-2 <<<"$plugin_repo")"
+    # A renamed or deleted repo otherwise stalls the run on a credential prompt.
+    remote="$(GIT_TERMINAL_PROMPT=0 git ls-remote "$repo_url" HEAD 2>/dev/null | awk '{print $1}')" || true
+
+    if [[ -z "$remote" ]]; then
+      echo "Herdr $plugin_id plugin is installed (no update check, $repo_url unreachable)" >&2
+      return 0
+    fi
+
+    if [[ "$installed" == "$remote" ]]; then
+      echo "Herdr $plugin_id plugin is up to date"
+      return 0
+    fi
+
+    echo "updating Herdr $plugin_id plugin (${installed:0:7} -> ${remote:0:7})"
+  else
+    echo "installing Herdr $plugin_id plugin"
   fi
 
-  echo "installing Herdr $plugin_id plugin"
   herdr plugin install "$plugin_repo" --yes
 }
 
