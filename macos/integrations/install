@@ -107,4 +107,50 @@ install_herdr_integration codex codex
 
 unset -f install_herdr_integration
 
+# herdr owns tui.jsonc, so scroll keys merge here instead of git.
+OPENCODE_TUI_JSONC="$HOME/.config/opencode/tui.jsonc"
+if command -v python3 >/dev/null 2>&1; then
+  mkdir -p "$(dirname "$OPENCODE_TUI_JSONC")"
+  python3 - "$OPENCODE_TUI_JSONC" <<'EOF'
+import json, sys
+
+path = sys.argv[1]
+try:
+    data = json.load(open(path))
+except FileNotFoundError:
+    data = {}
+except json.JSONDecodeError as e:
+    print(f"warning: skipping opencode scroll-key merge ({e})", file=sys.stderr)
+    sys.exit(0)
+
+if not isinstance(data, dict):
+    data = {}
+if not isinstance(data.get("keybinds"), dict):
+    data["keybinds"] = {}
+keybinds = data["keybinds"]
+
+changed = False
+wanted = {
+    "messages_half_page_up": ("ctrl+alt+u", "ctrl+u"),
+    "messages_half_page_down": ("ctrl+alt+d", "ctrl+d"),
+}
+for action, bindings in wanted.items():
+    current = keybinds.get(action, "")
+    if not isinstance(current, str):
+        current = ""
+    parts = [p.strip() for p in current.split(",") if p.strip()]
+    for b in bindings:
+        if b not in parts:
+            parts.append(b)
+            changed = True
+    keybinds[action] = ",".join(parts)
+
+if changed:
+    with open(path, "w") as f:
+        json.dump(data, f, indent=2)
+        f.write("\n")
+    print("merged opencode scroll keys into tui.jsonc")
+EOF
+fi
+
 herdr server reload-config >/dev/null 2>&1 || true
