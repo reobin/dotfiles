@@ -133,6 +133,8 @@ changed = False
 wanted = {
     "messages_half_page_up": ("ctrl+alt+u", "ctrl+u"),
     "messages_half_page_down": ("ctrl+alt+d", "ctrl+d"),
+    "messages_first": ("alt+shift+u",),
+    "messages_last": ("alt+shift+d",),
 }
 for action, bindings in wanted.items():
     current = keybinds.get(action, "")
@@ -144,6 +146,22 @@ for action, bindings in wanted.items():
             parts.append(b)
             changed = True
     keybinds[action] = ",".join(parts)
+
+# alt+shift+d now jumps to the last message, and alt+d scrolls half a
+# page, so neither can stay on word-forward. Fall back to the
+# conflict-free defaults when nothing else remains.
+current = keybinds.get("input_delete_word_forward", "")
+if not isinstance(current, str):
+    current = ""
+parts = [p.strip() for p in current.split(",") if p.strip()]
+if not parts:
+    parts = ["alt+d", "alt+delete", "ctrl+delete"]
+kept = [p for p in parts if p not in ("alt+d", "alt+shift+d")]
+if not kept:
+    kept = ["alt+delete", "ctrl+delete"]
+if ",".join(kept) != current:
+    keybinds["input_delete_word_forward"] = ",".join(kept)
+    changed = True
 
 if changed:
     with open(path, "w") as f:
