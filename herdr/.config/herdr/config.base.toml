@@ -121,6 +121,18 @@ width = "80%"
 height = "80%"
 description = "floating pane"
 
+[[keys.command]]
+key = "prefix+m"
+type = "plugin_action"
+command = "herdr-arrange.open"
+description = "arrange panes"
+
+[[keys.command]]
+key = "prefix+shift+m"
+type = "plugin_action"
+command = "herdr-arrange.open-tree"
+description = "move pane to…"
+
 [ui]
 mouse_capture = true
 
