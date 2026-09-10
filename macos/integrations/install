@@ -37,9 +37,19 @@ install_herdr_plugin() {
 }
 
 install_herdr_plugin reobin.close-other-panes reobin/herdr-close-other-panes
+install_herdr_plugin reobin.auto-name-pane reobin/herdr-auto-name-pane
 install_herdr_plugin to4iki.unread-jump to4iki/herdr-unread-jump
 install_herdr_plugin herdr-arrange crierr/herdr-arrange
 install_herdr_plugin "$REVIEWR_ID" persiyanov/herdr-reviewr
+
+# The plugin names panes; its skill teaches agents the label-to-ID lookup.
+# The action just copies SKILL.md, so it runs on every init.
+if grep -q "reobin.auto-name-pane" <<<"$(herdr plugin list)"; then
+  echo "installing Herdr reobin.auto-name-pane skill"
+  herdr plugin action invoke reobin.auto-name-pane.install-skill >/dev/null || echo "warning: Herdr reobin.auto-name-pane skill install failed" >&2
+else
+  echo "Skipping Herdr reobin.auto-name-pane skill (plugin is not installed)" >&2
+fi
 
 unset -f install_herdr_plugin
 
@@ -107,7 +117,8 @@ install_herdr_integration codex codex
 
 unset -f install_herdr_integration
 
-# herdr owns tui.jsonc, so scroll keys merge here instead of git.
+# herdr owns tui.jsonc, so scroll keys merge here instead of git. ctrl+u/d
+# stay free for readline, so scrolling is alt+u/d only.
 OPENCODE_TUI_JSONC="$HOME/.config/opencode/tui.jsonc"
 if command -v python3 >/dev/null 2>&1; then
   mkdir -p "$(dirname "$OPENCODE_TUI_JSONC")"
@@ -131,21 +142,15 @@ keybinds = data["keybinds"]
 
 changed = False
 wanted = {
-    "messages_half_page_up": ("ctrl+alt+u", "ctrl+u"),
-    "messages_half_page_down": ("ctrl+alt+d", "ctrl+d"),
-    "messages_first": ("alt+shift+u",),
-    "messages_last": ("alt+shift+d",),
+    "messages_half_page_up": "alt+u",
+    "messages_half_page_down": "alt+d",
+    "messages_first": "alt+shift+u",
+    "messages_last": "alt+shift+d",
 }
-for action, bindings in wanted.items():
-    current = keybinds.get(action, "")
-    if not isinstance(current, str):
-        current = ""
-    parts = [p.strip() for p in current.split(",") if p.strip()]
-    for b in bindings:
-        if b not in parts:
-            parts.append(b)
-            changed = True
-    keybinds[action] = ",".join(parts)
+for action, binding in wanted.items():
+    if keybinds.get(action) != binding:
+        keybinds[action] = binding
+        changed = True
 
 # alt+shift+d now jumps to the last message, and alt+d scrolls half a
 # page, so neither can stay on word-forward. Fall back to the

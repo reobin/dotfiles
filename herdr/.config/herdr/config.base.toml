@@ -145,13 +145,14 @@ prompt_new_workspace_name = false
 # agent lines need the room; 36 is the max.
 sidebar_width = 36
 
-pane_borders = true
+pane_borders = "always"
+pane_outer_borders = true
 pane_gaps = true
 show_agent_labels_on_pane_borders = true
 
 pane_scrollbars = false
 
-hide_tab_bar_when_single_tab = true
+hide_tab_bar_when_single_tab = false
 
 # only Ghostty tab readout when Herdr tab bar hides; empty renders as nothing.
 window_title = "{workspace}: {terminal_title}"
