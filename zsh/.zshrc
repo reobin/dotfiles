@@ -27,6 +27,10 @@ export EDITOR='nvim'
 export VISUAL='nvim'
 export GIT_EDITOR='nvim'
 
+# Credentials live outside this repo because it is public. The file is absent on
+# a fresh clone, which is why this is conditional rather than a plain source.
+[[ -f ~/.zshrc.private ]] && source ~/.zshrc.private
+
 source ~/.config/zsh/cache.zsh
 source ~/.config/zsh/note.zsh
 
