@@ -92,7 +92,7 @@ description = "toggle split direction"
 [[keys.command]]
 key = "prefix+o"
 type = "plugin_action"
-command = "reobin.close-other-panes.close-others"
+command = "herdr-close-other-panes.close-others"
 
 [[keys.command]]
 key = "alt+s"

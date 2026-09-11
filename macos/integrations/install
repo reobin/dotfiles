@@ -59,27 +59,21 @@ install_herdr_plugin() {
   herdr plugin install "$plugin_repo" --yes
 }
 
-# The id changed with the herdr-callsigns rename. Left installed, both plugins
-# hook pane.created and race to name the same pane.
-if grep -q "reobin.auto-name-pane" <<<"$(herdr plugin list)"; then
-  echo "removing superseded Herdr reobin.auto-name-pane plugin"
-  herdr plugin uninstall reobin.auto-name-pane
-fi
-
-install_herdr_plugin reobin.close-other-panes reobin/herdr-close-other-panes
-install_herdr_plugin reobin.callsigns reobin/herdr-callsigns
+install_herdr_plugin herdr-close-other-panes reobin/herdr-close-other-panes
+install_herdr_plugin herdr-callsigns reobin/herdr-callsigns
 install_herdr_plugin to4iki.unread-jump to4iki/herdr-unread-jump
 install_herdr_plugin herdr-arrange crierr/herdr-arrange
+install_herdr_plugin herdr-link-hints reobin/herdr-link-hints
 install_herdr_plugin "$REVIEWR_ID" persiyanov/herdr-reviewr
 
 # The plugin gives panes callsigns; its skill teaches agents the
 # callsign-to-ID lookup. The action just copies SKILL.md, so it runs on every
 # init.
-if grep -q "reobin.callsigns" <<<"$(herdr plugin list)"; then
-  echo "installing Herdr reobin.callsigns skill"
-  herdr plugin action invoke reobin.callsigns.install-skill >/dev/null || echo "warning: Herdr reobin.callsigns skill install failed" >&2
+if grep -q "herdr-callsigns" <<<"$(herdr plugin list)"; then
+  echo "installing Herdr herdr-callsigns skill"
+  herdr plugin action invoke herdr-callsigns.install-skill >/dev/null || echo "warning: Herdr herdr-callsigns skill install failed" >&2
 else
-  echo "Skipping Herdr reobin.callsigns skill (plugin is not installed)" >&2
+  echo "Skipping Herdr herdr-callsigns skill (plugin is not installed)" >&2
 fi
 
 unset -f install_herdr_plugin
