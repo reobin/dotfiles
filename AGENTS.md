@@ -14,6 +14,5 @@ When working on this macOS dotfiles repository:
 - Write commit subjects as `<context>: <short subject>`, where the context is the main area changed, for example `macos: ...`, `brew: ...`, `zsh: ...`, `ghostty: ...`, or `aerospace: ...`.
 - When a change touches multiple areas, choose the context for the primary user-facing impact rather than the largest diff.
 - **Never auto-commit changes** — only commit when explicitly requested.
-- **No co-author** — do not add Co-Authored-By lines to commit messages.
 - **Never checkout other branches** — dotfiles are symlinked, so switching branches breaks the system config. Use `git wt` to work on other branches in a separate directory.
 - **Never leave a branch behind when committing and pushing** — if committing to another branch or worktree, fetch first and rebase or otherwise bring it up to date before pushing.
