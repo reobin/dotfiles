@@ -45,11 +45,14 @@ agent="$(printf '%s\n' "$pane" | cut -f5)"
 session="$(printf '%s\n' "$pane" | cut -f6)"
 title="$(printf '%s\n' "$pane" | cut -f7)"
 
-[ "$agent" = "claude" ] || die "focused pane is not running claude"
-[ -n "$session" ] || die "no claude session recorded for $pane_id"
+[ "$agent" = "claude" ] || [ "$agent" = "opencode" ] || die "focused pane is not running claude or opencode"
+[ -n "$session" ] || die "no $agent session recorded for $pane_id"
 
-transcript="$(find "$HOME/.claude/projects" -name "$session.jsonl" -print 2>/dev/null | head -n 1)"
-[ -n "$transcript" ] || die "no transcript on disk for $session"
+if [ "$agent" = "opencode" ]; then
+  fork_file=""
+else
+  transcript="$(find "$HOME/.claude/projects" -name "$session.jsonl" -print 2>/dev/null | head -n 1)"
+  [ -n "$transcript" ] || die "no transcript on disk for $session"
 
 # Effort is session state, not a setting, so the transcript is the only place a
 # detached script can read it from.
@@ -99,8 +102,9 @@ fi
 # Every failure from here on would otherwise leave the trimmed transcript behind,
 # where it shows up as a phantom entry in Claude's own /resume picker.
 trap 'rm -f "$fork_file"' EXIT HUP INT TERM
+fi
 
-# Claude's own session title, cut to three words, is the only thing telling the
+# The session title, cut to three words, is the only thing telling the
 # clone apart from its parent on screen.
 slug="$(
   printf '%s' "$title" |
@@ -193,10 +197,18 @@ done
 
 [ "$ready" -eq 1 ] || die "shell never came up in $new_pane; pane left open"
 
-# The trimmed file is already a new session id, so --fork-session would be a
-# second fork of a conversation nobody is holding open.
-set -- --resume "$fork_id"
-[ -n "$effort" ] && set -- "$@" --effort "$effort"
+if [ "$agent" = "opencode" ]; then
+  # opencode forks server-side; the in-flight input buffer is not part of the
+  # session so there is nothing dangling to trim like the claude path above.
+  set -- --session "$session" --fork
+  kind="opencode"
+else
+  # The trimmed file is already a new session id, so --fork-session would be a
+  # second fork of a conversation nobody is holding open.
+  set -- --resume "$fork_id"
+  [ -n "$effort" ] && set -- "$@" --effort "$effort"
+  kind="claude"
+fi
 
 # `agent start` reports failure in its JSON body, not its exit status, so the
 # body is what decides. A full MCP roster plus a replayed conversation can take
@@ -204,7 +216,7 @@ set -- --resume "$fork_id"
 started=""
 attempt=0
 while [ "$attempt" -lt 20 ]; do
-  started="$(herdr agent start "$name" --kind claude --pane "$new_pane" \
+  started="$(herdr agent start "$name" --kind "$kind" --pane "$new_pane" \
     --timeout 180000 -- "$@" 2>&1 || true)"
   case "$started" in
     *'"type":"agent_started"'*) break ;;
@@ -218,7 +230,7 @@ done
 
 case "$started" in
   *'"type":"agent_started"'*) ;;
-  *) die "claude did not come up in $new_pane; pane left open" ;;
+  *) die "$kind did not come up in $new_pane; pane left open" ;;
 esac
 
 # The clone owns the transcript now. Focus already moved with the pane, and
