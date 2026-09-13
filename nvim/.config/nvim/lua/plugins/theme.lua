@@ -1,4 +1,4 @@
-local active_theme = "nightfox"
+local active_theme = "kanagawa-wave"
 local theme_file = vim.fn.expand("~/.config/tt/active/nvim.lua")
 local ok, theme = pcall(dofile, theme_file)
 
@@ -21,23 +21,6 @@ if ok and type(theme) == "table" then
 end
 
 return {
-  {
-    "catppuccin/nvim",
-    name = "catppuccin",
-    lazy = false,
-    priority = 1000,
-  },
-  {
-    "EdenEast/nightfox.nvim",
-    lazy = false,
-    priority = 1000,
-  },
-  {
-    "rose-pine/neovim",
-    name = "rose-pine",
-    lazy = false,
-    priority = 1000,
-  },
   {
     "webhooked/kanso.nvim",
     lazy = false,

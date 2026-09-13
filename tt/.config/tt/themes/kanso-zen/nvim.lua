@@ -1,3 +1,0 @@
-return {
-  colorscheme = "kanso-zen",
-}
