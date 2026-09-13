@@ -30,6 +30,9 @@ echo "installing Hermes"
 echo "installing ntn (Notion CLI)"
 "$INSTALL_DIRECTORY/notion/install"
 
+echo "installing Hermes dashboard agent"
+"$INSTALL_DIRECTORY/hermes/dashboard-install" || echo "dashboard agent skipped (set dashboard auth first)" >&2
+
 echo "running macOS config"
 "$INSTALL_DIRECTORY/config"
 

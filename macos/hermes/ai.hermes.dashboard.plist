@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <key>Label</key>
+    <string>ai.hermes.dashboard</string>
+
+    <key>ProgramArguments</key>
+    <array>
+        <string>/Users/reobin/.hermes/hermes-agent/venv/bin/python</string>
+        <string>-m</string>
+        <string>hermes_cli.stderr_timestamp</string>
+        <string>--error-log</string>
+        <string>/Users/reobin/.hermes/logs/dashboard.error.log</string>
+        <string>--</string>
+        <string>/Users/reobin/.hermes/hermes-agent/venv/bin/python</string>
+        <string>-m</string>
+        <string>hermes_cli.main</string>
+        <string>dashboard</string>
+        <string>--host</string>
+        <string>0.0.0.0</string>
+        <string>--port</string>
+        <string>9119</string>
+        <string>--no-open</string>
+        <string>--skip-build</string>
+    </array>
+
+    <key>WorkingDirectory</key>
+    <string>/Users/reobin/.hermes</string>
+
+    <key>EnvironmentVariables</key>
+    <dict>
+        <key>PATH</key>
+        <string>/Users/reobin/.hermes/hermes-agent/venv/bin:/Users/reobin/.hermes/node/bin:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin</string>
+        <key>VIRTUAL_ENV</key>
+        <string>/Users/reobin/.hermes/hermes-agent/venv</string>
+        <key>HERMES_HOME</key>
+        <string>/Users/reobin/.hermes</string>
+    </dict>
+
+    <key>LimitLoadToSessionType</key>
+    <array>
+        <string>Aqua</string>
+        <string>Background</string>
+    </array>
+
+    <key>RunAtLoad</key>
+    <true/>
+
+    <key>KeepAlive</key>
+    <true/>
+
+    <!-- ThrottleInterval raises launchd's default 10s minimum respawn interval
+         to 30s so a crash-looping dashboard can't hammer launchd into a rapid
+         respawn storm. Mirrors ai.hermes.gateway. -->
+    <key>ThrottleInterval</key>
+    <integer>30</integer>
+
+    <key>ExitTimeOut</key>
+    <integer>25</integer>
+
+    <key>StandardOutPath</key>
+    <string>/Users/reobin/.hermes/logs/dashboard.log</string>
+
+    <key>StandardErrorPath</key>
+    <string>/Users/reobin/.hermes/logs/dashboard.error.log</string>
+</dict>
+</plist>

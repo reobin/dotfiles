@@ -1,0 +1,43 @@
+#!/usr/bin/env bash
+
+set -euo pipefail
+
+# Installs the Hermes dashboard LaunchAgent so Conduit on iOS can reach
+# http://<tailscale-ip>:9119 at login, with auto-restart on crash.
+# Mirrors the gateway's ai.hermes.gateway.plist pattern, but user-owned
+# (~/Library/LaunchAgents, no sudo).
+
+LABEL="ai.hermes.dashboard"
+SOURCE="$HOME/dotfiles/macos/hermes/$LABEL.plist"
+TARGET="$HOME/Library/LaunchAgents/$LABEL.plist"
+
+if [[ ! -f "$SOURCE" ]]; then
+  echo "dashboard plist source missing: $SOURCE" >&2
+  exit 1
+fi
+
+# A non-loopback bind refuses to start without dashboard auth. Fail early
+# with the fix instead of installing a crash-looping agent.
+if ! "$HOME/.hermes/hermes-agent/venv/bin/python" -c "
+import os, yaml
+cfg = yaml.safe_load(open(os.path.expanduser('~/.hermes/config.yaml')))
+ba = (cfg.get('dashboard') or {}).get('basic_auth') or {}
+assert str(ba.get('username') or '').strip(), 'missing username'
+assert str(ba.get('password_hash') or ba.get('password') or '').strip(), 'missing credential'
+" 2>/dev/null; then
+  echo "dashboard basic_auth username/password is not set." >&2
+  echo "set it first with: hermes dashboard --host 0.0.0.0 --port 9119" >&2
+  echo "(it prompts for username/password), then re-run this installer." >&2
+  exit 1
+fi
+
+if [[ -f "$TARGET" ]] && cmp -s "$SOURCE" "$TARGET" && launchctl print "gui/$(id -u)/$LABEL" >/dev/null 2>&1; then
+  echo "$LABEL agent is already installed"
+  exit 0
+fi
+
+echo "installing $LABEL agent"
+mkdir -p "$HOME/Library/LaunchAgents"
+install -m 644 "$SOURCE" "$TARGET"
+launchctl bootout "gui/$(id -u)/$LABEL" 2>/dev/null || true
+launchctl bootstrap "gui/$(id -u)" "$TARGET"
