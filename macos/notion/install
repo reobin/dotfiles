@@ -1,0 +1,12 @@
+#!/usr/bin/env bash
+
+set -euo pipefail
+
+if [[ -x "$HOME/.local/bin/ntn" ]]; then
+  echo "ntn is already installed"
+  exit 0
+fi
+
+# Use the upstream installer. It writes to ~/.local/bin, which is a symlink
+# into herdr/.local/bin, so the binary stays machine-local and ignored.
+curl -fsSL https://ntn.dev | bash

@@ -26,6 +26,9 @@ brew bundle --file "$DOTFILES_DIRECTORY/brew/Brewfile"
 echo "installing Hermes"
 . "$INSTALL_DIRECTORY/hermes/install"
 
+echo "installing ntn (Notion CLI)"
+"$INSTALL_DIRECTORY/notion/install"
+
 echo "running macOS config"
 "$INSTALL_DIRECTORY/config"
 

@@ -31,6 +31,8 @@ herdr/.local/bin/node
 herdr/.local/bin/npm
 herdr/.local/bin/npx
 herdr/.local/bin/python3.11
+herdr/.local/bin/ntn
+herdr/.local/bin/cua-driver
 opencode/.config/opencode/plugins/herdr-agent-state.js
 opencode/.config/opencode/AGENTS.md
 opencode/.config/opencode/commands/
