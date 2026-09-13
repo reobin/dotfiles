@@ -41,6 +41,21 @@ hermes skills inspect <source/path>
 hermes skills install <source/path>
 ```
 
+To let Hermes manage Apple Reminders, install `remindctl` through the Brewfile
+and install its Hermes skill:
+
+```sh
+brew bundle --file "$HOME/dotfiles/brew/Brewfile"
+hermes skills install https://raw.githubusercontent.com/openclaw/remindctl/main/SKILL.md
+remindctl authorize
+remindctl doctor --for-agent
+```
+
+If macOS does not show a permission prompt, allow the terminal app that runs
+Hermes under `System Settings > Privacy & Security > Reminders`. For a Hermes
+session running in Ghostty, grant Ghostty access. The skill is then available
+as `apple-reminders` in Hermes.
+
 The baseline keeps dangerous command approval enabled, denies dangerous cron
 commands, and requires approval before Hermes writes or changes skills. Do not
 enable `--yolo` or connect a messaging gateway until the local CLI works; if you

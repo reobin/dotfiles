@@ -19,6 +19,7 @@ fi
 
 echo "trusting non-official Homebrew formulae"
 brew trust --formula k1low/tap/git-wt
+brew trust --formula steipete/tap/remindctl
 
 echo "installing Homebrew packages"
 brew bundle --file "$DOTFILES_DIRECTORY/brew/Brewfile"
