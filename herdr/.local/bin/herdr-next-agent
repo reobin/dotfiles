@@ -1,0 +1,38 @@
+#!/bin/sh
+
+set -eu
+
+# alt+n: jump to the next agent needing attention, and bring its workspace
+# along. kuwa72.focus-attention picks the pane (blocked, done, then idle)
+# but `herdr agent focus` leaves the visible workspace behind, so follow
+# the new focus explicitly. The plugin toasts when nothing waits; focus is
+# unmoved then, and re-focusing the current workspace is a harmless no-op.
+herdr plugin action invoke kuwa72.focus-attention.next >/dev/null 2>&1 || true
+
+# The action runs async, so wait for focus to settle before following it.
+last=""
+stable=0
+i=0
+while [ "$i" -lt 20 ]; do
+  state="$(herdr agent list 2>/dev/null)" || exit 0
+  focused="$(printf '%s\n' "$state" | jq -r '[.result.agents[] | select(.focused == true)][0] | .pane_id // empty')"
+
+  if [ -n "$focused" ] && [ "$focused" = "$last" ]; then
+    stable=$((stable + 1))
+    if [ "$stable" -ge 2 ]; then
+      break
+    fi
+  else
+    stable=0
+  fi
+
+  last="$focused"
+  i=$((i + 1))
+  sleep 0.1
+done
+
+workspace="$(printf '%s\n' "$state" | jq -r --arg pane "$focused" '.result.agents[] | select(.pane_id == $pane) | .workspace_id // empty')"
+
+if [ -n "${workspace:-}" ]; then
+  herdr workspace focus "$workspace" >/dev/null 2>&1 || true
+fi

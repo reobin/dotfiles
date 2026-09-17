@@ -79,8 +79,8 @@ description = "move workspace down"
 
 [[keys.command]]
 key = "alt+n"
-type = "plugin_action"
-command = "to4iki.unread-jump.next"
+type = "shell"
+command = "$HOME/.local/bin/herdr-next-agent"
 description = "focus next agent waiting"
 
 [[keys.command]]
