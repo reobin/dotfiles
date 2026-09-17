@@ -52,7 +52,7 @@ swap_pane_right = "prefix+shift+l"
 split_vertical = "prefix+v"
 split_horizontal = "prefix+s"
 close_pane = "prefix+x"
-zoom = "prefix+f"
+zoom = "alt+f"
 resize_mode = "prefix+r"
 
 resize_pane_left = "prefix+ctrl+h"
@@ -90,7 +90,7 @@ command = "$HOME/.local/bin/herdr-toggle-split"
 description = "toggle split direction"
 
 [[keys.command]]
-key = "prefix+o"
+key = ["prefix+o", "alt+o"]
 type = "plugin_action"
 command = "herdr-close-other-panes.close-others"
 
@@ -195,7 +195,7 @@ enabled = true
 resume_agents_on_restore = true
 
 [[keys.command]]
-key = "prefix+y"
+key = "prefix+f"
 type = "plugin_action"
 command = "herdr-link-hints.hints"
 description = "hint links in focused pane"
