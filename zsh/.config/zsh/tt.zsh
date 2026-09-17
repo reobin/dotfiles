@@ -453,6 +453,99 @@ __terminal_theme_generate_wallpaper() {
   return 1
 }
 
+# `set picture of every desktop` only reaches displays attached right now, and
+# macOS remembers one wallpaper per display UUID. A display that was offline
+# keeps whatever it last had, so replugging it brings back a stale theme until
+# the next `tt` run. Rewrite the tt-managed URLs for every known display in the
+# wallpaper store too, so an offline display inherits the current theme when it
+# comes back. Only entries already pointing into tt's cache are touched; a
+# display pointed at a personal photo keeps it.
+#
+# Runs after the AppleScript set, which owns the live displays, so nothing
+# needs signalling: WallpaperAgent reads the store when the display reconnects.
+__terminal_theme_stick_wallpaper() {
+  emulate -L zsh
+  setopt local_options no_aliases
+
+  local wallpaper="$1" store plist backup tmp cache_dir
+
+  if ! command -v python3 >/dev/null 2>&1; then
+    print -u2 -- "tt: no python3, leaving offline displays on their stored wallpaper"
+    return 0
+  fi
+  store="$HOME/Library/Application Support/com.apple.wallpaper/Store"
+  plist="$store/Index.plist"
+  [[ -r "$plist" ]] || return 0
+
+  cache_dir="${XDG_CACHE_HOME:-$HOME/.cache}/tt/wallpapers"
+  backup="$store/Index.plist.tt-bak"
+  tmp="$store/Index.plist.tt-tmp.$$"
+
+  command cp -f "$plist" "$backup" || return 1
+  TT_WALLPAPER="$wallpaper" TT_WALLPAPER_PLIST="$plist" TT_WALLPAPER_TMP="$tmp" \
+    TT_WALLPAPER_CACHE="$cache_dir" command python3 - <<'PYEOF' || { command rm -f "$tmp"; return 1 }
+import os
+import plistlib
+from urllib.parse import quote
+
+plist_path = os.environ["TT_WALLPAPER_PLIST"]
+tmp_path = os.environ["TT_WALLPAPER_TMP"]
+new_url = "file://" + quote(os.path.abspath(os.environ["TT_WALLPAPER"]))
+managed_prefix = "file://" + quote(os.path.abspath(os.environ["TT_WALLPAPER_CACHE"])) + "/"
+
+with open(plist_path, "rb") as fh:
+    raw = fh.read()
+store = plistlib.loads(raw)
+
+if not isinstance(store, dict) or not {"Spaces", "Displays", "SystemDefault"} <= set(store):
+    raise SystemExit("tt: unexpected wallpaper store schema, leaving Index.plist alone")
+
+changed = 0
+
+def stick(content):
+    global changed
+    if not isinstance(content, dict):
+        return
+    for choice in content.get("Choices", []):
+        if not isinstance(choice, dict) or choice.get("Provider") != "com.apple.wallpaper.choice.image":
+            continue
+        try:
+            config = plistlib.loads(choice["Configuration"])
+        except Exception:
+            continue
+        url = config.get("url", {})
+        if not isinstance(url, dict) or not url.get("relative", "").startswith(managed_prefix):
+            continue
+        if url["relative"] != new_url:
+            url["relative"] = new_url
+            choice["Configuration"] = plistlib.dumps(config)
+            changed += 1
+
+for display in store.get("Displays", {}).values():
+    if isinstance(display, dict):
+        stick(display.get("Desktop", {}).get("Content"))
+for space in store.get("Spaces", {}).values():
+    if not isinstance(space, dict):
+        continue
+    for display in space.get("Displays", {}).values():
+        if isinstance(display, dict):
+            stick(display.get("Desktop", {}).get("Content"))
+    stick(space.get("Default", {}).get("Desktop", {}).get("Content"))
+if isinstance(store.get("SystemDefault"), dict):
+    stick(store["SystemDefault"].get("Desktop", {}).get("Content"))
+
+if changed:
+    with open(tmp_path, "wb") as fh:
+        plistlib.dump(store, fh, fmt=plistlib.FMT_BINARY if raw.startswith(b"bplist") else plistlib.FMT_XML)
+    print(f"tt: updated {changed} stored wallpaper entries for offline displays")
+PYEOF
+
+  # Python only writes tmp when something changed; a missing tmp is a clean run.
+  if [[ -r "$tmp" ]]; then
+    command mv -f "$tmp" "$plist" || { command rm -f "$tmp"; return 1 }
+  fi
+}
+
 __terminal_theme_apply_wallpaper() {
   emulate -L zsh
   setopt local_options no_aliases
@@ -471,6 +564,8 @@ tell application "System Events"
   set picture of every desktop to "$escaped"
 end tell
 APPLESCRIPT
+
+  __terminal_theme_stick_wallpaper "$wallpaper" || true
 }
 
 __terminal_theme_ensure_ghostty_active_theme() {
