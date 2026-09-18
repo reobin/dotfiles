@@ -26,6 +26,13 @@ processes=1
 # place that surfaces is `herdr plugin logs list`: the rows just stop changing.
 batch=16
 
+# Self-expiring rows: every report carries a 30-minute TTL, so a crashed run
+# leaves rows frozen for at most half an hour, while a quiet workspace keeps
+# its rows between events. A per-run sequence number means a stale report can
+# never overwrite a newer one. The counter lives beside the lock; a missing
+# or unreadable file restarts at the current time.
+ttl_ms=1800000
+
 # One writer at a time. Every run recomputes every space from a snapshot it takes
 # at its own start, so two that overlap can finish out of order and leave the
 # older one's rows behind. A run that finds the lock held leaves a mark instead of
@@ -34,6 +41,7 @@ batch=16
 state_dir="${XDG_CACHE_HOME:-$HOME/.cache}/herdr/space-tokens"
 lock_dir="$state_dir/lock"
 pending_file="$state_dir/pending"
+seq_file="$state_dir/seq"
 mkdir -p "$state_dir"
 
 # Set by the rerun at the bottom, which is handed the lock rather than taking it.
@@ -54,6 +62,14 @@ trap 'rmdir "$lock_dir" 2>/dev/null || :' EXIT
 # marks it again rather than being answered by a snapshot taken before it.
 [ "${1:-}" = "clear" ] || rm -f "$pending_file"
 
+# Monotonic per run, advanced while the lock is held. Seconds are coarse enough
+# that two runs in the same second still order apart through the +1 fallback.
+seq_now="$(date +%s)"
+seq_last="$(cat "$seq_file" 2>/dev/null || echo 0)"
+case "$seq_last" in '' | *[!0-9]*) seq_last=0 ;; esac
+if [ "$seq_now" -le "$seq_last" ]; then seq_now=$((seq_last + 1)); fi
+printf '%s' "$seq_now" >"$seq_file"
+
 # Workspaces, tabs, panes and the tokens already set, in one call and at one
 # instant: separate lists could disagree about a pane that moved between them.
 snapshot="$("$herdr" api snapshot)"
@@ -65,23 +81,16 @@ lists="$(
     jq -r '
       .result.snapshot as $s
       | ($s.workspaces[] | "ws \(.workspace_id)"),
-        ($s.panes[] | select(.agent == null) | "cmd \(.pane_id)"),
-        ($s.panes[]
-          | select(.agent_status == "done" or .agent_status == "idle")
-          | select((.agent_session.kind // "") == "id")
-          | "task \(.pane_id) \(.agent_session.value)")
+        ($s.panes[] | select(.agent == null) | "cmd \(.pane_id)")
     '
 )"
 
 ws_ids=""
 cmd_panes=""
-task_pairs=""
 while IFS=' ' read -r kind first second; do
   case "$kind" in
     ws) ws_ids="$ws_ids $first" ;;
     cmd) cmd_panes="$cmd_panes $first" ;;
-    task) task_pairs="$task_pairs$first $second
-" ;;
   esac
 done <<EOF
 $lists
@@ -107,14 +116,14 @@ if [ "${1:-}" = "clear" ]; then
       count=$((count + 1))
       if [ "$count" -eq "$batch" ]; then
         # shellcheck disable=SC2086
-        "$herdr" workspace report-metadata "$workspace" --source "$source_id" $args >/dev/null
+        "$herdr" workspace report-metadata "$workspace" --source "$source_id" --seq "$seq_now" --ttl-ms "$ttl_ms" $args >/dev/null
         args=""
         count=0
       fi
     done
     if [ "$count" -gt 0 ]; then
       # shellcheck disable=SC2086
-      "$herdr" workspace report-metadata "$workspace" --source "$source_id" $args >/dev/null
+      "$herdr" workspace report-metadata "$workspace" --source "$source_id" --seq "$seq_now" --ttl-ms "$ttl_ms" $args >/dev/null
     fi
   done
 
@@ -222,136 +231,19 @@ if [ "$processes" -eq 1 ] && [ -n "$cmd_panes" ]; then
 fi
 
 # A Claude turn ends while the work it started keeps running, so the pane goes
-# idle and the row calls it done. Every background task gets a file at
-# <session>/tasks/<id>.output, and every one that ends is announced back into the
-# transcript as <task-id>: a file with no announcement is still running. Some ends
-# leave no marker at all -- a Monitor timing out, a task stopped from the UI -- so
-# a file untouched for $stale_after seconds is read as one of those rather than
-# believed forever.
-stale_after=1800
-cutoff=""
-task_dirs=""
-transcripts=""
-pending_pairs=""
-if [ -n "$task_pairs" ]; then
-  # BSD spelling first, GNU second: each rejects the other option outright.
-  cutoff="$(
-    date -v-${stale_after}S '+%Y-%m-%d %H:%M:%S' 2>/dev/null ||
-      date -d "-$stale_after seconds" '+%Y-%m-%d %H:%M:%S'
-  )"
-
-  # Walked once here rather than globbed per pane, and behind the guard above, so
-  # a session with no finished agent touches the filesystem not at all. A base with
-  # no claude directory leaves its glob unexpanded, which find reports and nothing
-  # here needs.
-  #
-  # Depth 3 from a claude-* directory is <project>/<session>/tasks, and getting it
-  # wrong is silent: too shallow matches nothing and every pending count reads zero.
-  #
-  # /private/tmp is left out beside /tmp: on macOS it is the same directory through
-  # a symlink, so naming both walks every tasks dir twice, and on Linux /tmp is the
-  # real path.
-  task_dirs="$(
-    find "${TMPDIR:-/tmp}"/claude-* /tmp/claude-* \
-      -maxdepth 3 -type d -name tasks 2>/dev/null || true
-  )"
-  transcripts="$(find "$HOME/.claude/projects" -maxdepth 2 -name '*.jsonl' 2>/dev/null || true)"
-fi
-
-while IFS=' ' read -r pane session; do
-  [ -n "$session" ] || continue
-
-  tasks=""
-  while IFS= read -r dir; do
-    case "$dir" in
-      */"$session"/tasks) tasks="$dir"; break ;;
-    esac
-  done <<EOF
-$task_dirs
-EOF
-  [ -n "$tasks" ] || continue
-
-  # A path at a time and not a split on whitespace: the project directory carries
-  # the session cwd, so a checkout with a space would arrive as two ids and count
-  # twice. Task ids hold no whitespace, which is why splitting $fresh below stays
-  # safe. A here-doc and not a pipe, or the loop runs in a subshell and $fresh does
-  # not survive it.
-  #
-  # -L because these are mostly symlinks into the subagent transcript they report
-  # on: the link mtime is fixed at creation while the transcript keeps being
-  # written, so reading the link would age out a subagent still working, which is
-  # the case this block exists for.
-  fresh=""
-  while IFS= read -r output; do
-    [ -n "$output" ] || continue
-    id="${output##*/}"
-    fresh="$fresh${fresh:+ }${id%.output}"
-  done <<EOF
-$(find -L "$tasks" -maxdepth 1 -type f -name '*.output' -newermt "$cutoff" 2>/dev/null)
-EOF
-  [ -n "$fresh" ] || continue
-
-  transcript=""
-  while IFS= read -r candidate; do
-    case "$candidate" in
-      */"$session.jsonl")
-        # Keep looking when the name matches but the file cannot be read, rather
-        # than stopping on the name alone and reporting no transcript at all.
-        if [ -r "$candidate" ]; then
-          transcript="$candidate"
-          break
-        fi
-        ;;
-    esac
-  done <<EOF
-$transcripts
-EOF
-
-  # Delimited so the test below is a `case` and not a `grep` per id, and so an id
-  # that is a prefix of another cannot answer for it.
-  announced="|"
-  if [ -n "$transcript" ]; then
-    while IFS= read -r line; do
-      [ -n "$line" ] || continue
-      announced="$announced${line#<task-id>}|"
-    done <<EOF
-$(
-      # Task ids carry no whitespace, so splitting the list on it is safe.
-      # shellcheck disable=SC2086
-      printf '<task-id>%s\n' $fresh | grep -o -F -f - "$transcript" 2>/dev/null
-    )
-EOF
-  fi
-
-  count=0
-  # shellcheck disable=SC2086
-  for id in $fresh; do
-    case "$announced" in
-      *"|$id|"*) continue ;;
-    esac
-    count=$((count + 1))
-  done
-  [ "$count" -gt 0 ] || continue
-
-  pending_pairs="$pending_pairs$pane $count
-"
-done <<EOF
-$task_pairs
-EOF
+# idle and the row would call it done. That used to be found here by walking
+# every tasks dir and transcript on each run, 100ms+ nearly every time, and it
+# only ever covered Claude kind=id sessions. Now the Stop hook in
+# claude/.claude/hooks/herdr-tasks-pending.sh does that check once per turn end
+# and reports a `tasks_pending` workspace token with a TTL when work is still
+# running. This run only reads that flag back, so a space with no finished agent
+# touches the filesystem not at all.
 
 # Each map falls back to {} rather than letting `set -e` end the run: repos and
 # commands pair an id with its reply by position, so a reply carrying anything but
 # one JSON value shifts every pair after it and aborts jq. Partial cover -- a shift
 # can also answer for the wrong id, which reads as a wrong title -- but it catches
 # what would otherwise stop the run.
-pending='{}'
-if [ -n "$pending_pairs" ]; then
-  pending="$(
-    printf '%s' "$pending_pairs" |
-      jq -Rsc 'split("\n") | map(select(. != "") | split(" "))
-               | map({ key: .[0], value: (.[1] | tonumber) }) | from_entries'
-  )" || pending='{}'
-fi
 
 # A `||` above only catches a jq that failed. jq also succeeds and prints nothing
 # on an empty input, and that empty string reaches --argjson as a parse error which
@@ -360,25 +252,37 @@ fi
 [ -n "$repos" ] || repos='{}'
 [ -n "$named" ] || named='{}'
 [ -n "$commands" ] || commands='{}'
-[ -n "$pending" ] || pending='{}'
 
 plan="$(
   printf '%s' "$snapshot" |
     jq -r --argjson commands "$commands" --argjson slots "$slots" \
-      --argjson repos "$repos" --argjson named "$named" --argjson pending "$pending" \
+      --argjson repos "$repos" --argjson named "$named" \
       --argjson batch "$batch" '
+      # done and idle share the calm glyph: the done-to-idle flip is per-client
+      # seen state with no event, so a ●-to-○ change would read as going stale.
       def mark:
-        if . == "blocked" or . == "working" or . == "done" then "●"
-        elif . == "idle" then "○"
+        if . == "blocked" or . == "working" then "●"
+        elif . == "done" or . == "idle" then "○"
         else "·"
         end;
 
-      # The +N more row carries one color for all three states, so there the shape
-      # is the only thing telling them apart.
+      # The +N more row keeps one mark per state, with done and idle sharing
+      # the calm one; blocked and working stay distinct shapes.
       def tally:
         if . == "blocked" then "×"
-        elif . == "done" then "✓"
+        elif . == "done" or . == "idle" then "○"
         else mark
+        end;
+
+      # An idle or done pane with a native session id counts as still working
+      # while the Stop hook flag is live on the space. Workspace-level, so every
+      # qualifying pane in the space shares it until the flag TTL expires.
+      def is_waiting($pane; $flag):
+        if $flag
+           and (($pane.agent_session.kind // "") == "id")
+           and ($pane.agent_status == "done" or $pane.agent_status == "idle")
+        then 1
+        else 0
         end;
 
       def basename: (. / "/") | map(select(. != "")) | last // "";
@@ -462,16 +366,21 @@ plan="$(
       # indexing a non-object aborts jq and writes nothing, and reporting everything
       # is the right way to be wrong here.
       | (if ($workspace.tokens | type) == "object" then $workspace.tokens else {} end) as $current
+      | (($current["tasks_pending"] // null) != null) as $tasks_flag
       | [if $title == "" then ["--clear-token", "title"] else ["--token", "title=\($title | stored_form // "")"] end]
       + [
           range(1; $slots + 1) as $slot
+          # Sorted by pane id, so closing a pane stops rewriting later slots.
+          | ($s.panes | map(select(.workspace_id == $workspace.workspace_id))
+              | sort_by(.pane_id)) as $mine
           | ($mine[$slot - 1]) as $pane
           | if $pane == null then
               clear_but($slot; [])
             elif ($pane.agent // null) == null then
               # A pane that names itself beats the process behind it: the reviewr
-              # pane sets a title, where its leader reads as `herdr-reviewr`.
-              (($pane.title // "" | select(. != "")) // $commands[$pane.pane_id] // "shell") as $what
+              # pane sets a label, where its leader reads as `herdr-reviewr`.
+              # Snapshot panes carry `label`, not `title`.
+              (($pane.label // "" | select(. != "")) // $commands[$pane.pane_id] // "shell") as $what
               | ([$tab_labels[$pane.tab_id] // empty, $what] | join(" · ")) as $rest
               # Its own token, so a pane row and an agent row Herdr has no status
               # for stay separable even though both render plain.
@@ -483,12 +392,12 @@ plan="$(
               ($pane.terminal_title_stripped // "" | sub("^[^\\p{L}\\p{N}]+\\s+"; "")) as $title
               | (if $title == "" then $pane.agent else $title end) as $what
               | ([$tab_labels[$pane.tab_id] // empty, $what] | join(" · ")) as $rest
-              | ($pending[$pane.pane_id] // 0) as $waiting
+              | (is_waiting($pane; $tasks_flag)) as $waiting
               | (if $waiting > 0 then ("working" | mark)
                  else ($pane.agent_status | mark)
                  end) as $icon
-              # idle is done-and-seen: it keeps the calm color and only drops from ●
-              # to ○, which is what Herdr does on the space row above. That leaves
+              # idle is done-and-seen, so it shares the calm color and glyph of done,
+              # which is what the space row above already does. That leaves
               # `a$slot` for `unknown`, a · in the plain foreground like a pane row.
               | (if $pane.agent_status == "blocked" then "a\($slot)_blocked"
                  elif $waiting > 0 or $pane.agent_status == "working" then "a\($slot)_working"
@@ -504,13 +413,13 @@ plan="$(
            | if ($hidden | length) == 0 then
                ["--clear-token", "more", "--clear-token", "more_blocked"]
              else
-               ([$hidden[] | select(.agent_status == "blocked")] | length) as $blocked
-               # A pane counted as waiting is not also counted as done, or the
-               # same agent shows up twice in a line whose whole job is a tally.
-               | ([$hidden[] | select(($pending[.pane_id] // 0) > 0
-                                      or .agent_status == "working")] | length) as $waiting
-               | ([$hidden[] | select(.agent_status == "done" or .agent_status == "idle")
-                             | select(($pending[.pane_id] // 0) == 0)] | length) as $done
+                ([$hidden[] | select(.agent_status == "blocked")] | length) as $blocked
+                # A pane counted as waiting is not also counted as done, or the
+                # same agent shows up twice in a line whose whole job is a tally.
+                | ([$hidden[] | select(is_waiting(.; $tasks_flag) > 0
+                                       or .agent_status == "working")] | length) as $waiting
+                | ([$hidden[] | select(.agent_status == "done" or .agent_status == "idle")
+                              | select(is_waiting(.; $tasks_flag) == 0)] | length) as $done
                | ([
                    (if $blocked > 0 then "\($blocked)\("blocked" | tally)" else empty end),
                    (if $waiting > 0 then "\($waiting)\("working" | tally)" else empty end),
@@ -532,6 +441,8 @@ plan="$(
       # is the same map the sidebar renders from -- and also why the 33 names above
       # have to stay ours alone: another source setting one of them to the value
       # this run wanted would be taken for a write that already landed.
+      # `tasks_pending` is the one exception: the Stop hook owns it, this run only
+      # reads it back, and it self-expires through its own TTL.
       #
       # No apostrophes in these comments: the whole program is one single-quoted
       # shell word, and one would end it.
@@ -570,7 +481,7 @@ printf '%s\n\n' "$plan" |
       [ "$#" -gt 0 ] || continue
       workspace="$1"
       shift
-      "$herdr" workspace report-metadata "$workspace" --source "$source_id" "$@" >/dev/null
+      "$herdr" workspace report-metadata "$workspace" --source "$source_id" --seq "$seq_now" --ttl-ms "$ttl_ms" "$@" >/dev/null
       set --
     done
   }

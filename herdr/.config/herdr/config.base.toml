@@ -168,7 +168,9 @@ status_indicators = "dots"
 # one block per space: title, branch, one line per pane. tokens come from
 # space-tokens/refresh.sh; empty rows disappear.
 # one token per state per slot, refresh.sh sets exactly one - Herdr joins extras with " · ".
-# idle shares done's color, glyph drops from ● to ○. $aN / $aN_pane stay plain.
+# done and idle share the calm glyph and color; only seen state tells them apart. $aN / $aN_pane stay plain.
+# an empty-match hide rule collapses each slot cell, so empty slots take no row.
+# rows with no remaining tokens disappear.
 # 9 of 16 rows used; raising slots in refresh.sh costs a row. batch keeps a group under 16 tokens.
 # @hot/@working/@done/@idle are filled by tt from the theme; @idle is plain foreground.
 [ui.sidebar.spaces]
@@ -176,13 +178,13 @@ row_gap = 1
 rows = [
   ["state_icon", { token = "$title", bold = true }],
   ["branch", "git_status"],
-  [{ token = "$a1_blocked", bold = true, fg = "@hot" }, { token = "$a1_working", fg = "@working" }, { token = "$a1_done", fg = "@done" }, { token = "$a1", fg = "@idle" }, "$a1_pane"],
-  [{ token = "$a2_blocked", bold = true, fg = "@hot" }, { token = "$a2_working", fg = "@working" }, { token = "$a2_done", fg = "@done" }, { token = "$a2", fg = "@idle" }, "$a2_pane"],
-  [{ token = "$a3_blocked", bold = true, fg = "@hot" }, { token = "$a3_working", fg = "@working" }, { token = "$a3_done", fg = "@done" }, { token = "$a3", fg = "@idle" }, "$a3_pane"],
-  [{ token = "$a4_blocked", bold = true, fg = "@hot" }, { token = "$a4_working", fg = "@working" }, { token = "$a4_done", fg = "@done" }, { token = "$a4", fg = "@idle" }, "$a4_pane"],
-  [{ token = "$a5_blocked", bold = true, fg = "@hot" }, { token = "$a5_working", fg = "@working" }, { token = "$a5_done", fg = "@done" }, { token = "$a5", fg = "@idle" }, "$a5_pane"],
-  [{ token = "$a6_blocked", bold = true, fg = "@hot" }, { token = "$a6_working", fg = "@working" }, { token = "$a6_done", fg = "@done" }, { token = "$a6", fg = "@idle" }, "$a6_pane"],
-  [{ token = "$more_blocked", bold = true, fg = "@hot" }, "$more"],
+  [{ token = "$a1_blocked", bold = true, fg = "@hot", rules = [{ equals = "", hide = true }] }, { token = "$a1_working", fg = "@working", rules = [{ equals = "", hide = true }] }, { token = "$a1_done", fg = "@done", rules = [{ equals = "", hide = true }] }, { token = "$a1", fg = "@idle", rules = [{ equals = "", hide = true }] }, { token = "$a1_pane", rules = [{ equals = "", hide = true }] }],
+  [{ token = "$a2_blocked", bold = true, fg = "@hot", rules = [{ equals = "", hide = true }] }, { token = "$a2_working", fg = "@working", rules = [{ equals = "", hide = true }] }, { token = "$a2_done", fg = "@done", rules = [{ equals = "", hide = true }] }, { token = "$a2", fg = "@idle", rules = [{ equals = "", hide = true }] }, { token = "$a2_pane", rules = [{ equals = "", hide = true }] }],
+  [{ token = "$a3_blocked", bold = true, fg = "@hot", rules = [{ equals = "", hide = true }] }, { token = "$a3_working", fg = "@working", rules = [{ equals = "", hide = true }] }, { token = "$a3_done", fg = "@done", rules = [{ equals = "", hide = true }] }, { token = "$a3", fg = "@idle", rules = [{ equals = "", hide = true }] }, { token = "$a3_pane", rules = [{ equals = "", hide = true }] }],
+  [{ token = "$a4_blocked", bold = true, fg = "@hot", rules = [{ equals = "", hide = true }] }, { token = "$a4_working", fg = "@working", rules = [{ equals = "", hide = true }] }, { token = "$a4_done", fg = "@done", rules = [{ equals = "", hide = true }] }, { token = "$a4", fg = "@idle", rules = [{ equals = "", hide = true }] }, { token = "$a4_pane", rules = [{ equals = "", hide = true }] }],
+  [{ token = "$a5_blocked", bold = true, fg = "@hot", rules = [{ equals = "", hide = true }] }, { token = "$a5_working", fg = "@working", rules = [{ equals = "", hide = true }] }, { token = "$a5_done", fg = "@done", rules = [{ equals = "", hide = true }] }, { token = "$a5", fg = "@idle", rules = [{ equals = "", hide = true }] }, { token = "$a5_pane", rules = [{ equals = "", hide = true }] }],
+  [{ token = "$a6_blocked", bold = true, fg = "@hot", rules = [{ equals = "", hide = true }] }, { token = "$a6_working", fg = "@working", rules = [{ equals = "", hide = true }] }, { token = "$a6_done", fg = "@done", rules = [{ equals = "", hide = true }] }, { token = "$a6", fg = "@idle", rules = [{ equals = "", hide = true }] }, { token = "$a6_pane", rules = [{ equals = "", hide = true }] }],
+  [{ token = "$more_blocked", bold = true, fg = "@hot", rules = [{ equals = "", hide = true }] }, { token = "$more", rules = [{ equals = "", hide = true }] }],
 ]
 
 [ui.toast]
