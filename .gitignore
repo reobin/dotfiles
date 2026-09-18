@@ -2,7 +2,9 @@ claude/.claude/*
 !claude/.claude/keybindings.json
 !claude/.claude/settings.json
 !claude/.claude/statusline.sh
-claude/.claude/hooks/
+!claude/.claude/hooks/
+claude/.claude/hooks/*
+!claude/.claude/hooks/herdr-tasks-pending.sh
 herdr/.config/herdr/config.toml
 herdr/.config/herdr/config.toml.tmp.*
 herdr/.config/herdr/herdr-client.log
