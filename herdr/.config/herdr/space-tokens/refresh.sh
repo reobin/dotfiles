@@ -258,6 +258,10 @@ plan="$(
     jq -r --argjson commands "$commands" --argjson slots "$slots" \
       --argjson repos "$repos" --argjson named "$named" \
       --argjson batch "$batch" '
+      # Creation order inside a space: the numeric suffix of wN:pM. A plain
+      # string sort of the id reads p10 before p2.
+      def pane_seq: split(":p") | .[1] | (tonumber? // 0);
+
       # done and idle share the calm glyph: the done-to-idle flip is per-client
       # seen state with no event, so a ●-to-○ change would read as going stale.
       def mark:
@@ -336,6 +340,16 @@ plan="$(
                  value: (map({ key: .tab_id, value: .label }) | from_entries) })
          | from_entries) as $tab_labels_by_ws
 
+      # Bar position of each tab id, from the snapshot listing tabs in bar
+      # order. Slots sort by it before pane id: a tab opened later takes the
+      # next pane ids, so id order alone interleaves tabs and the row labels
+      # read 1, 2, 1, 1.
+      | (($s.tabs // [])
+         | group_by(.workspace_id)
+         | map({ key: .[0].workspace_id,
+                 value: (to_entries | map({ key: .value.tab_id, value: .key }) | from_entries) })
+         | from_entries) as $tab_pos_by_ws
+
       | def title_of($workspace):
           ($s.panes | map(select(.workspace_id == $workspace.workspace_id))) as $mine
           | ($repos[$workspace.workspace_id] // {}) as $git
@@ -360,7 +374,12 @@ plan="$(
       $s.workspaces[]
       | . as $workspace
       | title_of(.) as $title
-      | ($s.panes | map(select(.workspace_id == $workspace.workspace_id))) as $mine
+      # One order for the slots and the more row: tab bar order, then creation
+      # order inside the tab. Closing a pane still leaves the slots after it
+      # alone.
+      | ($tab_pos_by_ws[$workspace.workspace_id] // {}) as $tab_pos
+      | ($s.panes | map(select(.workspace_id == $workspace.workspace_id))
+          | sort_by([$tab_pos[.tab_id] // 0, (.pane_id | pane_seq)])) as $mine
       | ($tab_labels_by_ws[$workspace.workspace_id] // {}) as $tab_labels
       # Absent and null both mean no tokens yet. The type test is for anything else:
       # indexing a non-object aborts jq and writes nothing, and reporting everything
@@ -370,9 +389,6 @@ plan="$(
       | [if $title == "" then ["--clear-token", "title"] else ["--token", "title=\($title | stored_form // "")"] end]
       + [
           range(1; $slots + 1) as $slot
-          # Sorted by pane id, so closing a pane stops rewriting later slots.
-          | ($s.panes | map(select(.workspace_id == $workspace.workspace_id))
-              | sort_by(.pane_id)) as $mine
           | ($mine[$slot - 1]) as $pane
           | if $pane == null then
               clear_but($slot; [])
