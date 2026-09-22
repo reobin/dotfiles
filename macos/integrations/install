@@ -28,8 +28,8 @@ REVIEWR_ID="persiyanov.reviewr"
 # its config dir, so the ref check is only about cost: a reinstall re-runs the
 # plugin's build commands, and herdr-arrange compiles Go on every one.
 install_herdr_plugin() {
-  local plugin_id="$1" plugin_repo="$2"
-  local installed remote repo_url
+  local plugin_id="$1" plugin_repo="$2" plugin_ref="${3:-}"
+  local installed remote repo_url want_ref
 
   installed="$(herdr plugin list --json |
     jq -r --arg id "$plugin_id" \
@@ -38,8 +38,9 @@ install_herdr_plugin() {
   if [[ -n "$installed" ]]; then
     # install takes owner/repo[/subdir]; only the first two segments are the repo.
     repo_url="https://github.com/$(cut -d/ -f1-2 <<<"$plugin_repo")"
+    want_ref="${plugin_ref:-HEAD}"
     # A renamed or deleted repo otherwise stalls the run on a credential prompt.
-    remote="$(GIT_TERMINAL_PROMPT=0 git ls-remote "$repo_url" HEAD 2>/dev/null | awk '{print $1}')" || true
+    remote="$(GIT_TERMINAL_PROMPT=0 git ls-remote "$repo_url" "$want_ref" 2>/dev/null | tail -1 | awk '{print $1}')" || true
 
     if [[ -z "$remote" ]]; then
       echo "Herdr $plugin_id plugin is installed (no update check, $repo_url unreachable)" >&2
@@ -56,14 +57,18 @@ install_herdr_plugin() {
     echo "installing Herdr $plugin_id plugin"
   fi
 
-  herdr plugin install "$plugin_repo" --yes
+  if [[ -n "$plugin_ref" ]]; then
+    herdr plugin install "$plugin_repo" --ref "$plugin_ref" --yes
+  else
+    herdr plugin install "$plugin_repo" --yes
+  fi
 }
 
 install_herdr_plugin herdr-close-other-panes reobin/herdr-close-other-panes
 install_herdr_plugin herdr-callsigns reobin/herdr-callsigns
 install_herdr_plugin kuwa72.focus-attention kuwa72/herdr-focus-attention
 install_herdr_plugin herdr-arrange crierr/herdr-arrange
-install_herdr_plugin herdr-link-hints reobin/herdr-link-hints
+install_herdr_plugin herdr-link-hints reobin/herdr-link-hints v1.1.0
 install_herdr_plugin "$REVIEWR_ID" persiyanov/herdr-reviewr
 
 # The plugin gives panes callsigns; its skill teaches agents the
