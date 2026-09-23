@@ -1,6 +1,6 @@
 command = /bin/zsh
 
-font-family = "JetBrains Mono"
+font-family = "Geist Mono"
 font-style = Regular
 font-size = 16
 
