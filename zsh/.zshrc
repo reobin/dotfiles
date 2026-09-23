@@ -7,6 +7,7 @@ alias mkdir='mkdir -vp'
 alias h='herdr'
 alias g='git'
 alias n='nvim'
+alias oc='opencode'
 
 export DOTFILES="$HOME/dotfiles"
 
