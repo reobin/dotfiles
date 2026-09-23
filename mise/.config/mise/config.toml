@@ -1,5 +1,2 @@
 [settings]
 auto_install = true
-
-[tools]
-herdr = "latest"

@@ -1,38 +1,7 @@
 local M = {}
 
-local AGENTS = {
-  claude = "Claude Code",
-  codex = "Codex",
-  opencode = "opencode",
-  pi = "pi",
-}
-
 local function notify(message, level)
   vim.notify(message, level or vim.log.levels.INFO, { title = "Agent" })
-end
-
-local function run(args)
-  local output = vim.fn.system(args)
-  if vim.v.shell_error ~= 0 then
-    return nil, output
-  end
-
-  return output, nil
-end
-
-local function herdr_json(args)
-  local full_args = vim.list_extend({ "herdr" }, args)
-  local output, err = run(full_args)
-  if not output then
-    return nil, err
-  end
-
-  local ok, decoded = pcall(vim.json.decode, output)
-  if not ok then
-    return nil, "invalid Herdr JSON: " .. output
-  end
-
-  return decoded, nil
 end
 
 local function normalize(path)
@@ -63,10 +32,8 @@ local function relative_to(path, base)
   return nil
 end
 
-local function path_for_agent(path, target)
-  local target_cwd = target and (target.foreground_cwd or target.cwd)
-
-  return relative_to(path, target_cwd) or relative_to(path, vim.fn.getcwd()) or path
+local function path_for_agent(path)
+  return relative_to(path, vim.fn.getcwd()) or path
 end
 
 local function visual_selection()
@@ -98,7 +65,7 @@ local function visual_selection()
   }
 end
 
-local function build_prompt(comment, selection, target)
+local function build_prompt(comment, selection)
   local pieces = {}
 
   if comment and comment ~= "" then
@@ -107,7 +74,7 @@ local function build_prompt(comment, selection, target)
   end
 
   if selection.path ~= "" then
-    local display_path = path_for_agent(selection.path, target)
+    local display_path = path_for_agent(selection.path)
     table.insert(pieces, "Context:")
     table.insert(pieces, ("@%s lines %d-%d"):format(display_path, selection.start_line, selection.end_line))
     if selection.modified then
@@ -124,82 +91,7 @@ local function build_prompt(comment, selection, target)
   return table.concat(pieces, "\n")
 end
 
-local function agent_list_label()
-  local names = {}
-  for _, name in pairs(AGENTS) do
-    table.insert(names, name)
-  end
-
-  table.sort(names)
-  return table.concat(names, ", ")
-end
-
-local function copy_to_clipboard(prompt)
-  vim.fn.setreg("+", prompt)
-  notify(("No %s pane in this Herdr tab. Copied prompt to clipboard."):format(agent_list_label()))
-end
-
-local function copy_ambiguous_to_clipboard(prompt)
-  vim.fn.setreg("+", prompt)
-  notify(("Multiple %s panes in this Herdr tab. Copied prompt to clipboard."):format(agent_list_label()), vim.log.levels.WARN)
-end
-
-local function same_tab_agent_panes()
-  local current, current_err = herdr_json({ "pane", "current", "--current" })
-  if not current then
-    return nil, current_err
-  end
-
-  local tab_id = current.result and current.result.pane and current.result.pane.tab_id
-  if not tab_id then
-    return nil, "Herdr did not report the current tab"
-  end
-
-  local list, list_err = herdr_json({ "pane", "list" })
-  if not list then
-    return nil, list_err
-  end
-
-  local panes = {}
-  for _, pane in ipairs((list.result and list.result.panes) or {}) do
-    if pane.tab_id == tab_id and AGENTS[pane.agent] then
-      table.insert(panes, pane)
-    end
-  end
-
-  return panes, nil
-end
-
-local function pane_agent_name(pane)
-  return AGENTS[pane.agent] or "agent"
-end
-
-local function send_to_pane(pane, prompt, submit)
-  local _, text_err = run({ "herdr", "pane", "send-text", pane.pane_id, prompt })
-  if text_err then
-    vim.fn.setreg("+", prompt)
-    notify(("Failed to send to %s. Copied prompt to clipboard."):format(pane_agent_name(pane)), vim.log.levels.WARN)
-    return
-  end
-
-  if submit then
-    vim.defer_fn(function()
-      local _, key_err = run({ "herdr", "pane", "send-keys", pane.pane_id, "enter" })
-      if key_err then
-        notify(("Sent prompt to %s, but failed to press Enter."):format(pane_agent_name(pane)), vim.log.levels.WARN)
-      end
-    end, 150)
-  end
-
-  notify(
-    submit and ("Sent selection comment to %s."):format(pane_agent_name(pane))
-      or ("Drafted selection comment in %s."):format(pane_agent_name(pane))
-  )
-end
-
-function M.send_visual_selection(opts)
-  opts = opts or {}
-
+function M.send_visual_selection()
   local selection = visual_selection()
   if not selection then
     notify("No visual selection found.", vim.log.levels.WARN)
@@ -211,28 +103,8 @@ function M.send_visual_selection(opts)
       return
     end
 
-    local panes, panes_err = same_tab_agent_panes()
-    if not panes then
-      vim.fn.setreg("+", build_prompt(comment, selection))
-      notify(
-        ("Failed to find %s pane: %s. Copied prompt to clipboard."):format(agent_list_label(), panes_err),
-        vim.log.levels.WARN
-      )
-      return
-    end
-
-    if #panes == 0 then
-      copy_to_clipboard(build_prompt(comment, selection))
-      return
-    end
-
-    if #panes > 1 then
-      copy_ambiguous_to_clipboard(build_prompt(comment, selection))
-      return
-    end
-
-    local prompt = build_prompt(comment, selection, panes[1])
-    send_to_pane(panes[1], prompt, opts.submit ~= false)
+    vim.fn.setreg("+", build_prompt(comment, selection))
+    notify("Copied selection comment to clipboard.")
   end)
 end
 

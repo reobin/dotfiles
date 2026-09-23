@@ -14,7 +14,7 @@ cd $HOME/dotfiles
 
 Everything in the initial setup is handled by `./macos/init`.
 
-The setup installs Homebrew CLI tools, Ghostty, Hermes, Herdr, Neovim, and the
+The setup installs Homebrew CLI tools, Ghostty, Hermes, Neovim, tmux, and the
 repository-managed shell and Git configuration. Hermes' provider credentials
 and runtime state stay in `~/.hermes` and are not committed here.
 

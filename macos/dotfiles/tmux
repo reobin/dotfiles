@@ -1,0 +1,7 @@
+#!/usr/bin/env bash
+
+stow tmux
+
+# SSH sessions do not inherit Ghostty's TERMINFO, so compile its entry into
+# ~/.terminfo once. New shells pick it up with no env vars needed.
+tic -x -o ~/.terminfo ~/.config/tmux/xterm-ghostty.ti

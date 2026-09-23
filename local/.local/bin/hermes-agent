@@ -1,0 +1,4 @@
+#!/usr/bin/env bash
+unset PYTHONPATH
+unset PYTHONHOME
+exec "/Users/reobin/.hermes/hermes-agent/venv/bin/python" "/Users/reobin/.hermes/hermes-agent/run_agent.py" "$@"
