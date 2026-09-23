@@ -280,6 +280,24 @@
                   }
                 ],
                 "from": {
+                  "key_code": "m"
+                },
+                "to": [
+                  {
+                    "shell_command": "/usr/bin/open -a /Applications/Spotify.app"
+                  }
+                ],
+                "type": "basic"
+              },
+              {
+                "conditions": [
+                  {
+                    "name": "app_launch_layer",
+                    "type": "variable_if",
+                    "value": 1
+                  }
+                ],
+                "from": {
                   "key_code": "n"
                 },
                 "to": [
