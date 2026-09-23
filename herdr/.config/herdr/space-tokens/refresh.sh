@@ -26,12 +26,12 @@ processes=1
 # place that surfaces is `herdr plugin logs list`: the rows just stop changing.
 batch=16
 
-# Self-expiring rows: every report carries a 30-minute TTL, so a crashed run
-# leaves rows frozen for at most half an hour, while a quiet workspace keeps
-# its rows between events. A per-run sequence number means a stale report can
-# never overwrite a newer one. The counter lives beside the lock; a missing
-# or unreadable file restarts at the current time.
-ttl_ms=1800000
+# Persistent rows: reports carry no TTL, so a quiet workspace keeps its rows
+# between events. Every run recomputes every space from a fresh snapshot and
+# clears slots that no longer apply, so the run after a crash heals the rows.
+# A per-run sequence number means a stale report can never overwrite a newer
+# one. The counter lives beside the lock; a missing or unreadable file
+# restarts at the current time.
 
 # One writer at a time. Every run recomputes every space from a snapshot it takes
 # at its own start, so two that overlap can finish out of order and leave the
@@ -116,14 +116,14 @@ if [ "${1:-}" = "clear" ]; then
       count=$((count + 1))
       if [ "$count" -eq "$batch" ]; then
         # shellcheck disable=SC2086
-        "$herdr" workspace report-metadata "$workspace" --source "$source_id" --seq "$seq_now" --ttl-ms "$ttl_ms" $args >/dev/null
+        "$herdr" workspace report-metadata "$workspace" --source "$source_id" --seq "$seq_now" $args >/dev/null
         args=""
         count=0
       fi
     done
     if [ "$count" -gt 0 ]; then
       # shellcheck disable=SC2086
-      "$herdr" workspace report-metadata "$workspace" --source "$source_id" --seq "$seq_now" --ttl-ms "$ttl_ms" $args >/dev/null
+      "$herdr" workspace report-metadata "$workspace" --source "$source_id" --seq "$seq_now" $args >/dev/null
     fi
   done
 
@@ -497,7 +497,7 @@ printf '%s\n\n' "$plan" |
       [ "$#" -gt 0 ] || continue
       workspace="$1"
       shift
-      "$herdr" workspace report-metadata "$workspace" --source "$source_id" --seq "$seq_now" --ttl-ms "$ttl_ms" "$@" >/dev/null
+      "$herdr" workspace report-metadata "$workspace" --source "$source_id" --seq "$seq_now" "$@" >/dev/null
       set --
     done
   }
