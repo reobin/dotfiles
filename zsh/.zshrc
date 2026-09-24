@@ -47,6 +47,7 @@ bindkey -e
 source ~/.config/zsh/git.zsh
 source ~/.config/zsh/aws.zsh
 source ~/.config/zsh/cursor.zsh
+source ~/.config/zsh/claude.zsh
 source ~/.config/zsh/history.zsh
 source ~/.config/zsh/completion.zsh
 source ~/.config/zsh/fzf.zsh
