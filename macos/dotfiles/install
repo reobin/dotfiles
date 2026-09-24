@@ -21,7 +21,6 @@ CONFIGS=(
   surfingkeys
   superwhisper
   zsh
-  gdrive
 )
 
 for config in "${CONFIGS[@]}"; do
