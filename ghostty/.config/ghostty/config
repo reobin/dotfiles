@@ -16,15 +16,3 @@ cursor-invert-fg-bg = true
 adjust-cursor-thickness = 2
 
 theme = terminal-active
-
-# The quick terminal holds the scratch note and nothing else: zsh hands it
-# straight to `note`. quick-terminal-size takes width,height and is absent from
-# `ghostty +show-config`, so the two values are the whole of what documents it.
-keybind = global:cmd+ctrl+alt+shift+n=toggle_quick_terminal
-quick-terminal-position = center
-quick-terminal-size = 1024px,846px
-quick-terminal-animation-duration = 0
-
-# macOS restores a quick terminal without GHOSTTY_QUICK_TERMINAL set, and toggling
-# reuses that shell, so `tab n` sits at a prompt until Ghostty restarts.
-window-save-state = never
