@@ -1,0 +1,22 @@
+#!/usr/bin/env bash
+
+set -eu
+
+INSTALL_DIRECTORY="$DOTFILES_DIRECTORY/macos"
+
+# Tools that live in their own repos, cloned onto this machine.
+SOFTWARE=(
+  gw
+)
+
+for software in "${SOFTWARE[@]}"; do
+  script="$INSTALL_DIRECTORY/software/$software"
+
+  if [[ ! -f "$script" ]]; then
+    echo "Skipping $software (missing: $script)" >&2
+    continue
+  fi
+
+  echo "installing software for $software"
+  source "$script"
+done

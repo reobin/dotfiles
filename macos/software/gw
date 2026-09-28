@@ -1,0 +1,22 @@
+#!/usr/bin/env bash
+
+# gw lives in its own repo. Clone it once, fast-forward on later runs.
+# Install location follows upstream README (~/.local/share/gw).
+GW_DIR="${GW_DIR:-$HOME/.local/share/gw}"
+OLD_GW_DIR="$HOME/GitHub/gw"
+
+# One-time move from the old checkout location.
+if [[ ! -d "$GW_DIR/.git" && -d "$OLD_GW_DIR/.git" ]]; then
+  echo "moving gw ($OLD_GW_DIR -> $GW_DIR)"
+  mkdir -p "$(dirname "$GW_DIR")"
+  mv "$OLD_GW_DIR" "$GW_DIR"
+fi
+
+if [[ -d "$GW_DIR/.git" ]]; then
+  echo "updating gw ($GW_DIR)"
+  git -C "$GW_DIR" pull --ff-only || echo "warning: gw update failed" >&2
+else
+  echo "cloning gw ($GW_DIR)"
+  mkdir -p "$(dirname "$GW_DIR")"
+  git clone https://github.com/reobin/gw.git "$GW_DIR" || echo "warning: gw clone failed" >&2
+fi

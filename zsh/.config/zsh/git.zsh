@@ -90,3 +90,9 @@ gd() {
 
   printf 'Deleted worktree and branch "%s"\n' "$branch"
 }
+
+# https://github.com/reobin/gw
+GW_DIR="${GW_DIR:-$HOME/.local/share/gw}"
+export GW_ROOTS="${GW_ROOTS:-$HOME/GitHub $HOME/dev $HOME/code}"
+export GW_CLONE_ROOT="${GW_CLONE_ROOT:-$HOME/GitHub}"
+[[ -f "$GW_DIR/gw.sh" ]] && . "$GW_DIR/gw.sh"
