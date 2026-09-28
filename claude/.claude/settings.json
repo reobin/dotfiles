@@ -29,7 +29,7 @@
         ]
       },
       {
-        "matcher": "*",
+        "matcher": "^(startup|resume|clear|compact|fork)$",
         "hooks": [
           {
             "type": "command",
@@ -75,7 +75,7 @@
   "effortLevel": "high",
   "modelSettings": {
     "claude-opus-5-5": {
-      "effort": "medium"
+      "effortLevel": "medium"
     }
   },
   "remote": {
