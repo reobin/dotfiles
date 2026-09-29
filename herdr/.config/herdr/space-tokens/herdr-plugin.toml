@@ -10,9 +10,46 @@ platforms = ["linux", "macos"]
 # seen firing with no pane.closed beside it.
 #
 # pane.updated, the only event carrying a title or cwd change, is published on the
-# socket API but rejected at plugin link time, so a cd arrives from the chpwd hook
-# in zsh/.config/zsh/herdr.zsh instead.
+# socket API but excluded from plugin hooks on purpose (Herdr keeps a test for
+# it), so a cd arrives from the chpwd hook in zsh/.config/zsh/herdr.zsh and a
+# title change from the PostToolUse hook in claude/.claude/hooks instead.
+#
+# The focus events move nothing by themselves. They are here because a focus is
+# when the rows get looked at: whatever a missed title or cwd change left behind
+# is caught up at that moment. A run that finds nothing to move writes nothing.
 [[startup]]
+command = ["sh", "refresh.sh"]
+
+[[events]]
+on = "pane.focused"
+command = ["sh", "refresh.sh"]
+
+[[events]]
+on = "tab.focused"
+command = ["sh", "refresh.sh"]
+
+[[events]]
+on = "workspace.focused"
+command = ["sh", "refresh.sh"]
+
+[[events]]
+on = "tab.created"
+command = ["sh", "refresh.sh"]
+
+[[events]]
+on = "workspace.created"
+command = ["sh", "refresh.sh"]
+
+[[events]]
+on = "workspace.closed"
+command = ["sh", "refresh.sh"]
+
+[[events]]
+on = "workspace.updated"
+command = ["sh", "refresh.sh"]
+
+[[events]]
+on = "worktree.created"
 command = ["sh", "refresh.sh"]
 
 [[events]]

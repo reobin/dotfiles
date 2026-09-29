@@ -9,6 +9,10 @@
 # and the TTL bounds any overstatement, for example a transcript that has not
 # recorded the just-finished task yet.
 #
+# Reported under its own source: Herdr orders reports per source by --seq and
+# drops one that does not advance it, and refresh.sh reports with a seq, so a
+# report here without one would be dropped against it.
+#
 # Usage: herdr-tasks-pending.sh < hook-input.json
 # Never fails: any error exits 0 without reporting.
 
@@ -98,7 +102,7 @@ for id in $fresh; do
     *"|$id|"*) continue ;;
   esac
   herdr workspace report-metadata "$HERDR_WORKSPACE_ID" \
-    --source space-tokens --token tasks_pending=1 --ttl-ms 120000 \
+    --source space-tokens-tasks --token tasks_pending=1 --ttl-ms 120000 \
     >/dev/null 2>&1 || true
   exit 0
 done

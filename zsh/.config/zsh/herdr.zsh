@@ -47,7 +47,7 @@ __herdr_space_tokens_chpwd() {
   # exit, detached from the terminal, and niced to the floor.
   local target="$REPLY" pane="$HERDR_PANE_ID"
   {
-    nice -n 19 sh "$__herdr_space_tokens_refresh"
+    HERDR_SPACE_TOKENS_FRESH=1 nice -n 19 sh "$__herdr_space_tokens_refresh"
     sleep 2
     # The check below reads live Herdr state, so a cd that landed after this
     # one just converges on the next verify: a refresh recomputes every space.
@@ -57,10 +57,10 @@ __herdr_space_tokens_chpwd() {
         '.result.snapshot.panes[] | select(.pane_id == $p) | .cwd // empty')"
     fi
     # An unreadable answer keeps the old always-rerun behavior.
-    [[ -n "$seen" ]] || { nice -n 19 sh "$__herdr_space_tokens_refresh"; exit 0; }
+    [[ -n "$seen" ]] || { HERDR_SPACE_TOKENS_FRESH=1 nice -n 19 sh "$__herdr_space_tokens_refresh"; exit 0; }
     local REPLY
     __herdr_space_root "$seen"
-    [[ "$REPLY" == "$target" ]] || nice -n 19 sh "$__herdr_space_tokens_refresh" </dev/null >/dev/null 2>&1
+    [[ "$REPLY" == "$target" ]] || HERDR_SPACE_TOKENS_FRESH=1 nice -n 19 sh "$__herdr_space_tokens_refresh" </dev/null >/dev/null 2>&1
   } </dev/null >/dev/null 2>&1 &!
 }
 

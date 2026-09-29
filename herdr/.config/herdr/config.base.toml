@@ -24,6 +24,8 @@ open_notification_target = ""
 edit_scrollback = "prefix+e"
 
 workspace_picker = "prefix+w"
+# every pane grouped by space, live; one key, no prefix, like the alt+j/k moves.
+goto = "alt+g"
 previous_workspace = "alt+k"
 next_workspace = "alt+j"
 new_workspace = "prefix+shift+c"
@@ -142,8 +144,9 @@ prompt_new_tab_name = false
 # prompt fires before there's anything to name; rename later.
 prompt_new_workspace_name = false
 
-# agent lines need the room; 36 is the max.
-sidebar_width = 36
+# callsign, tab and title on one row. 36 is only Herdr's default max, not a cap.
+sidebar_width = 46
+sidebar_max_width = 46
 
 pane_borders = "always"
 pane_outer_borders = true

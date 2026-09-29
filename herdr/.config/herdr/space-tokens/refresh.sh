@@ -44,9 +44,23 @@ pending_file="$state_dir/pending"
 seq_file="$state_dir/seq"
 mkdir -p "$state_dir"
 
+# Whether the repo map below is rebuilt rather than read from its cache. The
+# chpwd hook sets HERDR_SPACE_TOKENS_FRESH=1: a cd is the one thing that moves a
+# space onto another repo without any Herdr event saying so. The events that can
+# move one, a worktree or workspace coming or going, ask for the same. Decided
+# before the lock, so a run that finds it held leaves the right mark behind.
+fresh="${HERDR_SPACE_TOKENS_FRESH:-}"
+case "${HERDR_PLUGIN_EVENT:-}" in
+  startup | worktree.* | workspace.created | workspace.closed | workspace.updated) fresh=1 ;;
+esac
+
 # Set by the rerun at the bottom, which is handed the lock rather than taking it.
 if [ "${HERDR_SPACE_TOKENS_LOCKED:-}" != 1 ]; then
-  [ "${1:-}" = "clear" ] || : >"$pending_file"
+  # Appended and never truncated, so a fresh mark left by another waiter is not
+  # erased by a plain one arriving after it.
+  if [ "${1:-}" != "clear" ]; then
+    if [ "$fresh" = 1 ]; then printf 'fresh\n' >>"$pending_file"; else : >>"$pending_file"; fi
+  fi
   if ! mkdir "$lock_dir" 2>/dev/null; then
     # A run killed outright leaves the directory behind, and without this nothing
     # would move a row again. No refresh takes a minute.
@@ -59,8 +73,13 @@ fi
 trap 'rmdir "$lock_dir" 2>/dev/null || :' EXIT
 
 # Consumed before the snapshot below, so a request arriving while this run works
-# marks it again rather than being answered by a snapshot taken before it.
-[ "${1:-}" = "clear" ] || rm -f "$pending_file"
+# marks it again rather than being answered by a snapshot taken before it. A
+# fresh mark in it, from this run or from a waiter that found the lock held, is
+# answered by this run.
+if [ "${1:-}" != "clear" ]; then
+  if grep -qs fresh "$pending_file"; then fresh=1; fi
+  rm -f "$pending_file"
+fi
 
 # Monotonic per run, advanced while the lock is held. Seconds are coarse enough
 # that two runs in the same second still order apart through the +1 fallback.
@@ -140,9 +159,24 @@ fi
 #
 # Ids and replies are streamed in turn and merged in a single jq, rather than
 # reducing into the map one spawn at a time.
+#
+# Cached between runs, keyed by the set of spaces, because that git work is the
+# whole cost of a run and a space rarely changes repo. Rebuilt when the fresh
+# mark above asks for it, when the set of spaces differs, and every ten minutes
+# as a backstop. Every other run, and the focus events in particular, pays only
+# the snapshot.
+repos_cache="$state_dir/repos.json"
+ws_key="$(printf '%s' "$ws_ids" | tr ' ' '\n' | grep . | sort | tr '\n' ' ')"
+repos=""
+if [ "$fresh" != 1 ] && [ -s "$repos_cache" ] && [ -z "$(find "$repos_cache" -mmin +10 2>/dev/null)" ]; then
+  repos="$(jq -c --arg key "$ws_key" 'select(.key == $key) | .repos' "$repos_cache" 2>/dev/null)" || repos=""
+fi
 sibling_filter='[.result.worktrees[]?.open_workspace_id | select(. != null)] | join("|")'
-repos='{}'
-if [ -n "$ws_ids" ]; then
+if [ -z "$repos" ]; then
+  rebuilt=1
+  repos='{}'
+fi
+if [ -n "$ws_ids" ] && [ "${rebuilt:-}" = 1 ]; then
   repos="$(
     {
       answered="|"
@@ -180,6 +214,16 @@ if [ -n "$ws_ids" ]; then
               end)
       '
   )" || repos='{}'
+fi
+if [ "${rebuilt:-}" = 1 ]; then
+  [ -n "$repos" ] || repos='{}'
+  # Written whole and moved into place, so a run reading it never sees a half.
+  if jq -nc --arg key "$ws_key" --argjson repos "$repos" '{ key: $key, repos: $repos }' \
+    >"$repos_cache.tmp.$$" 2>/dev/null; then
+    mv -f "$repos_cache.tmp.$$" "$repos_cache"
+  else
+    rm -f "$repos_cache.tmp.$$"
+  fi
 fi
 
 # Which spaces someone has named. The socket cannot say: custom name and checkout
@@ -407,7 +451,10 @@ plan="$(
               # symbols reaching whitespace goes, which spares a prefix like [wip].
               ($pane.terminal_title_stripped // "" | sub("^[^\\p{L}\\p{N}]+\\s+"; "")) as $title
               | (if $title == "" then $pane.agent else $title end) as $what
-              | ([$tab_labels[$pane.tab_id] // empty, $what] | join(" · ")) as $rest
+              # The callsign leads. It is the one part of the row that cannot go
+              # stale between events, and the name every herdr command takes.
+              | ([($pane.label // "" | select(. != "")), $tab_labels[$pane.tab_id] // empty, $what]
+                 | join(" · ")) as $rest
               | (is_waiting($pane; $tasks_flag)) as $waiting
               | (if $waiting > 0 then ("working" | mark)
                  else ($pane.agent_status | mark)
@@ -508,5 +555,7 @@ if [ -e "$pending_file" ]; then
   trap - EXIT
   HERDR_SPACE_TOKENS_LOCKED=1
   export HERDR_SPACE_TOKENS_LOCKED
+  # The rerun reads any fresh mark out of the pending file itself.
+  unset HERDR_SPACE_TOKENS_FRESH
   exec sh "$0"
 fi
