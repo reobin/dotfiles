@@ -8,6 +8,9 @@ claude/.claude/hooks/*
 !claude/.claude/hooks/herdr-space-tokens-refresh.sh
 herdr/.config/herdr/config.toml
 herdr/.config/herdr/config.toml.tmp.*
+herdr/.config/herdr/config.toml.bak-*
+herdr/.config/herdr/*.sock.agent
+herdr/.config/herdr/session-snapshots/
 herdr/.config/herdr/herdr-client.log
 herdr/.config/herdr/herdr-server.log
 herdr/.config/herdr/session.json
