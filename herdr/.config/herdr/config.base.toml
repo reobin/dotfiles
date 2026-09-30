@@ -123,17 +123,15 @@ width = "80%"
 height = "80%"
 description = "floating pane"
 
+# tt is a zsh function, so it needs an interactive zsh. the popup closes
+# itself when tt exits, which is also how Esc dismisses the fzf picker.
 [[keys.command]]
-key = "prefix+m"
-type = "plugin_action"
-command = "herdr-arrange.open"
-description = "arrange panes"
-
-[[keys.command]]
-key = "prefix+shift+m"
-type = "plugin_action"
-command = "herdr-arrange.open-tree"
-description = "move pane to…"
+key = "alt+t"
+type = "popup"
+command = "zsh -l -i -c tt"
+width = "40%"
+height = "40%"
+description = "terminal theme picker"
 
 [ui]
 mouse_capture = true
@@ -169,7 +167,7 @@ agent_panel_sort = "spaces"
 status_indicators = "dots"
 
 # one block per space: title, branch, one line per pane. tokens come from
-# space-tokens/refresh.sh; empty rows disappear.
+# spaces-sidebar/refresh.sh; empty rows disappear.
 # one token per state per slot, refresh.sh sets exactly one - Herdr joins extras with " · ".
 # done and idle share the calm glyph and color; only seen state tells them apart. $aN / $aN_pane stay plain.
 # an empty-match hide rule collapses each slot cell, so empty slots take no row.

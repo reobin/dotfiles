@@ -16,7 +16,7 @@
 set -eu
 
 herdr="${HERDR_BIN_PATH:-herdr}"
-source_id="space-tokens"
+source_id="spaces-sidebar"
 # [ui.sidebar.spaces] has room for 13. Past that the config goes over Herdr's row
 # cap, which it answers by discarding the file and using defaults.
 slots=6
@@ -38,24 +38,24 @@ batch=16
 # older one's rows behind. A run that finds the lock held leaves a mark instead of
 # waiting, and the holder picks it up and goes again, so the last request is still
 # the one that lands.
-state_dir="${XDG_CACHE_HOME:-$HOME/.cache}/herdr/space-tokens"
+state_dir="${XDG_CACHE_HOME:-$HOME/.cache}/herdr/spaces-sidebar"
 lock_dir="$state_dir/lock"
 pending_file="$state_dir/pending"
 seq_file="$state_dir/seq"
 mkdir -p "$state_dir"
 
 # Whether the repo map below is rebuilt rather than read from its cache. The
-# chpwd hook sets HERDR_SPACE_TOKENS_FRESH=1: a cd is the one thing that moves a
+# chpwd hook sets HERDR_SPACES_SIDEBAR_FRESH=1: a cd is the one thing that moves a
 # space onto another repo without any Herdr event saying so. The events that can
 # move one, a worktree or workspace coming or going, ask for the same. Decided
 # before the lock, so a run that finds it held leaves the right mark behind.
-fresh="${HERDR_SPACE_TOKENS_FRESH:-}"
+fresh="${HERDR_SPACES_SIDEBAR_FRESH:-}"
 case "${HERDR_PLUGIN_EVENT:-}" in
   startup | worktree.* | workspace.created | workspace.closed | workspace.updated) fresh=1 ;;
 esac
 
 # Set by the rerun at the bottom, which is handed the lock rather than taking it.
-if [ "${HERDR_SPACE_TOKENS_LOCKED:-}" != 1 ]; then
+if [ "${HERDR_SPACES_SIDEBAR_LOCKED:-}" != 1 ]; then
   # Appended and never truncated, so a fresh mark left by another waiter is not
   # erased by a plain one arriving after it.
   if [ "${1:-}" != "clear" ]; then
@@ -553,9 +553,9 @@ printf '%s\n\n' "$plan" |
 # rather than being released, so nothing slips in between.
 if [ -e "$pending_file" ]; then
   trap - EXIT
-  HERDR_SPACE_TOKENS_LOCKED=1
-  export HERDR_SPACE_TOKENS_LOCKED
+  HERDR_SPACES_SIDEBAR_LOCKED=1
+  export HERDR_SPACES_SIDEBAR_LOCKED
   # The rerun reads any fresh mark out of the pending file itself.
-  unset HERDR_SPACE_TOKENS_FRESH
+  unset HERDR_SPACES_SIDEBAR_FRESH
   exec sh "$0"
 fi

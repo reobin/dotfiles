@@ -1,4 +1,4 @@
-# Tell the space-tokens plugin what this pane is doing.
+# Tell the spaces-sidebar plugin what this pane is doing.
 #
 # A command starting is not an event a plugin can hook, and pane.updated, the
 # only event carrying a cd or a title, is rejected at plugin link time. These
@@ -7,8 +7,8 @@
 
 [[ -n "$HERDR_ENV" ]] || return 0
 
-__herdr_space_tokens_refresh="${XDG_CONFIG_HOME:-$HOME/.config}/herdr/space-tokens/refresh.sh"
-[[ -r "$__herdr_space_tokens_refresh" ]] || return 0
+__herdr_spaces_sidebar_refresh="${XDG_CONFIG_HOME:-$HOME/.config}/herdr/spaces-sidebar/refresh.sh"
+[[ -r "$__herdr_spaces_sidebar_refresh" ]] || return 0
 
 # Key the guard on the nearest checkout rather than $PWD: walking deeper into the
 # repo the space is already on cannot move the row, and a refresh costs a few
@@ -27,7 +27,7 @@ __herdr_space_root() {
   REPLY="${1:-$PWD}"
 }
 
-__herdr_space_tokens_chpwd() {
+__herdr_spaces_sidebar_chpwd() {
   emulate -L zsh
 
   # A cd inside `( ... )` moves nothing the sidebar can read, and the key written
@@ -47,7 +47,7 @@ __herdr_space_tokens_chpwd() {
   # exit, detached from the terminal, and niced to the floor.
   local target="$REPLY" pane="$HERDR_PANE_ID"
   {
-    HERDR_SPACE_TOKENS_FRESH=1 nice -n 19 sh "$__herdr_space_tokens_refresh"
+    HERDR_SPACES_SIDEBAR_FRESH=1 nice -n 19 sh "$__herdr_spaces_sidebar_refresh"
     sleep 2
     # The check below reads live Herdr state, so a cd that landed after this
     # one just converges on the next verify: a refresh recomputes every space.
@@ -57,10 +57,10 @@ __herdr_space_tokens_chpwd() {
         '.result.snapshot.panes[] | select(.pane_id == $p) | .cwd // empty')"
     fi
     # An unreadable answer keeps the old always-rerun behavior.
-    [[ -n "$seen" ]] || { HERDR_SPACE_TOKENS_FRESH=1 nice -n 19 sh "$__herdr_space_tokens_refresh"; exit 0; }
+    [[ -n "$seen" ]] || { HERDR_SPACES_SIDEBAR_FRESH=1 nice -n 19 sh "$__herdr_spaces_sidebar_refresh"; exit 0; }
     local REPLY
     __herdr_space_root "$seen"
-    [[ "$REPLY" == "$target" ]] || HERDR_SPACE_TOKENS_FRESH=1 nice -n 19 sh "$__herdr_space_tokens_refresh" </dev/null >/dev/null 2>&1
+    [[ "$REPLY" == "$target" ]] || HERDR_SPACES_SIDEBAR_FRESH=1 nice -n 19 sh "$__herdr_spaces_sidebar_refresh" </dev/null >/dev/null 2>&1
   } </dev/null >/dev/null 2>&1 &!
 }
 
@@ -75,7 +75,7 @@ __herdr_space_tokens_chpwd() {
 }
 
 autoload -Uz add-zsh-hook
-add-zsh-hook chpwd __herdr_space_tokens_chpwd
+add-zsh-hook chpwd __herdr_spaces_sidebar_chpwd
 
 # Refresh the row on either side of a command.
 #
@@ -90,38 +90,38 @@ add-zsh-hook chpwd __herdr_space_tokens_chpwd
 #
 # Disowned rather than backgrounded so they do not follow the shell to its exit,
 # detached from the terminal, and niced to the floor.
-__herdr_space_tokens_preexec() {
+__herdr_spaces_sidebar_preexec() {
   emulate -L zsh
 
   # A command ran, even when the refresh below debounces away: precmd uses this
   # to know the row needs returning to `shell`.
-  typeset -g __herdr_space_tokens_ran=1
+  typeset -g __herdr_spaces_sidebar_ran=1
 
   local now="${EPOCHREALTIME:-$(date +%s)}"
-  if [[ -n "$__herdr_space_tokens_last_run" ]]; then
+  if [[ -n "$__herdr_spaces_sidebar_last_run" ]]; then
     # Integer compare on the whole-seconds part: portable, and a 2s window does
     # not need the fraction.
-    if (( ${now%.*} - ${__herdr_space_tokens_last_run%.*} < 2 )); then
+    if (( ${now%.*} - ${__herdr_spaces_sidebar_last_run%.*} < 2 )); then
       return 0
     fi
   fi
-  typeset -g __herdr_space_tokens_last_run="$now"
+  typeset -g __herdr_spaces_sidebar_last_run="$now"
 
-  nice -n 19 sh "$__herdr_space_tokens_refresh" </dev/null >/dev/null 2>&1 &!
+  nice -n 19 sh "$__herdr_spaces_sidebar_refresh" </dev/null >/dev/null 2>&1 &!
 }
 
-__herdr_space_tokens_precmd() {
+__herdr_spaces_sidebar_precmd() {
   emulate -L zsh
 
   # An empty line at the prompt reaches precmd with no preexec before it, and
   # nothing has moved since the last run.
-  [[ -n "$__herdr_space_tokens_ran" ]] || return 0
-  unset __herdr_space_tokens_ran
+  [[ -n "$__herdr_spaces_sidebar_ran" ]] || return 0
+  unset __herdr_spaces_sidebar_ran
 
-  typeset -g __herdr_space_tokens_last_run="${EPOCHREALTIME:-$(date +%s)}"
+  typeset -g __herdr_spaces_sidebar_last_run="${EPOCHREALTIME:-$(date +%s)}"
 
-  nice -n 19 sh "$__herdr_space_tokens_refresh" </dev/null >/dev/null 2>&1 &!
+  nice -n 19 sh "$__herdr_spaces_sidebar_refresh" </dev/null >/dev/null 2>&1 &!
 }
 
-add-zsh-hook preexec __herdr_space_tokens_preexec
-add-zsh-hook precmd __herdr_space_tokens_precmd
+add-zsh-hook preexec __herdr_spaces_sidebar_preexec
+add-zsh-hook precmd __herdr_spaces_sidebar_precmd

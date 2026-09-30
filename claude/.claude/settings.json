@@ -45,7 +45,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "bash \"$HOME/.claude/hooks/herdr-space-tokens-refresh.sh\"",
+            "command": "bash \"$HOME/.claude/hooks/herdr-spaces-sidebar-refresh.sh\"",
             "timeout": 10
           }
         ]

@@ -1,5 +1,5 @@
 #!/bin/sh
-# Refresh the space-tokens sidebar rows from inside a Claude turn, so a title
+# Refresh the spaces-sidebar sidebar rows from inside a Claude turn, so a title
 # Claude changes mid-turn reaches its row before the turn ends. pane.updated is
 # the only Herdr event carrying a title change, and plugins may not hook it.
 #
@@ -9,11 +9,11 @@
 
 [ "${HERDR_ENV:-}" = "1" ] || exit 0
 
-refresh="${XDG_CONFIG_HOME:-$HOME/.config}/herdr/space-tokens/refresh.sh"
+refresh="${XDG_CONFIG_HOME:-$HOME/.config}/herdr/spaces-sidebar/refresh.sh"
 [ -r "$refresh" ] || exit 0
 
 window=10
-stamp="${XDG_CACHE_HOME:-$HOME/.cache}/herdr/space-tokens/claude-stamp"
+stamp="${XDG_CACHE_HOME:-$HOME/.cache}/herdr/spaces-sidebar/claude-stamp"
 mkdir -p "${stamp%/*}" 2>/dev/null || exit 0
 
 now="$(date +%s)"

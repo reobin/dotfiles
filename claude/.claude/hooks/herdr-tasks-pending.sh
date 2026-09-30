@@ -5,7 +5,7 @@
 #
 # Wired in claude/.claude/settings.json on Stop and SubagentStop. Runs inside
 # the pane, where HERDR_WORKSPACE_ID names the space to report on. The
-# space-tokens plugin never sets or clears this token; it only reads it back,
+# spaces-sidebar plugin never sets or clears this token; it only reads it back,
 # and the TTL bounds any overstatement, for example a transcript that has not
 # recorded the just-finished task yet.
 #
@@ -102,7 +102,7 @@ for id in $fresh; do
     *"|$id|"*) continue ;;
   esac
   herdr workspace report-metadata "$HERDR_WORKSPACE_ID" \
-    --source space-tokens-tasks --token tasks_pending=1 --ttl-ms 120000 \
+    --source spaces-sidebar-tasks --token tasks_pending=1 --ttl-ms 120000 \
     >/dev/null 2>&1 || true
   exit 0
 done
