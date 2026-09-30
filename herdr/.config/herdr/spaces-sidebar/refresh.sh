@@ -162,14 +162,41 @@ fi
 #
 # Cached between runs, keyed by the set of spaces, because that git work is the
 # whole cost of a run and a space rarely changes repo. Rebuilt when the fresh
-# mark above asks for it, when the set of spaces differs, and every ten minutes
-# as a backstop. Every other run, and the focus events in particular, pays only
-# the snapshot.
+# mark above asks for it, when the set of spaces differs, when the live-cwd
+# check below finds an agent walked its checkout out from under the cache, and
+# every ten minutes as a backstop. Every other run, and the focus events in
+# particular, pays only the snapshot.
 repos_cache="$state_dir/repos.json"
 ws_key="$(printf '%s' "$ws_ids" | tr ' ' '\n' | grep . | sort | tr '\n' ' ')"
 repos=""
+anchors_prev=""
 if [ "$fresh" != 1 ] && [ -s "$repos_cache" ] && [ -z "$(find "$repos_cache" -mmin +10 2>/dev/null)" ]; then
-  repos="$(jq -c --arg key "$ws_key" 'select(.key == $key) | .repos' "$repos_cache" 2>/dev/null)" || repos=""
+  # One line each. A cache from before anchors reads `null` there, which no
+  # live anchor map matches, so it rebuilds once to record them.
+  cached="$(jq -c --arg key "$ws_key" 'select(.key == $key) | .repos, .anchors' "$repos_cache" 2>/dev/null)" || cached=""
+  {
+    IFS= read -r repos || :
+    IFS= read -r anchors_prev || :
+  } <<EOF
+$cached
+EOF
+fi
+# An agent moving its own cwd fires no chpwd hook, and none of the plugin
+# events above carries a cwd, so a cd done by an agent would sit behind this
+# cache until the ten-minute backstop. The snapshot already carries every
+# pane's live cwd, so record the title's own anchor -- the first pane in
+# snapshot order, the same $mine[0] title_of reads -- beside the map, and
+# rebuild when it no longer matches. Anchor against anchor and not against the
+# repo path, which a symlinked parent can spell differently on every run.
+#
+# Sorted keys, so the stored and live maps compare as plain strings and a
+# reordered space list is not a move.
+anchors_now="$(printf '%s' "$snapshot" | jq -cS '
+  .result.snapshot as $s
+  | reduce ($s.workspaces[].workspace_id) as $w ({};
+      . + { ($w): ([ $s.panes[] | select(.workspace_id == $w) ][0].cwd // "") })' 2>/dev/null)" || anchors_now=""
+if [ "$fresh" != 1 ] && [ -n "$repos" ] && [ -n "$anchors_now" ] && [ "$anchors_now" != "$anchors_prev" ]; then
+  rebuilt=1
 fi
 sibling_filter='[.result.worktrees[]?.open_workspace_id | select(. != null)] | join("|")'
 if [ -z "$repos" ]; then
@@ -217,8 +244,10 @@ if [ -n "$ws_ids" ] && [ "${rebuilt:-}" = 1 ]; then
 fi
 if [ "${rebuilt:-}" = 1 ]; then
   [ -n "$repos" ] || repos='{}'
+  [ -n "$anchors_now" ] || anchors_now='{}'
   # Written whole and moved into place, so a run reading it never sees a half.
-  if jq -nc --arg key "$ws_key" --argjson repos "$repos" '{ key: $key, repos: $repos }' \
+  if jq -nc --arg key "$ws_key" --argjson repos "$repos" --argjson anchors "$anchors_now" \
+    '{ key: $key, repos: $repos, anchors: $anchors }' \
     >"$repos_cache.tmp.$$" 2>/dev/null; then
     mv -f "$repos_cache.tmp.$$" "$repos_cache"
   else
