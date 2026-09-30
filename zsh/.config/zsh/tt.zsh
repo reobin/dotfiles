@@ -713,13 +713,35 @@ __terminal_theme_preview() {
   __terminal_theme_line "$bg" "$fg" ""
 }
 
+# Paint the terminal tt runs in with the theme's foreground and background, so
+# the popup follows the highlighted row. A terminal that ignores OSC 10/11
+# simply never changes; the caller repaints the saved theme on the way out.
+__terminal_theme_paint_terminal() {
+  emulate -L zsh
+  setopt local_options no_aliases
+
+  local theme_dir="$1" bg fg
+  bg="$(__terminal_theme_background "$theme_dir")" || return 0
+  fg="$(__terminal_theme_conf_color "$theme_dir" foreground)" || return 0
+  printf '\033]10;%s\033\\\033]11;%s\033\\' "$fg" "$bg" > /dev/tty 2>/dev/null || true
+}
+
 __terminal_theme_select() {
-  local themes_dir theme preview_source preview_cmd
+  local themes_dir theme preview_source preview_cmd paint_cmd saved current_name fzf_status
   themes_dir="$1"
 
   if command -v fzf >/dev/null 2>&1; then
     preview_source="${functions_source[__terminal_theme_preview]}"
     preview_cmd="zsh -fc 'source \"\$1\" && __terminal_theme_preview \"\$2\"' _ ${(q)preview_source} ${(q)themes_dir}/{}"
+    paint_cmd="zsh -fc 'source \"\$1\" && __terminal_theme_paint_terminal \"\$2\"' _ ${(q)preview_source} ${(q)themes_dir}/{}"
+
+    # The popup opens on the saved theme, and an aborted pick puts it back.
+    # On accept tt repaints everything itself.
+    saved="${themes_dir:h}/current"
+    current_name=""
+    [[ -r "$saved" ]] && current_name="$(<"$saved")"
+    [[ -n "$current_name" && -d "$themes_dir/$current_name" ]] &&
+      __terminal_theme_paint_terminal "$themes_dir/$current_name"
 
     print -rl -- "$themes_dir"/*(N:t) | fzf \
       --prompt='theme> ' \
@@ -728,9 +750,14 @@ __terminal_theme_select() {
       --cycle \
       --no-multi \
       --bind='enter:accept' \
+      --bind="focus:execute-silent:$paint_cmd" \
       --preview-window='right,45%,border-left' \
       --preview="$preview_cmd"
-    return
+    fzf_status="$?"
+
+    [[ -n "$current_name" && -d "$themes_dir/$current_name" ]] &&
+      __terminal_theme_paint_terminal "$themes_dir/$current_name"
+    return "$fzf_status"
   fi
 
   print -rl -- "$themes_dir"/*(N:t)
