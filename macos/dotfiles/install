@@ -17,6 +17,7 @@ CONFIGS=(
   nvim
   opencode
   claude
+  pi
   starship
   surfingkeys
   superwhisper

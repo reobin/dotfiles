@@ -1,0 +1,8 @@
+#!/usr/bin/env bash
+
+# ~/.pi/agent also holds pi state (auth, sessions, model catalog), so it has
+# to stay a real directory. Fold the package and stow would replace it with a
+# symlink into this repo, where any write to ~/.pi/agent/<file> hits the
+# tracked source instead.
+
+stow --no-folding pi
