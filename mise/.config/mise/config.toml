@@ -5,7 +5,7 @@ idiomatic_version_file_enable_tools = ["node", "yarn"]
 node.corepack = true
 
 [tools]
-node = "22"
+node = "24"
 aws-cli = { version = "latest", symlink_bins = true }
 bun = "latest"
 claude = "latest"
@@ -15,6 +15,7 @@ herdr = "latest"
 go = "latest"
 golangci-lint = "latest"
 opencode = "latest"
+pi = "latest"
 python = "latest"
 rust = "latest"
 stylua = "latest"
