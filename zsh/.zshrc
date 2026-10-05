@@ -36,6 +36,7 @@ source ~/.config/zsh/cache.zsh
 bindkey -e
 
 source ~/.config/zsh/git.zsh
+source ~/.config/zsh/mise.zsh
 source ~/.config/zsh/aws.zsh
 source ~/.config/zsh/cursor.zsh
 source ~/.config/zsh/claude.zsh
