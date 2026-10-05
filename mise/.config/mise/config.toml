@@ -9,7 +9,7 @@ node = "24"
 aws-cli = { version = "latest", symlink_bins = true }
 bun = "latest"
 claude = "latest"
-herdr = "latest"
+"cargo:https://github.com/reobin/herdr" = { version = "branch:reobin", install_env = { ZIG = "/Users/reobin/.local/share/mise/installs/zig/0.16.0/bin/zig" } }
 "npm:ntn" = "latest"
 "github:k1LoW/git-wt" = "latest"
 go = "latest"
@@ -23,4 +23,4 @@ turso = "latest"
 typst = "latest"
 vercel = "latest"
 yarn = "4"
-zig = "latest"
+zig = ["latest", "0.16.0"]
