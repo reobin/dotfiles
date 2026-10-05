@@ -4,8 +4,6 @@ claude/.claude/*
 !claude/.claude/statusline.sh
 !claude/.claude/hooks/
 claude/.claude/hooks/*
-!claude/.claude/hooks/herdr-tasks-pending.sh
-!claude/.claude/hooks/herdr-spaces-sidebar-refresh.sh
 herdr/.config/herdr/config.toml
 herdr/.config/herdr/config.toml.tmp.*
 herdr/.config/herdr/config.toml.bak-*

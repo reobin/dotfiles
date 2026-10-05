@@ -7,21 +7,6 @@ if ! command -v herdr >/dev/null 2>&1; then
   return 0
 fi
 
-SPACES_SIDEBAR_ID="reobin.spaces-sidebar"
-SPACES_SIDEBAR_DIR="$DOTFILES_DIRECTORY/herdr/.config/herdr/spaces-sidebar"
-
-# Stowing the plugin is not enough. Herdr only loads a local plugin once it is
-# linked, and that link lives in the gitignored plugins.json.
-#
-# Herdr's output is captured rather than piped into grep: `grep -q` closes the
-# pipe on its first match, and herdr panics on the broken pipe.
-if grep -q "$SPACES_SIDEBAR_ID" <<<"$(herdr plugin list)"; then
-  echo "Herdr $SPACES_SIDEBAR_ID plugin is already linked"
-else
-  echo "linking Herdr $SPACES_SIDEBAR_ID plugin"
-  herdr plugin link "$SPACES_SIDEBAR_DIR"
-fi
-
 REVIEWR_ID="persiyanov.reviewr"
 
 # `herdr plugin install` updates an already-installed plugin in place and keeps
