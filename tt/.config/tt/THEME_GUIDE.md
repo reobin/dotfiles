@@ -14,14 +14,6 @@ Each theme lives in `themes/<name>/` with:
   theme name; `tt` falls back to `catppuccin-latte` on light backgrounds and
   `catppuccin` on dark ones when it is missing)
 
-Each `ghostty.conf` must declare a static wallpaper color:
-
-* `# wallpaper-color = #RRGGBB`
-
-`tt` paints the desktop with a diagonal gradient rather than a flat fill. The
-declared color is the top-left corner and the gradient only deepens toward the
-bottom-right, so pick the brightest the desktop should ever get, not an average.
-
 Mirror `ghostty.conf` to `ghostty/.config/ghostty/themes/terminal-<name>` or
 `.config/ghostty/themes/terminal-<name>` inside this package so Ghostty can
 load it directly. Do not duplicate a mirror already owned by the `ghostty`
@@ -191,8 +183,7 @@ Avoid adding a theme unless it looks good in all four places:
 2. Add the Neovim plugin only if no existing plugin provides the colorscheme.
 3. Mirror the Ghostty palette to `tt/.config/ghostty/themes/terminal-<name>`. It
    belongs to the `tt` package, not `ghostty`, so `macos/dotfiles/tt` restows it.
-4. Add a static `# wallpaper-color = #RRGGBB` to `ghostty.conf` and its mirror.
-5. Run `tt <name>` or choose it with `tt`.
-6. Open Herdr and verify sidebar contrast, the navigate cursor, and active vs
+4. Run `tt <name>` or choose it with `tt`.
+5. Open Herdr and verify sidebar contrast, the navigate cursor, and active vs
    inactive pane borders.
-7. Open Neovim and verify startup has no Lazy errors.
+6. Open Neovim and verify startup has no Lazy errors.

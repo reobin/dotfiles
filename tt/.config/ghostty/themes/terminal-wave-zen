@@ -1,9 +1,6 @@
-# wallpaper-color = #1F1F28
-
 # Kanagawa Wave's accents over kanso-zen's ground and ink. Wave carries the
 # chroma kanso desaturates away, and zen's #090E13 keeps the contrast Wave gives
-# up to its own lighter #1F1F28. The wallpaper color is that #1F1F28, so the
-# ground Wave was drawn for sits behind the panes rather than inside them.
+# up to its own lighter #1F1F28.
 #
 # The slots do not follow Kanagawa's own terminal mapping one for one, because
 # that mapping was drawn for #1F1F28. On a ground this dark its normal red lands
