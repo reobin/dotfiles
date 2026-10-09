@@ -10,11 +10,3 @@ vim.keymap.del("i", "<A-j>")
 vim.keymap.del("i", "<A-k>")
 
 vim.keymap.del("n", "<leader>E")
-
-vim.keymap.set("x", "<leader>as", function()
-  require("config.agent").send_visual_selection({ submit = true })
-end, { desc = "Send selection comment to agent" })
-
-vim.keymap.set("x", "<leader>ac", function()
-  require("config.agent").copy_visual_selection()
-end, { desc = "Copy selection comment to clipboard" })
