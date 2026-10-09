@@ -7,5 +7,8 @@
   "fullscreenExitOutput": "resume-hint",
   "defaultTools": [
     "+codemode"
+  ],
+  "packages": [
+    "git:github.com/reobin/pi-autotitle@main"
   ]
 }
