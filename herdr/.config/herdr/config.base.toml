@@ -80,15 +80,9 @@ command = "$HOME/.local/bin/herdr-move-workspace down"
 description = "move workspace down"
 
 [[keys.command]]
-key = "alt+n"
-type = "shell"
-command = "$HOME/.local/bin/herdr-next-agent"
-description = "focus next agent waiting"
-
-[[keys.command]]
 key = "prefix+t"
-type = "shell"
-command = "$HOME/.local/bin/herdr-toggle-split"
+type = "plugin_action"
+command = "herdr-togglesplit.toggle"
 description = "toggle split direction"
 
 [[keys.command]]
