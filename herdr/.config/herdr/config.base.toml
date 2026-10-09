@@ -170,3 +170,10 @@ key = "prefix+f"
 type = "plugin_action"
 command = "herdr-link-hints.hints"
 description = "hint links in focused pane"
+
+# unified-sidebar workspace park toggle (reobin/herdr fork, sentinel command).
+[[keys.command]]
+key = "prefix+m"
+type = "shell"
+command = "unified:toggle-workspace-park"
+description = "park/unpark focused workspace"
