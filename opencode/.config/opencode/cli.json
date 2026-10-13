@@ -1,0 +1,24 @@
+{
+  "$schema": "https://opencode.ai/v2/cli.json",
+  "theme": {
+    "name": "system",
+    "mode": "system"
+  },
+  "diffs": {
+    "wrap": "word"
+  },
+  "session": {
+    "sidebar": "auto",
+    "scrollbar": false,
+    "thinking": "hide"
+  },
+  "animations": true,
+  "keybinds": {
+    "session.half.page.up": "alt+u",
+    "session.half.page.down": "alt+d",
+    "input.delete.word.forward": "alt+delete,ctrl+delete",
+    "session.first": "alt+shift+u",
+    "session.last": "alt+shift+d"
+  },
+  "plugins": ["./herdr-tui-session.js"]
+}
