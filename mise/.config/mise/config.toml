@@ -14,7 +14,7 @@ claude = "latest"
 "github:k1LoW/git-wt" = "latest"
 go = "latest"
 golangci-lint = "latest"
-opencode = "latest"
+"npm:@opencode/cli" = { version = "latest", allow_builds = ["@opencode/cli"] }
 pi = "latest"
 python = "latest"
 rust = "latest"
