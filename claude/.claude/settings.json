@@ -2,7 +2,8 @@
   "env": {
     "DISABLE_ERROR_REPORTING": "1",
     "BROWSER": "none",
-    "GH_BROWSER": "open"
+    "GH_BROWSER": "open",
+    "CLAUDE_CODE_NATIVE_CURSOR": "1"
   },
   "attribution": {
     "commit": "",
