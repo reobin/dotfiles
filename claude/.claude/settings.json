@@ -3,7 +3,8 @@
     "DISABLE_ERROR_REPORTING": "1",
     "BROWSER": "none",
     "GH_BROWSER": "open",
-    "CLAUDE_CODE_NATIVE_CURSOR": "1"
+    "CLAUDE_CODE_NATIVE_CURSOR": "1",
+    "CLAUDE_CODE_PLUGIN_DIRS": "~/dotfiles/claude-mods/tide"
   },
   "attribution": {
     "commit": "",
@@ -40,10 +41,6 @@
         ]
       }
     ]
-  },
-  "statusLine": {
-    "type": "command",
-    "command": "bash \"$HOME/.claude/statusline.sh\""
   },
   "enabledPlugins": {
     "rust-analyzer-lsp@claude-plugins-official": false

@@ -1,7 +1,6 @@
 claude/.claude/*
 !claude/.claude/keybindings.json
 !claude/.claude/settings.json
-!claude/.claude/statusline.sh
 !claude/.claude/hooks/
 claude/.claude/hooks/*
 herdr/.config/herdr/config.toml
@@ -33,3 +32,4 @@ tt/.config/ghostty/themes/terminal-active
 tt/.config/tt/active/
 tt/.config/tt/current
 karabiner/.config/karabiner/automatic_backups/
+claude-mods/*/.claude-plugin/types/

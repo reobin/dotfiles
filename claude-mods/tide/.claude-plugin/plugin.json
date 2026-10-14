@@ -1,0 +1,6 @@
+{
+  "name": "tide",
+  "version": "0.1.0",
+  "description": "Smooth wave spinner and a context and rate-limit line beside the prompt modes",
+  "types": "./types/index.d.ts"
+}
