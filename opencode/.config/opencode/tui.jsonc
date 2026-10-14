@@ -1,0 +1,12 @@
+{
+  "plugin": [
+    "./herdr-tui-session.js"
+  ],
+  "keybinds": {
+    "messages_half_page_up": "alt+u",
+    "messages_half_page_down": "alt+d",
+    "messages_first": "alt+shift+u",
+    "messages_last": "alt+shift+d",
+    "input_delete_word_forward": "alt+delete,ctrl+delete"
+  }
+}
