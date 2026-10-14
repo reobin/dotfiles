@@ -44,7 +44,7 @@ export const register: Register = on => {
       <Box flexDirection="row">
         <Text>
           {bars.map(bar => (
-            <Text color={bar.color}>
+            <Text color={bar.color} dimColor={bar.dim}>
               {bar.text}
             </Text>
           ))}

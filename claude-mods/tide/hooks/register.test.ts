@@ -98,12 +98,13 @@ test('spinner draws the wave instead of the word, and a state message beside it'
   expect((await busy.findAll({ type: 'Text', text: 'Compacting' })).length).toBeGreaterThan(0)
 })
 
-test('wave runs from sea green in the troughs to foam on the crests', () => {
-  const depth = { '▁': 'cyan', '▄': 'green', '▆': 'greenBright', '█': 'whiteBright' } as Record<string, string>
+test('wave stays green and brightens from dim troughs to bright crests', () => {
+  const depth = { '▁': 'dim', '▄': 'green', '█': 'greenBright' } as Record<string, string>
+  const shade = (b: { color: string; dim: boolean }) => (b.dim ? 'dim' : b.color)
   for (let f = 0; f < 600; f += 7) {
     for (const bar of wave(f)) {
-      expect(['cyan', 'green', 'greenBright', 'whiteBright']).toContain(bar.color)
-      for (const c of bar.text) if (depth[c]) expect(bar.color).toBe(depth[c])
+      expect(['green', 'greenBright']).toContain(bar.color)
+      for (const c of bar.text) if (depth[c]) expect(shade(bar)).toBe(depth[c])
     }
   }
 })

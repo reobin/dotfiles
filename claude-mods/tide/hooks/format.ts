@@ -43,12 +43,20 @@ export function toReading(context: SessionContextUsage, rateLimits: SessionRateL
   return { tokens, window: context.window, percent, limits }
 }
 
-export type Bar = { text: string; color: string }
+export type Bar = { text: string; color: string; dim: boolean }
 
 const bars = ['▁', '▂', '▃', '▄', '▅', '▆', '▇', '█']
 
-// wave-zen's greens by depth: wave aqua, spring green, its 69% lift, then foam.
-const depths = ['cyan', 'cyan', 'cyan', 'green', 'green', 'greenBright', 'greenBright', 'whiteBright']
+const depths = [
+  { color: 'green', dim: true },
+  { color: 'green', dim: true },
+  { color: 'green', dim: true },
+  { color: 'green', dim: false },
+  { color: 'green', dim: false },
+  { color: 'green', dim: false },
+  { color: 'greenBright', dim: false },
+  { color: 'greenBright', dim: false },
+]
 
 export function wave(frame: number, width = 16): Bar[] {
   const phase = frame * 0.16
@@ -58,9 +66,9 @@ export function wave(frame: number, width = 16): Bar[] {
     const taper = Math.sin((Math.PI * (i + 0.5)) / width) ** 0.7
     const crest = (Math.sin(i * 0.62 - phase) + 1) / 2
     const level = Math.round(crest * taper * swell * (bars.length - 1))
-    const bar = { text: bars[level], color: depths[level] }
+    const bar = { text: bars[level], ...depths[level] }
     const last = out[out.length - 1]
-    if (last && last.color === bar.color) last.text += bar.text
+    if (last && last.color === bar.color && last.dim === bar.dim) last.text += bar.text
     else out.push(bar)
   }
   return out
