@@ -43,7 +43,8 @@
     ]
   },
   "enabledPlugins": {
-    "rust-analyzer-lsp@claude-plugins-official": false
+    "rust-analyzer-lsp@claude-plugins-official": false,
+    "cc-plugin-you-should-know@builtin": true
   },
   "outputStyle": "Concise",
   "effortLevel": "high",
