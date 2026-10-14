@@ -20,5 +20,5 @@
     "session.first": "alt+shift+u",
     "session.last": "alt+shift+d"
   },
-  "plugins": ["./herdr-tui-session.js"]
+  "plugins": ["./herdr-tui-session.js", "./herdr-opencode"]
 }
