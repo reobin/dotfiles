@@ -47,7 +47,7 @@
           },
           "to": [
             {
-              "shell_command": "/usr/bin/open -a '/Applications/Proton Mail.app'"
+              "shell_command": "$HOME/.config/karabiner/focus-solo 'Proton Mail'"
             }
           ],
           "type": "basic"
@@ -65,7 +65,7 @@
           },
           "to": [
             {
-              "shell_command": "/usr/bin/open -a /Applications/Ghostty.app"
+              "shell_command": "$HOME/.config/karabiner/focus-solo Ghostty"
             }
           ],
           "type": "basic"
@@ -83,7 +83,7 @@
           },
           "to": [
             {
-              "shell_command": "/usr/bin/open -a /Applications/Helium.app"
+              "shell_command": "$HOME/.config/karabiner/focus-solo Helium"
             }
           ],
           "type": "basic"
@@ -101,7 +101,7 @@
           },
           "to": [
             {
-              "shell_command": "/usr/bin/open -a /Applications/Slack.app"
+              "shell_command": "$HOME/.config/karabiner/focus-solo Slack"
             }
           ],
           "type": "basic"
@@ -119,7 +119,7 @@
           },
           "to": [
             {
-              "shell_command": "/usr/bin/open -a /Applications/Spotify.app"
+              "shell_command": "$HOME/.config/karabiner/focus-solo Spotify"
             }
           ],
           "type": "basic"
@@ -137,7 +137,7 @@
           },
           "to": [
             {
-              "shell_command": "/usr/bin/open -a /Applications/Notion.app"
+              "shell_command": "$HOME/.config/karabiner/focus-solo Notion"
             }
           ],
           "type": "basic"

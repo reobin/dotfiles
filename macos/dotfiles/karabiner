@@ -77,6 +77,14 @@ complex_modifications["rules"] = rules
 target_path.write_text(json.dumps(config, indent=2) + "\n")
 PY
 
+# Build the tab-layer focus helper. A compiled binary hides other apps in
+# ~20ms; the previous osascript version stacked to ~1s.
+if command -v swiftc >/dev/null 2>&1; then
+  swiftc -O -framework AppKit \
+    -o "$HOME/.config/karabiner/focus-solo" \
+    "$DOTFILES_DIRECTORY/karabiner/.config/karabiner/focus-solo.swift" || echo "warning: focus-solo build failed" >&2
+fi
+
 if [[ -d "/Applications/Karabiner-Elements.app" ]]; then
   open -gj "/Applications/Karabiner-Elements.app" >/dev/null 2>&1 || true
 fi

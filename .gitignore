@@ -32,4 +32,5 @@ tt/.config/ghostty/themes/terminal-active
 tt/.config/tt/active/
 tt/.config/tt/current
 karabiner/.config/karabiner/automatic_backups/
+karabiner/.config/karabiner/focus-solo
 claude-mods/*/.claude-plugin/types/
