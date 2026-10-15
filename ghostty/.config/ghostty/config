@@ -16,3 +16,7 @@ cursor-invert-fg-bg = true
 adjust-cursor-thickness = 2
 
 theme = terminal-active
+
+background-opacity = 0.85
+background-opacity-cells = true
+background-blur = true

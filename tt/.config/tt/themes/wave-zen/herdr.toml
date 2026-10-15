@@ -8,24 +8,44 @@
 # landing on it, sumiInk5 at 1.6:1 and sumiInk6 at 2.6:1, and waveBlue2 is the
 # only shade between them that Wave actually uses as a border.
 #
-# sidebar_bg sits a little under the background: enough that the spaces list
-# reads as its own surface, not enough for its edge to land as a seam down the
-# screen. It goes down and not up: a lifted panel competes with the panes in
-# front of it. The ground is kanso-zen's, so this is kanso-zen's value.
+# sidebar_bg stays transparent so the terminal (and its background-opacity) shows
+# through instead of painting a solid panel. Herdr reads "transparent" as
+# Color::Reset, the same default its built-in terminal theme uses.
 #
 # active_row_bg paints the active space and focused agent rows. Without it the
 # fill falls back to the terminal theme default, a gray that belongs to no
-# palette. This is Wave's own #1F1F28 ground at 1.2:1 over the background, a
-# step up from the sidebar without reaching the navigate cursor at 1.3:1 under
-# it, so the cursor still reads on top. The neutral ink also stays apart from
-# the blue cursor by hue, not just lightness.
+# palette. This is Wave's sumiInk2 #2A2A37, one rung up its own ink ladder from
+# the #1F1F28 ground that transparency washed out, at 1.4:1 over the background
+# instead of 1.2:1. It stays under the navigate cursor at 1.5:1, so the cursor
+# still reads on top, and the neutral ink stays apart from the blue cursor by
+# hue, not just lightness.
 #
 # selection_bg paints the navigate cursor, which has to stay apart from the fill
 # on the active space and agent rows. This theme's terminal selection color is
 # already a highlight that reads without shouting, so the cursor takes it instead
 # of a color belonging to no palette.
+#
+# yellow is the busy color, on Herdr's own state dot and on the agent rows `tt`
+# builds under it. The ANSI yellow this theme would otherwise resolve to is
+# carpYellow #E6C384, and the done green is #B3CD93: 48 degrees apart but both
+# near 70% lightness, so a working row and a done row read as a beige pair.
+# This is Wave's own roninYellow at full saturation, orange against the green
+# at 57 degrees apart, and loud on purpose: it is the busy signal next to
+# red's alarm and green's calm.
+#
+# subtext0 and overlay1 are the second and third text tiers: inactive
+# workspace and agent names read subtext0, dialog and onboarding hints read
+# overlay1. Unpinned they fall back to Herdr's own dim default, which leaves
+# the whole inactive sidebar barely legible. subtext0 is fujiGray lifted 12%
+# in lightness to #919087 at 6.0:1 here against the foreground's 11.6:1,
+# neutral like the ink text so the sidebar casts no hue; overlay1 is fujiGray
+# as shipped at 4.0:1, so the tiers step down 11.6 to 6.0 to 4.0 instead of
+# rendering as one gray.
 [theme.custom]
 overlay0 = "#2D4F67"
-sidebar_bg = "#05080B"
-active_row_bg = "#1F1F28"
+sidebar_bg = "transparent"
+active_row_bg = "#2A2A37"
 selection_bg = "#223249"
+yellow = "#FF9E3B"
+subtext0 = "#919087"
+overlay1 = "#727169"
