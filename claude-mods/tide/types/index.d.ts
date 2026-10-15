@@ -9,6 +9,6 @@ export type Reading = {
 
 declare module 'claude-code' {
   interface PluginState {
-    'tide': { reading: Reading | null; frame: number }
+    'tide': { reading: Reading | null; frame: number; glow: number }
   }
 }

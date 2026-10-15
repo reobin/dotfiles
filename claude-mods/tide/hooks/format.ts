@@ -8,6 +8,8 @@ export const palette = {
   hot: 'red',
 }
 
+export type Bar = { text: string; color: string; dim: boolean }
+
 const limitLabels: Record<string, string> = { five_hour: '5h', seven_day: '7d' }
 
 export function human(n: number): string {
@@ -32,6 +34,53 @@ export function meter(percent: number, width: number): { filled: string; empty: 
   return { filled: '━'.repeat(shown), empty: '─'.repeat(width - shown) }
 }
 
+export const riseMs = 1500
+
+const brighter: Record<string, string> = {
+  green: 'greenBright',
+  yellow: 'yellowBright',
+  red: 'redBright',
+}
+
+export type Glow = { frame: number; rise: { from: number; age: number } | null }
+
+export function heatMeter(percent: number, width: number, glow: Glow): Bar[] {
+  const clamped = Math.min(100, Math.max(0, percent))
+  const cells = Math.round((clamped / 100) * width)
+  const shown = clamped > 0 ? Math.max(1, cells) : 0
+  const rising = glow.rise !== null && glow.rise.age < riseMs ? glow.rise : null
+  const pulse = Math.floor(glow.frame / 6) % 2 === 1
+  const sweep = shown > 0 ? Math.floor(glow.frame / 2) % (shown + 4) : -1
+  const out: Bar[] = []
+
+  for (let i = 0; i < width; i++) {
+    let bar: Bar
+    if (i >= shown) {
+      bar = { text: '─', color: '', dim: true }
+    } else {
+      const base = tone(((i + 1) / width) * 100)
+      const head = i === shown - 1
+      const fresh = rising !== null && ((i + 1) / width) * 100 > rising.from
+      let color = head ? brighter[base] ?? base : base
+      if (fresh) color = rising.age < riseMs / 3 ? 'whiteBright' : brighter[base] ?? base
+      else if (clamped >= 85 && i === sweep) color = 'whiteBright'
+      else if (clamped >= 60 && head && pulse) color = base
+      bar = { text: '━', color, dim: false }
+    }
+    const last = out[out.length - 1]
+    if (last && last.color === bar.color && last.dim === bar.dim) last.text += bar.text
+    else out.push(bar)
+  }
+  return out
+}
+
+export function percentColor(percent: number, glow: Glow): string {
+  if (glow.rise !== null && glow.rise.age < riseMs / 3) return 'whiteBright'
+  const base = tone(percent)
+  if (percent >= 85 && Math.floor(glow.frame / 6) % 2 === 1) return brighter[base] ?? base
+  return base
+}
+
 export function limitLabel(kind: string): string {
   return limitLabels[kind] ?? kind.replace(/_/g, ' ')
 }
@@ -42,8 +91,6 @@ export function toReading(context: SessionContextUsage, rateLimits: SessionRateL
   const limits: Limit[] = rateLimits.map(l => ({ kind: l.kind, percent: Math.round(l.percentUsed) }))
   return { tokens, window: context.window, percent, limits }
 }
-
-export type Bar = { text: string; color: string; dim: boolean }
 
 const bars = ['▁', '▂', '▃', '▄', '▅', '▆', '▇', '█']
 

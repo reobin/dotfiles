@@ -1,6 +1,6 @@
 import { expect, test } from 'claude-code/testing'
 
-import { elapsed, human, meter, modeLabel, palette, tone, toReading, wave } from './format'
+import { elapsed, heatMeter, human, meter, modeLabel, palette, percentColor, riseMs, tone, toReading, wave } from './format'
 
 const footer = (columns: number, modes: string[] = []) => ({
   plugin: 'tide',
@@ -107,4 +107,40 @@ test('wave stays green and brightens from dim troughs to bright crests', () => {
       for (const c of bar.text) if (depth[c]) expect(shade(bar)).toBe(depth[c])
     }
   }
+})
+
+const still = { frame: 0, rise: null }
+const cellColors = (bars: { text: string; color: string; dim: boolean }[]) =>
+  bars.flatMap(b => [...b.text].map(() => (b.dim ? 'dim' : b.color)))
+
+test('heat meter colors each cell by how far along the bar it sits', () => {
+  expect(cellColors(heatMeter(100, 10, still))).toEqual([
+    'green', 'green', 'green', 'green', 'green', 'yellow', 'yellow', 'yellow', 'red', 'redBright',
+  ])
+  expect(cellColors(heatMeter(30, 10, still))).toEqual(['green', 'green', 'greenBright', ...Array(7).fill('dim')])
+})
+
+test('heat meter flashes the newly filled cells, then settles', () => {
+  const fresh = (age: number) => cellColors(heatMeter(50, 10, { frame: 0, rise: { from: 30, age } }))
+  expect(fresh(0).slice(3, 5)).toEqual(['whiteBright', 'whiteBright'])
+  expect(fresh(0).slice(0, 3)).toEqual(['green', 'green', 'green'])
+  expect(fresh(riseMs / 2).slice(3, 5)).toEqual(['greenBright', 'greenBright'])
+  expect(fresh(riseMs)).toEqual(cellColors(heatMeter(50, 10, still)))
+  expect(percentColor(50, { frame: 0, rise: { from: 30, age: 0 } })).toBe('whiteBright')
+})
+
+test('heat meter pulses its head when warm and sweeps a highlight when hot', () => {
+  const head = (frame: number) => cellColors(heatMeter(70, 10, { frame, rise: null }))[6]
+  expect(head(0)).toBe('yellowBright')
+  expect(head(6)).toBe('yellow')
+  const hot = Array.from({ length: 30 }, (_, f) => cellColors(heatMeter(90, 10, { frame: f, rise: null })))
+  expect(hot.some(cells => cells.includes('whiteBright'))).toBe(true)
+  expect(new Set(Array.from({ length: 12 }, (_, f) => percentColor(90, { frame: f, rise: null })))).toEqual(
+    new Set(['red', 'redBright']),
+  )
+})
+
+test('heat meter keeps a sliver for any use and stays its width', () => {
+  for (const p of [0, 1, 50, 140]) expect(cellColors(heatMeter(p, 8, still)).length).toBe(8)
+  expect(cellColors(heatMeter(1, 8, still))[0]).toBe('greenBright')
 })
