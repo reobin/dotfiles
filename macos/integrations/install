@@ -51,7 +51,7 @@ install_herdr_plugin() {
 
 install_herdr_plugin herdr-close-other-panes reobin/herdr-close-other-panes
 install_herdr_plugin herdr-callsigns reobin/herdr-callsigns
-install_herdr_plugin herdr-link-hints reobin/herdr-link-hints v2.1.0
+install_herdr_plugin herdr-link-hints reobin/herdr-link-hints v2.3.0
 install_herdr_plugin herdr-togglesplit reobin/herdr-togglesplit
 install_herdr_plugin "$REVIEWR_ID" persiyanov/herdr-reviewr
 
