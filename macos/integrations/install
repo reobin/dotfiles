@@ -51,8 +51,9 @@ install_herdr_plugin() {
 
 install_herdr_plugin herdr-close-other-panes reobin/herdr-close-other-panes
 install_herdr_plugin herdr-callsigns reobin/herdr-callsigns
-install_herdr_plugin herdr-link-hints reobin/herdr-link-hints v2.3.0
+install_herdr_plugin herdr-link-hints reobin/herdr-link-hints v2.3.1
 install_herdr_plugin herdr-togglesplit reobin/herdr-togglesplit
+install_herdr_plugin tab-smart-rename iurysza/herdr-tab-smart-rename v0.6.2
 install_herdr_plugin "$REVIEWR_ID" persiyanov/herdr-reviewr
 
 # The plugin gives panes callsigns; its skill teaches agents the
