@@ -1,6 +1,6 @@
 import AppKit
 
-// focus-solo <Application Name>: focus the app, then hide everything else.
+// focus <Application Name>: focus the app without touching other windows.
 let arguments = CommandLine.arguments
 guard arguments.count >= 2 else { exit(1) }
 let target = arguments[1]
@@ -57,13 +57,6 @@ if app == nil {
 
 guard let app else { exit(0) }
 activate(app)
-// Hiding the previous frontmost app before activation lands promotes Finder,
-// so wait until the target owns the menu bar first.
+// The open only dispatches while the run loop is pumped, so spin it until
+// the target owns the menu bar (or the timeout hits) before exiting.
 waitActive(app, timeout: 0.5)
-for other in NSWorkspace.shared.runningApplications where other.activationPolicy == .regular && other.isFinishedLaunching && !other.isTerminated && !isTarget(other) {
-  other.hide()
-}
-if !app.isActive {
-  activate(app)
-  waitActive(app, timeout: 0.5)
-}
