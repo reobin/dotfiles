@@ -4,7 +4,8 @@
     "BROWSER": "none",
     "GH_BROWSER": "open",
     "CLAUDE_CODE_NATIVE_CURSOR": "1",
-    "CLAUDE_CODE_PLUGIN_DIRS": "~/dotfiles/claude-mods/tide"
+    "FORCE_HYPERLINK": "1",
+    "CLAUDE_CODE_PLUGIN_DIRS": "~/dotfiles/claude-mods/tide:~/dotfiles/claude-mods/pr-row"
   },
   "attribution": {
     "commit": "",
@@ -13,7 +14,8 @@
   },
   "permissions": {
     "allow": [
-      "Bash(gh:*)"
+      "Bash(gh:*)",
+      "Bash(herdr pane read:*)"
     ],
     "defaultMode": "auto"
   },

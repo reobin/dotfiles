@@ -1,0 +1,6 @@
+{
+  "name": "pr-row",
+  "version": "0.1.0",
+  "description": "A row above the prompt with the current branch's PR and Linear ticket status",
+  "types": "./types/index.d.ts"
+}
