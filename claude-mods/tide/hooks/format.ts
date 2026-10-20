@@ -6,6 +6,7 @@ export const palette = {
   calm: 'green',
   warm: 'yellow',
   hot: 'red',
+  quiet: 'blackBright',
 }
 
 export type Bar = { text: string; color: string; dim: boolean }
@@ -56,7 +57,7 @@ export function heatMeter(percent: number, width: number, glow: Glow): Bar[] {
   for (let i = 0; i < width; i++) {
     let bar: Bar
     if (i >= shown) {
-      bar = { text: '─', color: '', dim: true }
+      bar = { text: '─', color: palette.quiet, dim: false }
     } else {
       const base = tone(((i + 1) / width) * 100)
       const head = i === shown - 1

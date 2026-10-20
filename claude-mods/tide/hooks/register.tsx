@@ -2,7 +2,7 @@ import { atom, read, update } from 'claude-code'
 import type { EngineInterface, Register, Timer } from 'claude-code'
 
 import type { Glow } from './format'
-import { elapsed, heatMeter, human, limitLabel, modeLabel, percentColor, riseMs, tone, toReading, wave } from './format'
+import { elapsed, heatMeter, human, limitLabel, modeLabel, palette, percentColor, riseMs, tone, toReading, wave } from './format'
 
 const reading = atom({ plugin: 'tide', key: 'reading' } as const, null)
 const frame = atom({ plugin: 'tide', key: 'frame' } as const, 0)
@@ -126,17 +126,17 @@ export const register: Register = on => {
 
     return (
       <Box flexDirection="row" gap={2}>
-        {e.props.modes.length > 0 && <Text dimColor>{e.props.modes.join(' & ')}</Text>}
+        {e.props.modes.length > 0 && <Text color={palette.quiet}>{e.props.modes.join(' & ')}</Text>}
         <Box flexDirection="row">
           <Text>
             {ctx.map(bar => (
-              <Text color={bar.color || undefined} dimColor={bar.dim}>
+              <Text color={bar.color} dimColor={bar.dim}>
                 {bar.text}
               </Text>
             ))}
           </Text>
           <Text> {human(r.tokens)}</Text>
-          <Text dimColor>/{human(r.window)} </Text>
+          <Text color={palette.quiet}>/{human(r.window)} </Text>
           <Text color={percentColor(r.percent, g)} bold>{r.percent}%</Text>
         </Box>
         {showLimits &&
@@ -144,11 +144,11 @@ export const register: Register = on => {
             const m = heatMeter(l.percent, 4, { frame: 0, rise: null })
             return (
               <Box key={l.kind} flexDirection="row">
-                <Text dimColor>{limitLabel(l.kind)} </Text>
+                <Text color={palette.quiet}>{limitLabel(l.kind)} </Text>
                 {limitMeters && (
                   <Text>
                     {m.map(bar => (
-                      <Text color={bar.color || undefined} dimColor={bar.dim}>
+                      <Text color={bar.color} dimColor={bar.dim}>
                         {bar.text}
                       </Text>
                     ))}{' '}

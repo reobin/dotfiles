@@ -117,7 +117,7 @@ test('heat meter colors each cell by how far along the bar it sits', () => {
   expect(cellColors(heatMeter(100, 10, still))).toEqual([
     'green', 'green', 'green', 'green', 'green', 'yellow', 'yellow', 'yellow', 'red', 'redBright',
   ])
-  expect(cellColors(heatMeter(30, 10, still))).toEqual(['green', 'green', 'greenBright', ...Array(7).fill('dim')])
+  expect(cellColors(heatMeter(30, 10, still))).toEqual(['green', 'green', 'greenBright', ...Array(7).fill(palette.quiet)])
 })
 
 test('heat meter flashes the newly filled cells, then settles', () => {
