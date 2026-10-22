@@ -25,6 +25,5 @@ cursor-style = bar
 cursor-style-blink = true
 background-opacity = 1.0
 
-# Theme follows GNOME light/dark automatically. Pin one with e.g.:
-# theme = Catppuccin Mocha
-theme = dark:Catppuccin Mocha,light:Catppuccin Latte
+# Pinned dark theme. Browse others with `ghostty +list-themes`.
+theme = Dracula
