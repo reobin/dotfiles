@@ -41,5 +41,8 @@ Delete its block + dnf entry (or `mise` entry), run `stow -D -t <target> <pkg>` 
   (`~/.local/bin/mup`) does both with no minimum release age. Don't use
   `pi update` anymore — it bypasses mise tracking.
 - **bash**: snippets in `~/.bashrc.d/`, not a full-`.bashrc` takeover.
+- **git**: `~/.config/git/config` (aliases like `ca`, `pf`, `ri`, `bc`, …),
+  global `ignore`, `scripts/branch-cleanup` (via `git bc`). Commit
+  signing is commented out until `~/.ssh/id_ed25519.pub` exists.
 - If stow ever complains a file already exists: back it up, delete it,
   or run that one stow line with `--adopt` once.
