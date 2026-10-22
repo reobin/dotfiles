@@ -2,3 +2,4 @@
 gh = "latest"
 node = "24"
 pi = "latest"
+starship = "latest"

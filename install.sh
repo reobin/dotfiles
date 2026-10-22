@@ -35,7 +35,7 @@ if ! ls /etc/yum.repos.d/*scottames*ghostty*.repo >/dev/null 2>&1; then
 fi
 
 # --- software (re-running upgrades what's already installed) ---
-sudo dnf install -y stow keyd neovim tmux git ghostty ripgrep fd-find gcc make 1password 1password-cli
+sudo dnf install -y stow keyd neovim tmux git ghostty ripgrep fd-find gcc make 1password 1password-cli zsh eza fzf zoxide zsh-autosuggestions
 
 # --- mise: version manager for node, pi, etc. ---
 export PATH="$HOME/.local/bin:$PATH"
@@ -46,9 +46,26 @@ stow -d "$DOT/stow" -R -t "$HOME" mise
 mise self-update
 mise upgrade
 
-# --- bash: shell snippets -> ~/.bashrc.d/ ---
-stow -d "$DOT/stow" -R -t "$HOME" bash
-sed -i '/mise activate/d' "$HOME/.bashrc"  # now provided by .bashrc.d/10-mise.sh
+# --- zsh: the interactive shell ---
+# Ports the macos branch setup (starship prompt via mise). Stow first so the
+# chsh target exists; legacy ~/.zshrc would be overwritten by stow, so back
+# it up once if present (same treatment as ~/.gitconfig above).
+for _zshrc in "$HOME/.zshrc" "$HOME/.zprofile" "$HOME/.zshenv"; do
+  if [ -e "$_zshrc" ] && [ ! -L "$_zshrc" ]; then
+    _bak="$_zshrc.bak.$(date +%F-%H%M%S)"
+    echo "zsh: moving legacy $_zshrc aside to $_bak"
+    mv "$_zshrc" "$_bak"
+  fi
+done
+unset _zshrc _bak
+stow -d "$DOT/stow" -R -t "$HOME" zsh
+if [ "$SHELL" != "$(command -v zsh)" ]; then
+  echo "zsh: setting default shell (needs password)"
+  chsh -s "$(command -v zsh)"
+fi
+
+# --- starship: prompt -> ~/.config/starship.toml (binary via mise) ---
+stow -d "$DOT/stow" -R -t "$HOME" starship
 
 # --- git: config -> ~/.config/git/ (aliases, defaults, global ignore) ---
 # Git reads ~/.config/git/config natively. A legacy ~/.gitconfig would

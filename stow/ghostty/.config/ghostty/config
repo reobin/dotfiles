@@ -13,8 +13,8 @@ window-inherit-working-directory = true
 confirm-close-surface = false
 # Triple-click select, copy-on-select for mouse workflows.
 copy-on-select = true
-# Bash integration: cwd reporting, prompt marks. (tmux passes most through.)
-shell-integration = bash
+# Zsh integration: cwd reporting, prompt marks. (tmux passes most through.)
+shell-integration = zsh
 # Kitty keyboard protocol is on by default, so the extended-keys in
 # ~/.tmux.conf (C-Space prefix) work with no extra setup.
 
@@ -26,4 +26,4 @@ cursor-style-blink = true
 background-opacity = 1.0
 
 # Pinned dark theme. Browse others with `ghostty +list-themes`.
-theme = Dracula
+theme = Aizen Dark

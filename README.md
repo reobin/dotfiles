@@ -36,11 +36,15 @@ Delete its block + dnf entry (or `mise` entry), run `stow -D -t <target> <pkg>` 
   (or just re-run `install.sh`). Verify live with `sudo keyd -m`.
 - **nvim**: minimal starter `init.lua`.
 - **mise**: `stow/mise/.config/mise/config.toml` → `~/.config/mise/config.toml`.
-  Tools: `node = "24"`, `pi = "latest"` (aqua binary). `mise upgrade`
+  Tools: `node = "24"`, `gh`/`pi`/`starship` = `"latest"` (aqua binaries). `mise upgrade`
   updates them; `mise self-update` updates mise itself. `mup`
   (`~/.local/bin/mup`) does both with no minimum release age. Don't use
   `pi update` anymore — it bypasses mise tracking.
-- **bash**: snippets in `~/.bashrc.d/`, not a full-`.bashrc` takeover.
+- **zsh**: the interactive shell (`install.sh` runs `chsh` to it).
+  `~/.zshrc`, `~/.zprofile`, `~/.zshenv`, `~/.config/zsh/`, ported from the
+  macos branch. Prompt is **starship**
+  (`~/.config/starship.toml`, binary via mise). macOS-only bits are left
+  out: `tt` theme-switcher, `fzf-tab` (not packaged on Fedora), brew setup.
 - **git**: `~/.config/git/config` (aliases like `ca`, `pf`, `ri`, `bc`, …),
   global `ignore`, `scripts/branch-cleanup` (via `git bc`). Commit
   signing is commented out until `~/.ssh/id_ed25519.pub` exists.
