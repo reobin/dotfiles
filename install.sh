@@ -28,8 +28,14 @@ gpgkey=https://downloads.1password.com/linux/keys/1password.asc
 EOF
 fi
 
+# --- ghostty: stable COPR (not in Fedora repos) ---
+# scottames/ghostty tracks upstream releases. Guarded so re-runs don't hit the network.
+if ! ls /etc/yum.repos.d/*scottames*ghostty*.repo >/dev/null 2>&1; then
+  sudo dnf copr enable -y scottames/ghostty
+fi
+
 # --- software (re-running upgrades what's already installed) ---
-sudo dnf install -y stow keyd neovim tmux ripgrep fd-find gcc make 1password 1password-cli
+sudo dnf install -y stow keyd neovim tmux git ghostty ripgrep fd-find gcc make 1password 1password-cli
 
 # --- mise: version manager for node, pi, etc. ---
 export PATH="$HOME/.local/bin:$PATH"
@@ -44,11 +50,24 @@ mise upgrade
 stow -d "$DOT/stow" -R -t "$HOME" bash
 sed -i '/mise activate/d' "$HOME/.bashrc"  # now provided by .bashrc.d/10-mise.sh
 
+# --- git: config -> ~/.config/git/ (aliases, defaults, global ignore) ---
+# Git reads ~/.config/git/config natively. A legacy ~/.gitconfig would
+# override it, so back it up once if present (kept, just moved aside).
+if [ -e "$HOME/.gitconfig" ] && [ ! -L "$HOME/.gitconfig" ]; then
+  bak="$HOME/.gitconfig.bak.$(date +%F-%H%M%S)"
+  echo "git: moving legacy ~/.gitconfig aside to $bak (repo config takes over)"
+  mv "$HOME/.gitconfig" "$bak"
+fi
+stow -d "$DOT/stow" -R -t "$HOME" git
+
 # --- nvim: config -> ~/.config/nvim/init.lua ---
 stow -d "$DOT/stow" -R -t "$HOME" nvim
 
 # --- tmux: config -> ~/.tmux.conf ---
 stow -d "$DOT/stow" -R -t "$HOME" tmux
+
+# --- ghostty: config -> ~/.config/ghostty/config ---
+stow -d "$DOT/stow" -R -t "$HOME" ghostty
 
 # --- keyd: system-wide config -> /etc/keyd/default.conf ---
 # stow refuses to overwrite a real file, and keyd ships a default one.
