@@ -1,0 +1,30 @@
+# ~/.config/ghostty/config  (managed by ~/dotfiles, ghostty module)
+# Docs: https://ghostty.org/docs/config
+# Reload: config auto-reloads on save. Re-run ~/dotfiles/install.sh after edits only if linking broke.
+
+# --- font ---
+font-family = monospace
+font-size = 12
+
+# --- behavior ---
+# New tabs/splits open in the current directory (matches tmux bindings).
+window-inherit-working-directory = true
+# Don't prompt when closing a shell with no foreground process running.
+confirm-close-surface = false
+# Triple-click select, copy-on-select for mouse workflows.
+copy-on-select = true
+# Bash integration: cwd reporting, prompt marks. (tmux passes most through.)
+shell-integration = bash
+# Kitty keyboard protocol is on by default, so the extended-keys in
+# ~/.tmux.conf (C-Space prefix) work with no extra setup.
+
+# --- look ---
+# Slim window without the extra GTK titlebar. Comment out if you prefer native decorations.
+gtk-titlebar = false
+cursor-style = bar
+cursor-style-blink = true
+background-opacity = 1.0
+
+# Theme follows GNOME light/dark automatically. Pin one with e.g.:
+# theme = Catppuccin Mocha
+theme = dark:Catppuccin Mocha,light:Catppuccin Latte
