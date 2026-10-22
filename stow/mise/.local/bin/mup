@@ -1,0 +1,7 @@
+#!/usr/bin/env bash
+# mup — update all mise stuff, bypassing minimum release age.
+# Usage: mup [tool...] (no args = everything, including mise itself)
+set -euo pipefail
+export MISE_MINIMUM_RELEASE_AGE=0s
+mise self-update -y
+mise upgrade "$@"
