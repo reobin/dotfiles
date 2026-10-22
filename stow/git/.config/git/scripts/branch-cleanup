@@ -1,0 +1,24 @@
+#!/usr/bin/env bash
+
+set -euo pipefail
+
+printf 'Pruning remote-tracking refs from origin...\n'
+git remote prune origin
+
+printf 'Fetching latest remote state...\n'
+git fetch -p
+
+printf 'Deleting local branches whose upstream is gone...\n'
+
+stale_branches=$(git branch -vv | awk '/: gone]/{ sub(/^[*+ ]+/, "", $1); print $1 }')
+
+if [[ -z "$stale_branches" ]]; then
+  printf 'No stale local branches found.\n'
+  exit 0
+fi
+
+while IFS= read -r branch; do
+  [[ -z "$branch" ]] && continue
+  printf 'Deleting %s\n' "$branch"
+  git branch -D "$branch"
+done <<< "$stale_branches"

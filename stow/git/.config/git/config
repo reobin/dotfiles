@@ -1,0 +1,85 @@
+# ~/.config/git/config  (managed by ~/dotfiles, git module)
+# Ported from reobin/dotfiles (macos/omarchy branches), trimmed for Linux:
+# signing (ssh), delta pager, mergiraf and worktree-tool bits left out —
+# re-add once `~/.ssh/id_ed25519.pub` exists (see commented section below).
+
+[alias]
+  ca = commit --amend --no-edit
+  p = push
+  pf = push --force-with-lease
+  pl = pull
+  cp = cherry-pick
+  f = fetch
+  r = rebase
+  rt = reset
+  rts = reset --soft
+  rth = reset --hard
+  ri = "!f() { git rebase -i HEAD~$1; }; f"
+  rir = rebase -i --root
+  c = commit
+  b = branch
+  co = checkout
+  a = add .
+  s = status
+  sh = stash
+  shp = stash pop
+  shd = stash drop
+  l = log
+  d = diff
+  bc = !"$HOME/.config/git/scripts/branch-cleanup"
+[core]
+	editor = nvim
+	untrackedCache = true    # Cache untracked files so status skips the tree walk
+[sequence]
+	editor = nvim
+[init]
+	defaultBranch = main
+[pull]
+	rebase = true 			 # Rebase (instead of merge) on pull
+[push]
+	autoSetupRemote = true   # Automatically set upstream branch on push
+[rebase]
+	updateRefs = true        # Keep stacked branches attached when rebasing below them
+	autosquash = true        # Order fixups from `ca` automatically
+	autostash = true         # Let `pull.rebase` work on a dirty tree
+[fetch]
+	prune = true             # Drop remote-tracking refs that are gone
+[diff]
+	algorithm = histogram    # Clearer diffs on moved/edited lines
+	colorMoved = plain       # Highlight moved blocks in diffs
+	colorMovedWS = allow-indentation-change   # Moved-and-reindented is still a move
+	mnemonicPrefix = true    # More intuitive refs in diff output
+	tool = nvimdiff
+[commit]
+	verbose = true           # Include diff comment in commit message template
+[column]
+	ui = auto 			     # Output in columns when possible
+[branch]
+	sort = -committerdate    # Sort branches by most recent commit first
+[tag]
+	sort = -version:refname  # Sort version numbers as you would expect
+[rerere]
+	enabled = true           # Record and reuse conflict resolutions
+	autoupdate = true        # Apply stored conflict resolutions automatically
+[user]
+	name = Robin Gagnon
+	email = me@reobin.dev
+[credential]
+	helper = cache --timeout=604800
+[merge]
+	tool = nvimdiff
+	conflictStyle = diff3
+
+# --- commit signing (enable once you have an SSH key) ---
+# 1. ssh-keygen -t ed25519
+# 2. uncomment the lines below
+# 3. add the pubkey to ~/.config/git/allowed_signers:
+#    "$(git config user.email) $(cat ~/.ssh/id_ed25519.pub)"
+# [user]
+# 	signingkey = ~/.ssh/id_ed25519.pub
+# [gpg]
+# 	format = ssh
+# [gpg "ssh"]
+# 	allowedSignersFile = ~/.config/git/allowed_signers
+# [commit]
+# 	gpgsign = true
