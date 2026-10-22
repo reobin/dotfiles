@@ -1,0 +1,24 @@
+{
+  "plugins": {
+    "mini.icons": {
+      "rev": "9e4c1645ce2b78afd6191b6be2c38bc0f998dd48",
+      "src": "https://github.com/echasnovski/mini.icons"
+    },
+    "mini.pick": {
+      "rev": "9368112b7cafb61d837bed55fc6f40e55df53fa0",
+      "src": "https://github.com/echasnovski/mini.pick"
+    },
+    "nvim-treesitter": {
+      "rev": "29212d826054bb2948fa9d3a99eca9bf6a050eb2",
+      "src": "https://github.com/nvim-treesitter/nvim-treesitter"
+    },
+    "oil.nvim": {
+      "rev": "d3733d933833a0e59b813ecec99341527adf0c28",
+      "src": "https://github.com/stevearc/oil.nvim"
+    },
+    "vim-sleuth": {
+      "rev": "be69bff86754b1aa5adcbb527d7fcd1635a84080",
+      "src": "https://github.com/tpope/vim-sleuth"
+    }
+  }
+}
