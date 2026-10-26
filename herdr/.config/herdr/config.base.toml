@@ -96,6 +96,12 @@ type = "shell"
 command = "$HOME/.local/bin/herdr-sidetrack"
 description = "sidetrack this conversation"
 
+[[keys.command]]
+key = "alt+e"
+type = "shell"
+command = "$HOME/.local/bin/herdr-edit"
+description = "open nvim in a split at this cwd"
+
 # repaint won't fix fullscreen garble; restart needs a new process.
 [[keys.command]]
 key = "alt+c"
