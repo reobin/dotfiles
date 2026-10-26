@@ -80,9 +80,6 @@
 [merge]
 	tool = nvimdiff
 	conflictStyle = diff3
-[merge "mergiraf"]
-	name = mergiraf
-	driver = mergiraf merge --git %O %A %B -s %S -x %X -y %Y -p %P -l %L
 [url "https://github.com/oxiotelecom/"]
 	insteadOf = git@github.com:oxiotelecom/
 [credential "https://github.com"]
