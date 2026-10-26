@@ -11,6 +11,7 @@ bun = "latest"
 claude = "latest"
 "cargo:https://github.com/reobin/herdr" = { version = "branch:reobin", install_env = { ZIG = "/Users/reobin/.local/share/mise/installs/zig/0.16.0/bin/zig" } }
 "npm:ntn" = "latest"
+"npm:yalc" = "1.0.0-pre.53"
 "github:k1LoW/git-wt" = "latest"
 go = "latest"
 golangci-lint = "latest"
