@@ -1,4 +1,4 @@
-export type Limit = { kind: string; percent: number }
+export type Limit = { kind: string; percent: number; resetsAt?: number }
 
 export type Reading = {
   tokens: number

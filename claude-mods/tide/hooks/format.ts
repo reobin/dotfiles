@@ -2,11 +2,22 @@ import type { SessionContextUsage, SessionRateLimit } from 'claude-code'
 
 import type { Limit, Reading } from '../types'
 
+// named colors reach the terminal as fixed hex; palette indices 0-15 follow the terminal theme
+export const ansi = {
+  red: 'ansi256(1)',
+  green: 'ansi256(2)',
+  yellow: 'ansi256(3)',
+  redBright: 'ansi256(9)',
+  greenBright: 'ansi256(10)',
+  yellowBright: 'ansi256(11)',
+  whiteBright: 'ansi256(15)',
+}
+
 export const palette = {
-  calm: 'green',
-  warm: 'yellow',
-  hot: 'red',
-  quiet: 'blackBright',
+  calm: ansi.green,
+  warm: ansi.yellow,
+  hot: ansi.red,
+  quiet: 'inactive',
 }
 
 export type Bar = { text: string; color: string; dim: boolean }
@@ -38,9 +49,9 @@ export function meter(percent: number, width: number): { filled: string; empty: 
 export const riseMs = 1500
 
 const brighter: Record<string, string> = {
-  green: 'greenBright',
-  yellow: 'yellowBright',
-  red: 'redBright',
+  [ansi.green]: ansi.greenBright,
+  [ansi.yellow]: ansi.yellowBright,
+  [ansi.red]: ansi.redBright,
 }
 
 export type Glow = { frame: number; rise: { from: number; age: number } | null }
@@ -63,8 +74,8 @@ export function heatMeter(percent: number, width: number, glow: Glow): Bar[] {
       const head = i === shown - 1
       const fresh = rising !== null && ((i + 1) / width) * 100 > rising.from
       let color = head ? brighter[base] ?? base : base
-      if (fresh) color = rising.age < riseMs / 3 ? 'whiteBright' : brighter[base] ?? base
-      else if (clamped >= 85 && i === sweep) color = 'whiteBright'
+      if (fresh) color = rising.age < riseMs / 3 ? ansi.whiteBright : brighter[base] ?? base
+      else if (clamped >= 85 && i === sweep) color = ansi.whiteBright
       else if (clamped >= 60 && head && pulse) color = base
       bar = { text: '━', color, dim: false }
     }
@@ -76,34 +87,48 @@ export function heatMeter(percent: number, width: number, glow: Glow): Bar[] {
 }
 
 export function percentColor(percent: number, glow: Glow): string {
-  if (glow.rise !== null && glow.rise.age < riseMs / 3) return 'whiteBright'
+  if (glow.rise !== null && glow.rise.age < riseMs / 3) return ansi.whiteBright
   const base = tone(percent)
   if (percent >= 85 && Math.floor(glow.frame / 6) % 2 === 1) return brighter[base] ?? base
   return base
 }
 
-export function limitLabel(kind: string): string {
+const hourMs = 3_600_000
+const limitWindows: Record<string, { ms: number; unit: number; suffix: string }> = {
+  five_hour: { ms: 5 * hourMs, unit: hourMs, suffix: '5h' },
+  seven_day: { ms: 7 * 24 * hourMs, unit: 24 * hourMs, suffix: '7d' },
+}
+
+export function limitLabel(kind: string, resetsAt?: number, now?: number): string {
+  const w = limitWindows[kind]
+  if (w && resetsAt !== undefined && now !== undefined) {
+    const elapsed = Math.min(w.ms, Math.max(0, w.ms - (resetsAt - now)))
+    return `${(Math.floor((elapsed / w.unit) * 10) / 10).toFixed(1)}/${w.suffix}`
+  }
   return limitLabels[kind] ?? kind.replace(/_/g, ' ')
 }
 
 export function toReading(context: SessionContextUsage, rateLimits: SessionRateLimit[]): Reading {
   const tokens = context.tokens ?? 0
   const percent = context.percent ?? (context.window > 0 ? Math.round((tokens / context.window) * 100) : 0)
-  const limits: Limit[] = rateLimits.map(l => ({ kind: l.kind, percent: Math.round(l.percentUsed) }))
+  const limits: Limit[] = rateLimits.map(l => {
+    const resetsAt = l.resetsAt === undefined ? NaN : Date.parse(l.resetsAt)
+    return { kind: l.kind, percent: Math.round(l.percentUsed), ...(Number.isNaN(resetsAt) ? {} : { resetsAt }) }
+  })
   return { tokens, window: context.window, percent, limits }
 }
 
 const bars = ['▁', '▂', '▃', '▄', '▅', '▆', '▇', '█']
 
 const depths = [
-  { color: 'green', dim: true },
-  { color: 'green', dim: true },
-  { color: 'green', dim: true },
-  { color: 'green', dim: false },
-  { color: 'green', dim: false },
-  { color: 'green', dim: false },
-  { color: 'greenBright', dim: false },
-  { color: 'greenBright', dim: false },
+  { color: ansi.green, dim: true },
+  { color: ansi.green, dim: true },
+  { color: ansi.green, dim: true },
+  { color: ansi.green, dim: false },
+  { color: ansi.green, dim: false },
+  { color: ansi.green, dim: false },
+  { color: ansi.greenBright, dim: false },
+  { color: ansi.greenBright, dim: false },
 ]
 
 export function wave(frame: number, width = 16): Bar[] {

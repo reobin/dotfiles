@@ -144,7 +144,7 @@ export const register: Register = on => {
             const m = heatMeter(l.percent, 4, { frame: 0, rise: null })
             return (
               <Box key={l.kind} flexDirection="row">
-                <Text color={palette.quiet}>{limitLabel(l.kind)} </Text>
+                <Text color={palette.quiet}>{limitLabel(l.kind, l.resetsAt, now)} </Text>
                 {limitMeters && (
                   <Text>
                     {m.map(bar => (
