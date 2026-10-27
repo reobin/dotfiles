@@ -2,9 +2,15 @@ onboarding = false
 
 [theme]
 name = "terminal"
+auto_switch = true
+dark_name = "terminal"
+light_name = "terminal"
 
-# tt builds config.toml from this + tt/themes/<name>/herdr.toml. edit this one.
-# theme fragment owns `[theme.custom]`.
+# Appearance-specific overrides, layered on top while auto_switch follows the
+# host terminal's light/dark. The base stays the terminal palette, which
+# Ghostty swaps with the system appearance; these tables only pin the tokens
+# no single value covers on both paper and ink. Edit the matching table below,
+# then `herdr server reload-config`.
 
 [terminal]
 new_cwd = "follow"
@@ -183,3 +189,40 @@ key = "prefix+m"
 type = "shell"
 command = "unified:toggle-workspace-park"
 description = "park/unpark focused workspace"
+
+# Paper tokens for kanso-pearl, taken from its Ghostty palette. overlay0 sits
+# near 2.1:1 on the paper ground: recessive next to the accent-lit active
+# border, still legible as hint text. active_row_bg is pearlWhite3, one rung
+# past pearlWhite2 so focus and navigate cursor read apart. yellow is
+# pearlYellow3 darkened to 34% lightness; the ANSI olive collides with the
+# done green 24 degrees of hue apart. subtext0/overlay1 are pearlGray steps,
+# since ANSI gray and white vanish on paper.
+[theme.custom.light]
+overlay0 = "#ADA79B"
+sidebar_bg = "transparent"
+active_row_bg = "#CACAC7"
+selection_bg = "#E2E1DF"
+yellow = "#AD7700"
+subtext0 = "#6D6D69"
+overlay1 = "#878782"
+red = "#D72436"
+green = "#5A6F3F"
+teal = "#5A6F3F"
+
+# Ink tokens for wave-zen, taken from its Ghostty palette. overlay0 is
+# waveBlue2, the only Wave border shade near 2.1:1 on this ground.
+# active_row_bg is sumiInk2, one rung up the ink ladder so it stays under the
+# navigate cursor. yellow is roninYellow at full saturation, loud on purpose
+# next to the calm done green; the ANSI yellow and green read as a beige pair.
+# subtext0/overlay1 are lifted fujiGray, neutral like the ink text.
+[theme.custom.dark]
+overlay0 = "#2D4F67"
+sidebar_bg = "transparent"
+active_row_bg = "#2A2A37"
+selection_bg = "#223249"
+yellow = "#FF9E3B"
+subtext0 = "#919087"
+overlay1 = "#727169"
+red = "#FF5D62"
+green = "#B3CD93"
+teal = "#B3CD93"

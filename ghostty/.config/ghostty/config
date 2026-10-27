@@ -4,7 +4,7 @@ font-family = "JetBrains Mono"
 font-style = Regular
 font-size = 16
 
-window-theme = ghostty
+window-theme = system
 macos-titlebar-style = hidden
 macos-option-as-alt = true
 confirm-close-surface = false
@@ -15,4 +15,4 @@ shell-integration-features = no-cursor
 cursor-invert-fg-bg = true
 adjust-cursor-thickness = 2
 
-theme = terminal-active
+theme = light:terminal-kanso-pearl,dark:terminal-wave-zen

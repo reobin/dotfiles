@@ -13,7 +13,6 @@ CONFIGS=(
   karabiner
   lazygit
   mise
-  tt
   nvim
   opencode
   claude
