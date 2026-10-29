@@ -1,8 +1,21 @@
 import { atom, read, update } from 'claude-code'
 import type { EngineInterface, Register, Timer } from 'claude-code'
 
+import type { Pr } from '../types'
 import type { Part } from './format'
-import { ghFields, palette, reviewPart, stateColor, statusColor, toPr, toTicket } from './format'
+import {
+  chatPrUrl,
+  chatTexts,
+  chatTicketKey,
+  ghFields,
+  isDefaultBranch,
+  palette,
+  reviewPart,
+  stateColor,
+  statusColor,
+  toPr,
+  toTicket,
+} from './format'
 
 const pr = atom({ plugin: 'pr-row', key: 'pr' } as const, null)
 const ticket = atom({ plugin: 'pr-row', key: 'ticket' } as const, null)
@@ -12,18 +25,34 @@ const refreshMs = 60_000
 let poll: Timer | null = null
 let refreshing = false
 
+async function onDefaultBranch($: EngineInterface): Promise<boolean> {
+  const [branch, head] = await Promise.all([
+    $.process.run(['git', 'branch', '--show-current']),
+    $.process.run(['git', 'symbolic-ref', '--short', 'refs/remotes/origin/HEAD']),
+  ])
+  return branch.exitCode === 0 && head.exitCode === 0 && isDefaultBranch(branch.stdout, head.stdout)
+}
+
+async function viewPr($: EngineInterface, url: string | null): Promise<Pr | null> {
+  const target = url === null ? [] : [url]
+  const gh = await $.process.run(['gh', 'pr', 'view', ...target, '--json', ghFields], { timeoutMs: 15_000 })
+  return gh.exitCode === 0 ? toPr(gh.stdout, url !== null) : null
+}
+
 async function refresh($: EngineInterface): Promise<void> {
   if (refreshing) return
   refreshing = true
   try {
-    const gh = await $.process.run(['gh', 'pr', 'view', '--json', ghFields], { timeoutMs: 15_000 })
-    const next = gh.exitCode === 0 ? toPr(gh.stdout) : null
+    const own = (await onDefaultBranch($)) ? null : await viewPr($, null)
+    const texts = own === null ? chatTexts(await $.session.messages()) : []
+    const url = chatPrUrl(texts)
+    const next = own ?? (url === null ? null : await viewPr($, url))
     await update($, pr, () => next)
-    if (next?.ticket == null) {
+    const key = next?.ticket ?? chatTicketKey(texts)
+    if (key === null) {
       await update($, ticket, () => null)
       return
     }
-    const key = next.ticket
     const issue = await $.mcp.call('linear-server', 'get_issue', { id: key, fields: ['url', 'status', 'statusType'] })
     const text = issue.isError ? undefined : issue.content.find(b => b.type === 'text')?.text
     await update($, ticket, () => toTicket(key, text))
@@ -56,28 +85,34 @@ export const register: Register = on => {
 
   on('ui.render', { component: 'AbovePrompt' }, async ($, e, next) => {
     const p = await read($, pr)
-    if (p === null || e.props.hasSurvey) return next(e)
-
     const t = await read($, ticket)
+    if ((p === null && t === null) || e.props.hasSurvey) return next(e)
+
     const { Box, Link, Text } = $.ui.resolve(e)
-    const parts: Part[] = [
-      { text: p.state, color: stateColor(p.state), dim: p.state === 'closed' },
-      reviewPart(p.review),
-      p.conflicts ? { text: 'conflicts', color: palette.bad } : null,
-    ].filter((part): part is Part => part !== null)
+    const parts: Part[] =
+      p === null
+        ? []
+        : [
+            { text: p.state, color: stateColor(p.state), dim: p.state === 'closed' },
+            reviewPart(p.review),
+            p.conflicts ? { text: 'conflicts', color: palette.bad } : null,
+            p.fromChat ? { text: 'from chat', dim: true } : null,
+          ].filter((part): part is Part => part !== null)
 
     return (
       <Box flexDirection="row" gap={3} flexWrap="nowrap">
-        <Box flexDirection="row" gap={1}>
-          <Text bold>
-            <Link href={p.url}>#{p.number}</Link>
-          </Text>
-          {parts.map(part => (
-            <Text key={part.text} color={part.color} dimColor={part.dim} wrap="truncate">
-              {part.text}
+        {p !== null && (
+          <Box flexDirection="row" gap={1}>
+            <Text bold>
+              <Link href={p.url}>#{p.number}</Link>
             </Text>
-          ))}
-        </Box>
+            {parts.map(part => (
+              <Text key={part.text} color={part.color} dimColor={part.dim} wrap="truncate">
+                {part.text}
+              </Text>
+            ))}
+          </Box>
+        )}
         {t !== null && (
           <Box flexDirection="row" gap={1}>
             <Text dimColor={t.url === null}>{t.url === null ? t.key : <Link href={t.url}>{t.key}</Link>}</Text>
