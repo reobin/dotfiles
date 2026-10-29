@@ -39,5 +39,14 @@ new_pane="$(printf '%s' "$created" | jq -r '.result.pane.pane_id')"
 
 [ -n "$new_pane" ] && [ "$new_pane" != "null" ] || die "could not split $pane_id"
 
+name="editor"
+suffix=2
+while herdr pane list 2>/dev/null | jq -e --arg n "$name" '.result.panes[]? | select((.label // "") == $n)' >/dev/null 2>&1; do
+  name="editor-$suffix"
+  suffix=$((suffix + 1))
+  [ "$suffix" -le 100 ] || break
+done
+herdr pane rename "$new_pane" "$name" >/dev/null 2>&1 || true
+
 # exec so quitting nvim closes the pane instead of dropping to a shell.
 herdr pane run "$new_pane" "exec nvim" >/dev/null || die "could not start nvim in $new_pane"
