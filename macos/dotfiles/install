@@ -19,7 +19,6 @@ CONFIGS=(
   pi
   starship
   surfingkeys
-  superwhisper
   zsh
 )
 
