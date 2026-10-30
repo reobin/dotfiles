@@ -8,6 +8,10 @@ window-theme = system
 macos-titlebar-style = hidden
 macos-option-as-alt = true
 confirm-close-surface = false
+
+# defaults send esc+b/esc+f, which herdr reads as alt+b/alt+f (alt+f zooms).
+keybind = alt+arrow_left=unbind
+keybind = alt+arrow_right=unbind
 resize-overlay = never
 
 cursor-style = underline

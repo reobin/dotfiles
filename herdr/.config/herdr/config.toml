@@ -49,10 +49,10 @@ move_tab_next = "alt+shift+l"
 switch_tab = "alt+1..9"
 close_tab = "prefix+q"
 
-focus_pane_left = "prefix+h"
-focus_pane_down = "prefix+j"
-focus_pane_up = "prefix+k"
-focus_pane_right = "prefix+l"
+focus_pane_left = ["prefix+h", "alt+left"]
+focus_pane_down = ["prefix+j", "alt+down"]
+focus_pane_up = ["prefix+k", "alt+up"]
+focus_pane_right = ["prefix+l", "alt+right"]
 swap_pane_left = "prefix+shift+h"
 swap_pane_down = "prefix+shift+j"
 swap_pane_up = "prefix+shift+k"
