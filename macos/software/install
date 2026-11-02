@@ -7,6 +7,7 @@ INSTALL_DIRECTORY="$DOTFILES_DIRECTORY/macos"
 # Tools that live in their own repos, cloned onto this machine.
 SOFTWARE=(
   gw
+  herdr-app
 )
 
 for software in "${SOFTWARE[@]}"; do
