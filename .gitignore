@@ -21,6 +21,8 @@ herdr/.config/herdr/plugins/
 herdr/.local/bin/*
 !herdr/.local/bin/herdr-*
 herdr/.local/bin/herdr-reviewr
+herdr/.local/bin/herdr-app
+herdr/.local/bin/herdr-core
 opencode/.config/opencode/plugins/herdr-agent-state.js
 opencode/.config/opencode/herdr-tui-session.js
 opencode/.config/opencode/herdr-opencode/
