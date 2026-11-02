@@ -39,3 +39,7 @@ sudo pmset -a powernap 0
 sudo pmset -a tcpkeepalive 1
 sudo pmset -c standby 0
 sudo pmset -c womp 1
+
+# Turn off Spotlight indexing. Raycast finds apps on its own, and mds re-indexing
+# build output was a top battery drain.
+sudo mdutil -a -i off
