@@ -5,6 +5,7 @@
     "GH_BROWSER": "open",
     "CLAUDE_CODE_NATIVE_CURSOR": "1",
     "FORCE_HYPERLINK": "1",
+    "VITEST_MAX_WORKERS": "4",
     "CLAUDE_CODE_PLUGIN_DIRS": "~/dotfiles/claude-mods/tide:~/dotfiles/claude-mods/pr-row"
   },
   "attribution": {
@@ -65,7 +66,7 @@
   "editorMode": "normal",
   "verbose": false,
   "terminalProgressBarEnabled": true,
-  "remoteControlAtStartup": true,
+  "remoteControlAtStartup": false,
   "agentPushNotifEnabled": true,
   "remoteControlEnabled": true,
   "mcpServers": {
