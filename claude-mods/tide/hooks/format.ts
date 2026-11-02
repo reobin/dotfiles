@@ -39,13 +39,6 @@ export function tone(percent: number): string {
   return palette.calm
 }
 
-export function meter(percent: number, width: number): { filled: string; empty: string } {
-  const clamped = Math.min(100, Math.max(0, percent))
-  const cells = Math.round((clamped / 100) * width)
-  const shown = clamped > 0 ? Math.max(1, cells) : 0
-  return { filled: '━'.repeat(shown), empty: '─'.repeat(width - shown) }
-}
-
 export const riseMs = 1500
 
 const brighter: Record<string, string> = {
@@ -56,36 +49,6 @@ const brighter: Record<string, string> = {
 
 export type Glow = { frame: number; rise: { from: number; age: number } | null }
 
-export function heatMeter(percent: number, width: number, glow: Glow): Bar[] {
-  const clamped = Math.min(100, Math.max(0, percent))
-  const cells = Math.round((clamped / 100) * width)
-  const shown = clamped > 0 ? Math.max(1, cells) : 0
-  const rising = glow.rise !== null && glow.rise.age < riseMs ? glow.rise : null
-  const pulse = Math.floor(glow.frame / 6) % 2 === 1
-  const sweep = shown > 0 ? Math.floor(glow.frame / 2) % (shown + 4) : -1
-  const out: Bar[] = []
-
-  for (let i = 0; i < width; i++) {
-    let bar: Bar
-    if (i >= shown) {
-      bar = { text: '─', color: palette.quiet, dim: false }
-    } else {
-      const base = tone(((i + 1) / width) * 100)
-      const head = i === shown - 1
-      const fresh = rising !== null && ((i + 1) / width) * 100 > rising.from
-      let color = head ? brighter[base] ?? base : base
-      if (fresh) color = rising.age < riseMs / 3 ? ansi.whiteBright : brighter[base] ?? base
-      else if (clamped >= 85 && i === sweep) color = ansi.whiteBright
-      else if (clamped >= 60 && head && pulse) color = base
-      bar = { text: '━', color, dim: false }
-    }
-    const last = out[out.length - 1]
-    if (last && last.color === bar.color && last.dim === bar.dim) last.text += bar.text
-    else out.push(bar)
-  }
-  return out
-}
-
 export function percentColor(percent: number, glow: Glow): string {
   if (glow.rise !== null && glow.rise.age < riseMs / 3) return ansi.whiteBright
   const base = tone(percent)
@@ -93,19 +56,18 @@ export function percentColor(percent: number, glow: Glow): string {
   return base
 }
 
-const hourMs = 3_600_000
-const limitWindows: Record<string, { ms: number; unit: number; suffix: string }> = {
-  five_hour: { ms: 5 * hourMs, unit: hourMs, suffix: '5h' },
-  seven_day: { ms: 7 * 24 * hourMs, unit: 24 * hourMs, suffix: '7d' },
+export function limitLabel(kind: string): string {
+  return limitLabels[kind] ?? kind.replace(/_/g, ' ')
 }
 
-export function limitLabel(kind: string, resetsAt?: number, now?: number): string {
-  const w = limitWindows[kind]
-  if (w && resetsAt !== undefined && now !== undefined) {
-    const elapsed = Math.min(w.ms, Math.max(0, w.ms - (resetsAt - now)))
-    return `${(Math.floor((elapsed / w.unit) * 10) / 10).toFixed(1)}/${w.suffix}`
-  }
-  return limitLabels[kind] ?? kind.replace(/_/g, ' ')
+export function resetIn(resetsAt: number | undefined, now: number): string | undefined {
+  if (resetsAt === undefined) return undefined
+  const minutes = Math.max(0, Math.ceil((resetsAt - now) / 60_000))
+  if (minutes < 60) return `${minutes}m`
+  const hours = Math.floor(minutes / 60)
+  if (hours < 10) return `${hours}h${String(minutes % 60).padStart(2, '0')}`
+  if (hours < 48) return `${hours}h`
+  return `${Math.floor(hours / 24)}d`
 }
 
 export function toReading(context: SessionContextUsage, rateLimits: SessionRateLimit[]): Reading {

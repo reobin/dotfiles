@@ -2,7 +2,7 @@ import { atom, read, update } from 'claude-code'
 import type { EngineInterface, Register, Timer } from 'claude-code'
 
 import type { Glow } from './format'
-import { elapsed, heatMeter, human, limitLabel, modeLabel, palette, percentColor, riseMs, tone, toReading, wave } from './format'
+import { elapsed, human, limitLabel, modeLabel, palette, percentColor, resetIn, riseMs, tone, toReading, wave } from './format'
 
 const reading = atom({ plugin: 'tide', key: 'reading' } as const, null)
 const frame = atom({ plugin: 'tide', key: 'frame' } as const, 0)
@@ -40,7 +40,7 @@ export const register: Register = on => {
     const target = Number(e.args.trim())
     const r = await read($, reading)
     if (e.args.trim() === '' || !Number.isFinite(target) || r === null || r.window === 0) {
-      return { text: 'usage: /tide <percent>, previews the context meter at that level until the next measurement' }
+      return { text: 'usage: /tide <percent>, previews the context reading at that level until the next measurement' }
     }
     const percent = Math.min(100, Math.max(0, Math.round(target)))
     const now = await $.clock.now()
@@ -54,7 +54,7 @@ export const register: Register = on => {
 
   on('session.start', async ($, e, next) => {
     const result = await next(e)
-    await $.command.register({ name: 'tide', description: 'Preview the tide context meter at a percent' })
+    await $.command.register({ name: 'tide', description: 'Preview the tide context reading at a percent' })
     const usage = await $.session.usage()
     const r = toReading(usage.context, usage.rateLimits)
     percentNow = r.percent
@@ -117,47 +117,27 @@ export const register: Register = on => {
     if (r === null || r.window === 0) return next(e)
 
     const { Box, Text } = $.ui.resolve(e)
-    const columns = e.viewport?.columns ?? 120
-    const showLimits = r.limits.length > 0 && columns >= 110
-    const limitMeters = columns >= 150
     const now = await $.clock.now()
     const g: Glow = { frame: await read($, glow), rise: rise && { from: rise.from, age: now - rise.at } }
-    const ctx = heatMeter(r.percent, columns >= 150 ? 10 : columns >= 110 ? 8 : 6, g)
 
     return (
       <Box flexDirection="row" gap={2}>
         {e.props.modes.length > 0 && <Text color={palette.quiet}>{e.props.modes.join(' & ')}</Text>}
         <Box flexDirection="row">
-          <Text>
-            {ctx.map(bar => (
-              <Text color={bar.color} dimColor={bar.dim}>
-                {bar.text}
-              </Text>
-            ))}
-          </Text>
-          <Text> {human(r.tokens)}</Text>
+          <Text>{human(r.tokens)}</Text>
           <Text color={palette.quiet}>/{human(r.window)} </Text>
           <Text color={percentColor(r.percent, g)} bold>{r.percent}%</Text>
         </Box>
-        {showLimits &&
-          r.limits.map(l => {
-            const m = heatMeter(l.percent, 4, { frame: 0, rise: null })
-            return (
-              <Box key={l.kind} flexDirection="row">
-                <Text color={palette.quiet}>{limitLabel(l.kind, l.resetsAt, now)} </Text>
-                {limitMeters && (
-                  <Text>
-                    {m.map(bar => (
-                      <Text color={bar.color} dimColor={bar.dim}>
-                        {bar.text}
-                      </Text>
-                    ))}{' '}
-                  </Text>
-                )}
-                <Text color={tone(l.percent)}>{l.percent}%</Text>
-              </Box>
-            )
-          })}
+        {r.limits.map(l => {
+          const reset = resetIn(l.resetsAt, now)
+          return (
+            <Box key={l.kind} flexDirection="row">
+              <Text color={palette.quiet}>{limitLabel(l.kind)} </Text>
+              <Text color={tone(l.percent)}>{l.percent}%</Text>
+              {reset !== undefined && <Text color={palette.quiet}> ↺{reset}</Text>}
+            </Box>
+          )
+        })}
       </Box>
     )
   })
