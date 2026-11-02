@@ -34,11 +34,11 @@ workspace_picker = "prefix+w"
 goto = "alt+g"
 previous_workspace = "alt+k"
 next_workspace = "alt+j"
-new_workspace = "prefix+shift+c"
+new_workspace = ["prefix+shift+c", "alt+n"]
 rename_workspace = "prefix+shift+w"
-close_workspace = "prefix+shift+q"
+close_workspace = ["prefix+shift+q", "alt+shift+q"]
 
-new_tab = "prefix+c"
+new_tab = ["prefix+c", "alt+t"]
 rename_tab = "prefix+shift+t"
 previous_tab = "alt+h"
 next_tab = "alt+l"
@@ -47,7 +47,7 @@ move_tab_previous = "alt+shift+h"
 move_tab_next = "alt+shift+l"
 
 switch_tab = "alt+1..9"
-close_tab = "prefix+q"
+close_tab = ["prefix+q", "alt+q"]
 
 focus_pane_left = ["prefix+h", "alt+left"]
 focus_pane_down = ["prefix+j", "alt+down"]
@@ -59,7 +59,7 @@ swap_pane_up = "prefix+shift+k"
 swap_pane_right = "prefix+shift+l"
 split_vertical = "prefix+v"
 split_horizontal = "prefix+s"
-close_pane = "prefix+x"
+close_pane = ["prefix+x", "alt+w"]
 zoom = "alt+f"
 resize_mode = "prefix+r"
 
@@ -86,10 +86,16 @@ command = "$HOME/.local/bin/herdr-move-workspace down"
 description = "move workspace down"
 
 [[keys.command]]
-key = "prefix+t"
+key = ["prefix+t", "alt+v"]
 type = "plugin_action"
 command = "herdr-togglesplit.toggle"
 description = "toggle split direction"
+
+[[keys.command]]
+key = "alt+p"
+type = "shell"
+command = "$HOME/.local/bin/herdr-smart-split"
+description = "smart split: right when wide, down when tall"
 
 [[keys.command]]
 key = ["prefix+o", "alt+o"]
@@ -122,7 +128,7 @@ command = "persiyanov.reviewr.toggle"
 description = "review agent changes"
 
 [[keys.command]]
-key = "prefix+p"
+key = ["prefix+p", "alt+shift+p"]
 type = "popup"
 command = "$SHELL"
 width = "80%"
