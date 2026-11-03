@@ -124,9 +124,8 @@ export const register: Register = on => {
       <Box flexDirection="row" gap={2}>
         {e.props.modes.length > 0 && <Text color={palette.quiet}>{e.props.modes.join(' & ')}</Text>}
         <Box flexDirection="row">
-          <Text>{human(r.tokens)}</Text>
-          <Text color={palette.quiet}>/{human(r.window)} </Text>
-          <Text color={percentColor(r.percent, g)} bold>{r.percent}%</Text>
+          <Text color={percentColor(r.percent, g)} bold>{human(r.tokens)}</Text>
+          <Text color={palette.quiet}>/{human(r.window)}</Text>
         </Box>
         {r.limits.map(l => {
           const reset = resetIn(l.resetsAt, now)
