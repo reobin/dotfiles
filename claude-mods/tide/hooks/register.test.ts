@@ -85,7 +85,7 @@ test('footer shows how long until each limit resets', async ($, on) => {
     rateLimits: [{ kind: 'five_hour', percentUsed: 23.5, resetsAt: new Date(now + 42 * 60_000).toISOString() }],
   })
   const ui = await $.ui.mount(footer(90))
-  expect((await ui.findAll({ type: 'Text', text: ' ↺42m' })).length).toBe(1)
+  expect((await ui.findAll({ type: 'Text', text: ' ⇢42m' })).length).toBe(1)
 })
 
 test('footer keeps the engine mode labels ahead of the line', async ($, on) => {

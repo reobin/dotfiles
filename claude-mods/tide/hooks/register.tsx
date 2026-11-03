@@ -134,7 +134,7 @@ export const register: Register = on => {
             <Box key={l.kind} flexDirection="row">
               <Text color={palette.quiet}>{limitLabel(l.kind)} </Text>
               <Text color={tone(l.percent)}>{l.percent}%</Text>
-              {reset !== undefined && <Text color={palette.quiet}> ↺{reset}</Text>}
+              {reset !== undefined && <Text color={palette.quiet}> ⇢{reset}</Text>}
             </Box>
           )
         })}
