@@ -40,11 +40,11 @@ close_workspace = ["prefix+shift+q", "alt+shift+q"]
 
 new_tab = ["prefix+c", "alt+t"]
 rename_tab = "prefix+shift+t"
-previous_tab = "alt+h"
-next_tab = "alt+l"
+previous_tab = "alt+shift+h"
+next_tab = "alt+shift+l"
 
-move_tab_previous = "alt+shift+h"
-move_tab_next = "alt+shift+l"
+move_tab_previous = "alt+comma"
+move_tab_next = "alt+period"
 
 switch_tab = "alt+1..9"
 close_tab = ["prefix+q", "alt+q"]
@@ -195,6 +195,19 @@ key = "prefix+m"
 type = "shell"
 command = "unified:toggle-workspace-park"
 description = "park/unpark focused workspace"
+
+# parent workspace navigation, skipping nested children (reobin/herdr fork, sentinel commands).
+[[keys.command]]
+key = "alt+h"
+type = "shell"
+command = "unified:previous-parent-workspace"
+description = "previous parent workspace"
+
+[[keys.command]]
+key = "alt+l"
+type = "shell"
+command = "unified:next-parent-workspace"
+description = "next parent workspace"
 
 # Paper tokens for kanso-pearl, taken from its Ghostty palette. overlay0 sits
 # near 2.1:1 on the paper ground: recessive next to the accent-lit active
