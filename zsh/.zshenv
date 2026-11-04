@@ -14,3 +14,5 @@ export npm_config_cache=$HOME/GitHub/.cache/npm
 export BUN_INSTALL_CACHE_DIR=$HOME/GitHub/.cache/bun
 export CYPRESS_CACHE_FOLDER=$HOME/GitHub/.cache/Cypress
 export PLAYWRIGHT_BROWSERS_PATH=$HOME/GitHub/.cache/ms-playwright
+
+export HERDR_CALLSIGNS_SCHEME=serial
