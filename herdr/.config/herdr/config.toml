@@ -34,17 +34,17 @@ workspace_picker = "prefix+w"
 goto = "alt+g"
 previous_workspace = "alt+k"
 next_workspace = "alt+j"
-new_workspace = ["prefix+shift+c", "alt+n"]
+new_workspace = "prefix+shift+c"
 rename_workspace = "prefix+shift+w"
 close_workspace = ["prefix+shift+q", "alt+shift+q"]
 
 new_tab = ["prefix+c", "alt+t"]
 rename_tab = "prefix+shift+t"
-previous_tab = "alt+shift+h"
-next_tab = "alt+shift+l"
+previous_tab = "alt+h"
+next_tab = "alt+l"
 
-move_tab_previous = "alt+comma"
-move_tab_next = "alt+period"
+move_tab_previous = "alt+shift+h"
+move_tab_next = "alt+shift+l"
 
 switch_tab = "alt+1..9"
 close_tab = ["prefix+q", "alt+q"]
@@ -107,6 +107,12 @@ key = "alt+s"
 type = "shell"
 command = "$HOME/.local/bin/herdr-sidetrack"
 description = "sidetrack this conversation"
+
+[[keys.command]]
+key = "alt+n"
+type = "plugin_action"
+command = "herdr-new-space.new"
+description = "new space in a picked directory"
 
 [[keys.command]]
 key = "alt+e"
@@ -172,7 +178,7 @@ status_indicators = "dots"
 layout = "unified" # from reobin/herdr fork
 
 [ui.toast]
-delivery = "terminal"
+delivery = "off"
 
 [ui.sound]
 enabled = true
@@ -183,12 +189,6 @@ request_path = "sounds/request.mp3"
 [session]
 resume_agents_on_restore = true
 
-[[keys.command]]
-key = "prefix+f"
-type = "plugin_action"
-command = "herdr-link-hints.hints"
-description = "hint links in focused pane"
-
 # unified-sidebar workspace park toggle (reobin/herdr fork, sentinel command).
 [[keys.command]]
 key = "prefix+m"
@@ -198,13 +198,13 @@ description = "park/unpark focused workspace"
 
 # parent workspace navigation, skipping nested children (reobin/herdr fork, sentinel commands).
 [[keys.command]]
-key = "alt+h"
+key = "alt+,"
 type = "shell"
 command = "unified:previous-parent-workspace"
 description = "previous parent workspace"
 
 [[keys.command]]
-key = "alt+l"
+key = "alt+."
 type = "shell"
 command = "unified:next-parent-workspace"
 description = "next parent workspace"

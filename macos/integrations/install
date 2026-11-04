@@ -51,8 +51,8 @@ install_herdr_plugin() {
 
 install_herdr_plugin herdr-close-other-panes reobin/herdr-close-other-panes
 install_herdr_plugin herdr-callsigns reobin/herdr-callsigns
-install_herdr_plugin herdr-link-hints reobin/herdr-link-hints v2.3.1
 install_herdr_plugin herdr-togglesplit reobin/herdr-togglesplit
+install_herdr_plugin herdr-new-space reobin/herdr-new-space
 install_herdr_plugin "$REVIEWR_ID" persiyanov/herdr-reviewr
 
 # The plugin gives panes callsigns; its skill teaches agents the
@@ -66,6 +66,21 @@ else
 fi
 
 unset -f install_herdr_plugin
+
+# Roots the alt+n picker offers next to zoxide's directories.
+if ! grep -q "herdr-new-space" <<<"$(herdr plugin list)"; then
+  echo "Skipping Herdr herdr-new-space roots (herdr-new-space is not installed)" >&2
+else
+  NEW_SPACE_CONFIG_DIR="$(herdr plugin config-dir herdr-new-space)"
+  mkdir -p "$NEW_SPACE_CONFIG_DIR"
+  cat >"$NEW_SPACE_CONFIG_DIR/roots" <<'EOF'
+# written by macos/integrations/install
+~/GitHub/gaiia/*
+~/GitHub/*
+~/dotfiles
+EOF
+  echo "configured Herdr herdr-new-space"
+fi
 
 # reviewr ships prebuilt binaries, so it needs no toolchain and no node. Left
 # alone it opens itself in every worktree workspace.
