@@ -3,29 +3,6 @@ claude/.claude/*
 !claude/.claude/settings.json
 !claude/.claude/hooks/
 claude/.claude/hooks/*
-herdr/.config/herdr/config.toml
-herdr/.config/herdr/config.toml.tmp.*
-herdr/.config/herdr/config.toml.bak-*
-herdr/.config/herdr/*.sock.agent
-herdr/.config/herdr/session-snapshots/
-herdr/.config/herdr/herdr-client.log
-herdr/.config/herdr/herdr-server.log
-herdr/.config/herdr/session.json
-herdr/.config/herdr/sessions/
-herdr/.config/herdr/release-notes.json
-herdr/.config/herdr/.plugins.lock
-herdr/.config/herdr/plugins.json
-herdr/.config/herdr/plugins/
-# ~/.local/bin is a stow link into this directory, and this repo is public, so
-# anything installed there has to be ignored by default rather than named.
-herdr/.local/bin/*
-!herdr/.local/bin/herdr-*
-herdr/.local/bin/herdr-reviewr
-herdr/.local/bin/herdr-app
-herdr/.local/bin/herdr-core
-opencode/.config/opencode/plugins/herdr-agent-state.js
-opencode/.config/opencode/herdr-tui-session.js
-opencode/.config/opencode/herdr-opencode/
 opencode/.config/opencode/service.json
 opencode/.config/opencode/AGENTS.md
 opencode/.config/opencode/commands/

@@ -10,10 +10,8 @@ alias tree='eza --tree'
 alias mv='mv -iv'
 alias cp='cp -riv'
 alias mkdir='mkdir -vp'
-alias h='herdr'
 alias g='git'
 alias lg='lazygit'
-alias d='herdr-reviewr'
 alias n='nvim'
 alias db='nvim -c DBUI'
 
@@ -43,7 +41,6 @@ source ~/.config/zsh/claude.zsh
 source ~/.config/zsh/history.zsh
 source ~/.config/zsh/completion.zsh
 source ~/.config/zsh/fzf.zsh
-source ~/.config/zsh/appearance.zsh
 
 zsh_cached_eval starship starship init zsh
 # starship always sets RPROMPT, but no right_format is configured, so it spawns

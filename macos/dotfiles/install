@@ -9,7 +9,6 @@ cd "$DOTFILES_DIRECTORY"
 CONFIGS=(
   git
   ghostty
-  herdr
   karabiner
   lazygit
   mise

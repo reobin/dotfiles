@@ -1,7 +1,4 @@
 {
-  "plugin": [
-    "./herdr-tui-session.js"
-  ],
   "keybinds": {
     "messages_half_page_up": "alt+u",
     "messages_half_page_down": "alt+d",

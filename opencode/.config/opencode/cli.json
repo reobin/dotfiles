@@ -19,6 +19,5 @@
     "input.delete.word.forward": "alt+delete,ctrl+delete",
     "session.first": "alt+shift+u",
     "session.last": "alt+shift+d"
-  },
-  "plugins": ["./herdr-tui-session.js", "./herdr-opencode"]
+  }
 }
