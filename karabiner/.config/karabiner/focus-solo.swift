@@ -39,8 +39,9 @@ if dryRun {
 
 var app = findTarget()
 if app == nil {
-  let url = URL(fileURLWithPath: "/Applications/\(target).app")
-  if FileManager.default.fileExists(atPath: url.path) {
+  let home = FileManager.default.homeDirectoryForCurrentUser.path
+  let candidates = ["/Applications/\(target).app", "\(home)/Applications/\(target).app"]
+  if let url = candidates.map({ URL(fileURLWithPath: $0) }).first(where: { FileManager.default.fileExists(atPath: $0.path) }) {
     NSWorkspace.shared.openApplication(at: url, configuration: NSWorkspace.OpenConfiguration(), completionHandler: nil)
     // The launch only dispatches while the run loop is pumped, so spin it
     // until the app exists and has finished launching.

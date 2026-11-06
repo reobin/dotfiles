@@ -230,7 +230,7 @@
                 },
                 "to": [
                   {
-                    "shell_command": "$HOME/.config/karabiner/focus-solo Ghostty"
+                    "shell_command": "$HOME/.config/karabiner/focus-solo Herdr"
                   }
                 ],
                 "type": "basic"
