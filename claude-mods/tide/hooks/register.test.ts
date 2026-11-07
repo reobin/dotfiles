@@ -97,16 +97,20 @@ test('footer keeps the engine mode labels ahead of the line', async ($, on) => {
   expect((await ui.findAll({ type: 'Text', text: 'focus & memory paused' })).length).toBe(1)
 })
 
-test('wave is a tapered row of bars that drifts a little each frame', () => {
+const lowRows = 0x40 | 0x04 | 0x80 | 0x20
+
+test('wave is a tapered dot trace, one dot per column, that drifts each frame', () => {
   const text = (frame: number) => wave(frame).map(b => b.text).join('')
-  expect([...text(0)].length).toBe(16)
-  expect(text(0)).toMatch(/^[▁▂▃▄▅▆▇█]+$/)
+  expect([...text(0)].length).toBe(12)
+  expect(text(0)).toMatch(/^[⠀-⣿]+$/)
   expect(text(0)).not.toBe(text(1))
-  const level = (c: string) => '▁▂▃▄▅▆▇█'.indexOf(c)
+  const bits = (c: string) => c.charCodeAt(0) - 0x2800
+  const count = (n: number) => n.toString(2).replaceAll('0', '').length
   for (let f = 0; f < 120; f++) {
-    const bars = [...text(f)]
-    expect(level(bars[0])).toBeLessThan(3)
-    expect(level(bars[15])).toBeLessThan(3)
+    const cells = [...text(f)]
+    for (const c of cells) expect(count(bits(c))).toBe(2)
+    expect(bits(cells[0]) & ~lowRows).toBe(0)
+    expect(bits(cells[11]) & ~lowRows).toBe(0)
   }
 })
 
@@ -120,7 +124,7 @@ test('spinner draws the wave instead of the word, and a state message beside it'
   const props = { word: 'Simmering', message: null, suffix: '…', mode: 'thinking' as const }
   const ui = await $.ui.mount({ plugin: 'tide', surface: 'terminal', component: 'Spinner', props })
   expect((await ui.findAll({ type: 'Text', text: /Simmering/ })).length).toBe(0)
-  expect((await ui.findAll({ type: 'Text', text: /[▁▂▃▄▅▆▇█]/ })).length).toBeGreaterThan(0)
+  expect((await ui.findAll({ type: 'Text', text: /[⠀-⣿]/ })).length).toBeGreaterThan(0)
   expect((await ui.findAll({ type: 'Text', text: /thinking/ })).length).toBeGreaterThan(0)
 
   const busy = await $.ui.mount({ plugin: 'tide', surface: 'terminal', component: 'Spinner', props: { ...props, message: 'Compacting' } })
@@ -128,12 +132,16 @@ test('spinner draws the wave instead of the word, and a state message beside it'
 })
 
 test('wave stays green and brightens from dim troughs to bright crests', () => {
-  const depth = { '▁': 'dim', '▄': ansi.green, '█': ansi.greenBright } as Record<string, string>
+  const topRow = 0x01 | 0x08
   const shade = (b: { color: string; dim: boolean }) => (b.dim ? 'dim' : b.color)
   for (let f = 0; f < 600; f += 7) {
     for (const bar of wave(f)) {
       expect([ansi.green, ansi.greenBright]).toContain(bar.color)
-      for (const c of bar.text) if (depth[c]) expect(shade(bar)).toBe(depth[c])
+      for (const c of bar.text) {
+        const bits = c.charCodeAt(0) - 0x2800
+        if (bits & topRow) expect(shade(bar)).toBe(ansi.greenBright)
+        if ((bits & ~lowRows) === 0) expect(shade(bar)).toBe('dim')
+      }
     }
   }
 })

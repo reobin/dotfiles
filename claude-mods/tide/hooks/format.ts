@@ -80,28 +80,38 @@ export function toReading(context: SessionContextUsage, rateLimits: SessionRateL
   return { tokens, window: context.window, percent, limits }
 }
 
-const bars = ['▁', '▂', '▃', '▄', '▅', '▆', '▇', '█']
+// braille dot bits for a cell's left and right column, bottom row first
+const dotBits = [
+  [0x40, 0x04, 0x02, 0x01],
+  [0x80, 0x20, 0x10, 0x08],
+]
 
 const depths = [
   { color: ansi.green, dim: true },
   { color: ansi.green, dim: true },
-  { color: ansi.green, dim: true },
   { color: ansi.green, dim: false },
-  { color: ansi.green, dim: false },
-  { color: ansi.green, dim: false },
-  { color: ansi.greenBright, dim: false },
   { color: ansi.greenBright, dim: false },
 ]
 
-export function wave(frame: number, width = 16): Bar[] {
+// A dot-matrix scope: one dot per column traces a tapered sine across
+// braille cells of two columns and four rows; a cell glows by its highest dot.
+export function wave(frame: number, width = 12): Bar[] {
   const phase = frame * 0.16
   const swell = 0.85 + 0.15 * Math.sin(frame * 0.035)
+  const columns = width * 2
   const out: Bar[] = []
   for (let i = 0; i < width; i++) {
-    const taper = Math.sin((Math.PI * (i + 0.5)) / width) ** 0.7
-    const crest = (Math.sin(i * 0.62 - phase) + 1) / 2
-    const level = Math.round(crest * taper * swell * (bars.length - 1))
-    const bar = { text: bars[level], ...depths[level] }
+    let bits = 0
+    let height = 0
+    for (const side of [0, 1]) {
+      const c = i * 2 + side
+      const taper = Math.sin((Math.PI * (c + 0.5)) / columns) ** 0.7
+      const crest = (Math.sin(c * 0.31 - phase) + 1) / 2
+      const level = Math.round(crest * taper * swell * 3)
+      bits |= dotBits[side][level]
+      height = Math.max(height, level)
+    }
+    const bar = { text: String.fromCharCode(0x2800 + bits), ...depths[height] }
     const last = out[out.length - 1]
     if (last && last.color === bar.color && last.dim === bar.dim) last.text += bar.text
     else out.push(bar)
