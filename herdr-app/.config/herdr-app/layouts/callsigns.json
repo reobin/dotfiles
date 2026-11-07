@@ -146,6 +146,16 @@
           }
         },
         {
+          "id": "resume",
+          "type": "block",
+          "size": {
+            "px": 0
+          },
+          "content": {
+            "mod": "resume"
+          }
+        },
+        {
           "id": "smart-split",
           "type": "block",
           "size": {
