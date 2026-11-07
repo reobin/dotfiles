@@ -121,7 +121,7 @@ export default class Tree extends View {
     const label = !inSet && s.name !== name ? s.name : null;
     const [primary, secondary] = label ? [label, name] : [name || s.name, null];
     const st = agentCount > 1 ? status(t, s.status) : null;
-    return press(h_flex().id(`space-${s.id}`).h(30).flex_none().px(8).gap(6).items_center().rounded(7)
+    return press(h_flex().id(`space-${s.id}`).h(30).flex_none().px(8).gap(6).items_center().rounded(3)
       .hover((x) => x.bg(t.hover)), () => run("space.select", { id: s.id }))
       .on_mouse_down("right", () => openOverlay({ mod: "menu", kind: "popup", width: 200, height: 260, props: { tab: "space", target: { id: s.id } } }))
       .child(div().min_w(0).truncate().text_size(14).font_semibold().text_color(s.active ? t.foreground : t.muted).child(primary))
@@ -135,7 +135,7 @@ export default class Tree extends View {
     const shown = s.active && tab.active;
     const text = [String(tab.index), tab.named ? tab.name : null, tab.zoomed ? "zoomed" : null].filter(Boolean).join(" · ");
     const line = () => div().h(1).bg(t.border);
-    return press(h_flex().id(`tab-${tab.id}`).h(23).flex_none().px(8).mt(2).gap(6).items_center().rounded(5)
+    return press(h_flex().id(`tab-${tab.id}`).h(23).flex_none().px(8).mt(2).gap(6).items_center().rounded(3)
       .hover((x) => x.bg(t.hover)), () => { run("space.select", { id: s.id }); run("tab.select", { id: tab.id }); })
       .on_mouse_down("right", () => openOverlay({ mod: "menu", kind: "popup", width: 200, props: { tab: "tab", target: { id: tab.id, space: s.id } } }))
       .child(line().w(6).flex_none())
@@ -152,14 +152,13 @@ export default class Tree extends View {
       : null;
     const on = s.active && p.focused;
     const st = status(t, p.status);
-    return press(h_flex().id(`pane-${p.pane}`).h(28).flex_none().px(8).gap(8).items_center().rounded(7)
-      .when(on, (el) => el.bg(t.selected))
-      .when(!on, (el) => el.hover((x) => x.bg(t.hover))), () => run("pane.focus", { pane: p.pane }))
-      .child(h_flex().flex_none().min_w(28).h(19).px(5).justify_center().items_center().rounded(5)
+    return press(h_flex().id(`pane-${p.pane}`).h(28).flex_none().px(8).gap(8).items_center().rounded(3)
+      .hover((x) => x.bg(t.hover)), () => run("pane.focus", { pane: p.pane }))
+      .child(h_flex().flex_none().min_w(28).h(19).px(5).justify_center().items_center().rounded(2)
         .font_family(MONO).text_size(11.5).font_semibold()
         .bg(on ? t.accent + "24" : t.foreground + "0f").text_color(on ? t.accent : t.muted).child(sign ?? "·"))
       .when(Boolean(pic), (el) => el.child(pic))
-      .child(div().flex_1().min_w(0).truncate().text_size(13.5).text_color(on ? t.foreground : t.muted).child(name))
+      .child(div().flex_1().min_w(0).truncate().text_size(13.5).when(on, (el) => el.font_medium()).text_color(on ? t.foreground : t.muted).child(name))
       .when(Boolean(st), (el) => el.child(st));
   }
 
@@ -180,8 +179,8 @@ export default class Tree extends View {
   group(t, run, ps, terms) {
     const active = run.some((s) => s.active);
     const inSet = run.length > 1;
-    return v_flex().id(`group-${run[0].id}`).flex_none().p(4).rounded(10).border(1)
-      .border_color(active ? t.border : CLEAR).when(active, (el) => el.bg(t.background))
+    return v_flex().id(`group-${run[0].id}`).flex_none().py(6).pl(10).pr(2).border_l(2)
+      .border_color(active ? t.accent : CLEAR).when(active, (el) => el.bg(t.background))
       .when(inSet, (el) => el.child(div().h(20).flex_none().px(8).truncate()
         .text_size(11.5).font_semibold().text_color(t.dim).child(run[0].name)))
       .children(run.flatMap((s) => this.rows(t, s, ps, terms, inSet)));
@@ -191,7 +190,7 @@ export default class Tree extends View {
     return runs.map((run) => {
       const icons = this.icons(t, run);
       return run.length > 1
-        ? v_flex().id(`set-${run[0].id}`).flex_none().gap(2).rounded(10).bg(t.foreground + "0a").children(icons)
+        ? v_flex().id(`set-${run[0].id}`).flex_none().gap(2).rounded(3).bg(t.foreground + "0a").children(icons)
         : icons[0];
     });
   }
@@ -199,8 +198,8 @@ export default class Tree extends View {
   icons(t, list) {
     return list.map((s) => {
       const st = s.status && s.status !== "idle" ? status(t, s.status) : null;
-      return press(h_flex().id(`space-${s.id}`).relative().size(34).flex_none().justify_center().items_center().rounded(8).border(1)
-        .border_color(s.active ? t.border : CLEAR)
+      return press(h_flex().id(`space-${s.id}`).relative().size(34).flex_none().justify_center().items_center().rounded(3).border_l(2)
+        .border_color(s.active ? t.accent : CLEAR)
         .when(s.active, (el) => el.bg(t.background))
         .when(!s.active, (el) => el.hover((x) => x.bg(t.hover))), () => run("space.select", { id: s.id }))
         .child(div().text_size(14).font_semibold().text_color(s.active ? t.foreground : t.muted).child([...s.name][0]?.toUpperCase() ?? "?"))
@@ -215,7 +214,7 @@ export default class Tree extends View {
     if (narrow()) return root.child(v_flex().flex_1().min_h(0).pt(TOP).pb(8).gap(6).items_center().overflow_y_scrollbar().children(this.rail(t, runs)));
     const ps = panes();
     const terms = new Map(terminals().map((x) => [x.address, x]));
-    return root.child(v_flex().flex_1().min_h(0).pt(TOP).px(8).pb(12).gap(6).overflow_y_scrollbar()
+    return root.child(v_flex().flex_1().min_h(0).pt(TOP).pb(12).gap(2).overflow_y_scrollbar()
       .children(runs.map((run) => this.group(t, run, ps, terms))));
   }
 }

@@ -41,8 +41,8 @@ export function panelShell(view, t, { header, body }) {
   view.offset = Math.min(view.offset, max);
   const name = view.panelName;
 
-  return v_flex().id(`${name}-panel`).size_full().min_h(0).rounded(10).overflow_hidden().bg(t.background)
-    .border_1().border_color(t.border).text_color(t.foreground).text_size(13)
+  return v_flex().id(`${name}-panel`).size_full().min_h(0).overflow_hidden().bg(t.background)
+    .border_1().border_color(t.background).text_color(t.foreground).text_size(13)
     .track_focus(view.handle).focus((s) => s.border_color(t.accent)).on_key_down((e, cx) => panelKey(view, e, cx))
     .child(header)
     .child(div().id(`${name}-view`).flex_1().min_h(0).relative().overflow_hidden()

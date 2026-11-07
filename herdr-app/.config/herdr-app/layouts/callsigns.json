@@ -61,17 +61,17 @@
                     "position": "top"
                   },
                   "background": "background",
+                  "radius": 0,
+                  "gap": 8,
+                  "lone": true,
                   "border": {
                     "width": 1,
-                    "color": "border"
+                    "color": "background"
                   },
                   "focus": {
                     "width": 1,
                     "color": "accent"
-                  },
-                  "radius": 10,
-                  "gap": 8,
-                  "lone": true
+                  }
                 }
               }
             },
@@ -174,10 +174,6 @@
     14,
     12
   ],
-  "divider": {
-    "width": 1,
-    "color": "border"
-  },
   "titlebar": "none",
   "traffic_lights": [
     12,
