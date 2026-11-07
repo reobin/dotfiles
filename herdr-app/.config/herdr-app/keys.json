@@ -21,6 +21,7 @@
     "cmd-shift-l": "layout.switch",
     "cmd-n": "mod.open:new-space",
     "cmd-p": "mod.open:picker",
+    "cmd-l": "mod.open:links",
     "cmd-shift-p": "app.palette",
     "cmd-,": "app.settings",
     "cmd-d": "pane.split:right",
