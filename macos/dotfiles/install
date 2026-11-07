@@ -17,7 +17,6 @@ CONFIGS=(
   opencode
   claude
   pi
-  pnpm
   starship
   surfingkeys
   zsh

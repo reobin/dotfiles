@@ -1,3 +1,0 @@
-# pnpm 10 and older. pnpm 11+ ignores this file and reads zsh/.zshenv instead.
-store-dir=~/GitHub/.cache/pnpm-store
-confirm-modules-purge=false

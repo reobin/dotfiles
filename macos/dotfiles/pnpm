@@ -1,5 +1,0 @@
-#!/usr/bin/env bash
-
-# ~/Library/Preferences is shared with every app, and pnpm config set writes into
-# this folder, so only the rc file is linked.
-stow --no-folding pnpm
