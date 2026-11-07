@@ -6,7 +6,7 @@
     "CLAUDE_CODE_NATIVE_CURSOR": "1",
     "FORCE_HYPERLINK": "1",
     "VITEST_MAX_WORKERS": "4",
-    "CLAUDE_CODE_PLUGIN_DIRS": "~/dotfiles/claude-mods/tide:~/dotfiles/claude-mods/pr-row"
+    "CLAUDE_CODE_PLUGIN_DIRS": "~/dotfiles/claude-mods/tide"
   },
   "attribution": {
     "commit": "",
@@ -19,7 +19,20 @@
     ],
     "defaultMode": "auto"
   },
-  "model": "opus",
+  "model": "opus[1m]",
+  "hooks": {
+    "SessionStart": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "/bin/sh -c 'rex __internal session-start --agent claude --feature-session-naming=false 2>/dev/null || true'",
+            "timeout": 5
+          }
+        ]
+      }
+    ]
+  },
   "enabledPlugins": {
     "rust-analyzer-lsp@claude-plugins-official": false,
     "cc-plugin-you-should-know@builtin": true
