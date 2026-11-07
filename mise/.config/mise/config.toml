@@ -1,8 +1,8 @@
 [settings]
 auto_install = true
-lockfile = true
 idiomatic_version_file_enable_tools = ["node", "yarn"]
 node.corepack = true
+tool_update.global_auto = "12h"
 
 [tools]
 node = "24"
