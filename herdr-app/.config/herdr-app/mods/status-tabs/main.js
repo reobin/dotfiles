@@ -1,6 +1,7 @@
 import { View, div, svg, image } from "gpui-kit";
 import { h_flex } from "gpui-base";
 import { spaces, panes, run, openOverlay, theme, window, shared, setShared, layout, settings, nextCommand } from "herdr";
+import { mark } from "./marks.js";
 import { ICONS, entryFor, target, refresh, installIcons, ticketIcon, prIcon, prColor, mergeLook, open } from "./status.js";
 
 const PANEL_CHILDREN = { files: "files", ticket: "ticket-status", pr: "pr-status" };
@@ -106,8 +107,7 @@ export default class Tabs extends View {
         .when(Boolean(program?.icon), el => el.child(program.tint ? svg(program.icon).size(14).text_color(t.muted) : image(program.icon).size(14)))
         .child(div().max_w(170).truncate().child(c.zoomed ? `${name} Z` : name))
         .child(div().size(12).flex_none().flex().items_center().justify_center()
-          .when(c.status === "working", el => el.child(svg("mods/workspace-chrome/spinner.svg").size(12).text_color(t.working).spin(900)))
-          .when(c.status === "blocked" || c.status === "done", el => el.child(div().size(6).rounded(3).bg(t[c.status]))));
+          .when(Boolean(mark(t, c.status)), el => el.child(mark(t, c.status))));
     };
     const root = layout(), sidebar = find(root, "sidebar"), w = window();
     // Old saved rails and a dragged-narrow sidebar can be smaller than the window buttons.

@@ -5,6 +5,7 @@
 
 import { View, div, svg, image } from "gpui-kit";
 import { v_flex, h_flex } from "gpui-base";
+import { mark } from "./marks.js";
 import { spaces, panes, terminals, run, theme, layout, shared, openOverlay, exec, nextCommand } from "herdr";
 
 const MONO = "JetBrains Mono";
@@ -24,12 +25,7 @@ function find(node, id) {
 const narrow = () => (find(layout(), "sidebar")?.size?.px ?? Infinity) < 160;
 
 // Idle says nothing: a mark means work is running or waiting on you.
-function status(t, st) {
-  if (st === "working") return svg("mods/workspace-chrome/spinner.svg").size(12).flex_none().text_color(t.working).spin(900);
-  if (st === "done") return div().size(7).flex_none().rounded(3.5).bg(t.done);
-  if (st === "blocked") return div().size(7).flex_none().rounded(3.5).bg(t.blocked);
-  return null;
-}
+const status = (t, st) => mark(t, st);
 
 // Where a space is now: its first terminal's live folder, else where it was made.
 function place(s, ps) {
@@ -116,18 +112,15 @@ export default class Tree extends View {
     });
   }
 
-  space(t, s, ps, agentCount, inSet) {
+  space(t, s, ps, inSet) {
     const name = this.repo[where(s, ps)] ?? (s.named ? place(s, ps).split("/").pop() : s.name);
     const label = !inSet && s.name !== name ? s.name : null;
     const [primary, secondary] = label ? [label, name] : [name || s.name, null];
-    const st = agentCount > 1 ? status(t, s.status) : null;
     return press(h_flex().id(`space-${s.id}`).h(30).flex_none().px(8).gap(6).items_center().rounded(3)
       .hover((x) => x.bg(t.hover)), () => run("space.select", { id: s.id }))
       .on_mouse_down("right", () => openOverlay({ mod: "menu", kind: "popup", width: 200, height: 260, props: { tab: "space", target: { id: s.id } } }))
       .child(div().min_w(0).truncate().text_size(14).font_semibold().text_color(s.active ? t.foreground : t.muted).child(primary))
-      .when(Boolean(secondary), (el) => el.child(div().flex_none().text_size(12.5).text_color(t.dim).child(secondary)))
-      .child(div().flex_1())
-      .when(Boolean(st), (el) => el.child(st));
+      .when(Boolean(secondary), (el) => el.child(div().flex_none().text_size(12.5).text_color(t.dim).child(secondary)));
   }
 
   // A section break, not an item: a hairline with the tab's place and name on it.
@@ -164,9 +157,8 @@ export default class Tree extends View {
 
   rows(t, s, ps, terms, inSet) {
     const mine = s.tabs.map((tab) => [tab, ps.filter((p) => p.tab === tab.id)]);
-    const agentCount = mine.reduce((n, [, list]) => n + list.filter((p) => p.status).length, 0);
     return [
-      this.space(t, s, ps, agentCount, inSet),
+      this.space(t, s, ps, inSet),
       ...mine.flatMap(([tab, list]) => [
         ...(s.tabs.length > 1 ? [this.tab(t, s, tab)] : []),
         ...list.map((p) => this.pane(t, s, p, terms.get(p.terminal))),
