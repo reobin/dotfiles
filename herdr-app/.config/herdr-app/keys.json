@@ -25,6 +25,7 @@
     "cmd-shift-d": "pane.split:down",
     "cmd-enter": "smart-split.split",
     "cmd-shift-enter": "pane.zoom",
+    "cmd-j": "toggle-split.toggle",
     "cmd-alt-left": "pane.go:left",
     "cmd-alt-right": "pane.go:right",
     "cmd-alt-up": "pane.go:up",
