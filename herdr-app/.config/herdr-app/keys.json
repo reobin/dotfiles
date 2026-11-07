@@ -70,6 +70,7 @@
     "alt-l": "tab.next",
     "alt-shift-h": "tree.tab-left",
     "alt-shift-l": "tree.tab-right",
+    "alt--": "tree.toggle-collapse",
     "alt-g": "mod.open:picker",
     "alt-f": "pane.zoom",
     "alt-o": "close-others.close",

@@ -6,9 +6,10 @@
 import { View, div, svg, image } from "gpui-kit";
 import { v_flex, h_flex } from "gpui-base";
 import { mark } from "./marks.js";
-import { spaces, panes, terminals, run, theme, layout, shared, openOverlay, exec, nextCommand } from "herdr";
+import { spaces, panes, terminals, run, theme, layout, shared, setShared, openOverlay, exec, nextCommand } from "herdr";
 
 const MONO = "JetBrains Mono";
+const COLLAPSED = "tree.collapsed";
 const CLEAR = "#00000000";
 // The block is a window drag handle; this keeps the list clear of the traffic lights.
 const TOP = 44;
@@ -68,8 +69,23 @@ export default class Tree extends View {
         if (c === "space-down") this.move(1);
         if (c === "tab-left") this.moveTab(-1);
         if (c === "tab-right") this.moveTab(1);
+        if (c === "toggle-collapse") this.toggle(spaces().find((s) => s.active)?.id);
       }
     });
+  }
+
+  // Persisted by space id; ids of closed spaces are dropped on the next toggle.
+  collapsed() {
+    return new Set(/** @type {string[]} */ (shared(COLLAPSED) ?? []));
+  }
+
+  toggle(id) {
+    if (!id) return;
+    const live = new Set(spaces().map((s) => s.id));
+    const set = new Set([...this.collapsed()].filter((x) => live.has(x)));
+    if (set.has(id)) set.delete(id);
+    else set.add(id);
+    setShared(COLLAPSED, [...set]);
   }
 
   moveTab(step) {
@@ -112,15 +128,23 @@ export default class Tree extends View {
     });
   }
 
-  space(t, s, ps, inSet) {
+  // A folded space keeps its pane count and its status, so what needs you still shows.
+  space(t, s, ps, inSet, folded) {
     const name = this.repo[where(s, ps)] ?? (s.named ? place(s, ps).split("/").pop() : s.name);
     const label = !inSet && s.name !== name ? s.name : null;
     const [primary, secondary] = label ? [label, name] : [name || s.name, null];
+    const tabs = new Set(s.tabs.map((tab) => tab.id));
+    const st = folded && s.status && s.status !== "idle" ? status(t, s.status) : null;
     return press(h_flex().id(`space-${s.id}`).h(30).flex_none().px(8).gap(6).items_center().rounded(3)
       .hover((x) => x.bg(t.hover)), () => run("space.select", { id: s.id }))
       .on_mouse_down("right", () => openOverlay({ mod: "menu", kind: "popup", width: 200, height: 260, props: { tab: "space", target: { id: s.id } } }))
       .child(div().min_w(0).truncate().text_size(14).font_semibold().text_color(s.active ? t.foreground : t.muted).child(primary))
-      .when(Boolean(secondary), (el) => el.child(div().flex_none().text_size(12.5).text_color(t.dim).child(secondary)));
+      .when(Boolean(secondary), (el) => el.child(div().flex_none().text_size(12.5).text_color(t.dim).child(secondary)))
+      .when(folded, (el) => el
+        .child(div().flex_1())
+        .child(div().flex_none().font_family(MONO).text_size(11.5).text_color(t.dim)
+          .child(`+${ps.filter((p) => tabs.has(p.tab)).length}`))
+        .when(Boolean(st), (el) => el.child(st)));
   }
 
   // A section break, not an item: a hairline with the tab's place and name on it.
@@ -155,10 +179,11 @@ export default class Tree extends View {
       .when(Boolean(st), (el) => el.child(st));
   }
 
-  rows(t, s, ps, terms, inSet) {
+  rows(t, s, ps, terms, inSet, folded) {
+    if (folded) return [this.space(t, s, ps, inSet, true)];
     const mine = s.tabs.map((tab) => [tab, ps.filter((p) => p.tab === tab.id)]);
     return [
-      this.space(t, s, ps, inSet),
+      this.space(t, s, ps, inSet, false),
       ...mine.flatMap(([tab, list]) => [
         ...(s.tabs.length > 1 ? [this.tab(t, s, tab)] : []),
         ...list.map((p) => this.pane(t, s, p, terms.get(p.terminal))),
@@ -168,14 +193,14 @@ export default class Tree extends View {
 
   // A run of neighbouring spaces shares one card under its name; the card
   // carries the name, so each space row shows its repo alone.
-  group(t, run, ps, terms) {
+  group(t, run, ps, terms, folded) {
     const active = run.some((s) => s.active);
     const inSet = run.length > 1;
     return v_flex().id(`group-${run[0].id}`).flex_none().py(6).pl(10).pr(2).border_l(2)
       .border_color(active ? t.accent : CLEAR).when(active, (el) => el.bg(t.background))
       .when(inSet, (el) => el.child(div().h(20).flex_none().px(8).truncate()
         .text_size(11.5).font_semibold().text_color(t.dim).child(run[0].name)))
-      .children(run.flatMap((s) => this.rows(t, s, ps, terms, inSet)));
+      .children(run.flatMap((s) => this.rows(t, s, ps, terms, inSet, folded.has(s.id))));
   }
 
   rail(t, runs) {
@@ -206,7 +231,8 @@ export default class Tree extends View {
     if (narrow()) return root.child(v_flex().flex_1().min_h(0).pt(TOP).pb(8).gap(6).items_center().overflow_y_scrollbar().children(this.rail(t, runs)));
     const ps = panes();
     const terms = new Map(terminals().map((x) => [x.address, x]));
+    const folded = this.collapsed();
     return root.child(v_flex().flex_1().min_h(0).pt(TOP).pb(12).gap(2).overflow_y_scrollbar()
-      .children(runs.map((run) => this.group(t, run, ps, terms))));
+      .children(runs.map((run) => this.group(t, run, ps, terms, folded))));
   }
 }
