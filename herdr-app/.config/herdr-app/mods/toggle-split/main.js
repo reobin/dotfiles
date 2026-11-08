@@ -6,23 +6,18 @@
 // child off the new axis with a placeholder pane, swap the next child into the
 // placeholder, close it, and repeat, setting each child's size back with
 // layout.resize as it lands. The tab's tree comes from herdr-core's saved document
-// (docs.json), since mods can't read it any other way. Directional pane.swap
-// works from the last drawn frame, so each placeholder must be drawn once
-// before it can swap; pane.swap {target}, where herdr has it, skips that wait.
+// (docs.json), since mods can't read it any other way.
 //
 // The layout holds one listening copy in a 0px block; copies opened with
 // { placeholder: true } are the stand-in panes.
 
 import { View, div } from "gpui-kit";
-import { commands, focused, home, nextCommand, notify, panes, props, readTextFile, run, spaces, theme } from "herdr";
+import { focused, home, nextCommand, notify, panes, props, readTextFile, run, spaces, theme } from "herdr";
 
 const MOD = "toggle-split";
 const DOCS = `${home()}/.local/state/herdr-core/default/docs.json`;
 const SLIVER = 0.001;
-const AXES = {
-  row: { flip: "down", fwd: "right" },
-  column: { flip: "right", fwd: "down" },
-};
+const FLIP = { row: "down", column: "right" };
 
 function pathTo(node, id) {
   if (node.id === id) return [node];
@@ -81,13 +76,13 @@ export default class ToggleSplit extends View {
 
     const path = pathTo(root, f.pane);
     const parent = path?.[path.length - 2];
-    if (!parent?.children || parent.children.length < 2 || !AXES[parent.type]) return;
+    if (!parent?.children || parent.children.length < 2 || !FLIP[parent.type]) return;
     const kids = parent.children;
     if (kids.slice(1).some((k) => k.type !== "block")) {
       return fail("can't flip yet: the group after this pane would have to move");
     }
 
-    await this.flip(cx, kids, AXES[parent.type], mine);
+    await this.flip(cx, kids, FLIP[parent.type], mine);
     run("pane.focus", { pane: f.pane });
     // The next toggle reads docs.json, so hold it until the flip is saved there.
     const order = kids.map((k) => k.id).join();
@@ -115,8 +110,7 @@ export default class ToggleSplit extends View {
   // waits to see its result. While a child waits its turn it is shrunk to a
   // sliver, so the frames in between already look like the result, with an
   // empty slot where it lands.
-  async flip(cx, kids, axis, mine) {
-    const targeted = commands().find((c) => c.name === "pane.swap")?.args.some((a) => a.name === "target");
+  async flip(cx, kids, direction, mine) {
     const placeholder = () => mine().find((p) => p.mod === MOD)?.pane;
     const resize = (kid, id = kid.id) => {
       const px = kid.size?.px;
@@ -125,13 +119,13 @@ export default class ToggleSplit extends View {
     try {
       for (let k = 1; k < kids.length; k++) {
         const before = new Set(mine().map((p) => p.pane));
-        run("pane.split", { pane: kids[k - 1].id, direction: axis.flip, mod: MOD, props: { placeholder: true } });
+        run("pane.split", { pane: kids[k - 1].id, direction, mod: MOD, props: { placeholder: true } });
         for (let j = k; j < kids.length; j++) run("layout.resize", { id: kids[j].id, weight: SLIVER });
         const stand = await until(cx, () => mine().find((p) => !before.has(p.pane))?.pane);
         if (!stand) throw new Error("the placeholder pane did not open");
         resize(kids[k - 1]);
         resize(kids[k], stand);
-        await this.swap(cx, stand, kids[k].id, axis.fwd, targeted, mine);
+        await this.swap(cx, stand, kids[k].id, mine);
         run("pane.close", { pane: stand });
         if (k < kids.length - 1 && !(await until(cx, () => !placeholder()))) {
           throw new Error("the placeholder pane did not close");
@@ -145,30 +139,16 @@ export default class ToggleSplit extends View {
 
   // Pane ids move with their content, so the swap has landed once `target`
   // holds the placeholder's old place in pane order.
-  async swap(cx, stand, target, direction, targeted, mine) {
+  async swap(cx, stand, target, mine) {
     const slot = mine().findIndex((p) => p.pane === stand);
-    const state = () => {
+    run("pane.swap", { pane: stand, target });
+    const result = await until(cx, () => {
       const order = mine().map((p) => p.pane);
       if (order.indexOf(target) === slot) return "landed";
       return order.indexOf(stand) === slot ? null : "wrong";
-    };
-    const settle = async (ms) => {
-      const result = await until(cx, state, ms);
-      if (result === "wrong") throw new Error("the placeholder swapped with the wrong pane");
-      return result;
-    };
-    if (targeted) {
-      run("pane.swap", { pane: stand, target });
-      if (await settle(500)) return;
-      throw new Error("the swap didn't happen");
-    }
-    for (let attempt = 0; attempt < 20; attempt++) {
-      await cx.sleep(16);
-      run("pane.focus", { pane: stand });
-      run("pane.swap", { direction });
-      if (await settle(250)) return;
-    }
-    throw new Error("the swap never happened");
+    });
+    if (result === "wrong") throw new Error("the placeholder swapped with the wrong pane");
+    if (!result) throw new Error("the swap didn't happen");
   }
 
   render() {
