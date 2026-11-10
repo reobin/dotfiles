@@ -121,7 +121,6 @@ export default class Review extends View {
     this.cursor = 0;
     this.from = null;
     this.composer = null;
-    this.preview = false;
     this.dragging = false;
     this.jump = null;
     this.offset = 0;
@@ -154,8 +153,8 @@ export default class Review extends View {
         const command = await nextCommand();
         if (command === "send") this.sendCommand(cx);
         else if (command === "reset") this.reset(cx);
-        else if ((command === "half-down" || command === "half-up") && !this.typing && !this.preview) this.half(command === "half-down" ? 1 : -1);
-        else if (command === "pane" && !this.typing && !this.preview) { this.focus = this.focus === "files" ? "diff" : "files"; this.handle.focus(); }
+        else if ((command === "half-down" || command === "half-up") && !this.typing) this.half(command === "half-down" ? 1 : -1);
+        else if (command === "pane" && !this.typing) { this.focus = this.focus === "files" ? "diff" : "files"; this.handle.focus(); }
         cx.notify();
       }
     });
@@ -620,19 +619,17 @@ export default class Review extends View {
   }
 
   reset(cx) {
-    if (this.preview) { this.preview = false; cx.notify(); }
-    else if (this.composer) this.cancel(cx);
+    if (this.composer) this.cancel(cx);
     else if (this.filtering || this.filter) this.clearFilter(cx);
     else { this.from = null; this.note = null; cx.notify(); }
   }
 
   agentList() { return agents().filter((a) => a.space === this.where.space); }
 
-  // The send key saves an open comment, shows what will be sent, then sends it.
+  // The send key saves an open comment, then sends.
   sendCommand(cx) {
     if (this.composer) return this.save(cx);
     if (this.filtering || !this.comments().length || !this.target) return;
-    if (!this.preview) { this.preview = true; cx.notify(); return; }
     this.send(cx);
   }
 
@@ -649,7 +646,7 @@ export default class Review extends View {
         notify({ title: "Review sent", body: `${list.length} comment${list.length === 1 ? "" : "s"} to ${target}`, level: "success", timeout: 3000 });
         run("pane.focus", { terminal: target });
         this.dismiss();
-      } catch (e) { this.note = `Send failed: ${e?.message ?? e}`; this.preview = false; }
+      } catch (e) { this.note = `Send failed: ${e?.message ?? e}`; }
       finally { this.sending = false; cx.notify(); }
     });
     cx.notify();
@@ -665,7 +662,7 @@ export default class Review extends View {
     const files = this.focus === "files";
     if (k === "escape") this.reset(cx);
     else if (k === "q" && plain) return this.dismiss();
-    else if (!plain || this.preview) return;
+    else if (!plain) return;
     else if (k === "/") this.startFilter();
     else if (k === "b") { this.mode = this.mode === "work" ? "branch" : "work"; this.reload(cx); }
     else if (k === "r") this.reload(cx);
@@ -854,23 +851,6 @@ export default class Review extends View {
       .when(f.del > 0 && !viewed, (el) => el.child(div().text_size(10.5).text_color(t.ansi1).child(`−${f.del}`)));
   }
 
-  previewView(t, text, name) {
-    return div().absolute().inset_0().flex().justify_center().px(40).py(24).bg(tint(t.background, "b0"))
-      .on_mouse_down("left", (_e, cx) => cx.stop_propagation())
-      .child(v_flex().id("preview").w_full().max_w(920).h_full().rounded(10).border_1().border_color(t.border).bg(t.popover).shadow_lg()
-        .child(h_flex().h(40).flex_none().px(14).gap(8).items_center().border_b(1).border_color(t.border)
-          .child(div().font_semibold().child(`Send to ${name}`))
-          .child(div().text_size(12).text_color(t.dim).child(`${this.comments().length} comment${this.comments().length === 1 ? "" : "s"}`)))
-        .child(div().id("preview-body").flex_1().min_h(0).overflow_y_scrollbar().px(14).py(10)
-          .font_family(settings().font_family ?? "JetBrains Mono").text_size(12).text_color(t.foreground)
-          .children(text.split("\n").map((line, i) => div().id(`pv${i}`).min_h(18).child(line || " "))))
-        .child(h_flex().h(44).flex_none().px(14).gap(10).items_center().justify_end().border_t(1).border_color(t.border).text_size(12)
-          .child(div().id("preview-back").h(28).px(12).flex().items_center().rounded(7).cursor_pointer().text_color(t.muted).hover((s) => s.bg(t.hover))
-            .on_click((_e, cx) => { this.preview = false; cx.notify(); }).child("Back  esc"))
-          .child(div().id("preview-send").h(28).px(12).flex().items_center().rounded(7).cursor_pointer().font_semibold().bg(t.solid).text_color(t.solid_foreground)
-            .on_click((_e, cx) => this.send(cx)).child(this.sending ? "Sending…" : `Send  ${pretty(bound("send"))}`))));
-  }
-
   render(cx) {
     const dark = Boolean(settings().dark);
     if (this.dark !== undefined && this.dark !== dark) this.recolor(cx);
@@ -954,8 +934,7 @@ export default class Review extends View {
       : clash.length ? `Taken by global keys: ${clash.map((b) => `${pretty(b.keys)} → ${b.action}`).join(", ")}` : null;
     const hint = (keys, what) => h_flex().gap(4).child(div().text_color(t.muted).child(keys)).child(div().child(what));
     const send = pretty(bound("send"));
-    const hints = this.preview ? [[send, "send"], ["esc", "back"]]
-      : this.composer ? [["↵", "save"], ["⇧↵", "new line"], ["esc", "discard"]]
+    const hints = this.composer ? [["↵", "save"], ["⇧↵", "new line"], ["esc", "discard"]]
       : this.filtering ? [["↵", "done"], ["esc", "clear"]]
       : filesOn ? [["l ↵", "open"], ["j k", "move"], ["h l", "fold"], ["/", "filter"], ["v", "viewed"], ["n N", "comment"], ["b", "branch"], ["r", "reload"], [send, "send"], ["q", "close"]]
       : [["h", "files"], ["j k", "line"], ["⇧ drag", "range"], ["[ ]", "hunk"], ["⌃d ⌃u", "half page"], ["c", "comment"], ["e d", "edit delete"], ["n N", "next"],
@@ -973,8 +952,7 @@ export default class Review extends View {
       .on_mouse_move(() => { if (!this.typing && !this.handle.is_focused()) this.handle.focus(); })
       .child(header)
       .child(div().flex_1().min_h(0).relative()
-        .child(div().absolute().inset_0().flex().child(list).child(diff))
-        .when(this.preview, (el) => el.child(this.previewView(t, message(this.current(), this.label ?? "Uncommitted"), targetName ?? "agent"))))
+        .child(div().absolute().inset_0().flex().child(list).child(diff)))
       .child(footer);
   }
 }
