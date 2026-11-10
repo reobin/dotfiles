@@ -1,7 +1,7 @@
 import { View, div, svg } from "gpui-kit";
 import { v_flex, h_flex, InputState, Input, TextareaState, Textarea } from "gpui-base";
 import { spaces, panes, agents, terminals, focused, theme, settings, props, closeOverlay, shared, setShared, hc, run, notify, keys, nextCommand, exec } from "herdr";
-import { repoRoot, loadDiff, loadFile, isLine, anchor, message } from "./diff.js";
+import { loadDiff, loadFile, isLine, anchor, message } from "./diff.js";
 import { treeOrder, treeRows } from "./tree.js";
 import { wrapSpans, lineCount, pairs } from "./layout.js";
 
@@ -23,11 +23,67 @@ const glass = (color) => tint(color, "e8");
 const STATUS_COLOR = { A: "ansi2", D: "ansi1", M: "blocked" };
 
 const drafts = () => shared(DRAFTS) ?? {};
-const lineKey = (row) => ({ kind: row.kind, num: row.new ?? row.old });
-const sameLine = (row, at) => isLine(row) && row.kind === at.kind && (row.new ?? row.old) === at.num;
+const lineKey = (rows, i) => ({ kind: rows[i].kind, num: rows[i].new ?? rows[i].old, text: rows[i].text, above: rows[i - 1]?.text });
+// The row an anchor names: same kind and text, nearest its old number, since lines added above
+// shift every number. A matching line above wins first, so an inserted copy of a common line
+// like `}` doesn't take the anchor. Anchors saved without text use the last line of their
+// comment's code, or the number alone.
+function findLine(rows, at, code) {
+  const text = at.text ?? code?.split("\n").at(-1)?.slice(1);
+  let best = -1, miss = true, gap = Infinity;
+  rows.forEach((r, i) => {
+    const n = r.new ?? r.old;
+    if (!isLine(r) || r.kind !== at.kind || (text === undefined ? n !== at.num : r.text !== text)) return;
+    const m = at.above !== undefined && rows[i - 1]?.text !== at.above, g = Math.abs(n - at.num);
+    if (m < miss || (m === miss && g < gap)) { best = i; miss = m; gap = g; }
+  });
+  return best;
+}
+
+// The rows a comment covers now: its anchor line and, above it, as many diff lines as its code has.
+function span(rows, c) {
+  const end = rows ? findLine(rows, c.at, c.code) : -1;
+  if (end < 0) return null;
+  let start = end, left = (c.code ?? "").split("\n").length;
+  while (left > 1 && start > 0) { start--; if (isLine(rows[start])) left--; }
+  return { start, end };
+}
+
+// A comment's anchor, line label and code as they are now; as saved once its line is gone.
+const resolve = (c, rows) => {
+  const s = span(rows, c);
+  return s ? { ...c, at: lineKey(rows, s.end), ...anchor(rows, s.start, s.end) } : c;
+};
 const textLines = (text) => text.split("\n").length;
 const folded = (f) => !f.opened && (GENERATED.test(f.path) || f.add + f.del > FOLD_LINES);
 const signature = (f) => `${f.status}:${f.add}:${f.del}`;
+
+// The module outlives the overlay, so a reopen shows the last diff at once while it reloads.
+const roots = new Map(), lasts = new Map(), LASTS = 6;
+let charW = null;
+const whereKey = (w) => `${w.on ?? ""}:${w.cwd}`;
+const lastKey = (on, root, mode) => `${on ?? ""}:${root}:${mode}`;
+const rowsText = (rows) => rows.map((r) => `${r.kind}${r.old ?? ""},${r.new ?? ""} ${r.text}`).join("\n");
+const nearestLine = (rows, i) => {
+  for (let d = 0; d < rows.length; d++) {
+    if (isLine(rows[i - d])) return i - d;
+    if (isLine(rows[i + d])) return i + d;
+  }
+  return 0;
+};
+
+// New files keep the colored rows of the last load: for good when the diff text and theme are
+// the same, otherwise until their new colors land (stale), so nothing blanks or flashes plain.
+function carry(files, old, dark) {
+  const before = new Map(old.filter((f) => f.painted).map((f) => [f.path, f]));
+  for (const f of files) {
+    const o = before.get(f.path);
+    if (!o) continue;
+    const same = Boolean(f.rows) && o.dark === dark && rowsText(f.rows) === rowsText(o.rows);
+    Object.assign(f, { rows: o.rows, dark: o.dark, painted: true, colored: same, stale: !same, opened: o.opened });
+  }
+  return files;
+}
 
 // Plain keys the view reads itself. Chords live in keys.json under "mod:review", which the app
 // resolves ahead of global bindings, so a global chord can never swallow one of them.
@@ -80,6 +136,18 @@ export default class Review extends View {
     this.filterInput.on("submit", (_e, cx) => { this.filtering = false; this.handle.focus(); cx.notify(); });
     this.handle.focus();
     cx.timer.after(300, () => { if (!this.typing) this.handle.focus(); });
+    this.root = roots.get(whereKey(this.where)) ?? null;
+    const last = this.root && lasts.get(lastKey(this.where.on, this.root, this.mode));
+    if (last) {
+      Object.assign(this, { files: last.files, label: last.label, against: last.against, filesMode: this.mode });
+      const i = this.files.findIndex((f) => f.path === last.path);
+      this.pick(Math.max(0, i), cx);
+      if (i >= 0) {
+        const rows = this.file().rows, j = last.at ? findLine(rows, last.at) : -1;
+        this.cursor = j >= 0 ? j : nearestLine(rows, last.cursor);
+        this.offset = last.offset;
+      }
+    }
     this.reload(cx);
     cx.spawn(async (cx) => {
       for (;;) {
@@ -100,25 +168,50 @@ export default class Review extends View {
     closeOverlay(props().overlay);
   }
 
+  close() {
+    this.gone = true;
+    this.remember();
+  }
+
+  remember() {
+    if (!this.root || !this.files.length) return;
+    const key = lastKey(this.where.on, this.root, this.filesMode);
+    lasts.delete(key);
+    const row = this.file()?.rows?.[this.cursor];
+    lasts.set(key, { files: this.files, label: this.label, against: this.against, path: this.file()?.path,
+      at: isLine(row) ? lineKey(this.file().rows, this.cursor) : null, cursor: this.cursor, offset: this.offset });
+    if (lasts.size > LASTS) lasts.delete(lasts.keys().next().value);
+  }
+
   reload(cx) {
     this.loading = true; this.error = null;
-    const mode = this.mode;
+    const mode = this.mode, seq = this.reloads = (this.reloads ?? 0) + 1;
     cx.spawn(async (cx) => {
       try {
-        if (!this.where.cwd) throw new Error("No folder");
-        this.root ??= await repoRoot(this.where.cwd, this.where.on);
-        if (!this.root) throw new Error("Not a git repository");
-        const { files, label, against } = await loadDiff(this.root, this.where.on, mode);
-        if (mode !== this.mode) return;
-        const keep = this.files[this.at]?.path;
-        this.files = treeOrder(files); this.label = label; this.against = against;
-        this.pick(Math.max(0, this.files.findIndex((f) => f.path === keep)), cx);
-      } catch (e) { this.error = String(e?.message ?? e); this.files = []; }
-      finally { this.loading = false; cx.notify(); }
+        const { cwd, on } = this.where;
+        if (!cwd) throw new Error("No folder");
+        const { root, files, label, against } = await loadDiff(cwd, on, mode);
+        if (seq !== this.reloads) return;
+        this.root = root;
+        roots.set(whereKey(this.where), root);
+        const keep = this.files[this.at]?.path, prev = this.file()?.rows;
+        const old = this.filesMode === mode ? this.files : [];
+        this.files = carry(treeOrder(files), old, Boolean(settings().dark)); this.filesMode = mode; this.label = label; this.against = against;
+        const i = this.files.findIndex((f) => f.path === keep);
+        if (i >= 0 && old.length) this.stay(i, prev, cx);
+        else this.pick(Math.max(0, i), cx);
+        this.remember();
+        this.prefetch(cx);
+      } catch (e) { if (seq === this.reloads) { this.error = String(e?.message ?? e); this.files = []; } }
+      finally { if (seq === this.reloads) this.loading = false; cx.notify(); }
     });
   }
 
   comments() { return this.root ? drafts()[this.root] ?? [] : []; }
+  current() {
+    const rows = new Map(this.files.map((f) => [f.path, f.rows]));
+    return this.comments().map((c) => resolve(c, rows.get(c.path)));
+  }
   setComments(list) { setShared(DRAFTS, { ...drafts(), [this.root]: list }); }
 
   prefs() { return shared(PREFS) ?? {}; }
@@ -148,27 +241,79 @@ export default class Review extends View {
     if (!folded(file)) this.load(file, cx);
   }
 
+  // A reload that keeps the same file selected keeps the place in it: cursor, scroll, range, comment box.
+  stay(index, prev, cx) {
+    this.at = index;
+    const file = this.file();
+    file.rows ??= [{ kind: "", text: "Loading…" }];
+    this.remap(prev, file.rows);
+    if (!folded(file)) this.load(file, cx);
+  }
+
+  // When the shown file's rows are replaced, the cursor and range follow their lines; the cursor
+  // falls back to the nearest line, the range is dropped. The comment box is anchored by line already.
+  remap(prev, next) {
+    if (!prev || prev === next) return;
+    const follow = (i) => isLine(prev[i]) ? findLine(next, lineKey(prev, i)) : -1;
+    const cur = follow(this.cursor);
+    this.cursor = cur >= 0 ? cur : nearestLine(next, Math.min(this.cursor, next.length - 1));
+    if (this.from !== null) { const f = follow(this.from); this.from = f >= 0 ? f : null; }
+  }
+
   // Waits until the selection rests, so moving through the list never waits on a diff.
+  // A file not colored yet stays blank for up to 400ms rather than flash plain, then colored.
   load(file, cx) {
+    this.hold = file.painted ? null : file;
+    if (this.hold) cx.timer.after(400, (cx) => { if (this.hold === file) { this.hold = null; cx.notify(); } });
     if (file.colored) return;
     const token = this.picks = (this.picks ?? 0) + 1;
     cx.timer.after(150, (cx) => {
       if (token !== this.picks || file.colored) return;
-      file.colored = true;
-      const still = () => this.file() === file;
-      cx.spawn(async (cx) => {
-        try {
-          const loaded = await loadFile(this.root, this.where.on, file, this.against, Boolean(settings().dark), still);
-          if (!loaded) { file.colored = false; return; }
-          file.rows = loaded.rows;
-          if (!loaded.cut) Object.assign(file, { add: loaded.add, del: loaded.del });
-        } catch (e) { file.colored = false; file.rows = [{ kind: "", text: `Cannot show this diff: ${e?.message ?? e}` }]; }
-        if (still()) {
-          if (!isLine(file.rows[this.cursor])) this.cursor = Math.max(0, file.rows.findIndex(isLine));
-          this.applyJump();
-        }
+      const files = this.files;
+      cx.spawn(async (cx) => { await this.paint(file, () => files === this.files); cx.notify(); });
+    });
+  }
+
+  async paint(file, still) {
+    file.colored = true;
+    const dark = Boolean(settings().dark);
+    let prev;
+    try {
+      const loaded = await loadFile(this.root, this.where.on, file, this.against, dark, still);
+      if (!loaded) { file.colored = false; return; }
+      prev = file.rows;
+      file.rows = loaded.rows;
+      file.dark = dark;
+      if (!loaded.cut) Object.assign(file, { add: loaded.add, del: loaded.del });
+    } catch (e) { file.colored = false; file.dark = dark; prev = file.rows; file.rows = [{ kind: "", text: `Cannot show this diff: ${e?.message ?? e}` }]; }
+    file.painted = true;
+    file.stale = file.dark !== Boolean(settings().dark);
+    if (file.stale) file.colored = false;
+    if (this.file() !== file) return;
+    if (this.hold === file) this.hold = null;
+    this.remap(prev, file.rows);
+    this.applyJump();
+  }
+
+  // A light/dark switch while open: each file keeps its old colors until its new ones land.
+  recolor(cx) {
+    for (const f of this.files) if (f.painted) Object.assign(f, { colored: false, stale: true });
+    this.prefetch(cx);
+  }
+
+  // Colors the other files in the background, nearest the selection first, so moving to one
+  // usually finds it ready.
+  prefetch(cx) {
+    const files = this.files, same = () => files === this.files;
+    const near = (f) => Math.abs(files.indexOf(f) - this.at);
+    cx.spawn(async (cx) => {
+      for (;;) {
+        if (!same() || this.gone) return;
+        const next = files.filter((f) => !f.colored && (!f.painted || f.stale) && !folded(f)).sort((a, b) => near(a) - near(b))[0];
+        if (!next) return;
+        await this.paint(next, same);
         cx.notify();
-      });
+      }
     });
   }
 
@@ -250,7 +395,7 @@ export default class Review extends View {
   cols() {
     if (!this.prefs().wrap || !this.diffW) return 0;
     const width = this.split() ? (this.diffW - 1) / 2 - SIDE_GUTTER : this.diffW - GUTTER;
-    return Math.max(20, Math.floor(width / CHAR_W));
+    return Math.max(20, Math.floor(width / (charW ?? CHAR_W)));
   }
 
   composerRows() { return Math.min(COMPOSER_ROWS, Math.max(1, textLines(this.input.value()))); }
@@ -259,7 +404,7 @@ export default class Review extends View {
   // and the open comment box.
   items() {
     const file = this.file();
-    if (!file) return [];
+    if (!file || this.hold === file) return [];
     if (folded(file)) return [{ t: "folded" }];
     const rows = file.rows, lines = this.split() ? pairs(rows) : rows.map((_r, i) => ({ t: "row", i }));
     const where = new Map();
@@ -270,12 +415,14 @@ export default class Review extends View {
     const placed = new Map(), loose = [];
     for (const c of this.comments()) {
       if (c.path !== file.path) continue;
-      const i = rows.findIndex((r) => sameLine(r, c.at));
+      const i = findLine(rows, c.at, c.code);
       if (i < 0) loose.push(c);
-      else placed.set(where.get(i), [...(placed.get(where.get(i)) ?? []), c]);
+      else placed.set(where.get(i), [...(placed.get(where.get(i)) ?? []), resolve(c, rows)]);
     }
-    const composerLine = this.composer && !this.composer.id ? where.get(this.composer.to) : undefined;
-    const out = loose.map((c) => ({ t: "comment", c, loose: true }));
+    const fresh = this.composer && !this.composer.id ? findLine(rows, this.composer.at) : -1;
+    const composerLine = fresh >= 0 ? where.get(fresh) : undefined;
+    const out = loose.map((c) => this.composer?.id === c.id ? { t: "composer", lost: true } : { t: "comment", c, loose: true });
+    if (this.composer && !this.composer.id && fresh < 0) out.unshift({ t: "composer", lost: true });
     lines.forEach((ln, n) => {
       out.push(ln);
       for (const c of placed.get(n) ?? []) out.push(this.composer?.id === c.id ? { t: "composer" } : { t: "comment", c });
@@ -305,13 +452,13 @@ export default class Review extends View {
     this.offset = Math.min(max, Math.max(0, offset));
   }
 
-  reveal() {
+  reveal(pad = ROW * 3) {
     const items = this.items(), tops = this.tops(items);
     this.total = tops[items.length];
     const c = this.cursor;
     const index = items.findIndex((it) => it.t === "row" ? it.i === c : it.t === "pair" && (it.l === c || it.r === c));
     if (index < 0) return;
-    const top = tops[index], bottom = tops[index + 1], pad = ROW * 3;
+    const top = tops[index], bottom = tops[index + 1];
     if (top - pad < this.offset || bottom + pad > this.offset + this.viewH) this.scrollTo(top - this.viewH / 2);
   }
 
@@ -339,7 +486,7 @@ export default class Review extends View {
     }
     this.cursor = i;
     this.scrollTo(this.offset + step * lines * ROW);
-    this.reveal();
+    this.reveal(0);
   }
 
   hunk(step) {
@@ -373,7 +520,6 @@ export default class Review extends View {
       r.old -= k; r.new -= k;
       if (this.cursor > i) this.cursor += k;
       if (this.from !== null && this.from > i) this.from += k;
-      this.composer = null;
       cx.notify();
     });
   }
@@ -382,7 +528,7 @@ export default class Review extends View {
     const file = this.file();
     if (!file || !isLine(file.rows[this.cursor])) return;
     const [from, to] = this.range();
-    this.composer = { from, to, id: null, lines: anchor(file.rows, from, to).lines };
+    this.composer = { id: null, at: lineKey(file.rows, to), ...anchor(file.rows, from, to) };
     this.input.set_value("");
     this.input.focus();
   }
@@ -394,11 +540,8 @@ export default class Review extends View {
     const rows = file.rows;
     for (const c of this.comments()) {
       if (c.path !== file.path) continue;
-      const end = rows.findIndex((r) => sameLine(r, c.at));
-      if (end < 0) continue;
-      let start = end, left = (c.code ?? "").split("\n").length;
-      while (left > 1 && start > 0) { start--; if (isLine(rows[start])) left--; }
-      if (this.cursor >= start && this.cursor <= end) return { c, end };
+      const s = span(rows, c);
+      if (s && this.cursor >= s.start && this.cursor <= s.end) return { c: resolve(c, rows), end: s.end };
     }
     return null;
   }
@@ -406,7 +549,7 @@ export default class Review extends View {
   edit(hit) {
     if (!hit) return;
     this.from = null;
-    this.composer = { to: hit.end, id: hit.c.id, lines: hit.c.lines };
+    this.composer = { id: hit.c.id, lines: hit.c.lines };
     this.input.set_value(hit.c.text);
     this.input.focus();
   }
@@ -415,8 +558,11 @@ export default class Review extends View {
     const text = this.input.value().trim(), file = this.file(), c = this.composer;
     if (!c || !file) return;
     const list = this.comments();
-    if (c.id) this.setComments(text ? list.map((x) => x.id === c.id ? { ...x, text } : x) : list.filter((x) => x.id !== c.id));
-    else if (text) this.setComments([...list, { id: `c${Date.now()}`, path: file.path, at: lineKey(file.rows[c.to]), text, ...anchor(file.rows, c.from, c.to) }]);
+    if (c.id) this.setComments(text ? list.map((x) => x.id === c.id ? { ...resolve(x, file.rows), text } : x) : list.filter((x) => x.id !== c.id));
+    else if (text) {
+      const r = resolve(c, file.rows);
+      this.setComments([...list, { id: `c${Date.now()}`, path: file.path, at: r.at, text, lines: r.lines, code: r.code }]);
+    }
     this.cancel(cx);
   }
 
@@ -451,7 +597,7 @@ export default class Review extends View {
   applyJump() {
     const file = this.file();
     if (!this.jump || this.jump.path !== file?.path) return;
-    const i = file.rows.findIndex((r) => sameLine(r, this.jump.at));
+    const i = findLine(file.rows, this.jump.at, this.jump.code);
     if (i < 0) return;
     this.cursor = i; this.from = null; this.jump = null;
     this.reveal();
@@ -494,7 +640,7 @@ export default class Review extends View {
     const list = this.comments(), target = this.target;
     if (!list.length || !target || this.sending) return;
     this.sending = true; this.note = null;
-    const text = message(list, this.label ?? "Uncommitted");
+    const text = message(this.current(), this.label ?? "Uncommitted");
     cx.spawn(async (cx) => {
       try {
         const r = await hc(["send", target, text]);
@@ -574,7 +720,7 @@ export default class Review extends View {
   code(r, cols, t, hue) {
     return wrapSpans(r.spans ?? [{ text: r.text }], cols).map((line, k) =>
       h_flex().h(ROW).flex_none().items_center().children(line.length ? line.map((s) =>
-        div().flex_none().text_color(s.fg ?? t.foreground).when(Boolean(s.emph && hue), (el) => el.bg(tint(hue, "40")).rounded(2)).child(s.text))
+        div().flex_none().whitespace_nowrap().when(Boolean(charW), (el) => el.w(s.text.length * charW)).text_color(s.fg ?? t.foreground).when(Boolean(s.emph && hue), (el) => el.bg(tint(hue, "40")).rounded(2)).child(s.text))
         : [div().child(" ")]));
   }
 
@@ -653,17 +799,17 @@ export default class Review extends View {
           .child(div().child(loose ? `line ${c.lines} (no longer in the diff)` : `line ${c.lines}`))
           .child(div().flex_1())
           .when(!loose, (el) => el.child(div().id(`edit-${c.id}`).cursor_pointer().hover((s) => s.text_color(t.foreground))
-            .on_click((_e, cx) => { this.focus = "diff"; const end = this.file().rows.findIndex((r) => sameLine(r, c.at)); this.cursor = end; this.edit({ c, end }); cx.notify(); }).child("edit")))
+            .on_click((_e, cx) => { this.focus = "diff"; const end = findLine(this.file().rows, c.at, c.code); this.cursor = end; this.edit({ c, end }); cx.notify(); }).child("edit")))
           .child(div().id(`del-${c.id}`).cursor_pointer().hover((s) => s.text_color(t.foreground))
             .on_click((_e, cx) => { this.setComments(this.comments().filter((x) => x.id !== c.id)); cx.notify(); }).child("delete")))
         .children(c.text.split("\n").map((line, i) => div().id(`cl-${c.id}-${i}`).h(18).font_family(settings().ui_font ?? "Geist").text_size(12.5).text_color(t.foreground).child(line || " "))));
   }
 
-  composerView(t) {
-    const { lines } = this.composer, rows = this.composerRows();
+  composerView(t, lost) {
+    const { lines } = this.composer.id ? this.composer : resolve(this.composer, this.file()?.rows), rows = this.composerRows();
     return v_flex().id("composer").w_full().px(12).py(6).child(
       v_flex().ml(116).max_w(820).gap(4)
-        .child(div().text_size(11).text_color(t.dim).child(`${this.composer.id ? "Edit comment" : "Comment"} on line ${lines}`))
+        .child(div().text_size(11).text_color(t.dim).child(`${this.composer.id ? "Edit comment" : "Comment"} on line ${lines}${lost ? " (no longer in the diff)" : ""}`))
         .child(div().id("composer-box").h(16 + 18 * rows).px(10).py(4).rounded(7).border_1().border_color(t.accent).bg(t.background)
           .font_family(settings().ui_font ?? "Geist")
           .on_mouse_down("left", (_e, cx) => cx.stop_propagation())
@@ -678,9 +824,10 @@ export default class Review extends View {
     let start = 0;
     while (start < items.length && tops[start + 1] <= this.offset) start++;
     let end = start;
-    while (end < items.length && tops[end] < this.offset + this.viewH + ROW) end++;
+    // The first frame comes before the pane is measured; drawing a screenful keeps it from popping in.
+    while (end < items.length && tops[end] < this.offset + (this.viewH || 2000) + ROW) end++;
     const draw = (it) => it.t === "row" ? this.row(it.i, t) : it.t === "pair" ? this.pair(it, t)
-      : it.t === "comment" ? this.comment(it.c, it.loose, t) : it.t === "folded" ? this.foldedView(t) : this.composerView(t);
+      : it.t === "comment" ? this.comment(it.c, it.loose, t) : it.t === "folded" ? this.foldedView(t) : this.composerView(t, it.lost);
     const thumb = this.total > this.viewH && this.viewH > 0;
     return div().absolute().inset_0()
       .child(v_flex().absolute().left(0).right(0).top(tops[start] - this.offset).children(items.slice(start, end).map(draw)))
@@ -725,6 +872,9 @@ export default class Review extends View {
   }
 
   render(cx) {
+    const dark = Boolean(settings().dark);
+    if (this.dark !== undefined && this.dark !== dark) this.recolor(cx);
+    this.dark = dark;
     this.hit = this.focus === "diff" && !this.composer ? this.commentAt()?.c.id : null;
     const t = theme(), file = this.file(), all = this.comments(), items = this.items(), prefs = this.prefs();
     const target = this.agentList().find((a) => a.address === this.target);
@@ -752,7 +902,7 @@ export default class Review extends View {
       .child(h_flex().p(2).gap(2).rounded(8).border_1().border_color(t.border)
         .child(modeButton("work", "Uncommitted"))
         .child(modeButton("branch", "Branch")))
-      .child(div().text_size(12).text_color(t.dim).child(this.loading ? "Loading…" : `${this.files.length} files`))
+      .child(div().text_size(12).text_color(t.dim).child(this.loading && !this.files.length ? "Loading…" : `${this.files.length} files`))
       .child(div().text_size(12).text_color(t.ansi2).child(`+${add}`))
       .child(div().text_size(12).text_color(t.ansi1).child(`−${del}`))
       .when(this.files.length > 0, (el) => el.child(div().text_size(12).text_color(viewed === this.files.length ? t.ansi2 : t.dim).child(`${viewed}/${this.files.length} viewed`)))
@@ -793,6 +943,10 @@ export default class Review extends View {
       .child(div().id("review-diff").flex_1().min_h(0).relative().overflow_hidden().font_family(settings().font_family ?? "JetBrains Mono").text_size(12.5).text_color(t.foreground)
         .on_size_change((s, cx) => { if (s.height !== this.viewH || s.width !== this.diffW) { this.viewH = s.height; this.diffW = s.width; cx.notify(); } })
         .on_scroll_wheel((e, cx) => { this.scrollTo(this.offset - e.delta.y); cx.notify(); })
+        // Each text element rounds its width up to a pixel, so a line split into colored spans
+        // drifts right. Spans get exact widths from one measured character instead.
+        .child(div().id("char-probe").absolute().invisible().whitespace_nowrap().child("0".repeat(100))
+          .on_size_change((s, cx) => { if (s.width / 100 !== charW) { charW = s.width / 100; cx.notify(); } }))
         .child(this.window(items, t)));
 
     const clash = clashes();
@@ -820,7 +974,7 @@ export default class Review extends View {
       .child(header)
       .child(div().flex_1().min_h(0).relative()
         .child(div().absolute().inset_0().flex().child(list).child(diff))
-        .when(this.preview, (el) => el.child(this.previewView(t, message(all, this.label ?? "Uncommitted"), targetName ?? "agent"))))
+        .when(this.preview, (el) => el.child(this.previewView(t, message(this.current(), this.label ?? "Uncommitted"), targetName ?? "agent"))))
       .child(footer);
   }
 }

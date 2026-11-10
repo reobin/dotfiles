@@ -2,7 +2,7 @@ import { exec } from "herdr";
 
 // Reads write nothing under .git, so a folder watch elsewhere never sees them.
 const READ = ["--no-optional-locks", "-c", "core.fsmonitor=false", "-c", "diff.autoRefreshIndex=false", "-c", "core.quotePath=false"];
-const FLAGS = ["--no-color", "--no-ext-diff", "--no-textconv", "--no-renames", "--src-prefix=a/", "--dst-prefix=b/", "-U3"];
+const FLAGS = ["--no-color", "--no-relative", "--no-ext-diff", "--no-textconv", "--no-renames", "--src-prefix=a/", "--dst-prefix=b/", "-U3"];
 const MAX_ROWS = 4000;
 const MAX_UNTRACKED = 200;
 // delta paints changed words with these backgrounds; the view swaps in theme colors.
@@ -15,9 +15,10 @@ async function git(root, on, args) {
   return r.stdout;
 }
 
-export async function repoRoot(cwd, on) {
-  const r = await exec("git", ["rev-parse", "--show-toplevel"], { cwd, on });
-  return r.code === 0 ? r.stdout.trim() : null;
+// Prints the root even when HEAD is missing (a repo with no commits), then fails the HEAD check.
+async function repoInfo(cwd, on) {
+  const r = await exec("git", ["rev-parse", "--show-toplevel", "--verify", "--quiet", "HEAD"], { cwd, on });
+  return { root: r.stdout.split("\n")[0].trim() || null, hasHead: r.code === 0 };
 }
 
 async function defaultBase(root, on) {
@@ -30,23 +31,40 @@ async function defaultBase(root, on) {
   return null;
 }
 
+async function branchBase(root, on) {
+  const base = await defaultBase(root, on);
+  if (!base) throw new Error("No default branch to compare against");
+  return { against: (await git(root, on, ["merge-base", "HEAD", base])).trim(), label: `Since ${base}` };
+}
+
 // mode "work": uncommitted changes against HEAD; "branch": everything since the
-// merge-base with the default branch, uncommitted included.
-export async function loadDiff(root, on, mode) {
-  const hasHead = (await exec("git", ["rev-parse", "--verify", "--quiet", "HEAD"], { cwd: root, on })).code === 0;
-  let against = hasHead ? "HEAD" : "--cached", label = "Uncommitted";
-  if (mode === "branch" && hasHead) {
-    const base = await defaultBase(root, on);
-    if (!base) throw new Error("No default branch to compare against");
-    against = (await git(root, on, ["merge-base", "HEAD", base])).trim();
-    label = `Since ${base}`;
-  }
-  const files = parse(await git(root, on, ["diff", ...FLAGS, against]));
-  const untracked = (await git(root, on, ["ls-files", "--others", "--exclude-standard", "-z"])).split("\0").filter(Boolean);
-  const fresh = untracked.slice(0, MAX_UNTRACKED), lines = await lineCounts(root, on, fresh);
+// merge-base with the default branch, uncommitted included. Each git call costs a process
+// start, so they all start at once from the opened folder: diff paths are relative to the
+// root anyway, ls-files is asked for root-relative names, and HEAD exists in nearly every
+// repo, so its diff starts before the check confirms it.
+export async function loadDiff(cwd, on, mode) {
+  const info = repoInfo(cwd, on);
+  const target = info.then(({ root, hasHead }) => {
+    if (!root) throw new Error("Not a git repository");
+    if (mode === "branch" && hasHead) return branchBase(root, on);
+    return { against: hasHead ? "HEAD" : "--cached", label: "Uncommitted" };
+  });
+  const guess = mode === "work" ? git(cwd, on, ["diff", ...FLAGS, "HEAD"]).catch(() => null) : null;
+  const diffed = target.then(async ({ against }) => {
+    const guessed = against === "HEAD" && guess ? await guess : null;
+    return parse(guessed ?? (await git(cwd, on, ["diff", ...FLAGS, against])));
+  });
+  // Its failure counts only once target has passed, so outside a repo the root check's error wins.
+  const listed = git(cwd, on, ["ls-files", "--others", "--exclude-standard", "-z", "--full-name", "--", ":/"]);
+  listed.catch(() => {});
+  const untracked = target.then(() => listed).then(async (out) => {
+    const fresh = out.split("\0").filter(Boolean).slice(0, MAX_UNTRACKED);
+    return { fresh, lines: await lineCounts((await info).root, on, fresh) };
+  });
+  const [{ root }, { against, label }, files, { fresh, lines }] = await Promise.all([info, target, diffed, untracked]);
   for (const path of fresh) files.push({ path, status: "A", add: lines.get(path) ?? 0, del: 0, rows: null, untracked: true });
   files.sort((a, b) => a.path.localeCompare(b.path));
-  return { files, label, against };
+  return { root, files, label, against };
 }
 
 // New files' line counts in one pass, so the list shows them before each file is opened.
@@ -120,7 +138,12 @@ function parse(text, spans) {
       if (!line.startsWith("@@")) return;
       file.hunks = true;
     }
-    if (file.rows.length >= MAX_ROWS) { file.cut = (file.cut ?? 0) + 1; return; }
+    if (file.rows.length >= MAX_ROWS) {
+      file.cut = (file.cut ?? 0) + 1;
+      if (line[0] === "+") file.add++;
+      else if (line[0] === "-") file.del++;
+      return;
+    }
     const hunk = /^@@ -(\d+)(?:,\d+)? \+(\d+)(?:,\d+)? @@ ?(.*)$/.exec(line);
     const s = body(spans?.[n]);
     if (hunk) { old = +hunk[1]; next = +hunk[2]; file.rows.push({ kind: "@", text: hunk[3] ?? "", old, new: next }); }
