@@ -80,8 +80,6 @@
 [merge]
 	tool = nvimdiff
 	conflictStyle = diff3
-[include]
-	path = ~/.config/git/local
 [credential "https://github.com"]
 	helper = 
 	helper = !gh auth git-credential
