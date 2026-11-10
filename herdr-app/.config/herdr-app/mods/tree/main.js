@@ -1,7 +1,9 @@
 // One sidebar list: every space, its tabs, their panes. A pane reads like a
 // tmux window list: its callsign label, then the agent's icon, session title
 // and status, or the program's name. The shown space sits on a card; only
-// what needs you is marked. Under 160px wide, spaces only.
+// what needs you is marked. Under 160px wide, spaces only. Folded spaces
+// sink under a hairline, and the section the shown space isn't in dims
+// (space-nav walks one section at a time).
 
 import { View, div, svg, image } from "gpui-kit";
 import { v_flex, h_flex } from "gpui-base";
@@ -36,9 +38,9 @@ function place(s, ps) {
 
 const where = (s, ps) => JSON.stringify([s.machine ?? null, place(s, ps)]);
 
-// Neighbouring named spaces with the same name group; the list is never
-// reordered, so it stays in alt-j/k order. Unnamed names follow folders, so
-// they never group.
+// Neighbouring named spaces with the same name group; each section keeps
+// space order, so it stays in alt-j/k order. Unnamed names follow folders,
+// so they never group.
 function sets(list) {
   const runs = [];
   for (const s of list) {
@@ -226,13 +228,28 @@ export default class Tree extends View {
 
   render() {
     const t = theme();
-    const runs = sets(spaces());
+    const folded = this.collapsed();
+    const all = spaces();
+    const top = sets(all.filter((s) => !folded.has(s.id)));
+    const dock = sets(all.filter((s) => folded.has(s.id)));
+    const docked = all.some((s) => s.active && folded.has(s.id));
+    // A scrollable splits the height with its siblings, so the list scrolls
+    // inside a plain flex_1 box and the dock keeps only the height it needs.
+    const upper = (list) => v_flex().flex_1().min_h(0).opacity(docked && top.length ? 0.45 : 1).transition("opacity", 150)
+      .child(list.id("top").size_full().overflow_y_scrollbar());
+    const shelf = (list) => v_flex().id("dock").flex_none().border_t(1).border_color(t.border)
+      .opacity(docked ? 1 : 0.45).transition("opacity", 150).child(list);
     const root = v_flex().size_full().bg(t.chrome);
-    if (narrow()) return root.child(v_flex().flex_1().min_h(0).pt(TOP).pb(8).gap(6).items_center().overflow_y_scrollbar().children(this.rail(t, runs)));
+    if (narrow()) {
+      return root
+        .child(upper(v_flex().pt(TOP).pb(8).gap(6).items_center().children(this.rail(t, top))))
+        .when(dock.length > 0, (el) => el.child(shelf(v_flex().py(8).gap(6).items_center().children(this.rail(t, dock)))));
+    }
     const ps = panes();
     const terms = new Map(terminals().map((x) => [x.address, x]));
-    const folded = this.collapsed();
-    return root.child(v_flex().flex_1().min_h(0).pt(TOP).pb(12).gap(2).overflow_y_scrollbar()
-      .children(runs.map((run) => this.group(t, run, ps, terms, folded))));
+    return root
+      .child(upper(v_flex().pt(TOP).pb(12).gap(2).children(top.map((run) => this.group(t, run, ps, terms, folded)))))
+      .when(dock.length > 0, (el) => el.child(shelf(v_flex().pt(6).pb(12).gap(2)
+        .children(dock.map((run) => this.group(t, run, ps, terms, folded))))));
   }
 }

@@ -130,13 +130,13 @@
               "gap": 8
             },
             {
-              "id": "status",
+              "id": "space-nav",
               "type": "block",
-              "content": {
-                "mod": "status-bar"
-              },
               "size": {
-                "px": 28
+                "px": 0
+              },
+              "content": {
+                "mod": "space-nav"
               }
             },
             {
