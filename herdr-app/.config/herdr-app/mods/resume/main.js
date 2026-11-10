@@ -86,7 +86,7 @@ export default class Resume extends View {
         const labels = info.labels ?? {};
         if (!labels[SESSION]) continue;
         if (labels[SHELL] === String(info.pid)) {
-          await hc(["label", info.address, ...KEYS.map((k) => `${k}=`)]);
+          await hc(["label", info.address, ...[...KEYS, "ticket", "pr"].map((k) => `${k}=`)]);
           continue;
         }
         if (!atShell || running.has(labels[SESSION])) continue;

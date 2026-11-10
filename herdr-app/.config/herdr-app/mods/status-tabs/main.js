@@ -40,8 +40,8 @@ export default class Tabs extends View {
 
   openLink(command) {
     const space = spaces().find((s) => s.active);
-    const entry = space ? entryFor(space.id) : null;
-    if (!entry || entry.branch !== target(space).branch) return;
+    const entry = space ? entryFor(target(space)) : null;
+    if (!entry) return;
     open(command === "open-pr" ? entry.pr?.url : entry.ticket?.issue?.url);
   }
 
@@ -121,8 +121,12 @@ export default class Tabs extends View {
     const t = theme();
     const space = spaces().find(p => p.active);
     const work = space ? target(space) : null;
-    const workKey = space ? `${space.id}|${work.branch}|${work.cwd}` : null;
-    if (workKey !== this.workKey) { this.workKey = workKey; this.kick(cx); this.gitKick(cx); }
+    const workKey = space ? `${work.key}|${work.branch}|${work.cwd}` : null;
+    if (workKey !== this.workKey) {
+      this.workKey = workKey;
+      if (Date.now() - (entryFor(work)?.at ?? 0) > 30000) this.kick(cx);
+      this.gitKick(cx);
+    }
     const shown = space?.tabs ?? [];
     const stop = (_e, cx) => cx.stop_propagation();
     const button = (id, label, action) => div().id(id).size(26).flex_none().flex().items_center().justify_center().rounded(6).text_color(t.dim).hover(s => s.bg(t.hover).text_color(t.foreground))
@@ -182,8 +186,7 @@ export default class Tabs extends View {
         .when(Boolean(clean), el => el.child(div().text_size(11).text_color(t.dim).child("✓")))
         .when(drafts > 0, el => el.child(div().px(5).rounded(4).bg(t.accent).text_color(t.accent_foreground).text_size(10.5).child(String(drafts))));
     };
-    const entry = space ? entryFor(space.id) : null;
-    const current = entry && entry.branch === work?.branch ? entry : null;
+    const current = entryFor(work);
     const ticket = current?.ticket;
     const pr = current?.pr;
     const ticketButton = () => panelButton("ticket-status", [

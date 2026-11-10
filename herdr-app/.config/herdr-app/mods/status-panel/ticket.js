@@ -10,8 +10,7 @@ export function renderTicket(view) {
   const t = theme();
   const space = spaces().find((s) => s.active);
   const work = space ? target(space) : null;
-  const entry = space ? entryFor(space.id) : null;
-  const current = entry && entry.branch === work?.branch ? entry : null;
+  const current = entryFor(work);
   const ticket = current?.ticket;
   const issue = ticket?.issue;
   const icon = (name, color, size = 12) => { const el = svg(`${ICONS}/${name}.svg`).size(size).flex_none(); return color ? el.text_color(color) : el; };

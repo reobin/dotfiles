@@ -1,4 +1,4 @@
-import { exec, panes, shared, setShared, home, appHome, readTextFile } from "herdr";
+import { exec, panes, terminals, shared, setShared, home, appHome, readTextFile } from "herdr";
 import * as fs from "fs/promises";
 import { SVGS } from "./icons.js";
 
@@ -23,14 +23,26 @@ const BRANCH_ID = /(?:^|[/_])([a-z][a-z0-9]{1,4})-(\d{1,6})(?=$|[-_/])/i;
 const TEXT_ID = /\b([A-Z][A-Z0-9]{1,4}-\d{1,6})\b/;
 const LINEAR_URL = /linear\.app\/[^/\s]+\/issue\/([A-Za-z][A-Za-z0-9]{1,4}-\d{1,6})/;
 const KEY_FILE = ".config/linear/api-key";
+const PR_LABEL = /^https:\/\/github\.com\/[^/\s]+\/[^/\s]+\/pull\/\d+$/;
+const TICKET_LABEL = /^[A-Za-z][A-Za-z0-9]{1,4}-\d{1,6}$/;
 
-export const entryFor = (spaceId) => (shared(KEY) ?? {})[spaceId] ?? null;
+export const entryFor = (work) => (work ? (shared(KEY) ?? {})[work.key] : null) ?? null;
 
-// The ticket and PR follow the space's first pane, which is where its worktree lives.
+// Agents label their terminal `ticket=<ID>` / `pr=<url>`: the ticket is the space's, the PR
+// follows the focused pane, and the first pane's branch (its worktree) fills in the rest.
 export function target(space) {
-  const tab = space?.tabs?.[0];
-  const pane = tab ? panes().find((p) => p.tab === tab.id && p.terminal) : null;
-  return { cwd: pane?.cwd || space?.folder || null, branch: pane?.branch || space?.branch || null, on: space?.machine ?? null };
+  const tabs = space?.tabs ?? [];
+  const inSpace = panes().filter((p) => p.terminal && tabs.some((t) => t.id === p.tab));
+  const first = inSpace.find((p) => p.tab === tabs[0]?.id) ?? null;
+  const labels = new Map(terminals().map((t) => [t.address, t.labels ?? {}]));
+  const prOf = (p) => { const url = labels.get(p?.terminal)?.pr; return url && PR_LABEL.test(url) ? url : null; };
+  const active = tabs.find((t) => t.active);
+  const focus = inSpace.find((p) => p.focused) ?? inSpace.find((p) => p.tab === active?.id);
+  const prPane = focus && (prOf(focus) || focus.branch) ? focus : first;
+  const ticket = inSpace.map((p) => labels.get(p.terminal)?.ticket).find((id) => id && TICKET_LABEL.test(id)) ?? null;
+  const cwd = first?.cwd || space?.folder || null, branch = first?.branch || space?.branch || null;
+  const pr = prOf(prPane), prCwd = prPane?.cwd || cwd, prBranch = prPane === first ? branch : prPane.branch;
+  return { cwd, branch, on: space?.machine ?? null, ticket, pr, prCwd, prBranch, key: [space?.id, ticket, pr, prBranch, prCwd].join("|") };
 }
 
 let apiKey, apiKeyAt = 0;
@@ -130,12 +142,12 @@ function shapePr(raw, required) {
 }
 
 async function requiredChecks(t) {
-  const r = await exec("gh", ["pr", "checks", t.branch, "--required", "--json", "name,workflow,bucket"], { cwd: t.cwd, on: t.on }).catch(() => null);
+  const r = await exec("gh", ["pr", "checks", t.pr ?? t.prBranch, "--required", "--json", "name,workflow,bucket"], { cwd: t.prCwd, on: t.on }).catch(() => null);
   try { return r?.stdout.trim().startsWith("[") ? JSON.parse(r.stdout) : null; } catch { return null; }
 }
 
 async function loadPr(t) {
-  const r = await exec("gh", ["pr", "view", t.branch, "--json", PR_FIELDS], { cwd: t.cwd, on: t.on });
+  const r = await exec("gh", ["pr", "view", t.pr ?? t.prBranch, "--json", PR_FIELDS], { cwd: t.prCwd, on: t.on });
   if (r.code === 0) return { pr: shapePr(JSON.parse(r.stdout), await requiredChecks(t)) };
   if (/no pull requests found/i.test(r.stderr)) return { pr: null };
   return { pr: null, prError: (r.stderr || r.stdout).trim().split("\n")[0] || `gh exited ${r.code}` };
@@ -146,7 +158,7 @@ const ISSUE_QUERY = `query($id: String!) { issue(id: $id) {
   state { name type color } assignee { displayName name } project { name } cycle { number name }
   labels { nodes { name color } } attachments { nodes { url title sourceType } } } }`;
 
-async function resolveTicket(branch, pr) {
+async function resolveTicket(label, branch, pr) {
   const found = [];
   let keys = null, linearError = null;
   try { keys = await teams(); } catch (e) { linearError = String(e.message ?? e); }
@@ -154,6 +166,7 @@ async function resolveTicket(branch, pr) {
     if (id && (!keys || keys.has(id.split("-")[0].toUpperCase()))) found.push({ id: id.toUpperCase(), source });
   };
 
+  add(label, "terminal label");
   const fromBranch = BRANCH_ID.exec(branch ?? "");
   if (fromBranch) add(`${fromBranch[1]}-${fromBranch[2]}`, "branch name");
   if (pr) {
@@ -180,22 +193,28 @@ async function resolveTicket(branch, pr) {
 
 const running = new Set();
 
+const KEEP_MS = 3600000;
+
+// Entries are cached by what they were looked up from, so moving focus between panes
+// shows the other PR at once instead of blanking until a fetch lands.
 export function refresh(space) {
   const t = target(space);
-  if (!space || running.has(space.id)) return null;
-  running.add(space.id);
+  if (!space || running.has(t.key)) return null;
+  running.add(t.key);
   return (async () => {
     try {
-      const pr = t.branch && t.cwd ? await loadPr(t).catch((e) => ({ pr: null, prError: String(e.message ?? e) })) : { pr: null };
-      const ticket = await resolveTicket(t.branch, pr.pr).catch(() => null);
+      const pr = t.pr || (t.prBranch && t.prCwd) ? await loadPr(t).catch((e) => ({ pr: null, prError: String(e.message ?? e) })) : { pr: null };
+      const ticket = await resolveTicket(t.ticket, t.branch, pr.pr).catch(() => null);
       if (pr.pr) delete pr.pr.body;
-      const entry = { branch: t.branch, cwd: t.cwd, at: Date.now(), ...pr, ticket };
+      const entry = { key: t.key, branch: t.prBranch, at: Date.now(), ...pr, ticket };
       const all = shared(KEY) ?? {};
-      const { at: _old, ...before } = all[space.id] ?? {};
+      const { at: _old, ...before } = all[t.key] ?? {};
       const { at: _new, ...after } = entry;
-      if (JSON.stringify(before) !== JSON.stringify(after) || !all[space.id]) setShared(KEY, { ...all, [space.id]: entry });
+      if (JSON.stringify(before) === JSON.stringify(after) && all[t.key]) return;
+      const kept = Object.fromEntries(Object.entries(all).filter(([k, e]) => k.includes("|") && entry.at - (e?.at ?? 0) < KEEP_MS));
+      setShared(KEY, { ...kept, [t.key]: entry });
     } finally {
-      running.delete(space.id);
+      running.delete(t.key);
     }
   })();
 }

@@ -12,8 +12,7 @@ export function renderPr(view) {
   const t = theme();
   const space = spaces().find((s) => s.active);
   const work = space ? target(space) : null;
-  const entry = space ? entryFor(space.id) : null;
-  const current = entry && entry.branch === work?.branch ? entry : null;
+  const current = entryFor(work);
   const pr = current?.pr;
   const icon = (name, color, size = 12) => { const el = svg(`${ICONS}/${name}.svg`).size(size).flex_none(); return color ? el.text_color(color) : el; };
   const section = (title, extra) => h_flex().px(6).gap(6).items_center().mb(6).text_size(11).text_color(t.muted)
@@ -32,8 +31,8 @@ export function renderPr(view) {
       .hover((s) => s.bg(t.hover).text_color(t.foreground)).on_click(() => open(pr.url)).child(icon("link")).child("GitHub")));
 
   if (!pr) {
-    const note = !space ? "No space" : !work?.branch ? "This space's first pane is not on a git branch"
-      : !current ? "Loading…" : current.prError ? `GitHub: ${current.prError}` : `No pull request for ${work.branch}`;
+    const note = !space ? "No space" : !work?.pr && !work?.prBranch ? "This pane is not on a git branch and has no PR label"
+      : !current ? "Loading…" : current.prError ? `GitHub: ${current.prError}` : `No pull request for ${work.pr ?? work.prBranch}`;
     return panelShell(view, t, { header, body: div().p(14).text_color(current?.prError ? t.ansi1 : t.dim).child(note) });
   }
 
