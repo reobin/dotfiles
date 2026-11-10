@@ -88,6 +88,11 @@ export default class Tree extends View {
     if (set.has(id)) set.delete(id);
     else set.add(id);
     setShared(COLLAPSED, [...set]);
+    if (!set.has(id) || !spaces().find((s) => s.id === id)?.active) return;
+    const open = spaces().filter((s) => !set.has(s.id) || s.id === id);
+    const i = open.findIndex((s) => s.id === id);
+    const next = open[i + 1] ?? open[i - 1];
+    if (next) run("space.select", { id: next.id });
   }
 
   moveTab(step) {
