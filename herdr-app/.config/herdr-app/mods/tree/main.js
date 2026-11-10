@@ -72,6 +72,7 @@ export default class Tree extends View {
         if (c === "tab-left") this.moveTab(-1);
         if (c === "tab-right") this.moveTab(1);
         if (c === "toggle-collapse") this.toggle(spaces().find((s) => s.active)?.id);
+        if (c === "close-space") this.close();
       }
     });
   }
@@ -233,10 +234,42 @@ export default class Tree extends View {
     });
   }
 
+  // Nearest open space to id, below first.
+  nearestOpen(order, id, all, folded) {
+    const i = order.indexOf(id);
+    const open = (x) => all.some((s) => s.id === x) && !folded.has(x);
+    return [...order.slice(i + 1), ...order.slice(0, i).reverse()].find(open);
+  }
+
+  // Herdr shows the closed space's neighbour, which may be folded, so move
+  // to an open one first and close the space from behind.
+  close() {
+    const all = spaces();
+    const folded = this.collapsed();
+    const id = all.find((s) => s.active)?.id;
+    if (!id) return;
+    const next = folded.has(id) ? null : this.nearestOpen(all.map((s) => s.id), id, all, folded);
+    if (next) run("space.select", { id: next });
+    run("space.close", { id });
+  }
+
+  // Fallback for closes that skip close(), like a space's last pane exiting.
+  keepOpen(all, folded) {
+    const now = all.find((s) => s.active)?.id;
+    if (!now) return;
+    const [was, order] = [this.shown, this.order];
+    this.shown = now;
+    this.order = all.map((s) => s.id);
+    if (!was || was === now || folded.has(was) || !folded.has(now) || all.some((s) => s.id === was)) return;
+    const next = this.nearestOpen(order, was, all, folded);
+    if (next) run("space.select", { id: next });
+  }
+
   render() {
     const t = theme();
     const folded = this.collapsed();
     const all = spaces();
+    this.keepOpen(all, folded);
     const top = sets(all.filter((s) => !folded.has(s.id)));
     const dock = sets(all.filter((s) => folded.has(s.id)));
     const docked = all.some((s) => s.active && folded.has(s.id));
