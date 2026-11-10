@@ -173,9 +173,10 @@ export default class Review extends View {
   }
 
   remember() {
-    if (!this.root || !this.files.length) return;
+    if (!this.root) return;
     const key = lastKey(this.where.on, this.root, this.filesMode);
     lasts.delete(key);
+    if (!this.files.length) return;
     const row = this.file()?.rows?.[this.cursor];
     lasts.set(key, { files: this.files, label: this.label, against: this.against, path: this.file()?.path,
       at: isLine(row) ? lineKey(this.file().rows, this.cursor) : null, cursor: this.cursor, offset: this.offset });
