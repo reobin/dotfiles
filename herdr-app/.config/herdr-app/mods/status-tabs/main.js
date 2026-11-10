@@ -89,12 +89,12 @@ export default class Tabs extends View {
     if (workKey !== this.workKey) { this.workKey = workKey; this.kick(cx); }
     const shown = space?.tabs ?? [];
     const stop = (_e, cx) => cx.stop_propagation();
-    const button = (id, label, action) => div().id(id).size(26).flex_none().flex().items_center().justify_center().text_color(t.dim).hover(s => s.bg(t.hover).text_color(t.foreground))
+    const button = (id, label, action) => div().id(id).size(26).flex_none().flex().items_center().justify_center().rounded(6).text_color(t.dim).hover(s => s.bg(t.hover).text_color(t.foreground))
       .on_mouse_down("left", stop).on_click(action).child(label);
     const item = (c, i) => {
       const program = panes().find(p => p.tab === c.id && p.program?.agent)?.program ?? panes().find(p => p.tab === c.id)?.program;
       const name = /^tb\d+$/.test(c.name) ? program?.name ?? "Terminal" : c.name;
-      return h_flex().id(`tab-${c.id}`).h(29).px(10).gap(7).items_center().flex_none().text_size(12.8)
+      return h_flex().id(`tab-${c.id}`).h(29).px(10).gap(7).rounded(7).items_center().flex_none().text_size(12.8)
         .bg(c.active ? t.raised : t.chrome).text_color(c.active ? t.foreground : t.muted)
         .hover(s => s.bg(t.hover))
         .on_mouse_down("left", (e, cx) => { cx.stop_propagation(); this.pressed = i; if (e.click_count === 2) run("tab.rename", { id: c.id }); })
@@ -119,7 +119,7 @@ export default class Tabs extends View {
     this.syncPanel(space, panel, body, enabled);
     const panelButton = (id, content) => {
       const on = panel && !panel.hidden && body?.active === id;
-      return h_flex().id(`panel-${id}`).h(26).px(8).gap(5).flex_none().items_center()
+      return h_flex().id(`panel-${id}`).h(26).px(8).gap(5).flex_none().items_center().rounded(6)
         .text_size(12).bg(on ? t.selected : t.chrome).text_color(on ? t.foreground : t.muted)
         .hover(s => s.bg(t.hover)).on_mouse_down("left", stop)
         .on_click(() => this.togglePanel(id)).children(content);
@@ -129,12 +129,12 @@ export default class Tabs extends View {
       const drafts = Object.entries(shared("review.drafts") ?? {})
         .filter(([root]) => cwd && (cwd === root || cwd.startsWith(`${root}/`)))
         .reduce((n, [, list]) => n + list.length, 0);
-      return h_flex().id("review-open").h(26).px(8).gap(5).flex_none().items_center()
+      return h_flex().id("review-open").h(26).px(8).gap(5).flex_none().items_center().rounded(6)
         .text_size(12).bg(t.chrome).text_color(t.muted)
         .hover(s => s.bg(t.hover)).on_mouse_down("left", stop)
         .on_click(() => run("mod.open", { name: "review" }))
         .child(svg("mods/workspace-chrome/git-compare.svg").size(14)).child("Review")
-        .when(drafts > 0, el => el.child(div().px(5).bg(t.accent).text_color(t.accent_foreground).text_size(10.5).child(String(drafts))));
+        .when(drafts > 0, el => el.child(div().px(5).rounded(4).bg(t.accent).text_color(t.accent_foreground).text_size(10.5).child(String(drafts))));
     };
     const entry = space ? entryFor(space.id) : null;
     const current = entry && entry.branch === work?.branch ? entry : null;

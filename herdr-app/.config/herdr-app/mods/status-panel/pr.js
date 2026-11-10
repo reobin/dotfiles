@@ -18,17 +18,17 @@ export function renderPr(view) {
   const icon = (name, color, size = 12) => { const el = svg(`${ICONS}/${name}.svg`).size(size).flex_none(); return color ? el.text_color(color) : el; };
   const section = (title, extra) => h_flex().px(6).gap(6).items_center().mb(6).text_size(11).text_color(t.muted)
     .child(div().font_semibold().child(title.toUpperCase())).when(Boolean(extra), (e) => e.child(div().text_color(t.foreground).child(extra)));
-  const row = (id, children, url) => h_flex().id(id).h(24).flex_none().px(6).gap(8).items_center().rounded(3)
+  const row = (id, children, url) => h_flex().id(id).h(24).flex_none().px(6).gap(8).items_center().rounded(6)
     .when(Boolean(url), (e) => e.cursor_pointer().hover((s) => s.bg(t.hover)).on_click(() => open(url))).children(children);
 
   const header = h_flex().h(42).flex_none().px(14).gap(8).items_center()
     .when(Boolean(pr), (e) => e.child(icon(prIcon(pr), prColor(pr, t), 14)).child(div().font_semibold().child(`#${pr.number}`))
-      .child(div().px(7).rounded(2).text_size(10.5).font_semibold().bg(prColor(pr, t)).text_color(t.background).child(pr.state[0].toUpperCase() + pr.state.slice(1))))
+      .child(div().px(7).rounded(9).text_size(10.5).font_semibold().bg(prColor(pr, t)).text_color(t.background).child(pr.state[0].toUpperCase() + pr.state.slice(1))))
     .when(!pr, (e) => e.child(div().font_semibold().child("Pull request")))
     .child(div().flex_1())
-    .child(div().id("pr-refresh").p(4).rounded(3).cursor_pointer().text_color(t.dim).hover((s) => s.bg(t.hover).text_color(t.foreground))
+    .child(div().id("pr-refresh").p(4).rounded(5).cursor_pointer().text_color(t.dim).hover((s) => s.bg(t.hover).text_color(t.foreground))
       .on_click(() => run("status-tabs.refresh")).child(icon("refresh")))
-    .when(Boolean(pr), (e) => e.child(h_flex().id("pr-open").gap(4).items_center().px(6).py(2).rounded(3).cursor_pointer().text_size(11.5).text_color(t.muted)
+    .when(Boolean(pr), (e) => e.child(h_flex().id("pr-open").gap(4).items_center().px(6).py(2).rounded(5).cursor_pointer().text_size(11.5).text_color(t.muted)
       .hover((s) => s.bg(t.hover).text_color(t.foreground)).on_click(() => open(pr.url)).child(icon("link")).child("GitHub")));
 
   if (!pr) {
@@ -52,7 +52,7 @@ export function renderPr(view) {
     .child(h_flex().gap(6).text_size(11.5).text_color(t.muted)
       .child(div().text_color(t.ansi2).child(`+${pr.additions}`)).child(div().text_color(t.ansi1).child(`−${pr.deletions}`))
       .child(`· ${pr.files} files · updated ${ago(pr.updatedAt)}`))
-    .when(Boolean(merge), (e) => e.child(h_flex().mt(4).px(8).py(6).gap(8).items_center().rounded(3).bg(t.raised)
+    .when(Boolean(merge), (e) => e.child(h_flex().mt(4).px(8).py(6).gap(8).items_center().rounded(7).bg(t.raised)
       .child(icon(merge.icon, merge.color, 14)).child(div().flex_1().min_w(0).text_color(merge.color).child(merge.sentence))));
 
   const checks = v_flex().px(8).py(12)

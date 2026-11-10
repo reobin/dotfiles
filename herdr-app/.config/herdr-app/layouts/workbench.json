@@ -43,150 +43,160 @@
           "window_drag": true
         },
         {
-          "id": "work-body",
-          "type": "row",
+          "id": "content",
+          "type": "column",
           "children": [
             {
-              "id": "main",
+              "id": "work-body",
+              "type": "row",
+              "children": [
+                {
+                  "id": "main",
+                  "type": "block",
+                  "content": {
+                    "tab": "active",
+                    "pane": {
+                      "header": {
+                        "content": {
+                          "mod": "callsign-pane"
+                        },
+                        "reveal": "always",
+                        "height": 30,
+                        "position": "top"
+                      },
+                      "background": "background",
+                      "radius": 10,
+                      "gap": 8,
+                      "lone": true,
+                      "border": {
+                        "width": 1,
+                        "color": "background"
+                      },
+                      "focus": {
+                        "width": 1,
+                        "color": "accent"
+                      }
+                    }
+                  }
+                },
+                {
+                  "id": "panel",
+                  "type": "column",
+                  "children": [
+                    {
+                      "id": "panel-body",
+                      "type": "stack",
+                      "children": [
+                        {
+                          "id": "files",
+                          "type": "block",
+                          "content": {
+                            "mod": "files-nav"
+                          }
+                        },
+                        {
+                          "id": "ticket-status",
+                          "type": "block",
+                          "content": {
+                            "mod": "status-panel",
+                            "props": {
+                              "panel": "ticket"
+                            }
+                          }
+                        },
+                        {
+                          "id": "pr-status",
+                          "type": "block",
+                          "content": {
+                            "mod": "status-panel",
+                            "props": {
+                              "panel": "pr"
+                            }
+                          }
+                        }
+                      ],
+                      "active": "files"
+                    }
+                  ],
+                  "size": {
+                    "px": 368
+                  },
+                  "min": 280,
+                  "max": 900,
+                  "hidden": true
+                }
+              ],
+              "padding": 8,
+              "gap": 8
+            },
+            {
+              "id": "status",
               "type": "block",
               "content": {
-                "tab": "active",
-                "pane": {
-                  "header": {
-                    "content": {
-                      "mod": "callsign-pane"
-                    },
-                    "reveal": "always",
-                    "height": 30,
-                    "position": "top"
-                  },
-                  "background": "background",
-                  "radius": 0,
-                  "gap": 8,
-                  "lone": true,
-                  "border": {
-                    "width": 1,
-                    "color": "background"
-                  },
-                  "focus": {
-                    "width": 1,
-                    "color": "accent"
-                  }
-                }
+                "mod": "status-bar"
+              },
+              "size": {
+                "px": 28
               }
             },
             {
-              "id": "panel",
-              "type": "column",
-              "children": [
-                {
-                  "id": "panel-body",
-                  "type": "stack",
-                  "children": [
-                    {
-                      "id": "files",
-                      "type": "block",
-                      "content": {
-                        "mod": "files-nav"
-                      }
-                    },
-                    {
-                      "id": "ticket-status",
-                      "type": "block",
-                      "content": {
-                        "mod": "status-panel",
-                        "props": {
-                          "panel": "ticket"
-                        }
-                      }
-                    },
-                    {
-                      "id": "pr-status",
-                      "type": "block",
-                      "content": {
-                        "mod": "status-panel",
-                        "props": {
-                          "panel": "pr"
-                        }
-                      }
-                    }
-                  ],
-                  "active": "files"
-                }
-              ],
+              "id": "callsigns",
+              "type": "block",
               "size": {
-                "px": 368
+                "px": 0
               },
-              "min": 280,
-              "max": 900,
-              "hidden": true
+              "content": {
+                "mod": "callsigns"
+              }
+            },
+            {
+              "id": "resume",
+              "type": "block",
+              "size": {
+                "px": 0
+              },
+              "content": {
+                "mod": "resume"
+              }
+            },
+            {
+              "id": "smart-split",
+              "type": "block",
+              "size": {
+                "px": 0
+              },
+              "content": {
+                "mod": "smart-split"
+              }
+            },
+            {
+              "id": "close-others",
+              "type": "block",
+              "size": {
+                "px": 0
+              },
+              "content": {
+                "mod": "close-others"
+              }
+            },
+            {
+              "id": "toggle-split",
+              "type": "block",
+              "size": {
+                "px": 0
+              },
+              "content": {
+                "mod": "toggle-split"
+              }
             }
           ],
-          "padding": 8,
-          "gap": 8
-        },
-        {
-          "id": "status",
-          "type": "block",
-          "content": {
-            "mod": "workspace-status"
-          },
-          "size": {
-            "px": 28
-          }
-        },
-        {
-          "id": "callsigns",
-          "type": "block",
-          "size": {
-            "px": 0
-          },
-          "content": {
-            "mod": "callsigns"
-          }
-        },
-        {
-          "id": "resume",
-          "type": "block",
-          "size": {
-            "px": 0
-          },
-          "content": {
-            "mod": "resume"
-          }
-        },
-        {
-          "id": "smart-split",
-          "type": "block",
-          "size": {
-            "px": 0
-          },
-          "content": {
-            "mod": "smart-split"
-          }
-        },
-        {
-          "id": "close-others",
-          "type": "block",
-          "size": {
-            "px": 0
-          },
-          "content": {
-            "mod": "close-others"
-          }
-        },
-        {
-          "id": "toggle-split",
-          "type": "block",
-          "size": {
-            "px": 0
-          },
-          "content": {
-            "mod": "toggle-split"
-          }
+          "background": "canvas",
+          "radius": 10,
+          "resizable": false
         }
       ],
-      "resizable": false
+      "resizable": false,
+      "background": "chrome"
     }
   ],
   "background": "canvas",
