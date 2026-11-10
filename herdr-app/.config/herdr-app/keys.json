@@ -92,8 +92,8 @@
     "cmd-i": "status-tabs.ticket",
     "cmd-g": "status-tabs.pr",
     "cmd-r": "mod.open:review",
-    "cmd-alt-i": "status-tabs.open-ticket",
-    "cmd-alt-g": "status-tabs.open-pr",
+    "cmd-shift-i": "status-tabs.open-ticket",
+    "cmd-shift-g": "status-tabs.open-pr",
     "cmd-shift-j": "status-panel.scroll-down",
     "cmd-shift-k": "status-panel.scroll-up"
   },
