@@ -11,6 +11,7 @@ const ROW = 22, FILE_ROW = 29, FILE_PAD = 6, INDENT = 12;
 // Monospace advance at 12.5px, rounded up so a wrapped line never runs past the edge.
 const CHAR_W = 7.6, GUTTER = 3 + 46 + 46 + 18 + 32, SIDE_GUTTER = 3 + 46 + 18 + 16, SPLIT_MIN = 1000;
 const FOLD_LINES = 1500, EXPAND_STEP = 20, COMPOSER_ROWS = 8;
+const LIST_W = 300, LIST_MIN = 160, DIFF_MIN = 360;
 const GENERATED = /(^|\/)(package-lock\.json|npm-shrinkwrap\.json|yarn\.lock|pnpm-lock\.yaml|bun\.lockb?|Cargo\.lock|Gemfile\.lock|poetry\.lock|composer\.lock|Pipfile\.lock|go\.sum|flake\.lock)$|\.min\.(js|css)$|\.map$/;
 // Theme colors come as #rrggbb or #rrggbbaa; a tint multiplies more transparency into either.
 const tint = (color, alpha) => {
@@ -387,6 +388,19 @@ export default class Review extends View {
   range() {
     const a = this.from ?? this.cursor;
     return [Math.min(a, this.cursor), Math.max(a, this.cursor)];
+  }
+
+  // The file list's width: live while its edge is dragged, else the saved one, always leaving the diff room.
+  listWidth() {
+    const w = this.listW ?? this.prefs().listW ?? LIST_W;
+    return Math.max(LIST_MIN, this.bodyW ? Math.min(w, this.bodyW - DIFF_MIN) : w);
+  }
+
+  endResize(cx) {
+    if (!this.resizing) return;
+    if (this.listW != null) this.setPref("listW", this.listW);
+    this.resizing = null; this.listW = null;
+    cx.notify();
   }
 
   split() { return Boolean(this.prefs().split) && this.diffW >= SPLIT_MIN; }
@@ -902,7 +916,17 @@ export default class Review extends View {
         : div().flex_1().truncate().text_color(t.foreground).child(this.filter))
       .when(!this.filtering, (el) => el.child(div().id("filter-clear").text_color(t.dim).cursor_pointer().hover((s) => s.text_color(t.foreground))
         .on_mouse_down("left", (_e, cx) => { cx.stop_propagation(); this.clearFilter(cx); }).child("×")));
-    const list = v_flex().w(300).flex_none().bg(glass(t.chrome)).border_r(1).border_color(t.border)
+    const listW = this.listWidth();
+    const edge = div().id("list-edge").absolute().top(0).bottom(0).left(listW - 3).w(6).flex().justify_center().cursor_col_resize()
+      .on_hover((hot, cx) => { this.edgeHot = hot; cx.notify(); })
+      .when(Boolean(this.resizing || this.edgeHot), (el) => el.child(div().w(2).h_full().bg(t.accent)))
+      .on_mouse_down("left", (e, cx) => {
+        cx.stop_propagation();
+        if (e.click_count === 2) { this.resizing = null; this.listW = null; this.setPref("listW", undefined); }
+        else this.resizing = { x: e.position.x, w: listW };
+        cx.notify();
+      });
+    const list = v_flex().w(listW).flex_none().bg(glass(t.chrome)).border_r(1).border_color(t.border)
       .when(Boolean(filterBar), (el) => el.child(filterBar))
       .child(div().id("review-files").flex_1().min_h(0).relative().overflow_hidden()
         .on_size_change((s, cx) => { if (s.height !== this.listH) { this.listH = s.height; this.revealSel(); cx.notify(); } })
@@ -948,11 +972,19 @@ export default class Review extends View {
     return v_flex().id("review").size_full().min_h(0).overflow_hidden().bg(glass(t.background)).rounded(10).border_1().border_color(t.border).shadow_lg().text_color(t.foreground)
       .track_focus(this.handle).on_key_down((e, cx) => this.key(e, cx))
       .on_mouse_down("left", () => { if (!this.typing) this.handle.focus(); })
-      .on_mouse_up("left", () => { this.dragging = false; })
-      .on_mouse_move(() => { if (!this.typing && !this.handle.is_focused()) this.handle.focus(); })
+      .on_mouse_up("left", (_e, cx) => { this.dragging = false; this.endResize(cx); })
+      // Moves and releases only arrive while the pointer is over the overlay, so leaving it ends the drag.
+      .on_hover((hovered, cx) => { if (!hovered) this.endResize(cx); })
+      .on_mouse_move((e, cx) => {
+        if (this.resizing) { this.listW = this.resizing.w + e.position.x - this.resizing.x; this.listW = this.listWidth(); cx.notify(); }
+        if (!this.typing && !this.handle.is_focused()) this.handle.focus();
+      })
       .child(header)
-      .child(div().flex_1().min_h(0).relative()
-        .child(div().absolute().inset_0().flex().child(list).child(diff)))
+      .child(div().id("review-body").flex_1().min_h(0).relative()
+        .on_size_change((s, cx) => { if (s.width !== this.bodyW) { this.bodyW = s.width; cx.notify(); } })
+        .child(div().absolute().inset_0().flex().child(list).child(diff))
+        .child(edge)
+        .when(Boolean(this.resizing), (el) => el.child(div().id("resize-cover").absolute().inset_0().cursor_col_resize())))
       .child(footer);
   }
 }
