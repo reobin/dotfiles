@@ -12,9 +12,9 @@ import { spaces, panes, terminals, run, theme, layout, shared, setShared, openOv
 
 const MONO = "JetBrains Mono";
 const COLLAPSED = "tree.collapsed";
-const CLEAR = "#00000000";
-// The block is a window drag handle; this keeps the list clear of the traffic lights.
-const TOP = 44;
+// The block is a window drag handle; this keeps the list clear of the traffic
+// lights and level with the pane's top (42px tab bar + 8px padding).
+const TOP = 50;
 
 function find(node, id) {
   if (node?.id === id) return node;
@@ -203,8 +203,11 @@ export default class Tree extends View {
   group(t, run, ps, terms, folded) {
     const active = run.some((s) => s.active);
     const inSet = run.length > 1;
-    return v_flex().id(`group-${run[0].id}`).flex_none().py(6).pl(10).pr(2).border_l(2)
-      .border_color(active ? t.accent : CLEAR).when(active, (el) => el.bg(t.background))
+    // A 30px name row sits higher in its box than a pane row's chip, so the
+    // top pad is smaller to make the card look even.
+    const pb = folded.has(run.at(-1).id) ? 1 : 6;
+    return v_flex().id(`group-${run[0].id}`).flex_none().mx(6).pt(1).pb(pb).rounded(10)
+      .when(active, (el) => el.bg(t.background))
       .when(inSet, (el) => el.child(div().h(20).flex_none().px(8).truncate()
         .text_size(11.5).font_semibold().text_color(t.dim).child(run[0].name)))
       .children(run.flatMap((s) => this.rows(t, s, ps, terms, inSet, folded.has(s.id))));
@@ -214,7 +217,7 @@ export default class Tree extends View {
     return runs.map((run) => {
       const icons = this.icons(t, run);
       return run.length > 1
-        ? v_flex().id(`set-${run[0].id}`).flex_none().gap(2).rounded(3).bg(t.foreground + "0a").children(icons)
+        ? v_flex().id(`set-${run[0].id}`).flex_none().gap(2).rounded(8).bg(t.foreground + "0a").children(icons)
         : icons[0];
     });
   }
@@ -222,8 +225,7 @@ export default class Tree extends View {
   icons(t, list) {
     return list.map((s) => {
       const st = s.status && s.status !== "idle" ? status(t, s.status) : null;
-      return press(h_flex().id(`space-${s.id}`).relative().size(34).flex_none().justify_center().items_center().rounded(3).border_l(2)
-        .border_color(s.active ? t.accent : CLEAR)
+      return press(h_flex().id(`space-${s.id}`).relative().size(34).flex_none().justify_center().items_center().rounded(8)
         .when(s.active, (el) => el.bg(t.background))
         .when(!s.active, (el) => el.hover((x) => x.bg(t.hover))), () => run("space.select", { id: s.id }))
         .child(div().text_size(14).font_semibold().text_color(s.active ? t.foreground : t.muted).child([...s.name][0]?.toUpperCase() ?? "?"))
