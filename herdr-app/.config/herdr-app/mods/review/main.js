@@ -20,7 +20,6 @@ const tint = (color, alpha) => {
   const a = Math.round(parseInt(alpha, 16) * parseInt(m[2] ?? "ff", 16) / 255);
   return `#${m[1]}${a.toString(16).padStart(2, "0")}`;
 };
-const glass = (color) => tint(color, "e8");
 const STATUS_COLOR = { A: "ansi2", D: "ansi1", M: "blocked" };
 
 const drafts = () => shared(DRAFTS) ?? {};
@@ -890,7 +889,7 @@ export default class Review extends View {
       .hover((s) => s.bg(t.hover)).on_mouse_down("left", stop)
       .on_click((_e, cx) => { this.setPref(key, !prefs[key]); cx.notify(); }).child(label);
 
-    const header = h_flex().h(46).flex_none().px(14).gap(10).items_center().bg(glass(t.chrome)).border_b(1).border_color(t.border)
+    const header = h_flex().h(46).flex_none().px(14).gap(10).items_center().bg(t.chrome).border_b(1).border_color(t.border)
       .child(svg("mods/workspace-chrome/git-compare.svg").size(15).text_color(t.muted))
       .child(div().font_semibold().text_size(14).child("Review"))
       .child(h_flex().p(2).gap(2).rounded(8).border_1().border_color(t.border)
@@ -926,7 +925,7 @@ export default class Review extends View {
         else this.resizing = { x: e.position.x, w: listW };
         cx.notify();
       });
-    const list = v_flex().w(listW).flex_none().bg(glass(t.chrome)).border_r(1).border_color(t.border)
+    const list = v_flex().w(listW).flex_none().bg(t.chrome).border_r(1).border_color(t.border)
       .when(Boolean(filterBar), (el) => el.child(filterBar))
       .child(div().id("review-files").flex_1().min_h(0).relative().overflow_hidden()
         .on_size_change((s, cx) => { if (s.height !== this.listH) { this.listH = s.height; this.revealSel(); cx.notify(); } })
@@ -963,13 +962,13 @@ export default class Review extends View {
       : filesOn ? [["l ↵", "open"], ["j k", "move"], ["h l", "fold"], ["/", "filter"], ["v", "viewed"], ["n N", "comment"], ["b", "branch"], ["r", "reload"], [send, "send"], ["q", "close"]]
       : [["h", "files"], ["j k", "line"], ["⇧ drag", "range"], ["[ ]", "hunk"], ["⌃d ⌃u", "half page"], ["c", "comment"], ["e d", "edit delete"], ["n N", "next"],
         ...(file && folded(file) ? [["o", "show"]] : []), ["v", "viewed"], ["w", "wrap"], ["|", "split"], [send, "send"], ["q", "close"]];
-    const footer = h_flex().h(28).flex_none().px(14).gap(14).items_center().bg(glass(t.chrome)).border_t(1).border_color(t.border).text_size(11).text_color(t.dim)
+    const footer = h_flex().h(28).flex_none().px(14).gap(14).items_center().bg(t.chrome).border_t(1).border_color(t.border).text_size(11).text_color(t.dim)
       .children(hints.map(([keys, what]) => hint(keys, what)))
       .child(div().flex_1())
       .when(Boolean(taken), (el) => el.child(div().text_color(t.blocked).child(taken)))
       .when(Boolean(this.note), (el) => el.child(div().text_color(t.ansi1).child(this.note)));
 
-    return v_flex().id("review").size_full().min_h(0).overflow_hidden().bg(glass(t.background)).rounded(10).border_1().border_color(t.border).shadow_lg().text_color(t.foreground)
+    return v_flex().id("review").size_full().min_h(0).overflow_hidden().bg(t.background).rounded(10).border_1().border_color(t.border).shadow_lg().text_color(t.foreground)
       .track_focus(this.handle).on_key_down((e, cx) => this.key(e, cx))
       .on_mouse_down("left", () => { if (!this.typing) this.handle.focus(); })
       .on_mouse_up("left", (_e, cx) => { this.dragging = false; this.endResize(cx); })
