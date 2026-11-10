@@ -1,5 +1,4 @@
 vim.opt.relativenumber = true
-vim.opt.termguicolors = false
 vim.opt.numberwidth = 3
 vim.opt.signcolumn = "yes"
 vim.opt.statuscolumn = ""
