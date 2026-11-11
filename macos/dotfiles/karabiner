@@ -23,7 +23,8 @@ fi
 python3 - "$HOME/.config/karabiner/karabiner.json" \
   "$DOTFILES_DIRECTORY/karabiner/.config/karabiner/assets/complex_modifications/caps-escape-hjkl-arrows.json" \
   "$DOTFILES_DIRECTORY/karabiner/.config/karabiner/assets/complex_modifications/app-launch-layer.json" \
-  "$DOTFILES_DIRECTORY/karabiner/.config/karabiner/assets/complex_modifications/iso-to-ansi.json" <<'PY'
+  "$DOTFILES_DIRECTORY/karabiner/.config/karabiner/assets/complex_modifications/iso-to-ansi.json" \
+  "$DOTFILES_DIRECTORY/karabiner/.config/karabiner/assets/complex_modifications/notifications.json" <<'PY'
 import json
 import pathlib
 import sys
@@ -84,6 +85,9 @@ if command -v swiftc >/dev/null 2>&1; then
   swiftc -O -framework AppKit \
     -o "$HOME/.config/karabiner/focus-solo" \
     "$DOTFILES_DIRECTORY/karabiner/.config/karabiner/focus-solo.swift" || echo "warning: focus-solo build failed" >&2
+  swiftc -O -framework AppKit \
+    -o "$HOME/.config/karabiner/notif" \
+    "$DOTFILES_DIRECTORY/karabiner/.config/karabiner/notif.swift" || echo "warning: notif build failed" >&2
 fi
 
 if [[ -d "/Applications/Karabiner-Elements.app" ]]; then

@@ -12,6 +12,7 @@ tt/.config/tt/active/
 tt/.config/tt/current
 karabiner/.config/karabiner/automatic_backups/
 karabiner/.config/karabiner/focus-solo
+karabiner/.config/karabiner/notif
 claude-mods/*/.claude-plugin/types/
 gpui-kit.d.ts
 herdr-app/.config/herdr-app/mods/new-space/roots

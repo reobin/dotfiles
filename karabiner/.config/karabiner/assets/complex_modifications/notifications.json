@@ -1,0 +1,60 @@
+{
+  "title": "Use option+comma to dismiss or open notifications",
+  "rules": [
+    {
+      "description": "Use option+comma to dismiss or open notifications",
+      "manipulators": [
+        {
+          "from": {
+            "key_code": "comma",
+            "modifiers": {
+              "mandatory": [
+                "option"
+              ]
+            }
+          },
+          "to": [
+            {
+              "shell_command": "$HOME/.config/karabiner/notif dismiss"
+            }
+          ],
+          "type": "basic"
+        },
+        {
+          "from": {
+            "key_code": "comma",
+            "modifiers": {
+              "mandatory": [
+                "option",
+                "shift"
+              ]
+            }
+          },
+          "to": [
+            {
+              "shell_command": "$HOME/.config/karabiner/notif dismiss-all"
+            }
+          ],
+          "type": "basic"
+        },
+        {
+          "from": {
+            "key_code": "comma",
+            "modifiers": {
+              "mandatory": [
+                "option",
+                "control"
+              ]
+            }
+          },
+          "to": [
+            {
+              "shell_command": "$HOME/.config/karabiner/notif open"
+            }
+          ],
+          "type": "basic"
+        }
+      ]
+    }
+  ]
+}
