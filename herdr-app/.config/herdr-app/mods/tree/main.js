@@ -1,9 +1,10 @@
-// One sidebar list: every space, its tabs, their panes. A pane reads like a
-// tmux window list: its callsign label, then the agent's icon, session title
-// and status, or the program's name. The shown space sits on a card; only
-// what needs you is marked. Under 160px wide, spaces only. Folded spaces
-// sink under a hairline, and the section the shown space isn't in dims
-// (space-nav walks one section at a time).
+// One sidebar list: every space, its tabs, their panes. Each space is a card,
+// the shown one outlined, and a group of spaces sits in an outlined box. An
+// agent pane gets a row with its icon, session title and status; any other
+// pane is a chip with its callsign and program, and a tab with no agent folds
+// to one line of chips. Only what needs you is marked. Under 160px wide,
+// spaces only. Folded spaces sink under a hairline, and the section the shown
+// space isn't in dims (space-nav walks one section at a time).
 
 import { View, div, svg, image } from "gpui-kit";
 import { v_flex, h_flex } from "gpui-base";
@@ -15,6 +16,11 @@ const COLLAPSED = "tree.collapsed";
 // The block is a window drag handle; this keeps the list clear of the traffic
 // lights and level with the pane's top (42px tab bar + 8px padding).
 const TOP = 50;
+const icon = (name) => svg(`mods/tree/${name}.svg`);
+const isAgent = (p) => Boolean(p.program?.agent);
+// A tab whose content fits on its label's line: no agent at all, or one agent alone.
+const quiet = (list) => list.length > 0 && !list.some(isAgent);
+const solo = (list) => (list.length === 1 && isAgent(list[0]) ? list[0] : null);
 
 function find(node, id) {
   if (node?.id === id) return node;
@@ -29,6 +35,12 @@ const narrow = () => (find(layout(), "sidebar")?.size?.px ?? Infinity) < 160;
 
 // Idle says nothing: a mark means work is running or waiting on you.
 const status = (t, st) => mark(t, st);
+
+const RANK = { working: 1, done: 2, blocked: 3 };
+function worst(t, list) {
+  const st = list.map((p) => p.status).filter((x) => RANK[x]).sort((a, b) => RANK[b] - RANK[a])[0];
+  return st ? status(t, st) : null;
+}
 
 // Where a space is now: its first terminal's live folder, else where it was made.
 function place(s, ps) {
@@ -51,17 +63,22 @@ function sets(list) {
   return runs;
 }
 
-// The press stops at the row so it doesn't drag the window.
+// The press stops at the row so it doesn't drag the window, and at a chip so
+// the tab line under it doesn't act too.
 function press(el, act) {
   return el
     .on_mouse_down("left", (_e, cx) => cx.stop_propagation())
-    .on_mouse_up("left", () => act());
+    .on_mouse_up("left", (_e, cx) => {
+      cx.stop_propagation();
+      act();
+    });
 }
 
 export default class Tree extends View {
   init(_props, cx) {
     this.repo = {}; // where() -> the main checkout's folder name, null: not a repo
     this.asking = false;
+    this.hot = null; // "space-<id>" or "tab-<id>": its whole card or block lights up
     cx.timer.every(1000, (cx) => this.lookup(cx));
     this.lookup(cx);
     cx.spawn(async () => {
@@ -143,41 +160,89 @@ export default class Tree extends View {
     const [primary, secondary] = label ? [label, name] : [name || s.name, null];
     const tabs = new Set(s.tabs.map((tab) => tab.id));
     const st = folded && s.status && s.status !== "idle" ? status(t, s.status) : null;
-    return press(h_flex().id(`space-${s.id}`).h(30).flex_none().px(8).gap(6).items_center().rounded(3)
-      .hover((x) => x.bg(t.hover)), () => run("space.select", { id: s.id }))
+    return press(this.lit(h_flex().id(`space-${s.id}`).h(28).flex_none().px(6).gap(6).items_center().rounded(5),
+      `space-${s.id}`), () => run("space.select", { id: s.id }))
       .on_mouse_down("right", () => openOverlay({ mod: "menu", kind: "popup", width: 200, height: 260, props: { tab: "space", target: { id: s.id } } }))
+      .child(icon("cube").size(14).flex_none().text_color(t.dim))
       .child(div().min_w(0).truncate().text_size(14).font_semibold().text_color(s.active ? t.foreground : t.muted).child(primary))
-      .when(Boolean(secondary), (el) => el.child(div().flex_none().text_size(12.5).text_color(t.dim).child(secondary)))
+      .child(div().flex_1())
+      .when(Boolean(secondary), (el) => el.child(h_flex().flex_none().gap(4).items_center().text_color(t.dim)
+        .child(icon("book").size(12))
+        .child(div().font_family(MONO).text_size(11).child(secondary))))
       .when(folded, (el) => el
-        .child(div().flex_1())
         .child(div().flex_none().font_family(MONO).text_size(11.5).text_color(t.dim)
           .child(`+${ps.filter((p) => tabs.has(p.tab)).length}`))
         .when(Boolean(st), (el) => el.child(st)));
   }
 
-  // A section break, not an item: a hairline with the tab's place and name on it.
-  tab(t, s, tab) {
+  // The tab's place and name. A tab with no agent ends there: its panes
+  // follow on the same line as chips, with the worst status at the end. A
+  // lone agent follows as its row, and the tab name gives way to its title.
+  tab(t, s, tab, list, terms) {
     const shown = s.active && tab.active;
-    const text = [String(tab.index), tab.named ? tab.name : null, tab.zoomed ? "zoomed" : null].filter(Boolean).join(" · ");
-    const line = () => div().h(1).bg(t.border);
-    return press(h_flex().id(`tab-${tab.id}`).h(23).flex_none().px(8).mt(2).gap(6).items_center().rounded(3)
-      .hover((x) => x.bg(t.hover)), () => { run("space.select", { id: s.id }); run("tab.select", { id: tab.id }); })
+    const one = solo(list);
+    const st = quiet(list) ? worst(t, list) : null;
+    const label = h_flex().flex_none().h(22).gap(5).items_center()
+      .child(icon("window").size(12).flex_none().text_color(t.dim))
+      .child(div().flex_none().font_family(MONO).text_size(11).font_semibold().text_color(shown ? t.foreground : t.muted).child(String(tab.index)))
+      .when(tab.named, (el) => el.child(div().min_w(0).max_w(one ? 90 : 140).truncate().text_size(11.5).text_color(t.dim).child(tab.name)))
+      .when(tab.zoomed, (el) => el.child(div().flex_none().text_size(11.5).text_color(t.dim).child("zoomed")));
+    // Chips wrap in their own column, so a second line starts under the
+    // first chip rather than under the tab icon.
+    return press(this.lit(h_flex().id(`tab-${tab.id}`).min_h(22).flex_none().px(8).gap(5),
+      `tab-${tab.id}`), () => { run("space.select", { id: s.id }); run("tab.select", { id: tab.id }); })
+      .when(!one, (el) => el.items_start())
       .on_mouse_down("right", () => openOverlay({ mod: "menu", kind: "popup", width: 200, props: { tab: "tab", target: { id: tab.id, space: s.id } } }))
-      .child(line().w(6).flex_none())
-      .child(div().flex_shrink(0).max_w(180).truncate().text_size(11.5).font_medium().text_color(shown ? t.muted : t.dim).child(text))
-      .child(line().flex_1());
+      .child(label)
+      .when(Boolean(one), (el) => el.child(this.pane(t, s, one, terms.get(one?.terminal), true)))
+      .when(quiet(list), (el) => el
+        .child(h_flex().flex_1().min_w(0).flex_wrap().gap(4).pl(3)
+          .children(list.map((p) => this.chip(t, s, p, terms.get(p.terminal)))))
+        .when(Boolean(st), (el) => el.child(h_flex().flex_none().h(22).items_center().child(st))));
   }
 
-  pane(t, s, p, term) {
+  label(p, term) {
     const sign = p.terminal ? term?.labels?.callsign ?? shared("callsigns.given")?.[p.terminal] : null;
+    const name = isAgent(p) ? p.title || p.program.name : p.terminal ? p.program?.name ?? "shell" : p.title;
+    return [sign, name];
+  }
+
+  // Any pane that isn't an agent: its callsign and program.
+  chip(t, s, p, term) {
+    const [sign, name] = this.label(p, term);
+    const on = s.active && p.focused;
+    const st = status(t, p.status);
+    return press(h_flex().id(`pane-${p.pane}`).h(22).flex_none().pl(2).pr(7).gap(5).items_center().rounded(4)
+      .bg(t.foreground + "08").hover((x) => x.bg(t.hover)), () => run("pane.focus", { pane: p.pane }))
+      .when(Boolean(sign), (el) => el.child(h_flex().flex_none().min_w(24).h(17).px(4).justify_center().items_center().rounded(2)
+        .font_family(MONO).text_size(11).font_semibold()
+        .bg(on ? t.accent + "24" : t.foreground + "0f").text_color(on ? t.accent : t.muted).child(sign)))
+      .child(div().min_w(0).max_w(140).truncate().text_size(12).text_color(on ? t.foreground : t.muted).child(name ?? ""))
+      .when(Boolean(st), (el) => el.child(st));
+  }
+
+  // Agents get rows; the rest of the tab gathers in one wrapping line of chips.
+  paneList(t, s, list, terms) {
+    const tools = list.filter((p) => !isAgent(p));
+    return [
+      ...list.filter(isAgent).map((p) => this.pane(t, s, p, terms.get(p.terminal))),
+      ...(tools.length ? [h_flex().flex_none().flex_wrap().gap(4).px(8).py(3)
+        .children(tools.map((p) => this.chip(t, s, p, terms.get(p.terminal))))] : []),
+    ];
+  }
+
+  // inline: on its tab's line, it takes the rest of the line instead of a row.
+  pane(t, s, p, term, inline = false) {
+    const [sign, name] = this.label(p, term);
     const agent = p.program?.agent;
-    const name = agent ? p.title || p.program.name : p.terminal ? p.program?.name ?? "shell" : p.title;
     const pic = agent && p.program.icon
       ? p.program.tint ? svg(p.program.icon).size(15).flex_none().text_color(t.dim) : image(p.program.icon).w(15).h(15).flex_none()
       : null;
     const on = s.active && p.focused;
     const st = status(t, p.status);
-    return press(h_flex().id(`pane-${p.pane}`).h(28).flex_none().px(8).gap(8).items_center().rounded(3)
+    return press(h_flex().id(`pane-${p.pane}`).h(28).gap(8).items_center().rounded(3)
+      .when(inline, (el) => el.flex_1().min_w(0).pl(4))
+      .when(!inline, (el) => el.flex_none().px(8))
       .hover((x) => x.bg(t.hover)), () => run("pane.focus", { pane: p.pane }))
       .child(h_flex().flex_none().min_w(28).h(19).px(5).justify_center().items_center().rounded(2)
         .font_family(MONO).text_size(11.5).font_semibold()
@@ -187,31 +252,51 @@ export default class Tree extends View {
       .when(Boolean(st), (el) => el.child(st));
   }
 
+  // Hovering a space's or tab's title row lights the whole card or tab block,
+  // so the row only reports the hover.
+  lit(el, key) {
+    return el.on_hover((on, cx) => {
+      if (on) this.hot = key;
+      else if (this.hot === key) this.hot = null;
+      cx.notify();
+    });
+  }
+
   rows(t, s, ps, terms, inSet, folded) {
     if (folded) return [this.space(t, s, ps, inSet, true)];
     const mine = s.tabs.map((tab) => [tab, ps.filter((p) => p.tab === tab.id)]);
     return [
       this.space(t, s, ps, inSet, false),
-      ...mine.flatMap(([tab, list]) => [
-        ...(s.tabs.length > 1 ? [this.tab(t, s, tab)] : []),
-        ...list.map((p) => this.pane(t, s, p, terms.get(p.terminal))),
-      ]),
+      ...mine.flatMap(([tab, list]) => s.tabs.length > 1
+        ? [v_flex().flex_none().mt(2).rounded(5).when(this.hot === `tab-${tab.id}`, (el) => el.bg(t.hover))
+          .child(this.tab(t, s, tab, list, terms))
+          .children(quiet(list) || solo(list) ? [] : this.paneList(t, s, list, terms))]
+        : this.paneList(t, s, list, terms)),
     ];
   }
 
-  // A run of neighbouring spaces shares one card under its name; the card
-  // carries the name, so each space row shows its repo alone.
+  // The shown card's outline takes a pixel of its padding, so nothing shifts
+  // when it moves.
+  card(t, s, ps, terms, inSet, folded) {
+    const pad = s.active ? 1 : 0;
+    return v_flex().id(`card-${s.id}`).flex_none().px(4 - pad).pt(2 - pad).pb((folded ? 2 : 4) - pad).rounded(9)
+      .bg(this.hot === `space-${s.id}` ? t.hover : s.active ? t.background : t.foreground + "06")
+      .when(s.active, (el) => el.border(1).border_color(t.accent + "73"))
+      .children(this.rows(t, s, ps, terms, inSet, folded));
+  }
+
+  // A run of neighbouring spaces shares an outlined box under its name; the
+  // box carries the name, so each space shows its repo alone.
   group(t, run, ps, terms, folded) {
-    const active = run.some((s) => s.active);
-    const inSet = run.length > 1;
-    // A 30px name row sits higher in its box than a pane row's chip, so the
-    // top pad is smaller to make the card look even.
-    const pb = folded.has(run.at(-1).id) ? 1 : 6;
-    return v_flex().id(`group-${run[0].id}`).flex_none().mx(6).pt(1).pb(pb).rounded(10)
-      .when(active, (el) => el.bg(t.background))
-      .when(inSet, (el) => el.child(div().h(20).flex_none().px(8).truncate()
-        .text_size(11.5).font_semibold().text_color(t.dim).child(run[0].name)))
-      .children(run.flatMap((s) => this.rows(t, s, ps, terms, inSet, folded.has(s.id))));
+    if (run.length === 1) return this.card(t, run[0], ps, terms, false, folded.has(run[0].id));
+    // The shown space's group echoes its card's outline, fainter.
+    const here = run.some((s) => s.active);
+    return v_flex().id(`group-${run[0].id}`).flex_none().p(4).gap(4).rounded(12).border(1)
+      .border_color(here ? t.accent + "40" : t.border)
+      .child(h_flex().h(24).flex_none().px(6).gap(6).items_center()
+        .child(icon("layers").size(13).flex_none().text_color(here ? t.muted : t.dim))
+        .child(div().min_w(0).truncate().text_size(12).font_semibold().text_color(here ? t.foreground : t.muted).child(run[0].name)))
+      .children(run.map((s) => this.card(t, s, ps, terms, true, folded.has(s.id))));
   }
 
   rail(t, runs) {
@@ -288,8 +373,8 @@ export default class Tree extends View {
     const ps = panes();
     const terms = new Map(terminals().map((x) => [x.address, x]));
     return root
-      .child(upper(v_flex().pt(TOP).pb(12).gap(2).children(top.map((run) => this.group(t, run, ps, terms, folded)))))
-      .when(dock.length > 0, (el) => el.child(shelf(v_flex().pt(6).pb(12).gap(2)
+      .child(upper(v_flex().pt(TOP).pb(12).px(8).gap(8).children(top.map((run) => this.group(t, run, ps, terms, folded)))))
+      .when(dock.length > 0, (el) => el.child(shelf(v_flex().pt(8).pb(12).px(8).gap(8)
         .children(dock.map((run) => this.group(t, run, ps, terms, folded))))));
   }
 }
