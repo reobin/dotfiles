@@ -14,8 +14,8 @@ import { spaces, panes, terminals, run, theme, layout, shared, setShared, openOv
 const MONO = "JetBrains Mono";
 const COLLAPSED = "tree.collapsed";
 // The block is a window drag handle; this keeps the list clear of the traffic
-// lights and level with the pane's top (38px tab bar + 8px padding).
-const TOP = 46;
+// lights and level with the pane's top (34px tab bar + 8px padding).
+const TOP = 42;
 const icon = (name) => svg(`mods/tree/${name}.svg`);
 const isAgent = (p) => Boolean(p.program?.agent);
 // A tab whose content fits on its label's line: no agent at all, or one agent alone.

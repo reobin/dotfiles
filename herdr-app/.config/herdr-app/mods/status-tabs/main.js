@@ -134,8 +134,10 @@ export default class Tabs extends View {
     const item = (c, i) => {
       const program = panes().find(p => p.tab === c.id && p.program?.agent)?.program ?? panes().find(p => p.tab === c.id)?.program;
       const name = /^tb\d+$/.test(c.name) ? program?.name ?? "Terminal" : c.name;
-      return h_flex().id(`tab-${c.id}`).h(29).px(10).gap(7).rounded(7).items_center().flex_none().text_size(12.8)
-        .bg(c.active ? t.raised : t.chrome).text_color(c.active ? t.foreground : t.muted)
+      // Same box as the panel buttons; the active tab's outline takes a pixel of its padding so it doesn't shift.
+      return h_flex().id(`tab-${c.id}`).h(26).px(c.active ? 7 : 8).gap(5).rounded(6).items_center().flex_none().text_size(12)
+        .bg(c.active ? t.background : t.chrome).text_color(c.active ? t.foreground : t.muted)
+        .when(c.active, el => el.border(1).border_color(t.accent + "73"))
         .hover(s => s.bg(t.hover))
         .on_mouse_down("left", (e, cx) => { cx.stop_propagation(); this.pressed = i; if (e.click_count === 2) run("tab.rename", { id: c.id }); })
         .on_mouse_up("left", () => {
