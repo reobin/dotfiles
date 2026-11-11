@@ -30,7 +30,7 @@ export default class Pane extends View {
   button(t, id, icon, command, args) {
     return div()
       .id(id)
-      .p(3)
+      .p(4)
       .rounded(5)
       .text_color(t.dim)
       .hover((s) => s.bg(t.hover).text_color(t.foreground))
@@ -61,12 +61,12 @@ export default class Pane extends View {
       .text_size(12)
       .on_hover((hovered, cx) => { this.hovered = hovered; cx.notify(); })
       .on_click(() => run("pane.focus", { pane }))
-      .when(Boolean(sign), (el) => el.child(div().flex_none().px(6).h(18).flex().items_center().rounded(5).bg(t.accent + "26").text_size(11).font_semibold().text_color(t.accent).child(sign)))
+      .when(Boolean(sign), (el) => el.child(div().flex_none().px(8).h(18).flex().items_center().rounded(5).bg(t.accent + "26").text_size(11).font_semibold().text_color(t.accent).child(sign)))
       .when(Boolean(pic), (el) => el.child(pic))
       .child(div().flex_none().truncate().max_w(260).font_medium().text_color(t.foreground).child(name))
       .child(div().flex_1().truncate().text_color(t.dim).child(folder(p.cwd)))
       .when(st === "working" || st === "done", el => el.child(mark(t, st)))
-      .when(st === "blocked", el => el.child(div().flex_none().px(6).h(18).flex().gap(5).items_center().rounded(5).bg(t.blocked + "26").text_size(10.5).font_semibold().text_color(t.blocked).child(mark(t, "blocked", 10)).child("Needs you")))
+      .when(st === "blocked", el => el.child(div().flex_none().px(8).h(18).flex().gap(4).items_center().rounded(5).bg(t.blocked + "26").text_size(10.5).font_semibold().text_color(t.blocked).child(mark(t, "blocked", 10)).child("Needs you")))
       .when(this.hovered, el => el
         .child(this.button(t, `ph-r-${pane}`, "split-right", "pane.split", { direction: "right", pane }))
         .child(this.button(t, `ph-d-${pane}`, "split-down", "pane.split", { direction: "down", pane }))

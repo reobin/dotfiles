@@ -129,14 +129,14 @@ export default class Tabs extends View {
     }
     const shown = space?.tabs ?? [];
     const stop = (_e, cx) => cx.stop_propagation();
-    const button = (id, label, action) => div().id(id).size(26).flex_none().flex().items_center().justify_center().rounded(6).text_color(t.dim).hover(s => s.bg(t.hover).text_color(t.foreground))
+    const button = (id, label, action) => div().id(id).size(22).flex_none().flex().items_center().justify_center().rounded(6).text_color(t.dim).hover(s => s.bg(t.hover).text_color(t.foreground))
       .on_mouse_down("left", stop).on_click(action).child(label);
     const item = (c, i) => {
       const program = panes().find(p => p.tab === c.id && p.program?.agent)?.program ?? panes().find(p => p.tab === c.id)?.program;
       const name = /^tb\d+$/.test(c.name) ? program?.name ?? "Terminal" : c.name;
       // Same box as the panel buttons; the active tab's outline takes a pixel of its padding so it doesn't shift.
-      return h_flex().id(`tab-${c.id}`).h(26).px(c.active ? 7 : 8).gap(5).rounded(6).items_center().flex_none().text_size(12)
-        .bg(c.active ? t.background : t.chrome).text_color(c.active ? t.foreground : t.muted)
+      return h_flex().id(`tab-${c.id}`).h(22).px(c.active ? 7 : 8).gap(4).rounded(6).items_center().flex_none().text_size(12)
+        .bg(c.active ? t.background : t.foreground + "06").text_color(c.active ? t.foreground : t.muted)
         .when(c.active, el => el.border(1).border_color(t.accent + "73"))
         .hover(s => s.bg(t.hover))
         .on_mouse_down("left", (e, cx) => { cx.stop_propagation(); this.pressed = i; if (e.click_count === 2) run("tab.rename", { id: c.id }); })
@@ -154,14 +154,14 @@ export default class Tabs extends View {
     const root = layout(), sidebar = find(root, "sidebar"), w = window();
     // Old saved rails and a dragged-narrow sidebar can be smaller than the window buttons.
     const lightsPadding = w?.platform === "macos" && w.titlebar === "none" && !w.fullscreen && root?.traffic_lights
-      ? Math.max(10, (root.traffic_lights[0] + 64) / settings().zoom - (sidebar?.hidden ? 0 : sidebar?.size?.px ?? 0))
-      : 10;
+      ? Math.max(8, (root.traffic_lights[0] + 64) / settings().zoom - (sidebar?.hidden ? 0 : sidebar?.size?.px ?? 0))
+      : 8;
     const panel = find(root, "panel"), body = find(root, "panel-body");
     const enabled = [...(shared("workspace.panels") ?? ["files"]), "ticket-status", "pr-status"].filter(id => find(body, id));
     this.syncPanel(space, panel, body, enabled);
     const panelButton = (id, content) => {
       const on = panel && !panel.hidden && body?.active === id;
-      return h_flex().id(`panel-${id}`).h(26).px(8).gap(5).flex_none().items_center().rounded(6)
+      return h_flex().id(`panel-${id}`).h(22).px(8).gap(4).flex_none().items_center().rounded(6)
         .text_size(12).bg(on ? t.selected : t.chrome).text_color(on ? t.foreground : t.muted)
         .hover(s => s.bg(t.hover)).on_mouse_down("left", stop)
         .on_click(() => this.togglePanel(id)).children(content);
@@ -176,7 +176,7 @@ export default class Tabs extends View {
       const count = (n, text, color) => n > 0 ? [div().text_size(11.5).text_color(color).child(`${text}${n}`)] : [];
       const branch = work?.branch || g?.branch;
       const tip = [branch ? `Review changes on ${branch}` : "Review changes", g ? describe(g) : null].filter(Boolean).join(" · ");
-      return h_flex().id("review-open").h(26).px(8).gap(5).flex_none().items_center().rounded(6)
+      return h_flex().id("review-open").h(22).px(8).gap(4).flex_none().items_center().rounded(6)
         .text_size(12).bg(t.chrome).text_color(t.muted)
         .hover(s => s.bg(t.hover)).on_mouse_down("left", stop)
         .on_click(() => run("mod.open", { name: "review" }))
@@ -186,7 +186,7 @@ export default class Tabs extends View {
         .when(Boolean(g), el => el.children([...count(g.files, "", t.dim), ...count(g.add, "+", t.ansi2), ...count(g.del, "−", t.ansi1),
           ...count(g.ahead, "↑", t.ansi4), ...count(g.behind, "↓", t.ansi5)]))
         .when(Boolean(clean), el => el.child(div().text_size(11).text_color(t.dim).child("✓")))
-        .when(drafts > 0, el => el.child(div().px(5).rounded(4).bg(t.accent).text_color(t.accent_foreground).text_size(10.5).child(String(drafts))));
+        .when(drafts > 0, el => el.child(div().px(4).rounded(4).bg(t.accent).text_color(t.accent_foreground).text_size(10.5).child(String(drafts))));
     };
     const current = entryFor(work);
     const ticket = current?.ticket;
@@ -210,10 +210,10 @@ export default class Tabs extends View {
       ]);
     };
     // The top padding matches the 8px under the bar, so the buttons sit midway between the window's edge and the pane.
-    return h_flex().size_full().min_w(0).px(10).pl(lightsPadding).pt(8).gap(3).items_center().bg(t.chrome)
+    return h_flex().size_full().min_w(0).px(8).pl(lightsPadding).pt(8).gap(8).items_center().bg(t.chrome)
       .on_mouse_up("left", () => { this.pressed = null; })
       .on_scroll_wheel(e => { if (Math.abs(e.delta.y) >= 1) run(e.delta.y > 0 ? "tab.prev" : "tab.next"); })
-      .child(h_flex().id("tab-scroll").flex_1().min_w(0).h_full().items_center().gap(3).overflow_x_scrollbar().children(shown.length > 1 ? shown.map(item) : []))
+      .child(h_flex().id("tab-scroll").flex_1().min_w(0).h_full().items_center().gap(8).overflow_x_scrollbar().children(shown.length > 1 ? shown.map(item) : []))
       .child(button("tab-new", "+", () => openOverlay({ mod: "new-menu", kind: "popup", width: 250, height: 512 })))
       .when(enabled.includes("files"), el => el.child(panelButton("files", [svg("mods/files/file.svg").size(14), "Files"])))
       .child(reviewButton())

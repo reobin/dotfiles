@@ -38,7 +38,7 @@
             "mod": "status-tabs"
           },
           "size": {
-            "px": 34
+            "px": 30
           },
           "window_drag": true
         },
@@ -198,6 +198,7 @@
     }
   ],
   "background": "chrome",
+  "terminal_opacity": 0,
   "terminal_padding": [
     14,
     12
@@ -205,6 +206,6 @@
   "titlebar": "none",
   "traffic_lights": [
     12,
-    16
+    11
   ]
 }

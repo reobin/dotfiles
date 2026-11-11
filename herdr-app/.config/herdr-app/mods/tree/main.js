@@ -14,8 +14,8 @@ import { spaces, panes, terminals, run, theme, layout, shared, setShared, openOv
 const MONO = "JetBrains Mono";
 const COLLAPSED = "tree.collapsed";
 // The block is a window drag handle; this keeps the list clear of the traffic
-// lights and level with the pane's top (34px tab bar + 8px padding).
-const TOP = 42;
+// lights and level with the pane's top (30px tab bar + 8px padding).
+const TOP = 38;
 const icon = (name) => svg(`mods/tree/${name}.svg`);
 const isAgent = (p) => Boolean(p.program?.agent);
 // A tab whose content fits on its label's line: no agent at all, or one agent alone.
@@ -160,7 +160,7 @@ export default class Tree extends View {
     const [primary, secondary] = label ? [label, name] : [name || s.name, null];
     const tabs = new Set(s.tabs.map((tab) => tab.id));
     const st = folded && s.status && s.status !== "idle" ? status(t, s.status) : null;
-    return press(this.lit(h_flex().id(`space-${s.id}`).h(28).flex_none().px(6).gap(6).items_center().rounded(5),
+    return press(this.lit(h_flex().id(`space-${s.id}`).h(22).flex_none().px(8).gap(8).items_center().rounded(5),
       `space-${s.id}`), () => run("space.select", { id: s.id }))
       .on_mouse_down("right", () => openOverlay({ mod: "menu", kind: "popup", width: 200, height: 260, props: { tab: "space", target: { id: s.id } } }))
       .child(icon("cube").size(14).flex_none().text_color(t.dim))
@@ -182,21 +182,21 @@ export default class Tree extends View {
     const shown = s.active && tab.active;
     const one = solo(list);
     const st = quiet(list) ? worst(t, list) : null;
-    const label = h_flex().flex_none().h(22).gap(5).items_center()
+    const label = h_flex().flex_none().h(22).gap(4).items_center()
       .child(icon("window").size(12).flex_none().text_color(t.dim))
       .child(div().flex_none().font_family(MONO).text_size(11).font_semibold().text_color(shown ? t.foreground : t.muted).child(String(tab.index)))
       .when(tab.named, (el) => el.child(div().min_w(0).max_w(one ? 90 : 140).truncate().text_size(11.5).text_color(t.dim).child(tab.name)))
       .when(tab.zoomed, (el) => el.child(div().flex_none().text_size(11.5).text_color(t.dim).child("zoomed")));
     // Chips wrap in their own column, so a second line starts under the
     // first chip rather than under the tab icon.
-    return press(this.lit(h_flex().id(`tab-${tab.id}`).min_h(22).flex_none().px(8).gap(5),
+    return press(this.lit(h_flex().id(`tab-${tab.id}`).min_h(22).flex_none().px(8).gap(4),
       `tab-${tab.id}`), () => { run("space.select", { id: s.id }); run("tab.select", { id: tab.id }); })
       .when(!one, (el) => el.items_start())
       .on_mouse_down("right", () => openOverlay({ mod: "menu", kind: "popup", width: 200, props: { tab: "tab", target: { id: tab.id, space: s.id } } }))
       .child(label)
       .when(Boolean(one), (el) => el.child(this.pane(t, s, one, terms.get(one?.terminal), true)))
       .when(quiet(list), (el) => el
-        .child(h_flex().flex_1().min_w(0).flex_wrap().gap(4).pl(3)
+        .child(h_flex().flex_1().min_w(0).flex_wrap().gap(4).pl(4)
           .children(list.map((p) => this.chip(t, s, p, terms.get(p.terminal)))))
         .when(Boolean(st), (el) => el.child(h_flex().flex_none().h(22).items_center().child(st))));
   }
@@ -212,9 +212,9 @@ export default class Tree extends View {
     const [sign, name] = this.label(p, term);
     const on = s.active && p.focused;
     const st = status(t, p.status);
-    return press(h_flex().id(`pane-${p.pane}`).h(22).flex_none().pl(2).pr(7).gap(5).items_center().rounded(4)
+    return press(h_flex().id(`pane-${p.pane}`).h(22).flex_none().pl(2).pr(8).gap(4).items_center().rounded(4)
       .bg(t.foreground + "08").hover((x) => x.bg(t.hover)), () => run("pane.focus", { pane: p.pane }))
-      .when(Boolean(sign), (el) => el.child(h_flex().flex_none().min_w(24).h(17).px(4).justify_center().items_center().rounded(2)
+      .when(Boolean(sign), (el) => el.child(h_flex().flex_none().min_w(24).h(18).px(4).justify_center().items_center().rounded(2)
         .font_family(MONO).text_size(11).font_semibold()
         .bg(on ? t.accent + "24" : t.foreground + "0f").text_color(on ? t.accent : t.muted).child(sign)))
       .child(div().min_w(0).max_w(140).truncate().text_size(12).text_color(on ? t.foreground : t.muted).child(name ?? ""))
@@ -226,7 +226,7 @@ export default class Tree extends View {
     const tools = list.filter((p) => !isAgent(p));
     return [
       ...list.filter(isAgent).map((p) => this.pane(t, s, p, terms.get(p.terminal))),
-      ...(tools.length ? [h_flex().flex_none().flex_wrap().gap(4).px(8).py(3)
+      ...(tools.length ? [h_flex().flex_none().flex_wrap().gap(4).px(8).py(4)
         .children(tools.map((p) => this.chip(t, s, p, terms.get(p.terminal))))] : []),
     ];
   }
@@ -240,11 +240,11 @@ export default class Tree extends View {
       : null;
     const on = s.active && p.focused;
     const st = status(t, p.status);
-    return press(h_flex().id(`pane-${p.pane}`).h(28).gap(8).items_center().rounded(3)
+    return press(h_flex().id(`pane-${p.pane}`).h(26).gap(8).items_center().rounded(3)
       .when(inline, (el) => el.flex_1().min_w(0).pl(4))
       .when(!inline, (el) => el.flex_none().px(8))
       .hover((x) => x.bg(t.hover)), () => run("pane.focus", { pane: p.pane }))
-      .child(h_flex().flex_none().min_w(28).h(19).px(5).justify_center().items_center().rounded(2)
+      .child(h_flex().flex_none().min_w(28).h(18).px(4).justify_center().items_center().rounded(2)
         .font_family(MONO).text_size(11.5).font_semibold()
         .bg(on ? t.accent + "24" : t.foreground + "0f").text_color(on ? t.accent : t.muted).child(sign ?? "·"))
       .when(Boolean(pic), (el) => el.child(pic))
@@ -268,7 +268,7 @@ export default class Tree extends View {
     return [
       this.space(t, s, ps, inSet, false),
       ...mine.flatMap(([tab, list]) => s.tabs.length > 1
-        ? [v_flex().flex_none().mt(2).rounded(5).when(this.hot === `tab-${tab.id}`, (el) => el.bg(t.hover))
+        ? [v_flex().flex_none().mt(4).rounded(5).when(this.hot === `tab-${tab.id}`, (el) => el.bg(t.hover))
           .child(this.tab(t, s, tab, list, terms))
           .children(quiet(list) || solo(list) ? [] : this.paneList(t, s, list, terms))]
         : this.paneList(t, s, list, terms)),
@@ -279,7 +279,7 @@ export default class Tree extends View {
   // when it moves.
   card(t, s, ps, terms, inSet, folded) {
     const pad = s.active ? 1 : 0;
-    return v_flex().id(`card-${s.id}`).flex_none().px(4 - pad).pt(2 - pad).pb((folded ? 2 : 4) - pad).rounded(8)
+    return v_flex().id(`card-${s.id}`).flex_none().px(4 - pad).pt(4 - pad).pb(4 - pad).rounded(8)
       .bg(this.hot === `space-${s.id}` ? t.hover : s.active ? t.background : t.foreground + "06")
       .when(s.active, (el) => el.border(1).border_color(t.accent + "73"))
       .children(this.rows(t, s, ps, terms, inSet, folded));
@@ -293,8 +293,8 @@ export default class Tree extends View {
     const here = run.some((s) => s.active);
     return v_flex().id(`group-${run[0].id}`).flex_none().p(4).gap(4).rounded(12).border(1)
       .border_color(here ? t.accent + "40" : t.border)
-      .child(h_flex().h(24).flex_none().px(6).gap(6).items_center()
-        .child(icon("layers").size(13).flex_none().text_color(here ? t.muted : t.dim))
+      .child(h_flex().h(22).flex_none().px(8).gap(8).items_center()
+        .child(icon("layers").size(14).flex_none().text_color(here ? t.muted : t.dim))
         .child(div().min_w(0).truncate().text_size(12).font_semibold().text_color(here ? t.foreground : t.muted).child(run[0].name)))
       .children(run.map((s) => this.card(t, s, ps, terms, true, folded.has(s.id))));
   }
@@ -303,7 +303,7 @@ export default class Tree extends View {
     return runs.map((run) => {
       const icons = this.icons(t, run);
       return run.length > 1
-        ? v_flex().id(`set-${run[0].id}`).flex_none().gap(2).rounded(8).bg(t.foreground + "0a").children(icons)
+        ? v_flex().id(`set-${run[0].id}`).flex_none().gap(4).rounded(8).bg(t.foreground + "0a").children(icons)
         : icons[0];
     });
   }
@@ -311,7 +311,7 @@ export default class Tree extends View {
   icons(t, list) {
     return list.map((s) => {
       const st = s.status && s.status !== "idle" ? status(t, s.status) : null;
-      return press(h_flex().id(`space-${s.id}`).relative().size(34).flex_none().justify_center().items_center().rounded(8)
+      return press(h_flex().id(`space-${s.id}`).relative().size(32).flex_none().justify_center().items_center().rounded(8)
         .when(s.active, (el) => el.bg(t.background))
         .when(!s.active, (el) => el.hover((x) => x.bg(t.hover))), () => run("space.select", { id: s.id }))
         .child(div().text_size(14).font_semibold().text_color(s.active ? t.foreground : t.muted).child([...s.name][0]?.toUpperCase() ?? "?"))
@@ -367,14 +367,14 @@ export default class Tree extends View {
     const root = v_flex().size_full().bg(t.chrome);
     if (narrow()) {
       return root
-        .child(upper(v_flex().pt(TOP).pb(8).gap(6).items_center().children(this.rail(t, top))))
-        .when(dock.length > 0, (el) => el.child(shelf(v_flex().py(8).gap(6).items_center().children(this.rail(t, dock)))));
+        .child(upper(v_flex().pt(TOP).pb(8).gap(8).items_center().children(this.rail(t, top))))
+        .when(dock.length > 0, (el) => el.child(shelf(v_flex().py(8).gap(8).items_center().children(this.rail(t, dock)))));
     }
     const ps = panes();
     const terms = new Map(terminals().map((x) => [x.address, x]));
     return root
-      .child(upper(v_flex().pt(TOP).pb(12).px(8).gap(8).children(top.map((run) => this.group(t, run, ps, terms, folded)))))
-      .when(dock.length > 0, (el) => el.child(shelf(v_flex().pt(8).pb(12).px(8).gap(8)
+      .child(upper(v_flex().pt(TOP).pb(8).pl(8).gap(8).children(top.map((run) => this.group(t, run, ps, terms, folded)))))
+      .when(dock.length > 0, (el) => el.child(shelf(v_flex().pt(8).pb(8).pl(8).gap(8)
         .children(dock.map((run) => this.group(t, run, ps, terms, folded))))));
   }
 }
