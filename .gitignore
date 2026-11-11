@@ -3,10 +3,6 @@ claude/.claude/*
 !claude/.claude/settings.json
 !claude/.claude/hooks/
 claude/.claude/hooks/*
-opencode/.config/opencode/service.json
-opencode/.config/opencode/AGENTS.md
-opencode/.config/opencode/commands/
-opencode/.config/opencode/skills/
 tt/.config/ghostty/themes/terminal-active
 tt/.config/tt/active/
 tt/.config/tt/current

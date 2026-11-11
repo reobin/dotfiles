@@ -14,7 +14,6 @@ CONFIGS=(
   lazygit
   mise
   nvim
-  opencode
   claude
   pi
   starship

@@ -1,4 +1,3 @@
-alias oc='opencode --auto'
 alias cc='claude'
 alias co='codex'
 alias pn='pnpm'
