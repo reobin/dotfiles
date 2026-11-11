@@ -969,7 +969,7 @@ export default class Review extends View {
       .when(Boolean(taken), (el) => el.child(div().text_color(t.blocked).child(taken)))
       .when(Boolean(this.note), (el) => el.child(div().text_color(t.ansi1).child(this.note)));
 
-    return v_flex().id("review").size_full().min_h(0).overflow_hidden().bg(t.background).rounded(10).border_1().border_color(t.border).shadow_lg().text_color(t.foreground)
+    return v_flex().id("review").size_full().min_h(0).overflow_hidden().bg(t.background).rounded(12).border_1().border_color(t.border).shadow_lg().text_color(t.foreground)
       .track_focus(this.handle).on_key_down((e, cx) => this.key(e, cx))
       .on_mouse_down("left", () => { if (!this.typing) this.handle.focus(); })
       .on_mouse_up("left", (_e, cx) => { this.dragging = false; this.endResize(cx); })

@@ -207,7 +207,8 @@ export default class Tabs extends View {
         div().child(`#${pr.number}`),
       ]);
     };
-    return h_flex().size_full().min_w(0).px(10).pl(lightsPadding).gap(3).items_center().bg(t.chrome)
+    // The top padding matches the 8px under the bar, so the buttons sit midway between the window's edge and the pane.
+    return h_flex().size_full().min_w(0).px(10).pl(lightsPadding).pt(8).gap(3).items_center().bg(t.chrome)
       .on_mouse_up("left", () => { this.pressed = null; })
       .on_scroll_wheel(e => { if (Math.abs(e.delta.y) >= 1) run(e.delta.y > 0 ? "tab.prev" : "tab.next"); })
       .child(h_flex().id("tab-scroll").flex_1().min_w(0).h_full().items_center().gap(3).overflow_x_scrollbar().children(shown.length > 1 ? shown.map(item) : []))

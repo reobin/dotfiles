@@ -38,7 +38,7 @@
             "mod": "status-tabs"
           },
           "size": {
-            "px": 42
+            "px": 38
           },
           "window_drag": true
         },
@@ -61,11 +61,11 @@
                           "mod": "callsign-pane"
                         },
                         "reveal": "always",
-                        "height": 30,
+                        "height": 34,
                         "position": "top"
                       },
                       "background": "background",
-                      "radius": 10,
+                      "radius": 12,
                       "gap": 8,
                       "lone": true,
                       "border": {
@@ -190,8 +190,6 @@
               }
             }
           ],
-          "background": "canvas",
-          "radius": 10,
           "resizable": false
         }
       ],
@@ -199,7 +197,7 @@
       "background": "chrome"
     }
   ],
-  "background": "canvas",
+  "background": "chrome",
   "terminal_padding": [
     14,
     12

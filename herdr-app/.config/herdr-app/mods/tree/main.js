@@ -14,8 +14,8 @@ import { spaces, panes, terminals, run, theme, layout, shared, setShared, openOv
 const MONO = "JetBrains Mono";
 const COLLAPSED = "tree.collapsed";
 // The block is a window drag handle; this keeps the list clear of the traffic
-// lights and level with the pane's top (42px tab bar + 8px padding).
-const TOP = 50;
+// lights and level with the pane's top (38px tab bar + 8px padding).
+const TOP = 46;
 const icon = (name) => svg(`mods/tree/${name}.svg`);
 const isAgent = (p) => Boolean(p.program?.agent);
 // A tab whose content fits on its label's line: no agent at all, or one agent alone.
@@ -279,7 +279,7 @@ export default class Tree extends View {
   // when it moves.
   card(t, s, ps, terms, inSet, folded) {
     const pad = s.active ? 1 : 0;
-    return v_flex().id(`card-${s.id}`).flex_none().px(4 - pad).pt(2 - pad).pb((folded ? 2 : 4) - pad).rounded(9)
+    return v_flex().id(`card-${s.id}`).flex_none().px(4 - pad).pt(2 - pad).pb((folded ? 2 : 4) - pad).rounded(8)
       .bg(this.hot === `space-${s.id}` ? t.hover : s.active ? t.background : t.foreground + "06")
       .when(s.active, (el) => el.border(1).border_color(t.accent + "73"))
       .children(this.rows(t, s, ps, terms, inSet, folded));

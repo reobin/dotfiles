@@ -209,7 +209,7 @@ export default class Files extends View {
   render(cx) {
     if (key() !== this.context?.key) this.refresh(cx);
     const t = theme(), items = this.file ? [] : this.items();
-    return v_flex().id("files").size_full().min_h(0).rounded(10).overflow_hidden().bg(t.background).border_1().border_color(t.background).text_color(t.foreground).text_size(13)
+    return v_flex().id("files").size_full().min_h(0).rounded(12).overflow_hidden().bg(t.background).border_1().border_color(t.background).text_color(t.foreground).text_size(13)
       .track_focus(this.handle).focus(s => s.border_color(t.accent)).on_key_down((e, cx) => this.key(e, cx))
       .child(h_flex().h(42).flex_none().px(14).gap(8).items_center()
         .when(Boolean(this.file), el => el.child(div().id("files-back").w(20).cursor_pointer().text_color(t.muted).on_click((_e, cx) => { this.show(null); cx.notify(); }).child("←")))
