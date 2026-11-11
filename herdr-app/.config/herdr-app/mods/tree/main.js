@@ -156,21 +156,19 @@ export default class Tree extends View {
   }
 
   // A folded space keeps its pane count and its status, so what needs you still shows.
-  space(t, s, ps, inSet, folded) {
-    const name = this.repo[where(s, ps)] ?? (s.named ? place(s, ps).split("/").pop() : s.name);
-    const label = !inSet && s.name !== name ? s.name : null;
-    const [primary, secondary] = label ? [label, name] : [name || s.name, null];
+  // The repo always leads and the task always trails, even when they match. A
+  // group names its task once, on its first card.
+  space(t, s, ps, named, folded) {
+    const repo = (this.repo[where(s, ps)] ?? (s.named ? place(s, ps).split("/").pop() : s.name)) || s.name;
     const tabs = new Set(s.tabs.map((tab) => tab.id));
     const st = folded && s.status && s.status !== "idle" ? status(t, s.status) : null;
     return press(this.lit(h_flex().id(`space-${s.id}`).h(22).flex_none().px(8).gap(8).items_center().rounded(5),
       `space-${s.id}`), () => run("space.select", { id: s.id }))
       .on_mouse_down("right", () => openOverlay({ mod: "menu", kind: "popup", width: 200, height: 260, props: { tab: "space", target: { id: s.id } } }))
       .child(icon("cube").size(14).flex_none().text_color(t.dim))
-      .child(div().min_w(0).truncate().text_size(14).font_semibold().text_color(s.active ? t.foreground : t.muted).child(primary))
+      .child(div().min_w(0).truncate().text_size(14).font_semibold().text_color(s.active ? t.foreground : t.muted).child(repo))
       .child(div().flex_1())
-      .when(Boolean(secondary), (el) => el.child(h_flex().flex_none().gap(4).items_center().text_color(t.dim)
-        .child(icon("book").size(12))
-        .child(div().font_family(MONO).text_size(11).child(secondary))))
+      .when(named, (el) => el.child(div().min_w(0).truncate().font_family(MONO).text_size(11).text_color(t.dim).child(s.name)))
       .when(folded, (el) => el
         .child(div().flex_none().font_family(MONO).text_size(11.5).text_color(t.dim)
           .child(`+${ps.filter((p) => tabs.has(p.tab)).length}`))
@@ -269,11 +267,11 @@ export default class Tree extends View {
     });
   }
 
-  rows(t, s, ps, terms, inSet, folded) {
-    if (folded) return [this.space(t, s, ps, inSet, true)];
+  rows(t, s, ps, terms, named, folded) {
+    if (folded) return [this.space(t, s, ps, named, true)];
     const mine = s.tabs.map((tab) => [tab, ps.filter((p) => p.tab === tab.id)]);
     return [
-      this.space(t, s, ps, inSet, false),
+      this.space(t, s, ps, named, false),
       ...mine.flatMap(([tab, list]) => s.tabs.length > 1
         ? [v_flex().flex_none().mt(4).rounded(5).when(this.hot === `tab-${tab.id}`, (el) => el.bg(t.hover))
           .child(this.tab(t, s, tab, list, terms))
@@ -284,26 +282,22 @@ export default class Tree extends View {
 
   // The shown card's outline takes a pixel of its padding, so nothing shifts
   // when it moves.
-  card(t, s, ps, terms, inSet, folded) {
+  card(t, s, ps, terms, named, folded) {
     const pad = s.active ? 1 : 0;
     return v_flex().id(`card-${s.id}`).flex_none().px(4 - pad).pt(4 - pad).pb(4 - pad).rounded(8)
       .bg(this.hot === `space-${s.id}` ? t.hover : s.active ? t.background : t.foreground + "06")
       .when(s.active, (el) => el.border(1).border_color(t.accent + "73"))
-      .children(this.rows(t, s, ps, terms, inSet, folded));
+      .children(this.rows(t, s, ps, terms, named, folded));
   }
 
-  // A run of neighbouring spaces shares an outlined box under its name; the
-  // box carries the name, so each space shows its repo alone.
+  // A run of neighbouring spaces shares an outlined box.
   group(t, run, ps, terms, folded) {
-    if (run.length === 1) return this.card(t, run[0], ps, terms, false, folded.has(run[0].id));
+    if (run.length === 1) return this.card(t, run[0], ps, terms, true, folded.has(run[0].id));
     // The shown space's group echoes its card's outline, fainter.
     const here = run.some((s) => s.active);
     return v_flex().id(`group-${run[0].id}`).flex_none().p(4).gap(4).rounded(12).border(1)
       .border_color(here ? t.accent + "40" : t.border)
-      .child(h_flex().h(22).flex_none().px(8).gap(8).items_center()
-        .child(icon("layers").size(14).flex_none().text_color(here ? t.muted : t.dim))
-        .child(div().min_w(0).truncate().text_size(12).font_semibold().text_color(here ? t.foreground : t.muted).child(run[0].name)))
-      .children(run.map((s) => this.card(t, s, ps, terms, true, folded.has(s.id))));
+      .children(run.map((s, i) => this.card(t, s, ps, terms, i === 0, folded.has(s.id))));
   }
 
   rail(t, runs) {
