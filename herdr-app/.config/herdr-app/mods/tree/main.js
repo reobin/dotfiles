@@ -156,8 +156,8 @@ export default class Tree extends View {
   }
 
   // A folded space keeps its pane count and its status, so what needs you still shows.
-  // The repo always leads and the task always trails, even when they match. A
-  // group names its task once, on its first card.
+  // The repo always leads and the task trails when it says something the repo
+  // does not. A group names its task once, on its first card.
   space(t, s, ps, named, folded) {
     const repo = (this.repo[where(s, ps)] ?? (s.named ? place(s, ps).split("/").pop() : s.name)) || s.name;
     const tabs = new Set(s.tabs.map((tab) => tab.id));
@@ -168,7 +168,7 @@ export default class Tree extends View {
       .child(icon("cube").size(14).flex_none().text_color(t.dim))
       .child(div().min_w(0).truncate().text_size(14).font_semibold().text_color(s.active ? t.foreground : t.muted).child(repo))
       .child(div().flex_1())
-      .when(named, (el) => el.child(div().min_w(0).truncate().font_family(MONO).text_size(11).text_color(t.dim).child(s.name)))
+      .when(named && s.name !== repo, (el) => el.child(div().min_w(0).truncate().font_family(MONO).text_size(11).text_color(t.dim).child(s.name)))
       .when(folded, (el) => el
         .child(div().flex_none().font_family(MONO).text_size(11.5).text_color(t.dim)
           .child(`+${ps.filter((p) => tabs.has(p.tab)).length}`))
