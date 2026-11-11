@@ -16,6 +16,8 @@ const COLLAPSED = "tree.collapsed";
 // The block is a window drag handle; this keeps the list clear of the traffic
 // lights and level with the pane's top (30px tab bar + 8px padding).
 const TOP = 38;
+// Agent rows and tool chips share one height, so a pane row is the same size either way.
+const ROW = 26;
 const icon = (name) => svg(`mods/tree/${name}.svg`);
 const isAgent = (p) => Boolean(p.program?.agent);
 // A tab whose content fits on its label's line: no agent at all, or one agent alone.
@@ -182,14 +184,14 @@ export default class Tree extends View {
     const shown = s.active && tab.active;
     const one = solo(list);
     const st = quiet(list) ? worst(t, list) : null;
-    const label = h_flex().flex_none().h(22).gap(4).items_center()
+    const label = h_flex().flex_none().h(ROW).gap(4).items_center()
       .child(icon("window").size(12).flex_none().text_color(t.dim))
       .child(div().flex_none().font_family(MONO).text_size(11).font_semibold().text_color(shown ? t.foreground : t.muted).child(String(tab.index)))
       .when(tab.named, (el) => el.child(div().min_w(0).max_w(one ? 90 : 140).truncate().text_size(11.5).text_color(t.dim).child(tab.name)))
       .when(tab.zoomed, (el) => el.child(div().flex_none().text_size(11.5).text_color(t.dim).child("zoomed")));
     // Chips wrap in their own column, so a second line starts under the
     // first chip rather than under the tab icon.
-    return press(this.lit(h_flex().id(`tab-${tab.id}`).min_h(22).flex_none().px(8).gap(4),
+    return press(this.lit(h_flex().id(`tab-${tab.id}`).min_h(ROW).flex_none().px(8).gap(4),
       `tab-${tab.id}`), () => { run("space.select", { id: s.id }); run("tab.select", { id: tab.id }); })
       .when(!one, (el) => el.items_start())
       .on_mouse_down("right", () => openOverlay({ mod: "menu", kind: "popup", width: 200, props: { tab: "tab", target: { id: tab.id, space: s.id } } }))
@@ -198,7 +200,7 @@ export default class Tree extends View {
       .when(quiet(list), (el) => el
         .child(h_flex().flex_1().min_w(0).flex_wrap().gap(4).pl(4)
           .children(list.map((p) => this.chip(t, s, p, terms.get(p.terminal)))))
-        .when(Boolean(st), (el) => el.child(h_flex().flex_none().h(22).items_center().child(st))));
+        .when(Boolean(st), (el) => el.child(h_flex().flex_none().h(ROW).items_center().child(st))));
   }
 
   label(p, term) {
@@ -207,18 +209,25 @@ export default class Tree extends View {
     return [sign, name];
   }
 
-  // Any pane that isn't an agent: its callsign and program.
+  pill(t, on, sign) {
+    return h_flex().flex_none().min_w(28).h(18).px(4).justify_center().items_center().rounded(2)
+      .font_family(MONO).text_size(11.5).font_semibold()
+      .bg(on ? t.accent + "24" : t.foreground + "0f").text_color(on ? t.accent : t.muted).child(sign);
+  }
+
+  // Any pane that isn't an agent: its callsign pill, extended to the right by
+  // its program, so starting an agent in it leaves the pill where it was.
   chip(t, s, p, term) {
     const [sign, name] = this.label(p, term);
     const on = s.active && p.focused;
     const st = status(t, p.status);
-    return press(h_flex().id(`pane-${p.pane}`).h(22).flex_none().pl(2).pr(8).gap(4).items_center().rounded(4)
-      .bg(t.foreground + "08").hover((x) => x.bg(t.hover)), () => run("pane.focus", { pane: p.pane }))
-      .when(Boolean(sign), (el) => el.child(h_flex().flex_none().min_w(24).h(18).px(4).justify_center().items_center().rounded(2)
-        .font_family(MONO).text_size(11).font_semibold()
-        .bg(on ? t.accent + "24" : t.foreground + "0f").text_color(on ? t.accent : t.muted).child(sign)))
-      .child(div().min_w(0).max_w(140).truncate().text_size(12).text_color(on ? t.foreground : t.muted).child(name ?? ""))
-      .when(Boolean(st), (el) => el.child(st));
+    return press(h_flex().id(`pane-${p.pane}`).h(ROW).flex_none().items_center(), () => run("pane.focus", { pane: p.pane }))
+      .child(h_flex().h(18).pr(6).gap(8).items_center().rounded(2)
+        .bg(t.foreground + "08").hover((x) => x.bg(t.hover))
+        .when(Boolean(sign), (el) => el.child(this.pill(t, on, sign)))
+        .when(!sign, (el) => el.pl(6))
+        .child(div().min_w(0).max_w(140).truncate().text_size(12).text_color(on ? t.foreground : t.muted).child(name ?? ""))
+        .when(Boolean(st), (el) => el.child(st)));
   }
 
   // Agents get rows; the rest of the tab gathers in one wrapping line of chips.
@@ -226,7 +235,7 @@ export default class Tree extends View {
     const tools = list.filter((p) => !isAgent(p));
     return [
       ...list.filter(isAgent).map((p) => this.pane(t, s, p, terms.get(p.terminal))),
-      ...(tools.length ? [h_flex().flex_none().flex_wrap().gap(4).px(8).py(4)
+      ...(tools.length ? [h_flex().flex_none().flex_wrap().gap(4).px(8)
         .children(tools.map((p) => this.chip(t, s, p, terms.get(p.terminal))))] : []),
     ];
   }
@@ -240,13 +249,11 @@ export default class Tree extends View {
       : null;
     const on = s.active && p.focused;
     const st = status(t, p.status);
-    return press(h_flex().id(`pane-${p.pane}`).h(26).gap(8).items_center().rounded(3)
+    return press(h_flex().id(`pane-${p.pane}`).h(ROW).gap(8).items_center().rounded(3)
       .when(inline, (el) => el.flex_1().min_w(0).pl(4))
       .when(!inline, (el) => el.flex_none().px(8))
       .hover((x) => x.bg(t.hover)), () => run("pane.focus", { pane: p.pane }))
-      .child(h_flex().flex_none().min_w(28).h(18).px(4).justify_center().items_center().rounded(2)
-        .font_family(MONO).text_size(11.5).font_semibold()
-        .bg(on ? t.accent + "24" : t.foreground + "0f").text_color(on ? t.accent : t.muted).child(sign ?? "·"))
+      .child(this.pill(t, on, sign ?? "·"))
       .when(Boolean(pic), (el) => el.child(pic))
       .child(div().flex_1().min_w(0).truncate().text_size(13.5).when(on, (el) => el.font_medium()).text_color(on ? t.foreground : t.muted).child(name))
       .when(Boolean(st), (el) => el.child(st));
