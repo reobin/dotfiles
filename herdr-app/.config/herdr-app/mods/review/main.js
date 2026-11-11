@@ -9,7 +9,7 @@ export const DRAFTS = "review.drafts";
 const VIEWED = "review.viewed", PREFS = "review.prefs";
 const ROW = 22, FILE_ROW = 29, FILE_PAD = 6, INDENT = 12;
 // Monospace advance at 12.5px, rounded up so a wrapped line never runs past the edge.
-const CHAR_W = 7.6, GUTTER = 3 + 46 + 46 + 18 + 32, SIDE_GUTTER = 3 + 46 + 18 + 16, SPLIT_MIN = 1000;
+const CHAR_W = 7.6, CODE_X = 3 + 46 + 46 + 18, SIDE_CODE_X = 3 + 46 + 18, GUTTER = CODE_X + 32, SIDE_GUTTER = SIDE_CODE_X + 16, SPLIT_MIN = 1000;
 const FOLD_LINES = 1500, EXPAND_STEP = 20, COMPOSER_ROWS = 8;
 const LIST_W = 300, LIST_MIN = 160, DIFF_MIN = 360;
 const GENERATED = /(^|\/)(package-lock\.json|npm-shrinkwrap\.json|yarn\.lock|pnpm-lock\.yaml|bun\.lockb?|Cargo\.lock|Gemfile\.lock|poetry\.lock|composer\.lock|Pipfile\.lock|go\.sum|flake\.lock)$|\.min\.(js|css)$|\.map$/;
@@ -55,6 +55,8 @@ const resolve = (c, rows) => {
   return s ? { ...c, at: lineKey(rows, s.end), ...anchor(rows, s.start, s.end) } : c;
 };
 const textLines = (text) => text.split("\n").length;
+const threadH = (lines) => 60 + 18 * lines;
+const linesLabel = (lines) => lines.includes("-") ? `lines ${lines.replace("-", "–")}` : `line ${lines}`;
 const folded = (f) => !f.opened && (GENERATED.test(f.path) || f.add + f.del > FOLD_LINES);
 const signature = (f) => `${f.status}:${f.add}:${f.del}`;
 
@@ -127,7 +129,7 @@ export default class Review extends View {
     this.viewH = 0;
     this.diffW = 0;
     this.handle = cx.focus_handle();
-    this.input = TextareaState.new({ placeholder: "Comment · Enter to save · Shift+Enter for a new line", rows: 1 });
+    this.input = TextareaState.new({ placeholder: "Leave a comment", rows: 1 });
     this.input.on("submit", (e, cx) => { if (!e?.shift) this.save(cx); });
     this.input.on("change", (_e, cx) => cx.notify());
     this.filterInput = InputState.new({ placeholder: "Filter files" });
@@ -448,9 +450,9 @@ export default class Review extends View {
     const rows = this.file()?.rows ?? [];
     if (item.t === "row") return ROW * (isLine(rows[item.i]) ? lineCount(rows[item.i], cols) : 1);
     if (item.t === "pair") return ROW * Math.max(lineCount(rows[item.l], cols), lineCount(rows[item.r], cols));
-    if (item.t === "composer") return 56 + 18 * this.composerRows();
+    if (item.t === "composer") return threadH(this.composerRows());
     if (item.t === "folded") return 96;
-    return 34 + 18 * textLines(item.c.text);
+    return threadH(textLines(item.c.text));
   }
 
   tops(items) {
@@ -803,28 +805,48 @@ export default class Review extends View {
         .child(div().child("o or click to show")));
   }
 
+  // A comment or the comment box: a band under its lines holding a card that lines up with the code,
+  // its actions in the card's header. Its height is threadH(lines), which the scroll math relies on.
+  thread(id, lines, active, label, actions, body, t) {
+    return h_flex().id(id).w_full().h(threadH(lines)).items_start().bg(t.chrome).border_y(1).border_color(t.border)
+      .child(div().w(3).h_full().flex_none().bg(active ? t.accent : tint(t.accent, "50")))
+      .child(v_flex().flex_1().min_w(0).max_w(820).ml((this.split() ? SIDE_CODE_X : CODE_X) - 3).mr(24).my(7)
+        .rounded(8).border_1().border_color(active ? t.accent : t.border).bg(t.background).overflow_hidden()
+        .on_mouse_down("left", (_e, cx) => cx.stop_propagation())
+        .child(h_flex().h(28).flex_none().pl(10).pr(4).gap(2).items_center().border_b(1).border_color(t.border).text_size(11.5).text_color(t.dim)
+          .child(div().flex_1().min_w(0).truncate().child(label))
+          .children(actions))
+        .child(body));
+  }
+
+  action(id, label, keys, primary, t, onClick) {
+    return h_flex().id(id).h(20).px(6).gap(6).items_center().rounded(5).cursor_pointer()
+      .when(primary, (el) => el.bg(t.solid).text_color(t.solid_foreground))
+      .when(!primary, (el) => el.text_color(t.muted).hover((s) => s.bg(t.hover).text_color(t.foreground)))
+      .on_click(onClick)
+      .child(div().child(label)).child(div().opacity(0.6).child(keys));
+  }
+
   comment(c, loose, t) {
-    return v_flex().id(`c-${c.id}`).w_full().px(12).py(5).child(
-      v_flex().ml(116).max_w(820).px(10).py(5).gap(2).rounded(6).border_1().border_color(c.id === this.hit ? t.accent : tint(t.accent, "80")).bg(t.popover)
-        .child(h_flex().gap(8).text_size(11).text_color(t.dim)
-          .child(div().child(loose ? `line ${c.lines} (no longer in the diff)` : `line ${c.lines}`))
-          .child(div().flex_1())
-          .when(!loose, (el) => el.child(div().id(`edit-${c.id}`).cursor_pointer().hover((s) => s.text_color(t.foreground))
-            .on_click((_e, cx) => { this.focus = "diff"; const end = findLine(this.file().rows, c.at, c.code); this.cursor = end; this.edit({ c, end }); cx.notify(); }).child("edit")))
-          .child(div().id(`del-${c.id}`).cursor_pointer().hover((s) => s.text_color(t.foreground))
-            .on_click((_e, cx) => { this.setComments(this.comments().filter((x) => x.id !== c.id)); cx.notify(); }).child("delete")))
-        .children(c.text.split("\n").map((line, i) => div().id(`cl-${c.id}-${i}`).h(18).font_family(settings().ui_font ?? "Geist").text_size(12.5).text_color(t.foreground).child(line || " "))));
+    const label = `${linesLabel(c.lines)}${loose ? " · no longer in the diff" : ""}`;
+    const edit = (_e, cx) => { this.focus = "diff"; const end = findLine(this.file().rows, c.at, c.code); this.cursor = end; this.edit({ c, end }); cx.notify(); };
+    const remove = (_e, cx) => { this.setComments(this.comments().filter((x) => x.id !== c.id)); cx.notify(); };
+    return this.thread(`c-${c.id}`, textLines(c.text), c.id === this.hit, label, [
+      !loose && this.action(`edit-${c.id}`, "Edit", "e", false, t, edit),
+      this.action(`del-${c.id}`, "Delete", "d", false, t, remove),
+    ].filter(Boolean), v_flex().px(10).py(7).text_color(t.foreground)
+      .children(c.text.split("\n").map((line, i) => div().id(`cl-${c.id}-${i}`).h(18).child(line || " "))), t);
   }
 
   composerView(t, lost) {
-    const { lines } = this.composer.id ? this.composer : resolve(this.composer, this.file()?.rows), rows = this.composerRows();
-    return v_flex().id("composer").w_full().px(12).py(6).child(
-      v_flex().ml(116).max_w(820).gap(4)
-        .child(div().text_size(11).text_color(t.dim).child(`${this.composer.id ? "Edit comment" : "Comment"} on line ${lines}${lost ? " (no longer in the diff)" : ""}`))
-        .child(div().id("composer-box").h(16 + 18 * rows).px(10).py(4).rounded(7).border_1().border_color(t.accent).bg(t.background)
-          .font_family(settings().ui_font ?? "Geist")
-          .on_mouse_down("left", (_e, cx) => cx.stop_propagation())
-          .child(Textarea.new(this.input).w_full().h_full().text_size(12.5).text_color(t.foreground))));
+    const c = this.composer, { lines } = c.id ? c : resolve(c, this.file()?.rows), rows = this.composerRows();
+    const filled = Boolean(this.input.value().trim());
+    const label = `${c.id ? "Edit comment" : "Comment"} on ${linesLabel(lines)}${lost ? " · no longer in the diff" : ""}`;
+    return this.thread("composer", rows, true, label, [
+      this.action("composer-cancel", "Cancel", "esc", false, t, (_e, cx) => this.cancel(cx)),
+      this.action("composer-save", c.id && !filled ? "Delete" : "Save", "↵", filled, t, (_e, cx) => this.save(cx)),
+    ], div().h(14 + 18 * rows).px(10).py(4)
+      .child(Textarea.new(this.input).w_full().h_full().text_size(12.5).text_color(t.foreground)), t);
   }
 
   // Draws only the items in view; the list scrolls by moving them, not by laying all of them out.
