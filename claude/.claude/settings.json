@@ -37,7 +37,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "[ -n \"$HC_TERMINAL_ID\" ] || exit 0; hc get \"$HC_TERMINAL_ID\" 2>/dev/null | jq -r '.labels[\"herdr.space\"] // empty' | { read -r s && herdr-app ls 2>/dev/null | jq -r --arg s \"$s\" '.spaces[] | select(.id == $s and .name == (.folder | rtrimstr(\"/\") | split(\"/\") | last)) | \"Your Herdr space is still named after its folder (\\(.name)). If this prompt gives you a task, rename the space now to a workspace label, as your global instructions say: herdr-app do space.rename --id \\(.id) --name <label>\"'; }; exit 0",
+            "command": "[ -n \"$HC_TERMINAL_ID\" ] || exit 0; hc get \"$HC_TERMINAL_ID\" 2>/dev/null | jq -r '.labels[\"herdr.space\"] // empty' | { read -r s && herdr-app ls 2>/dev/null | jq -r --arg s \"$s\" '.spaces[] | select(.id == $s and .name == (.folder | rtrimstr(\"/\") | split(\"/\") | last)) | \"Name your Herdr space after this prompt, without mentioning it: herdr-app do space.rename --id \\(.id) --name <label>\"'; }; exit 0",
             "timeout": 5
           }
         ]
