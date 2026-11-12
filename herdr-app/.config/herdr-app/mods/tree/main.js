@@ -7,7 +7,7 @@
 // space isn't in dims (space-nav walks one section at a time).
 
 import { View, div, svg, image } from "gpui-kit";
-import { v_flex, h_flex } from "gpui-base";
+import { v_flex, h_flex, ScrollHandle } from "gpui-base";
 import { mark } from "./marks.js";
 import { spaces, panes, terminals, run, theme, layout, shared, setShared, openOverlay, exec, nextCommand } from "herdr";
 
@@ -82,6 +82,8 @@ export default class Tree extends View {
     this.repo = {}; // where() -> the main checkout's folder name, null: not a repo
     this.asking = false;
     this.hot = null; // "space-<id>" or "tab-<id>": its whole card or block lights up
+    this.scroll = ScrollHandle.new();
+    this.revealed = null;
     cx.timer.every(1000, (cx) => this.lookup(cx));
     this.lookup(cx);
     cx.spawn(async () => {
@@ -352,6 +354,16 @@ export default class Tree extends View {
     if (next) run("space.select", { id: next });
   }
 
+  // Brings the shown space's group into view when the shown space changes or
+  // moves, and leaves a hand scroll alone otherwise.
+  reveal(runs) {
+    const i = runs.findIndex((run) => run.some((s) => s.active));
+    const key = i < 0 ? null : `${runs[i].find((s) => s.active).id}:${i}`;
+    if (key === this.revealed) return;
+    this.revealed = key;
+    if (i >= 0) this.scroll.scroll_to_item(i);
+  }
+
   render() {
     const t = theme();
     const folded = this.collapsed();
@@ -360,10 +372,11 @@ export default class Tree extends View {
     const top = sets(all.filter((s) => !folded.has(s.id)));
     const dock = sets(all.filter((s) => folded.has(s.id)));
     const docked = all.some((s) => s.active && folded.has(s.id));
+    this.reveal(top);
     // A scrollable splits the height with its siblings, so the list scrolls
     // inside a plain flex_1 box and the dock keeps only the height it needs.
     const upper = (list) => v_flex().flex_1().min_h(0).opacity(docked && top.length ? 0.45 : 1).transition("opacity", 150)
-      .child(list.id("top").size_full().overflow_y_scrollbar());
+      .child(list.id("top").size_full().overflow_y_scrollbar().track_scroll(this.scroll));
     const shelf = (list) => v_flex().id("dock").flex_none().border_t(1).border_color(t.border)
       .opacity(docked ? 1 : 0.45).transition("opacity", 150).child(list);
     const root = v_flex().size_full().bg(t.chrome);
