@@ -1,6 +1,7 @@
 import { div } from "gpui-kit";
 import { v_flex } from "gpui-base";
 import { run } from "herdr";
+import { SANS } from "./look.js";
 
 // pane.go gives a panel the keyboard; global keys still scroll it from a terminal.
 const STEP = 160, LINE = 40;
@@ -42,7 +43,7 @@ export function panelShell(view, t, { header, body }) {
   const name = view.panelName;
 
   return v_flex().id(`${name}-panel`).size_full().min_h(0).rounded(12).overflow_hidden().bg(t.background)
-    .border_1().border_color(t.background).text_color(t.foreground).text_size(13)
+    .border_1().border_color(t.background).font_family(SANS).text_color(t.foreground).text_size(13)
     .track_focus(view.handle).focus((s) => s.border_color(t.accent)).on_key_down((e, cx) => panelKey(view, e, cx))
     .child(header)
     .child(div().id(`${name}-view`).flex_1().min_h(0).relative().overflow_hidden()

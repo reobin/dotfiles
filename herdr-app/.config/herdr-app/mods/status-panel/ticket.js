@@ -1,7 +1,7 @@
 import { div, svg } from "gpui-kit";
 import { v_flex, h_flex, TextView } from "gpui-base";
 import { spaces, theme, run } from "herdr";
-import { ICONS, entryFor, target, ticketIcon, open } from "./look.js";
+import { ICONS, MONO, entryFor, target, ticketIcon, open } from "./look.js";
 import { panelShell } from "./panel.js";
 
 const KEY_HINT = "Set LINEAR_API_KEY, or save a Linear personal API key in ~/.config/linear/api-key, for status and details.";
@@ -19,7 +19,7 @@ export function renderTicket(view) {
   const url = issue?.url ?? null;
 
   const header = h_flex().h(42).flex_none().px(14).gap(8).items_center()
-    .when(Boolean(ticket), (e) => e.child(icon(ticketIcon(ticket), issue?.state?.color ?? t.dim, 14)).child(div().font_semibold().child(ticket.id)))
+    .when(Boolean(ticket), (e) => e.child(icon(ticketIcon(ticket), issue?.state?.color ?? t.dim, 14)).child(div().font_family(MONO).font_semibold().child(ticket.id)))
     .when(!ticket, (e) => e.child(div().font_semibold().child("Ticket")))
     .child(div().flex_1())
     .child(div().id("ticket-refresh").p(4).rounded(5).cursor_pointer().text_color(t.dim).hover((s) => s.bg(t.hover).text_color(t.foreground))

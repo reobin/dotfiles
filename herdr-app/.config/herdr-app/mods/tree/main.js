@@ -12,6 +12,7 @@ import { mark } from "./marks.js";
 import { spaces, panes, terminals, run, theme, layout, shared, setShared, openOverlay, exec, nextCommand } from "herdr";
 
 const MONO = "JetBrains Mono";
+const SANS = "Geist";
 const COLLAPSED = "tree.collapsed";
 // The block is a window drag handle; this keeps the list clear of the traffic
 // lights and level with the pane's top (30px tab bar + 8px padding).
@@ -253,7 +254,7 @@ export default class Tree extends View {
       .hover((x) => x.bg(t.hover)), () => run("pane.focus", { pane: p.pane }))
       .child(this.pill(t, on, sign ?? "·"))
       .when(Boolean(pic), (el) => el.child(pic))
-      .child(div().flex_1().min_w(0).truncate().text_size(13.5).when(on, (el) => el.font_medium()).text_color(on ? t.foreground : t.muted).child(name))
+      .child(div().flex_1().min_w(0).truncate().font_family(SANS).text_size(13.5).when(on, (el) => el.font_medium()).text_color(on ? t.foreground : t.muted).child(name))
       .when(Boolean(st), (el) => el.child(st));
   }
 

@@ -4,6 +4,8 @@ import { exec, panes, terminals, shared } from "herdr";
 
 const KEY = "status-tabs.work";
 export const ICONS = "data/status-tabs/icons";
+export const SANS = "Geist";
+export const MONO = "JetBrains Mono";
 const PR_LABEL = /^https:\/\/github\.com\/[^/\s]+\/[^/\s]+\/pull\/\d+$/;
 const TICKET_LABEL = /^[A-Za-z][A-Za-z0-9]{1,4}-\d{1,6}$/;
 

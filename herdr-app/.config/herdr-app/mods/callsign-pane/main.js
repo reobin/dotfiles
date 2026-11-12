@@ -9,6 +9,9 @@ import { h_flex } from "gpui-base";
 import { mark } from "./marks.js";
 import { panes, props, run, theme, home, terminals, shared } from "herdr";
 
+const SANS = "Geist";
+const MONO = "JetBrains Mono";
+
 function icon(p, size, color) {
   if (!p?.icon) return null;
   return p.tint ? svg(p.icon).size(size).flex_none().text_color(color) : image(p.icon).w(size).h(size).flex_none();
@@ -58,13 +61,14 @@ export default class Pane extends View {
       .px(8)
       .gap(8)
       .items_center()
+      .font_family(SANS)
       .text_size(12)
       .on_hover((hovered, cx) => { this.hovered = hovered; cx.notify(); })
       .on_click(() => run("pane.focus", { pane }))
       .when(Boolean(sign), (el) => el.child(div().flex_none().px(8).h(18).flex().items_center().rounded(5).bg(t.accent + "26").text_size(11).font_semibold().text_color(t.accent).child(sign)))
       .when(Boolean(pic), (el) => el.child(pic))
       .child(div().flex_none().truncate().max_w(260).font_medium().text_color(t.foreground).child(name))
-      .child(div().flex_1().truncate().text_color(t.dim).child(folder(p.cwd)))
+      .child(div().flex_1().truncate().font_family(MONO).text_color(t.dim).child(folder(p.cwd)))
       .when(st === "working" || st === "done", el => el.child(mark(t, st)))
       .when(st === "blocked", el => el.child(div().flex_none().px(8).h(18).flex().gap(4).items_center().rounded(5).bg(t.blocked + "26").text_size(10.5).font_semibold().text_color(t.blocked).child(mark(t, "blocked", 10)).child("Needs you")))
       .when(this.hovered, el => el

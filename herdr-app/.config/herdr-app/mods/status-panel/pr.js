@@ -1,7 +1,7 @@
 import { div, svg } from "gpui-kit";
 import { v_flex, h_flex } from "gpui-base";
 import { spaces, theme, run } from "herdr";
-import { ICONS, entryFor, target, prIcon, prColor, mergeLook, ago, open } from "./look.js";
+import { ICONS, MONO, entryFor, target, prIcon, prColor, mergeLook, ago, open } from "./look.js";
 import { panelShell } from "./panel.js";
 
 const RESULT = { fail: ["fail", "ansi1"], pending: ["pend", "ansi3"], pass: ["ok", "ansi2"], skip: ["ok", "dim"] };
@@ -21,7 +21,7 @@ export function renderPr(view) {
     .when(Boolean(url), (e) => e.cursor_pointer().hover((s) => s.bg(t.hover)).on_click(() => open(url))).children(children);
 
   const header = h_flex().h(42).flex_none().px(14).gap(8).items_center()
-    .when(Boolean(pr), (e) => e.child(icon(prIcon(pr), prColor(pr, t), 14)).child(div().font_semibold().child(`#${pr.number}`))
+    .when(Boolean(pr), (e) => e.child(icon(prIcon(pr), prColor(pr, t), 14)).child(div().font_family(MONO).font_semibold().child(`#${pr.number}`))
       .child(div().px(7).rounded(9).text_size(10.5).font_semibold().bg(prColor(pr, t)).text_color(t.background).child(pr.state[0].toUpperCase() + pr.state.slice(1))))
     .when(!pr, (e) => e.child(div().font_semibold().child("Pull request")))
     .child(div().flex_1())
@@ -40,16 +40,16 @@ export function renderPr(view) {
   const passed = pr.checks.filter((c) => c.result === "pass" || c.result === "skip");
   const checkRow = (c, i) => row(`check-${i}`, [
     icon(RESULT[c.result][0], t[RESULT[c.result][1]]),
-    div().flex_1().min_w(0).truncate().text_color(c.result === "skip" ? t.dim : t.foreground).child(c.workflow && c.workflow !== c.name ? `${c.workflow} / ${c.name}` : c.name),
+    div().flex_1().min_w(0).truncate().font_family(MONO).text_color(c.result === "skip" ? t.dim : t.foreground).child(c.workflow && c.workflow !== c.name ? `${c.workflow} / ${c.name}` : c.name),
     ...(c.required ? [div().text_size(11).text_color(t.dim).child("required")] : []),
   ], c.url);
 
   const merge = mergeLook(pr, t);
   const top = v_flex().px(14).pt(12).pb(12).gap(6)
     .child(div().text_size(14).font_semibold().child(pr.title))
-    .child(div().text_size(11.5).text_color(t.muted).truncate().child(`${pr.branch} → ${pr.base}`))
+    .child(div().font_family(MONO).text_size(11.5).text_color(t.muted).truncate().child(`${pr.branch} → ${pr.base}`))
     .child(h_flex().gap(6).text_size(11.5).text_color(t.muted)
-      .child(div().text_color(t.ansi2).child(`+${pr.additions}`)).child(div().text_color(t.ansi1).child(`−${pr.deletions}`))
+      .child(div().font_family(MONO).text_color(t.ansi2).child(`+${pr.additions}`)).child(div().font_family(MONO).text_color(t.ansi1).child(`−${pr.deletions}`))
       .child(`· ${pr.files} files · updated ${ago(pr.updatedAt)}`))
     .when(Boolean(merge), (e) => e.child(h_flex().mt(4).px(8).py(6).gap(8).items_center().rounded(7).bg(t.raised)
       .child(icon(merge.icon, merge.color, 14)).child(div().flex_1().min_w(0).text_color(merge.color).child(merge.sentence))));
