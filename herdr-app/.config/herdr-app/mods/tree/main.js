@@ -409,8 +409,9 @@ export default class Tree extends View {
     // inside a plain flex_1 box and the dock keeps only the height it needs.
     const upper = (list) => v_flex().flex_1().min_h(0).opacity(docked && top.length ? 0.45 : 1).transition("opacity", 150)
       .child(list.id("top").size_full().overflow_y_scrollbar().track_scroll(this.scroll));
-    const shelf = (list) => v_flex().id("dock").flex_none().border_t(1).border_color(t.border)
-      .opacity(docked ? 1 : 0.45).transition("opacity", 150).child(list);
+    // The hairline sits outside the dimmed part so it stays stronger than the folded groups' outlines.
+    const shelf = (list) => v_flex().id("dock").flex_none().border_t(1).border_color(t.dim + "80")
+      .child(v_flex().opacity(docked ? 1 : 0.45).transition("opacity", 150).child(list));
     const root = v_flex().size_full().bg(t.chrome);
     if (narrow()) {
       return root
@@ -420,8 +421,8 @@ export default class Tree extends View {
     const ps = panes();
     const terms = new Map(terminals().map((x) => [x.address, x]));
     return root
-      .child(upper(v_flex().pt(TOP).pb(8).pl(8).gap(8).children(top.map((run) => this.group(t, run, ps, terms, folded)))))
-      .when(dock.length > 0, (el) => el.child(shelf(v_flex().pt(8).pb(8).pl(8).gap(8)
+      .child(upper(v_flex().pt(TOP).pb(8).px(8).gap(8).children(top.map((run) => this.group(t, run, ps, terms, folded)))))
+      .when(dock.length > 0, (el) => el.child(shelf(v_flex().pt(8).pb(8).px(8).gap(8)
         .children(dock.map((run) => this.group(t, run, ps, terms, folded))))));
   }
 }
