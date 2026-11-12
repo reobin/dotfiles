@@ -86,6 +86,8 @@ export default class Tree extends View {
     this.repo = {}; // where() -> the main checkout's folder name, null: not a repo
     this.asking = false;
     this.hot = null; // "space-<id>" or "tab-<id>": its whole card or block lights up
+    this.under = null; // { key, at }: the lit row the last move over one landed on
+    this.at = null; // where the last move over the sidebar landed, null once it leaves
     this.scroll = ScrollHandle.new();
     this.revealed = null;
     cx.timer.every(1000, (cx) => this.lookup(cx));
@@ -296,13 +298,23 @@ export default class Tree extends View {
   }
 
   // Hovering a space's or tab's title row lights the whole card or tab block,
-  // so the row only reports the hover.
+  // so the row only reports the hover. on_hover misses exits when a row moves
+  // or vanishes under a still pointer, or the pointer leaves through a popup,
+  // so every move names the row it is over and settle() matches it against
+  // the root's view of the same move, whichever handler runs first.
   lit(el, key) {
-    return el.on_hover((on, cx) => {
-      if (on) this.hot = key;
-      else if (this.hot === key) this.hot = null;
-      cx.notify();
+    return el.on_mouse_move((e, cx) => {
+      this.under = { key, at: e.position };
+      this.settle(cx);
     });
+  }
+
+  settle(cx) {
+    const [u, at] = [this.under, this.at];
+    const key = u && at && u.at.x === at.x && u.at.y === at.y ? u.key : null;
+    if (key === this.hot) return;
+    this.hot = key;
+    cx.notify();
   }
 
   rows(t, s, ps, terms, ink, folded) {
@@ -415,7 +427,16 @@ export default class Tree extends View {
     // The hairline sits outside the dimmed part so it stays stronger than the folded groups' outlines.
     const shelf = (list) => v_flex().id("dock").flex_none().border_t(1).border_color(t.dim + "80")
       .child(v_flex().opacity(docked ? 1 : 0.45).transition("opacity", 150).child(list));
-    const root = v_flex().size_full().bg(t.chrome);
+    const root = v_flex().id("tree").size_full().bg(t.chrome)
+      .on_mouse_move((e, cx) => {
+        this.at = e.position;
+        this.settle(cx);
+      })
+      .on_hover((on, cx) => {
+        if (on) return;
+        this.at = null;
+        this.settle(cx);
+      });
     if (narrow()) {
       return root
         .child(upper(v_flex().pt(TOP).pb(8).gap(8).items_center().children(this.rail(t, top))))
