@@ -37,10 +37,15 @@ func action(_ element: AXUIElement, named name: String) -> String? {
   actions(element).first { $0 == name || $0.hasPrefix("Name:\(name)\n") }
 }
 
+// Alert stacks, such as Notion Calendar's, offer only "Clear All", no "Close".
+func dismissal(_ element: AXUIElement) -> String? {
+  action(element, named: "Close") ?? action(element, named: "Clear All")
+}
+
 // Banners and collapsed stacks are the elements that can be closed; the tree
 // above them changes shape between macOS releases, so search rather than walk a path.
 func banners(_ element: AXUIElement) -> [AXUIElement] {
-  if action(element, named: "Close") != nil { return [element] }
+  if dismissal(element) != nil { return [element] }
   return children(element).flatMap(banners)
 }
 
@@ -52,11 +57,11 @@ switch command {
 case "open":
   if let top = banners(root).first { perform(top, kAXPressAction) }
 case "dismiss":
-  if let top = banners(root).first, let close = action(top, named: "Close") { perform(top, close) }
+  if let top = banners(root).first, let close = dismissal(top) { perform(top, close) }
 case "dismiss-all":
   for _ in 0..<50 {
     guard let top = banners(root).first else { break }
-    perform(top, action(top, named: "Clear All") ?? action(top, named: "Close")!)
+    perform(top, action(top, named: "Clear All") ?? dismissal(top)!)
     usleep(150_000)
   }
 default:
