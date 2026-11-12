@@ -42,6 +42,18 @@
           }
         ]
       }
+    ],
+    "PostToolUse": [
+      {
+        "matcher": "AskUserQuestion",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "t=$(ps -o tty= -p $PPID | tr -d ' '); case $t in ''|'??') exit 0;; esac; printf '\\033[4 q' > /dev/$t 2>/dev/null; exit 0",
+            "timeout": 5
+          }
+        ]
+      }
     ]
   },
   "enabledPlugins": {
