@@ -23,7 +23,7 @@ function squash(dir) {
   return { dir, name };
 }
 
-const count = (dir) => dir.files.length + [...dir.dirs.values()].reduce((n, d) => n + count(d), 0);
+const indices = (dir) => [...dir.files.map((f) => f.i), ...[...dir.dirs.values()].flatMap(indices)];
 
 function walk(node, depth, visit) {
   for (const child of [...node.dirs.values()].sort(byName)) {
@@ -40,12 +40,13 @@ export function treeOrder(files) {
   return order;
 }
 
-export function treeRows(files, closed, match) {
+// isClosed(path, indices) decides each folder, given the indices of every file under it.
+export function treeRows(files, isClosed, match) {
   const rows = [];
   walk(build(files, match), 0, {
     dir: (dir, name, depth) => {
-      const open = !closed.has(dir.path);
-      rows.push({ t: "dir", key: `d:${dir.path}`, path: dir.path, name, depth, open, count: count(dir) });
+      const under = indices(dir), open = !isClosed(dir.path, under);
+      rows.push({ t: "dir", key: `d:${dir.path}`, path: dir.path, name, depth, open, count: under.length, files: under });
       return open;
     },
     file: (f, depth) => rows.push({ t: "file", key: `f:${files[f.i].path}`, i: f.i, name: f.name, depth }),

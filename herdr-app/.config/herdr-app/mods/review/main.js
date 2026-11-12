@@ -116,6 +116,7 @@ export default class Review extends View {
     this.at = 0;
     this.sel = null;
     this.closed = new Set();
+    this.opened = new Set();
     this.filter = "";
     this.filtering = false;
     this.focus = "files";
@@ -222,9 +223,9 @@ export default class Review extends View {
 
   viewedMap() { return (shared(VIEWED) ?? {})[this.root] ?? {}; }
   isViewed(f) { return this.viewedMap()[f.path] === signature(f); }
-  toggleViewed(f) {
+  setViewed(list, on) {
     const all = shared(VIEWED) ?? {}, mine = { ...this.viewedMap() };
-    if (this.isViewed(f)) delete mine[f.path]; else mine[f.path] = signature(f);
+    for (const f of list) if (on) mine[f.path] = signature(f); else delete mine[f.path];
     setShared(VIEWED, { ...all, [this.root]: mine });
   }
 
@@ -235,7 +236,7 @@ export default class Review extends View {
     this.at = Math.min(Math.max(index, 0), this.files.length - 1);
     const file = this.file();
     this.sel = `f:${file.path}`;
-    this.revealSel();
+    this.keepSel();
     this.from = null; this.composer = null;
     this.offset = 0;
     file.rows ??= [{ kind: "", text: "Loading…" }];
@@ -332,7 +333,13 @@ export default class Review extends View {
     return terms.length ? (f) => terms.every((term) => f.path.toLowerCase().includes(term)) : null;
   }
 
-  rows() { return treeRows(this.files, this.filter ? new Set() : this.closed, this.match()); }
+  // A folder whose files are all viewed starts closed; a fold by hand wins either way.
+  rows() {
+    const seen = this.viewedMap();
+    const done = (under) => under.length > 0 && under.every((i) => seen[this.files[i].path] === signature(this.files[i]));
+    const isClosed = (path, under) => !this.filter && (this.closed.has(path) || (!this.opened.has(path) && done(under)));
+    return treeRows(this.files, isClosed, this.match()).map((r) => r.t === "dir" ? { ...r, viewed: done(r.files) } : r);
+  }
 
   followFilter(cx) {
     const rows = this.rows();
@@ -354,25 +361,43 @@ export default class Review extends View {
     this.selectRow(rows[Math.min(rows.length - 1, Math.max(0, i < 0 ? 0 : i + step))], cx);
   }
 
-  toggleDir(path) {
+  toggleDir(row) {
     if (this.filter) return;
-    if (this.closed.has(path)) this.closed.delete(path); else this.closed.add(path);
+    const [into, from] = row.open ? [this.closed, this.opened] : [this.opened, this.closed];
+    from.delete(row.path); into.add(row.path);
   }
 
   // Left closes a folder, or steps out to the folder holding the row; right opens one, or steps in.
   foldSel(open, cx) {
     const rows = this.rows(), i = rows.findIndex((r) => r.key === this.sel), row = rows[i];
     if (!row) return;
-    if (row.t === "dir" && row.open !== open && !this.filter) return this.toggleDir(row.path);
+    if (row.t === "dir" && row.open !== open && !this.filter) return this.toggleDir(row);
     if (open) { if (row.t === "dir") this.moveSel(1, cx); else this.focus = "diff"; return; }
     for (let p = i - 1; p >= 0; p--) if (rows[p].t === "dir" && rows[p].depth < row.depth) return this.selectRow(rows[p], cx);
   }
 
+  // On a folder, marks all its files viewed, or clears them when they all are, and lets it fold to match.
   markViewed() {
     const rows = this.rows(), sel = rows.find((r) => r.key === this.sel);
-    const file = this.focus === "files" ? (sel?.t === "file" ? this.files[sel.i] : null) : this.file();
-    if (!file) return;
-    this.toggleViewed(file);
+    if (this.focus === "files" && sel?.t === "dir") {
+      this.setViewed(sel.files.map((i) => this.files[i]), !sel.viewed);
+      this.closed.delete(sel.path); this.opened.delete(sel.path);
+    } else {
+      const file = this.focus === "files" ? (sel?.t === "file" ? this.files[sel.i] : null) : this.file();
+      if (!file) return;
+      this.setViewed([file], !this.isViewed(file));
+    }
+    this.keepSel();
+  }
+
+  // A selection folded out of sight moves up to the deepest folder still shown around it.
+  keepSel() {
+    const rows = this.rows();
+    if (rows.some((r) => r.key === this.sel)) return;
+    const path = this.sel?.slice(2) ?? "";
+    const holder = rows.filter((r) => r.t === "dir" && path.startsWith(`${r.path}/`)).at(-1);
+    if (holder) this.sel = holder.key;
+    this.revealSel();
   }
 
   scrollList(offset) {
@@ -692,7 +717,7 @@ export default class Review extends View {
     else if (files && (k === "k" || k === "up")) this.moveSel(-1, cx);
     else if (files && (k === "h" || k === "left")) this.foldSel(false, cx);
     else if (files && (k === "l" || k === "right")) this.foldSel(true, cx);
-    else if (files && k === "enter") { const row = this.rows().find((r) => r.key === this.sel); if (row?.t === "dir") this.toggleDir(row.path); else if (row) this.focus = "diff"; }
+    else if (files && k === "enter") { const row = this.rows().find((r) => r.key === this.sel); if (row?.t === "dir") this.toggleDir(row); else if (row) this.focus = "diff"; }
     else if (files) return;
     else if (k === "h" || k === "left") this.focus = "files";
     else if (k === "j" || k === "down") this.move(1, m.shift);
@@ -874,10 +899,11 @@ export default class Review extends View {
     const base = h_flex().id(row.key).h(28).flex_none().pl(pad).pr(8).gap(6).items_center().rounded(7).cursor_pointer().text_size(12.5)
       .when(sel, (el) => el.bg(filesOn ? t.selected : t.hover)).hover((s) => s.bg(t.hover));
     if (row.t === "dir") {
-      return base.on_click((_e, cx) => { this.sel = row.key; this.focus = "files"; this.filtering = false; this.toggleDir(row.path); this.handle.focus(); cx.notify(); })
+      return base.on_click((_e, cx) => { this.sel = row.key; this.focus = "files"; this.filtering = false; this.toggleDir(row); this.handle.focus(); cx.notify(); })
         .child(div().w(12).flex_none().text_size(10).text_color(t.dim).child(row.open ? "▾" : "▸"))
-        .child(div().flex_1().min_w(0).truncate().text_color(t.muted).child(row.name))
-        .when(!row.open, (el) => el.child(div().text_size(10.5).text_color(t.dim).child(String(row.count))));
+        .child(div().flex_1().min_w(0).truncate().text_color(row.viewed ? t.dim : t.muted).child(row.name))
+        .when(!row.open, (el) => el.child(div().text_size(10.5).text_color(t.dim).child(String(row.count))))
+        .when(row.viewed, (el) => el.child(div().text_size(11).text_color(t.ansi2).child("✓")));
     }
     const f = this.files[row.i], viewed = this.isViewed(f), current = row.i === this.at;
     return base.on_click((_e, cx) => { this.selectRow(row, cx); this.focus = "files"; this.filtering = false; this.handle.focus(); cx.notify(); })
