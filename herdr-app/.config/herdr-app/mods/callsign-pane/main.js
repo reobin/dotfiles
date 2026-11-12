@@ -11,10 +11,14 @@ import { panes, props, run, theme, home, terminals, shared } from "herdr";
 
 const SANS = "Geist";
 const MONO = "JetBrains Mono";
+// image() rasterizes these 1em SVGs small and scales them up into a blurry fringe;
+// they are one color, so svg() can draw them crisp in that color.
+const BRAND = { "icons/claude.svg": "#D97757", "icons/amp.svg": "#F34E3F", "icons/kiro.svg": "#9046FF" };
 
 function icon(p, size, color) {
   if (!p?.icon) return null;
-  return p.tint ? svg(p.icon).size(size).flex_none().text_color(color) : image(p.icon).w(size).h(size).flex_none();
+  const tint = p.tint ? color : BRAND[p.icon];
+  return tint ? svg(p.icon).size(size).flex_none().text_color(tint) : image(p.icon).w(size).h(size).flex_none();
 }
 
 function folder(cwd) {

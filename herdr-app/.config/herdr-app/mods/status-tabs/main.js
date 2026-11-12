@@ -6,6 +6,9 @@ import { gitStatus, describe } from "./git.js";
 import { ICONS, entryFor, target, refresh, installIcons, ticketIcon, prIcon, prColor, mergeLook, open } from "./status.js";
 
 const PANEL_CHILDREN = { files: "files", ticket: "ticket-status", pr: "pr-status" };
+// image() rasterizes these 1em SVGs small and scales them up into a blurry fringe;
+// they are one color, so svg() can draw them crisp in that color.
+const BRAND = { "icons/claude.svg": "#D97757", "icons/amp.svg": "#F34E3F", "icons/kiro.svg": "#9046FF" };
 
 function find(node, id) {
   if (node?.id === id) return node;
@@ -146,7 +149,10 @@ export default class Tabs extends View {
           else run("tab.select", { id: c.id });
         })
         .on_mouse_down("right", (_e, cx) => { cx.stop_propagation(); openOverlay({ mod: "menu", kind: "popup", width: 200, props: { tab: "tab", target: { id: c.id, space: space.id } } }); })
-        .when(Boolean(program?.icon), el => el.child(program.tint ? svg(program.icon).size(14).text_color(t.muted) : image(program.icon).size(14)))
+        .when(Boolean(program?.icon), el => {
+          const tint = program.tint ? t.muted : BRAND[program.icon];
+          return el.child(tint ? svg(program.icon).size(14).text_color(tint) : image(program.icon).size(14));
+        })
         .child(div().max_w(170).truncate().child(c.zoomed ? `${name} Z` : name))
         .child(div().size(12).flex_none().flex().items_center().justify_center()
           .when(Boolean(mark(t, c.status)), el => el.child(mark(t, c.status))));
