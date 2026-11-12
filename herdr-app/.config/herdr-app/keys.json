@@ -24,6 +24,7 @@
     "cmd-d": "pane.split:right",
     "cmd-shift-d": "pane.split:down",
     "cmd-enter": "smart-split.split",
+    "cmd-s": "sidetrack.fork",
     "cmd-shift-enter": "pane.zoom",
     "cmd-j": "toggle-split.toggle",
     "cmd-alt-left": "pane.go:left",
