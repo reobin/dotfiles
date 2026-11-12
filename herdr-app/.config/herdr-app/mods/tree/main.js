@@ -3,8 +3,9 @@
 // agent pane gets a row with its icon, session title and status; any other
 // pane is a chip with its callsign and program, and a tab with no agent folds
 // to one line of chips. Only what needs you is marked. Under 160px wide,
-// spaces only. Folded spaces sink under a hairline, and the section the shown
-// space isn't in dims (space-nav walks one section at a time).
+// spaces only. A group folds and moves as one. Folded spaces sink under a
+// hairline, and the section the shown space isn't in dims (space-nav walks
+// one section at a time).
 
 import { View, div, svg, image } from "gpui-kit";
 import { v_flex, h_flex, ScrollHandle } from "gpui-base";
@@ -104,17 +105,27 @@ export default class Tree extends View {
     return new Set(/** @type {string[]} */ (shared(COLLAPSED) ?? []));
   }
 
+  // The groups on one side of the hairline: the one the space id is on.
+  side(all, folded, id) {
+    return sets(all.filter((s) => folded.has(s.id) === folded.has(id)));
+  }
+
+  // A space folds and unfolds with its whole group.
   toggle(id) {
     if (!id) return;
-    const live = new Set(spaces().map((s) => s.id));
-    const set = new Set([...this.collapsed()].filter((x) => live.has(x)));
-    if (set.has(id)) set.delete(id);
-    else set.add(id);
+    const all = spaces();
+    const was = this.collapsed();
+    const group = this.side(all, was, id).find((r) => r.some((s) => s.id === id)) ?? [];
+    const live = new Set(all.map((s) => s.id));
+    const set = new Set([...was].filter((x) => live.has(x)));
+    const fold = !set.has(id);
+    for (const s of group) fold ? set.add(s.id) : set.delete(s.id);
     setShared(COLLAPSED, [...set]);
-    if (!set.has(id) || !spaces().find((s) => s.id === id)?.active) return;
-    const open = spaces().filter((s) => !set.has(s.id) || s.id === id);
-    const i = open.findIndex((s) => s.id === id);
-    const next = open[i + 1] ?? open[i - 1];
+    if (!fold || !group.some((s) => s.active)) return;
+    const ids = new Set(group.map((s) => s.id));
+    const open = all.filter((s) => !set.has(s.id) || ids.has(s.id));
+    const i = open.findIndex((s) => ids.has(s.id));
+    const next = open[i + group.length] ?? open[i - 1];
     if (next) run("space.select", { id: next.id });
   }
 
@@ -126,13 +137,30 @@ export default class Tree extends View {
     run("tab.move", { id: tabs[i].id, index: j + 1 });
   }
 
-  // space.move stays inside its machine's block, so stop at its edge.
+  // The shown space's group moves as one, past the whole group next to it on
+  // its side of the hairline. space.move stays inside its machine's block, so
+  // stop at its edge.
   move(step) {
-    const sp = spaces();
-    const i = sp.findIndex((s) => s.active);
-    const j = i + step;
-    if (i < 0 || j < 0 || j >= sp.length || (sp[j].machine ?? null) !== (sp[i].machine ?? null)) return;
-    run("space.move", { id: sp[i].id, index: j + 1 });
+    const all = spaces();
+    const id = all.find((s) => s.active)?.id;
+    if (!id) return;
+    const runs = this.side(all, this.collapsed(), id);
+    const i = runs.findIndex((r) => r.some((s) => s.id === id));
+    const mine = runs[i];
+    const other = runs[i + step];
+    if (!other || (other[0].machine ?? null) !== (mine[0].machine ?? null)) return;
+    const ids = new Set(mine.map((s) => s.id));
+    const rest = all.map((s) => s.id).filter((x) => !ids.has(x));
+    const at = step > 0 ? rest.indexOf(other.at(-1).id) + 1 : rest.indexOf(other[0].id);
+    const want = [...rest.slice(0, at), ...mine.map((s) => s.id), ...rest.slice(at)];
+    // Each move lands against the order the ones before it left.
+    const order = all.map((s) => s.id);
+    want.forEach((x, k) => {
+      if (order[k] === x) return;
+      order.splice(order.indexOf(x), 1);
+      order.splice(k, 0, x);
+      run("space.move", { id: x, index: k + 1 });
+    });
   }
 
   // A worktree's own folder is often named after its branch; the shared git
