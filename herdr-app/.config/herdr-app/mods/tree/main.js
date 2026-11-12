@@ -374,7 +374,7 @@ export default class Tree extends View {
     if (!id) return;
     const next = folded.has(id) ? null : this.nearestOpen(all.map((s) => s.id), id, all, folded);
     if (next) run("space.select", { id: next });
-    run("space.close", { id });
+    run("space.close", { id, confirmed: true });
   }
 
   // Fallback for closes that skip close(), like a space's last pane exiting.
