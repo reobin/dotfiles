@@ -18,7 +18,8 @@ async function git(root, on, args) {
 // Prints the root even when HEAD is missing (a repo with no commits), then fails the HEAD check.
 async function repoInfo(cwd, on) {
   const r = await exec("git", ["rev-parse", "--show-toplevel", "--verify", "--quiet", "HEAD"], { cwd, on });
-  return { root: r.stdout.split("\n")[0].trim() || null, hasHead: r.code === 0 };
+  const [root, head] = r.stdout.split("\n").map((l) => l.trim());
+  return { root: root || null, hasHead: r.code === 0, head: r.code === 0 ? head : null };
 }
 
 async function defaultBase(root, on) {
@@ -31,23 +32,63 @@ async function defaultBase(root, on) {
   return null;
 }
 
-async function branchBase(root, on) {
-  const base = await defaultBase(root, on);
-  if (!base) throw new Error("No default branch to compare against");
-  return { against: (await git(root, on, ["merge-base", "HEAD", base])).trim(), label: `Since ${base}` };
+// Branches whose tips sit on this branch's own commits, nearest first: in a stack, the ones it is
+// built on. The commits on HEAD's first-parent line that the default branch lacks are this branch's
+// own, so another branch pointing into them is a parent, not a sibling.
+async function stackParents(root, on, def) {
+  const [log, remotes, tracked, current] = await Promise.all([
+    git(root, on, ["log", "--first-parent", "--decorate-refs=refs/heads", "--decorate-refs=refs/remotes", "--format=%H%x09%D", "-n", "300", `${def}..HEAD`]),
+    git(root, on, ["remote"]).catch(() => ""),
+    git(root, on, ["for-each-ref", "--format=%(refname:short)", "refs/remotes"]).catch(() => ""),
+    exec("git", ["symbolic-ref", "--quiet", "--short", "HEAD"], { cwd: root, on }).then((r) => r.stdout.trim()),
+  ]);
+  const prefixes = remotes.split("\n").filter(Boolean).map((r) => `${r}/`);
+  const bare = (ref) => { const p = prefixes.find((x) => ref.startsWith(x)); return p ? ref.slice(p.length) : ref; };
+  const pushed = new Set(tracked.split("\n").filter(Boolean).map(bare));
+  const skip = new Set([current, bare(def)].filter(Boolean)), out = [];
+  for (const [ahead, line] of log.split("\n").filter(Boolean).entries()) {
+    const [sha, decor = ""] = line.split("\t");
+    if (out.length >= 3) break;
+    const refs = decor.split(", ").map((r) => r.replace(/^HEAD -> /, "")).filter((r) => r && r !== "HEAD" && !r.endsWith("/HEAD"));
+    // A local branch over its remote twin at the same commit.
+    refs.sort((a, b) => (bare(a) !== a) - (bare(b) !== b));
+    for (const ref of refs) {
+      if (skip.has(bare(ref))) continue;
+      skip.add(bare(ref));
+      out.push({ ref, kind: "parent", pushed: pushed.has(bare(ref)), ahead, at: sha });
+    }
+  }
+  return out;
 }
 
-// mode "work": uncommitted changes against HEAD; "branch": everything since the
-// merge-base with the default branch, uncommitted included. Each git call costs a process
+// What a branch review can be measured from: stack parents nearest first, then the default branch.
+export async function loadBases(root, on) {
+  const def = await defaultBase(root, on);
+  if (!def) throw new Error("No default branch to compare against");
+  const stop = (await git(root, on, ["merge-base", "HEAD", def])).trim();
+  const [parents, ahead] = await Promise.all([stackParents(root, on, def), git(root, on, ["rev-list", "--count", `${stop}..HEAD`])]);
+  return [...parents, { ref: def, kind: "default", ahead: +ahead.trim(), at: stop }];
+}
+
+// The wanted base when it is still a candidate, else the nearest pushed stack parent, else the default
+// branch. A parent only on this machine is offered but not picked: backup and scratch branches are local.
+async function branchBase(root, on, want) {
+  const bases = await loadBases(root, on);
+  const base = bases.find((b) => b.ref === want) ?? bases.find((b) => b.pushed) ?? bases.at(-1);
+  return { against: base.at, label: `Since ${base.ref}`, bases, base: base.ref };
+}
+
+// mode "work": uncommitted changes against HEAD; "branch": everything since the merge-base
+// with the chosen base branch, uncommitted included. Each git call costs a process
 // start, so they all start at once from the opened folder: diff paths are relative to the
 // root anyway, ls-files is asked for root-relative names, and HEAD exists in nearly every
 // repo, so its diff starts before the check confirms it.
-export async function loadDiff(cwd, on, mode) {
+export async function loadDiff(cwd, on, mode, want) {
   const info = repoInfo(cwd, on);
   const target = info.then(({ root, hasHead }) => {
     if (!root) throw new Error("Not a git repository");
-    if (mode === "branch" && hasHead) return branchBase(root, on);
-    return { against: hasHead ? "HEAD" : "--cached", label: "Uncommitted" };
+    if (mode === "branch" && hasHead) return branchBase(root, on, want);
+    return { against: hasHead ? "HEAD" : "--cached", label: "Uncommitted", base: null };
   });
   const guess = mode === "work" ? git(cwd, on, ["diff", ...FLAGS, "HEAD"]).catch(() => null) : null;
   const diffed = target.then(async ({ against }) => {
@@ -61,10 +102,10 @@ export async function loadDiff(cwd, on, mode) {
     const fresh = out.split("\0").filter(Boolean).slice(0, MAX_UNTRACKED);
     return { fresh, lines: await lineCounts((await info).root, on, fresh) };
   });
-  const [{ root }, { against, label }, files, { fresh, lines }] = await Promise.all([info, target, diffed, untracked]);
+  const [{ root, head }, { against, label, bases, base }, files, { fresh, lines }] = await Promise.all([info, target, diffed, untracked]);
   for (const path of fresh) files.push({ path, status: "A", add: lines.get(path) ?? 0, del: 0, rows: null, untracked: true });
   files.sort((a, b) => a.path.localeCompare(b.path));
-  return { root, files, label, against };
+  return { root, files, label, against, head, bases, base };
 }
 
 // New files' line counts in one pass, so the list shows them before each file is opened.

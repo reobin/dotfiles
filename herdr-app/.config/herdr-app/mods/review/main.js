@@ -1,13 +1,13 @@
 import { View, div, svg } from "gpui-kit";
-import { v_flex, h_flex, InputState, Input, TextareaState, Textarea } from "gpui-base";
+import { v_flex, h_flex, InputState, Input, TextareaState, Textarea, Popup } from "gpui-base";
 import { spaces, panes, agents, terminals, focused, theme, settings, props, closeOverlay, shared, setShared, hc, run, notify, keys, nextCommand, exec } from "herdr";
-import { loadDiff, loadFile, isLine, anchor, message } from "./diff.js";
+import { loadDiff, loadBases, loadFile, isLine, anchor, message } from "./diff.js";
 import { treeOrder, treeRows } from "./tree.js";
 import { wrapSpans, lineCount, pairs } from "./layout.js";
 
 export const DRAFTS = "review.drafts";
 const VIEWED = "review.viewed", PREFS = "review.prefs";
-const ROW = 22, FILE_ROW = 29, FILE_PAD = 6, INDENT = 12;
+const ROW = 22, MARGIN = ROW * 3, FILE_ROW = 29, FILE_PAD = 6, INDENT = 12;
 // Monospace advance at 12.5px, rounded up so a wrapped line never runs past the edge.
 const CHAR_W = 7.6, CODE_X = 3 + 46 + 46 + 18, SIDE_CODE_X = 3 + 46 + 18, GUTTER = CODE_X + 32, SIDE_GUTTER = SIDE_CODE_X + 16, SPLIT_MIN = 1000;
 const FOLD_LINES = 1500, EXPAND_STEP = 20, COMPOSER_ROWS = 8;
@@ -89,7 +89,7 @@ function carry(files, old, dark) {
 
 // Plain keys the view reads itself. Chords live in keys.json under "mod:review", which the app
 // resolves ahead of global bindings, so a global chord can never swallow one of them.
-const OWN_KEYS = ["j", "k", "h", "l", "[", "]", "c", "e", "d", "n", "v", "w", "o", "/", "|", "b", "r", "q",
+const OWN_KEYS = ["j", "k", "h", "l", "g", "z", "[", "]", "c", "e", "d", "n", "v", "w", "o", "/", "|", "b", "r", "q",
   "enter", "escape", "tab", "backspace", "up", "down", "left", "right"];
 const GLYPH = { cmd: "⌘", shift: "⇧", alt: "⌥", ctrl: "⌃", enter: "↵", escape: "esc", tab: "tab" };
 const pretty = (chord) => chord ? chord.split("-").map((p) => GLYPH[p] ?? p.toUpperCase()).join("") : "unbound";
@@ -142,7 +142,7 @@ export default class Review extends View {
     this.root = roots.get(whereKey(this.where)) ?? null;
     const last = this.root && lasts.get(lastKey(this.where.on, this.root, this.mode));
     if (last) {
-      Object.assign(this, { files: last.files, label: last.label, against: last.against, filesMode: this.mode });
+      Object.assign(this, { files: last.files, label: last.label, against: last.against, head: last.head, filesMode: this.mode, filesBase: null });
       const i = this.files.findIndex((f) => f.path === last.path);
       this.pick(Math.max(0, i), cx);
       if (i >= 0) {
@@ -155,10 +155,14 @@ export default class Review extends View {
     cx.spawn(async (cx) => {
       for (;;) {
         const command = await nextCommand();
+        this.count = null; this.prefix = null;
+        if (this.help) { this.help = false; cx.notify(); continue; }
         if (command === "send") this.sendCommand(cx);
         else if (command === "reset") this.reset(cx);
-        else if ((command === "half-down" || command === "half-up") && !this.typing) this.half(command === "half-down" ? 1 : -1);
-        else if (command === "pane" && !this.typing) { this.focus = this.focus === "files" ? "diff" : "files"; this.handle.focus(); }
+        else if (this.typing || this.picker) continue;
+        else if (command === "half-down" || command === "half-up") this.scroll(command === "half-down" ? 1 : -1, false);
+        else if (command === "page-down" || command === "page-up") this.scroll(command === "page-down" ? 1 : -1, true);
+        else if (command === "pane") { this.focus = this.focus === "files" ? "diff" : "files"; this.handle.focus(); }
         cx.notify();
       }
     });
@@ -182,7 +186,7 @@ export default class Review extends View {
     lasts.delete(key);
     if (!this.files.length) return;
     const row = this.file()?.rows?.[this.cursor];
-    lasts.set(key, { files: this.files, label: this.label, against: this.against, path: this.file()?.path,
+    lasts.set(key, { files: this.files, label: this.label, against: this.against, head: this.head, path: this.file()?.path,
       at: isLine(row) ? lineKey(this.file().rows, this.cursor) : null, cursor: this.cursor, offset: this.offset });
     if (lasts.size > LASTS) lasts.delete(lasts.keys().next().value);
   }
@@ -194,13 +198,16 @@ export default class Review extends View {
       try {
         const { cwd, on } = this.where;
         if (!cwd) throw new Error("No folder");
-        const { root, files, label, against } = await loadDiff(cwd, on, mode);
+        const { root, files, label, against, head, bases, base } = await loadDiff(cwd, on, mode, this.wantedBase());
         if (seq !== this.reloads) return;
         this.root = root;
         roots.set(whereKey(this.where), root);
         const keep = this.files[this.at]?.path, prev = this.file()?.rows;
-        const old = this.filesMode === mode ? this.files : [];
+        // Another base is another diff: its files start fresh rather than keep the old base's rows.
+        const old = this.filesMode === mode && this.filesBase === base ? this.files : [];
         this.files = carry(treeOrder(files), old, Boolean(settings().dark)); this.filesMode = mode; this.label = label; this.against = against;
+        this.filesBase = base; this.head = head;
+        if (bases) Object.assign(this, { bases, base });
         const i = this.files.findIndex((f) => f.path === keep);
         if (i >= 0 && old.length) this.stay(i, prev, cx);
         else this.pick(Math.max(0, i), cx);
@@ -221,6 +228,52 @@ export default class Review extends View {
   prefs() { return shared(PREFS) ?? {}; }
   setPref(key, value) { setShared(PREFS, { ...this.prefs(), [key]: value }); }
 
+  // The base picked for this branch is remembered per repo and branch.
+  baseKey() { return this.root ? `${this.root}:${this.branch ?? ""}` : null; }
+  wantedBase() { return this.prefs().bases?.[this.baseKey()]; }
+
+  // The picker lists the uncommitted changes, then each base a branch review can start from.
+  pickerItems() { return [{ mode: "work" }, ...(this.bases ?? []).map((base) => ({ mode: "branch", base }))]; }
+  isCurrent(item) { return item.mode === this.mode && (item.mode === "work" || item.base.ref === this.base); }
+
+  openPicker(cx) {
+    if (!this.root) return;
+    this.picker = { at: Math.max(0, this.pickerItems().findIndex((it) => this.isCurrent(it))) };
+    // Bases come with a branch load; refreshed on each open so commit counts stay true.
+    const seq = this.baseLoads = (this.baseLoads ?? 0) + 1;
+    this.basesError = null;
+    cx.spawn(async (cx) => {
+      try {
+        const bases = await loadBases(this.root, this.where.on);
+        if (seq !== this.baseLoads) return;
+        const at = this.pickerItems()[this.picker?.at];
+        this.bases = bases;
+        if (this.picker && at) this.picker.at = Math.max(0, this.pickerItems().findIndex((it) => it.mode === at.mode && it.base?.ref === at.base?.ref));
+      } catch (e) { if (seq === this.baseLoads) this.basesError = String(e?.message ?? e); }
+      cx.notify();
+    });
+  }
+
+  choose(item, cx) {
+    this.picker = null;
+    if (item.mode === "branch") this.setPref("bases", { ...this.prefs().bases, [this.baseKey()]: item.base.ref });
+    if (this.isCurrent(item)) return;
+    this.mode = item.mode;
+    if (item.mode === "branch") this.base = item.base.ref;
+    this.reload(cx);
+  }
+
+  pickerKey(k, cx) {
+    const items = this.pickerItems(), p = this.picker;
+    if (k === "escape" || k === "q" || k === "B") this.picker = null;
+    else if (k === "j" || k === "down") p.at = Math.min(items.length - 1, p.at + 1);
+    else if (k === "k" || k === "up") p.at = Math.max(0, p.at - 1);
+    else if (k === "enter" || k === "l") this.choose(items[p.at], cx);
+    else if (/^[1-9]$/.test(k) && items[+k - 1]) this.choose(items[+k - 1], cx);
+    cx.stop_propagation();
+    cx.notify();
+  }
+
   viewedMap() { return (shared(VIEWED) ?? {})[this.root] ?? {}; }
   isViewed(f) { return this.viewedMap()[f.path] === signature(f); }
   setViewed(list, on) {
@@ -237,8 +290,8 @@ export default class Review extends View {
     const file = this.file();
     this.sel = `f:${file.path}`;
     this.keepSel();
-    this.from = null; this.composer = null;
-    this.offset = 0;
+    this.from = null; this.composer = null; this.visual = false;
+    this.offset = 0; this.over = false;
     file.rows ??= [{ kind: "", text: "Loading…" }];
     this.cursor = Math.max(0, file.rows.findIndex(isLine));
     this.applyJump();
@@ -349,6 +402,7 @@ export default class Review extends View {
   }
 
   selectRow(row, cx) {
+    if (!row) return;
     this.sel = row.key;
     if (row.t === "file" && row.i !== this.at) this.pick(row.i, cx);
     this.revealSel();
@@ -368,11 +422,12 @@ export default class Review extends View {
   }
 
   // Left closes a folder, or steps out to the folder holding the row; right opens one, or steps in.
+  // Neither leaves the list: H, L, tab and enter move between it and the diff.
   foldSel(open, cx) {
     const rows = this.rows(), i = rows.findIndex((r) => r.key === this.sel), row = rows[i];
     if (!row) return;
     if (row.t === "dir" && row.open !== open && !this.filter) return this.toggleDir(row);
-    if (open) { if (row.t === "dir") this.moveSel(1, cx); else this.focus = "diff"; return; }
+    if (open) { if (row.t === "dir") this.moveSel(1, cx); return; }
     for (let p = i - 1; p >= 0; p--) if (rows[p].t === "dir" && rows[p].depth < row.depth) return this.selectRow(rows[p], cx);
   }
 
@@ -488,22 +543,29 @@ export default class Review extends View {
     return tops;
   }
 
-  scrollTo(offset) {
-    const max = Math.max(0, (this.total ?? 0) - this.viewH);
+  // `over` lets the view run past the end until the last line reaches the top, as vim's z
+  // commands do; it lasts until a scroll brings the view back within the diff.
+  scrollTo(offset, over = false) {
+    const total = this.total ?? 0, max = Math.max(0, total - (over ? ROW : this.viewH));
     this.offset = Math.min(max, Math.max(0, offset));
+    this.over = over && this.offset > total - this.viewH;
   }
 
-  reveal(pad = ROW * 3) {
-    const items = this.items(), tops = this.tops(items);
+  // The cursor line's top and bottom in the drawn diff.
+  place() {
+    const items = this.items(), tops = this.tops(items), c = this.cursor;
     this.total = tops[items.length];
-    const c = this.cursor;
     const index = items.findIndex((it) => it.t === "row" ? it.i === c : it.t === "pair" && (it.l === c || it.r === c));
-    if (index < 0) return;
-    const top = tops[index], bottom = tops[index + 1];
-    if (top - pad < this.offset || bottom + pad > this.offset + this.viewH) this.scrollTo(top - this.viewH / 2);
+    return index < 0 ? null : { top: tops[index], bottom: tops[index + 1] };
+  }
+
+  reveal(pad = MARGIN) {
+    const p = this.place();
+    if (p && (p.top - pad < this.offset || p.bottom + pad > this.offset + this.viewH)) this.scrollTo(p.top - this.viewH / 2);
   }
 
   move(step, extend) {
+    extend ||= this.visual;
     const rows = this.file()?.rows ?? [];
     let i = this.cursor;
     do i += step; while (i >= 0 && i < rows.length && !isLine(rows[i]));
@@ -514,10 +576,48 @@ export default class Review extends View {
     this.reveal();
   }
 
-  // Ctrl-d / ctrl-u: the view and the cursor move half a screen together, as in vim.
-  half(step) {
-    const rows = this.file()?.rows ?? [], lines = Math.max(1, Math.floor(this.viewH / ROW / 2));
-    this.focus = "diff"; this.from = null;
+  jumpTo(i) {
+    this.focus = "diff";
+    if (!this.visual) this.from = null;
+    this.cursor = i;
+    this.reveal();
+  }
+
+  // gg / G: the first or last line; with a count, the line with that number, as the gutter shows it.
+  goLine(n, end) {
+    const rows = this.file()?.rows ?? [];
+    let best = -1, gap = Infinity;
+    if (n) rows.forEach((r, i) => { const g = isLine(r) ? Math.abs((r.new ?? r.old) - n) : Infinity; if (g < gap) { gap = g; best = i; } });
+    else if (end < 0) best = rows.findIndex(isLine);
+    else for (let i = rows.length - 1; i >= 0 && best < 0; i--) if (isLine(rows[i])) best = i;
+    if (best >= 0) this.jumpTo(best);
+  }
+
+  // zz / zt / zb: scroll so the cursor line sits in the middle, at the top or at the bottom, keeping
+  // the margin reveal() keeps so the next motion doesn't recenter.
+  align(k) {
+    const p = this.place();
+    if (!p) return;
+    if (k === "z") this.scrollTo((p.top + p.bottom - this.viewH) / 2, true);
+    else if (k === "t") this.scrollTo(p.top - MARGIN, true);
+    else if (k === "b") this.scrollTo(p.bottom + MARGIN - this.viewH, true);
+  }
+
+  // V: a line range that j, k and the other motions grow until a comment or escape ends it.
+  toggleVisual() {
+    if (this.visual) { this.visual = false; this.from = null; return; }
+    if (!isLine(this.file()?.rows?.[this.cursor])) return;
+    this.visual = true;
+    this.from = this.cursor;
+  }
+
+  // Ctrl-d / ctrl-u half a screen, ctrl-f / ctrl-b a screen less two lines: the view and the
+  // cursor move together, as in vim.
+  scroll(step, whole) {
+    const screen = Math.floor(this.viewH / ROW), lines = Math.max(1, whole ? screen - 2 : Math.floor(screen / 2));
+    const rows = this.file()?.rows ?? [];
+    this.focus = "diff";
+    if (!this.visual) this.from = null;
     let i = this.cursor, left = lines;
     while (left > 0) {
       let next = i + step;
@@ -525,9 +625,44 @@ export default class Review extends View {
       if (next < 0 || next >= rows.length) break;
       i = next; left--;
     }
-    this.cursor = i;
-    this.scrollTo(this.offset + step * lines * ROW);
+    const before = this.offset;
+    this.scrollTo(this.offset + step * lines * ROW, this.over);
+    // A page cut short by the end of the diff must not pull the cursor back against the scroll.
+    const edge = whole && this.offset !== before ? this.pageEdge(step, i) : i;
+    this.cursor = step > 0 ? Math.max(edge, this.cursor) : Math.min(edge, this.cursor);
     this.reveal(0);
+  }
+
+  // After ctrl-f the cursor goes to the top line of the new page, after ctrl-b to the bottom one,
+  // inside the margin reveal() keeps.
+  pageEdge(step, fallback) {
+    const items = this.items(), tops = this.tops(items), rows = this.file()?.rows ?? [], seen = [];
+    items.forEach((it, n) => {
+      if (tops[n] < this.offset + MARGIN || tops[n + 1] > this.offset + this.viewH - MARGIN) return;
+      const i = it.t === "row" ? it.i : it.t === "pair" ? it.r ?? it.l : null;
+      if (isLine(rows[i])) seen.push(i);
+    });
+    return seen.length ? seen[step > 0 ? 0 : seen.length - 1] : fallback;
+  }
+
+  // { / }: the previous or next empty line after some text, the cursor's own line included, as in
+  // vim. A gap between hunks ends a paragraph too: the cursor stops on the last line before it, and
+  // crosses it on the next press.
+  paragraph(step) {
+    const rows = this.file()?.rows ?? [];
+    const edge = (i) => { let j = i - step; while (j !== this.cursor && !isLine(rows[j])) j -= step; return j; };
+    let i = this.cursor + step, text = isLine(rows[this.cursor]) && rows[this.cursor].text !== "";
+    for (; i >= 0 && i < rows.length; i += step) {
+      const r = rows[i];
+      if (r.kind === "@" && text) {
+        if (edge(i) !== this.cursor) return this.jumpTo(edge(i));
+        text = false;
+      }
+      if (!isLine(r)) continue;
+      if (r.text !== "") text = true;
+      else if (text) return this.jumpTo(i);
+    }
+    if (edge(i) !== this.cursor) this.jumpTo(edge(i));
   }
 
   hunk(step) {
@@ -536,7 +671,8 @@ export default class Review extends View {
     while (i >= 0 && i < rows.length && rows[i].kind !== "@") i += step;
     if (step < 0) { i--; while (i >= 0 && rows[i].kind !== "@") i--; }
     if (i < 0 || i >= rows.length) return;
-    this.from = null; this.cursor = i;
+    if (!this.visual) this.from = null;
+    this.cursor = i;
     this.move(1, false);
   }
 
@@ -608,7 +744,7 @@ export default class Review extends View {
   }
 
   cancel(cx) {
-    this.composer = null; this.from = null;
+    this.composer = null; this.from = null; this.visual = false;
     this.input.set_value("");
     this.handle.focus();
     cx.notify();
@@ -640,8 +776,8 @@ export default class Review extends View {
     if (!this.jump || this.jump.path !== file?.path) return;
     const i = findLine(file.rows, this.jump.at, this.jump.code);
     if (i < 0) return;
-    this.cursor = i; this.from = null; this.jump = null;
-    this.reveal();
+    this.jump = null;
+    this.jumpTo(i);
   }
 
   startFilter() {
@@ -661,9 +797,12 @@ export default class Review extends View {
   }
 
   reset(cx) {
-    if (this.composer) this.cancel(cx);
+    if (this.picker || this.help) { this.picker = null; this.help = false; cx.notify(); }
+    else if (this.composer) this.cancel(cx);
+    else if (this.visual) { this.from = null; this.visual = false; cx.notify(); }
     else if (this.filtering || this.filter) this.clearFilter(cx);
     else { this.from = null; this.note = null; cx.notify(); }
+    this.count = null; this.prefix = null;
   }
 
   agentList() { return agents().filter((a) => a.space === this.where.space); }
@@ -695,35 +834,54 @@ export default class Review extends View {
   }
 
   key(e, cx) {
-    const k = e.key, m = e.modifiers, plain = !(m.platform || m.control || m.alt);
+    const m = e.modifiers, plain = !(m.platform || m.control || m.alt);
+    // A shifted letter reads as its capital, however the platform reports it.
+    const k = m.shift && /^[a-z]$/.test(e.key) ? e.key.toUpperCase() : e.key;
     if (this.typing) {
       if (k === "escape") { cx.stop_propagation(); this.reset(cx); }
       return;
     }
+    if (this.picker) return this.pickerKey(k, cx);
+    if (this.help) { this.help = false; cx.stop_propagation(); cx.notify(); return; }
     this.dragging = false;
     const files = this.focus === "files";
+    // A count (42G, 5j) and a prefix (gg, zz) wait for the next key; any other key drops them.
+    if (plain && !this.prefix && /^[0-9]$/.test(k) && (k !== "0" || this.count)) { this.count = (this.count ?? "") + k; cx.stop_propagation(); cx.notify(); return; }
+    const count = this.count ? +this.count : null, times = Math.min(count ?? 1, 999), prefix = this.prefix;
+    this.count = null; this.prefix = null;
     if (k === "escape") this.reset(cx);
-    else if (k === "q" && plain) return this.dismiss();
     else if (!plain) return;
+    else if (prefix === "g") { if (k === "g") { if (files) this.selectRow(this.rows()[0], cx); else this.goLine(count, -1); } }
+    else if (prefix === "z") this.align(k);
+    else if (k === "g" || (k === "z" && !files)) { this.prefix = k; this.count = count === null ? null : String(count); }
+    else if (k === "q") return this.dismiss();
+    else if (k === "?" || (k === "/" && m.shift)) this.help = true;
     else if (k === "/") this.startFilter();
+    else if (k === "B") this.openPicker(cx);
     else if (k === "b") { this.mode = this.mode === "work" ? "branch" : "work"; this.reload(cx); }
     else if (k === "r") this.reload(cx);
     else if (k === "v") this.markViewed();
     else if (k === "w") this.setPref("wrap", !this.prefs().wrap);
     else if (k === "|" || k === "\\") this.setPref("split", !this.prefs().split);
     else if (k === "o") this.openFolded(cx);
-    else if (k === "n" || k === "N") this.jumpComment(m.shift || k === "N" ? -1 : 1, cx);
-    else if (files && (k === "j" || k === "down")) this.moveSel(1, cx);
-    else if (files && (k === "k" || k === "up")) this.moveSel(-1, cx);
+    else if (k === "H") this.focus = "files";
+    else if (k === "L") this.focus = "diff";
+    else if (k === "n" || k === "N") this.jumpComment(k === "N" ? -1 : 1, cx);
+    else if (files && (k === "j" || k === "down")) this.moveSel(times, cx);
+    else if (files && (k === "k" || k === "up")) this.moveSel(-times, cx);
+    else if (files && k === "G") this.selectRow(this.rows().at(-1), cx);
     else if (files && (k === "h" || k === "left")) this.foldSel(false, cx);
     else if (files && (k === "l" || k === "right")) this.foldSel(true, cx);
     else if (files && k === "enter") { const row = this.rows().find((r) => r.key === this.sel); if (row?.t === "dir") this.toggleDir(row); else if (row) this.focus = "diff"; }
     else if (files) return;
-    else if (k === "h" || k === "left") this.focus = "files";
-    else if (k === "j" || k === "down") this.move(1, m.shift);
-    else if (k === "k" || k === "up") this.move(-1, m.shift);
-    else if (k === "]") this.hunk(1);
-    else if (k === "[") this.hunk(-1);
+    else if (k === "j" || k === "down" || k === "J") for (let n = 0; n < times; n++) this.move(1, k === "J" || m.shift);
+    else if (k === "k" || k === "up" || k === "K") for (let n = 0; n < times; n++) this.move(-1, k === "K" || m.shift);
+    else if (k === "G") this.goLine(count, 1);
+    else if (k === "V") this.toggleVisual();
+    else if (k === "}" || (k === "]" && m.shift)) for (let n = 0; n < times; n++) this.paragraph(1);
+    else if (k === "{" || (k === "[" && m.shift)) for (let n = 0; n < times; n++) this.paragraph(-1);
+    else if (k === "]") for (let n = 0; n < times; n++) this.hunk(1);
+    else if (k === "[") for (let n = 0; n < times; n++) this.hunk(-1);
     else if (k === "c" || k === "enter") this.compose();
     else if (k === "e") this.edit(this.commentAt());
     else if (k === "d" || k === "backspace") this.remove();
@@ -740,7 +898,7 @@ export default class Review extends View {
         this.cancel(cx);
       }
       if (e.modifiers.shift) { if (this.from === null) this.from = this.cursor; }
-      else this.from = null;
+      else { this.from = null; this.visual = false; }
       this.cursor = i;
       this.focus = "diff";
       this.dragging = true;
@@ -879,7 +1037,7 @@ export default class Review extends View {
   window(items, t) {
     const tops = this.tops(items);
     this.total = tops[items.length];
-    this.scrollTo(this.offset);
+    this.scrollTo(this.offset, this.over);
     let start = 0;
     while (start < items.length && tops[start + 1] <= this.offset) start++;
     let end = start;
@@ -939,13 +1097,61 @@ export default class Review extends View {
       .hover((s) => s.bg(t.hover)).on_mouse_down("left", stop)
       .on_click((_e, cx) => { this.setPref(key, !prefs[key]); cx.notify(); }).child(label);
 
-    const header = h_flex().h(46).flex_none().px(14).gap(10).items_center().bg(t.chrome).border_b(1).border_color(t.border)
+    const commits = (n) => `${n} commit${n === 1 ? "" : "s"}`;
+    const tag = (b) => { const parent = b.kind === "parent" && b.pushed;
+      return div().flex_none().px(5).rounded(4).text_size(10.5)
+        .when(parent, (el) => el.bg(tint(t.accent, "26")).text_color(t.accent))
+        .when(!parent, (el) => el.border_1().border_color(t.border).text_color(t.dim))
+        .child(parent ? "stack parent" : b.kind === "parent" ? "local only" : "default"); };
+    const shown = this.bases?.find((b) => b.ref === this.base);
+    const against = this.mode === "work"
+      ? [div().text_color(t.foreground).child("HEAD"), this.head && div().text_color(t.dim).child(this.head.slice(0, 7))]
+      : this.base ? [div().max_w(240).truncate().text_color(t.foreground).child(this.base), shown && tag(shown), shown && div().text_color(t.dim).child(commits(shown.ahead))]
+      : [div().text_color(t.dim).child("…")];
+    const chip = h_flex().id("base").h(26).px(8).gap(6).items_center().rounded(7).border_1().text_size(12).cursor_pointer()
+      .border_color(this.picker ? t.accent : t.border).bg(this.picker ? t.selected : t.background)
+      .hover((s) => s.bg(t.hover)).on_mouse_down("left", stop)
+      .on_click((_e, cx) => { if (this.picker) this.picker = null; else this.openPicker(cx); cx.notify(); })
+      .when(this.loading, (el) => el.opacity(0.6))
+      .child(div().text_color(t.dim).child("vs"))
+      .children(against.filter(Boolean))
+      .child(div().text_size(10).text_color(t.dim).child("▾"));
+    const choices = this.picker ? this.pickerItems() : [];
+    const option = (it, i) => {
+      const on = this.picker.at === i, cur = this.isCurrent(it);
+      return h_flex().id(`base-${i}`).h(30).px(8).gap(8).items_center().rounded(6).cursor_pointer()
+        .when(on, (el) => el.bg(t.selected)).hover((s) => s.bg(t.hover))
+        .on_click((_e, cx) => { this.choose(it, cx); cx.notify(); })
+        .child(div().w(12).flex_none().text_color(t.accent).child(cur ? "✓" : ""))
+        .child(div().min_w(0).truncate().text_color(cur || on ? t.foreground : t.muted).child(it.mode === "work" ? "Uncommitted changes" : it.base.ref))
+        .when(it.mode === "branch", (el) => el.child(tag(it.base)))
+        .child(div().flex_1())
+        .child(div().flex_none().text_size(11).text_color(t.dim)
+          .child(it.mode === "work" ? `HEAD ${this.head?.slice(0, 7) ?? ""}`.trim() : commits(it.base.ahead)))
+        .child(div().w(10).flex_none().text_size(11).text_color(t.dim).child(i < 9 ? String(i + 1) : ""));
+    };
+    const group = (text) => div().px(8).pt(6).pb(2).text_size(10.5).text_color(t.dim).child(text);
+    const menu = this.picker && v_flex().id("base-menu").w(400).mt(6).p(4).rounded(9).border_1().border_color(t.border).bg(t.background).shadow_lg()
+      .text_size(12.5).on_mouse_down("left", stop)
+      .child(group("Uncommitted, against HEAD"))
+      .child(option(choices[0], 0))
+      .child(div().h(1).mx(4).my(4).bg(t.border))
+      .child(group("Branch, since it forked from"))
+      .children(choices.slice(1).map((it, i) => option(it, i + 1)))
+      .when(choices.length === 1, (el) => el.child(div().h(30).px(28).flex().items_center().text_color(this.basesError ? t.ansi1 : t.dim)
+        .child(this.basesError ?? "Finding branches…")))
+      .child(h_flex().mt(4).pt(6).pb(2).px(8).gap(12).border_t(1).border_color(t.border).text_size(10.5).text_color(t.dim)
+        .child("j k move").child("↵ pick").child("1–9 jump").child("esc close"));
+    const basePicker = Popup.new("base-picker", chip).anchor("top_left").when(Boolean(menu), (el) => el.content(menu));
+
+    const header =h_flex().h(46).flex_none().px(14).gap(10).items_center().bg(t.chrome).border_b(1).border_color(t.border)
       .child(h_flex().gap(4).flex_none().items_center().text_size(12).text_color(t.muted)
         .child(svg("mods/workspace-chrome/git-compare.svg").size(14).flex_none())
         .child(div().max_w(200).truncate().child(this.branch ?? "Review")))
       .child(h_flex().p(2).gap(2).rounded(8).border_1().border_color(t.border)
         .child(modeButton("work", "Uncommitted"))
         .child(modeButton("branch", "Branch")))
+      .child(basePicker)
       .child(div().text_size(12).text_color(t.dim).child(this.loading && !this.files.length ? "Loading…" : `${this.files.length} files`))
       .child(div().text_size(12).text_color(t.ansi2).child(`+${add}`))
       .child(div().text_size(12).text_color(t.ansi1).child(`−${del}`))
@@ -996,7 +1202,7 @@ export default class Review extends View {
         .when(Boolean(file), (el) => el.child(div().text_size(11).text_color(t.dim).child(`${this.at + 1} / ${this.files.length}`))))
       .child(div().id("review-diff").flex_1().min_h(0).relative().overflow_hidden().font_family(settings().font_family ?? "JetBrains Mono").text_size(12.5).text_color(t.foreground)
         .on_size_change((s, cx) => { if (s.height !== this.viewH || s.width !== this.diffW) { this.viewH = s.height; this.diffW = s.width; cx.notify(); } })
-        .on_scroll_wheel((e, cx) => { this.scrollTo(this.offset - e.delta.y); cx.notify(); })
+        .on_scroll_wheel((e, cx) => { this.scrollTo(this.offset - e.delta.y, this.over); cx.notify(); })
         // Each text element rounds its width up to a pixel, so a line split into colored spans
         // drifts right. Spans get exact widths from one measured character instead.
         .child(div().id("char-probe").absolute().invisible().whitespace_nowrap().child("0".repeat(100))
@@ -1010,18 +1216,23 @@ export default class Review extends View {
     const send = pretty(bound("send"));
     const hints = this.composer ? [["↵", "save"], ["⇧↵", "new line"], ["esc", "discard"]]
       : this.filtering ? [["↵", "done"], ["esc", "clear"]]
-      : filesOn ? [["l ↵", "open"], ["j k", "move"], ["h l", "fold"], ["/", "filter"], ["v", "viewed"], ["n N", "comment"], ["b", "branch"], ["r", "reload"], [send, "send"], ["q", "close"]]
-      : [["h", "files"], ["j k", "line"], ["⇧ drag", "range"], ["[ ]", "hunk"], ["⌃d ⌃u", "half page"], ["c", "comment"], ["e d", "edit delete"], ["n N", "next"],
-        ...(file && folded(file) ? [["o", "show"]] : []), ["v", "viewed"], ["w", "wrap"], ["|", "split"], [send, "send"], ["q", "close"]];
+      : this.visual ? [["VISUAL", "line"], ["j k { } G", "extend"], ["c", "comment"], ["V esc", "cancel"]]
+      : filesOn ? [["↵ L", "open"], ["/", "filter"], ["v", "viewed"], [send, "send"], ["?", "keys"]]
+      : [["c", "comment"], ["V", "select"], ["v", "viewed"], ...(file && folded(file) ? [["o", "show"]] : []), [send, "send"], ["?", "keys"]];
+    const sheet = this.help && this.helpSheet(t, send);
     const footer = h_flex().h(28).flex_none().px(14).gap(14).items_center().bg(t.chrome).border_t(1).border_color(t.border).text_size(11).text_color(t.dim)
       .children(hints.map(([keys, what]) => hint(keys, what)))
       .child(div().flex_1())
       .when(Boolean(taken), (el) => el.child(div().text_color(t.blocked).child(taken)))
+      .when(Boolean(this.count || this.prefix), (el) => el.child(div().text_color(t.foreground).child(`${this.count ?? ""}${this.prefix ?? ""}`)))
       .when(Boolean(this.note), (el) => el.child(div().text_color(t.ansi1).child(this.note)));
 
     return v_flex().id("review").size_full().min_h(0).overflow_hidden().bg(t.background).rounded(12).border_1().border_color(t.border).shadow_lg().text_color(t.foreground)
       .track_focus(this.handle).on_key_down((e, cx) => this.key(e, cx))
-      .on_mouse_down("left", () => { if (!this.typing) this.handle.focus(); })
+      .on_mouse_down("left", (_e, cx) => {
+        if (this.picker || this.help) { this.picker = null; this.help = false; cx.notify(); }
+        if (!this.typing) this.handle.focus();
+      })
       .on_mouse_up("left", (_e, cx) => { this.dragging = false; this.endResize(cx); })
       // Moves and releases only arrive while the pointer is over the overlay, so leaving it ends the drag.
       .on_hover((hovered, cx) => { if (!hovered) this.endResize(cx); })
@@ -1035,6 +1246,29 @@ export default class Review extends View {
         .child(div().absolute().inset_0().flex().child(list).child(diff))
         .child(edge)
         .when(Boolean(this.resizing), (el) => el.child(div().id("resize-cover").absolute().inset_0().cursor_col_resize())))
-      .child(footer);
+      .child(footer)
+      .when(Boolean(sheet), (el) => el.child(sheet));
+  }
+
+  // ? opens every key, grouped; any key or a click closes it.
+  helpSheet(t, send) {
+    const key = (action, fallback) => bound(action) ? pretty(bound(action)) : fallback;
+    const groups = [
+      ["Moving in the diff", [["j k", "line down, up"], ["5j 42G", "count, go to line 42"], ["gg G", "first, last line"], ["{ }", "paragraph"], ["[ ]", "hunk"],
+        [`${key("half-down", "⌃d")} ${key("half-up", "⌃u")}`, "half page"], [`${key("page-down", "⌃f")} ${key("page-up", "⌃b")}`, "page"], ["zz zt zb", "line to middle, top, bottom"]]],
+      ["Comments", [["c ↵", "comment the line or range"], ["V", "select lines"], ["⇧j ⇧k", "extend the range"], ["e d", "edit, delete"], ["n N", "next, previous comment"], [send, "send to the agent"]]],
+      ["Files", [["j k", "move"], ["gg G", "first, last"], ["h l", "fold, unfold"], ["/", "filter"], ["v", "mark viewed"], ["o", "show a hidden file"]]],
+      ["Review", [["H L", "files, diff"], ["tab", "switch pane"], ["b", "uncommitted or branch"], ["B", "compare against"], ["r", "reload"], ["w |", "wrap, split"], ["q", "close"]]],
+    ];
+    const column = (list) => v_flex().flex_1().min_w(0).gap(16).children(list.map(([title, rows]) => v_flex().gap(2)
+      .child(div().pb(4).text_size(11).text_color(t.dim).child(title))
+      .children(rows.map(([keys, what]) => h_flex().h(22).gap(12).items_center()
+        .child(div().w(84).flex_none().text_color(t.accent).font_family(settings().font_family ?? "JetBrains Mono").child(keys))
+        .child(div().min_w(0).truncate().text_color(t.foreground).child(what))))));
+    return div().id("help").absolute().inset_0().flex().items_center().justify_center().bg(tint(t.background, "b0"))
+      .on_mouse_down("left", (_e, cx) => { cx.stop_propagation(); this.help = false; cx.notify(); })
+      .child(v_flex().id("help-card").w(680).p(20).gap(16).rounded(12).border_1().border_color(t.border).bg(t.chrome).shadow_lg().text_size(12.5)
+        .child(h_flex().items_center().child(div().flex_1().font_semibold().child("Review keys")).child(div().text_size(11).text_color(t.dim).child("any key to close")))
+        .child(h_flex().gap(28).items_start().child(column(groups.slice(0, 2))).child(column(groups.slice(2)))));
   }
 }

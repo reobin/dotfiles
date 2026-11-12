@@ -123,6 +123,8 @@
     "shift-tab": "review.pane",
     "escape": "review.reset",
     "ctrl-d": "review.half-down",
-    "ctrl-u": "review.half-up"
+    "ctrl-u": "review.half-up",
+    "ctrl-f": "review.page-down",
+    "ctrl-b": "review.page-up"
   }
 }
