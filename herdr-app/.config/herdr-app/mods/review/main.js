@@ -433,15 +433,14 @@ export default class Review extends View {
 
   // On a folder, marks all its files viewed, or clears them when they all are, and lets it fold to match.
   markViewed() {
-    const rows = this.rows(), sel = rows.find((r) => r.key === this.sel);
-    if (this.focus === "files" && sel?.t === "dir") {
+    const sel = this.rows().find((r) => r.key === this.sel);
+    if (sel?.t === "dir") {
       this.setViewed(sel.files.map((i) => this.files[i]), !sel.viewed);
       this.closed.delete(sel.path); this.opened.delete(sel.path);
-    } else {
-      const file = this.focus === "files" ? (sel?.t === "file" ? this.files[sel.i] : null) : this.file();
-      if (!file) return;
+    } else if (sel?.t === "file") {
+      const file = this.files[sel.i];
       this.setViewed([file], !this.isViewed(file));
-    }
+    } else return;
     this.keepSel();
   }
 
@@ -860,7 +859,6 @@ export default class Review extends View {
     else if (k === "B") this.openPicker(cx);
     else if (k === "b") { this.mode = this.mode === "work" ? "branch" : "work"; this.reload(cx); }
     else if (k === "r") this.reload(cx);
-    else if (k === "v") this.markViewed();
     else if (k === "w") this.setPref("wrap", !this.prefs().wrap);
     else if (k === "|" || k === "\\") this.setPref("split", !this.prefs().split);
     else if (k === "o") this.openFolded(cx);
@@ -870,6 +868,7 @@ export default class Review extends View {
     else if (files && (k === "j" || k === "down")) this.moveSel(times, cx);
     else if (files && (k === "k" || k === "up")) this.moveSel(-times, cx);
     else if (files && k === "G") this.selectRow(this.rows().at(-1), cx);
+    else if (files && k === "v") this.markViewed();
     else if (files && (k === "h" || k === "left")) this.foldSel(false, cx);
     else if (files && (k === "l" || k === "right")) this.foldSel(true, cx);
     else if (files && k === "enter") { const row = this.rows().find((r) => r.key === this.sel); if (row?.t === "dir") this.toggleDir(row); else if (row) this.focus = "diff"; }
@@ -877,7 +876,7 @@ export default class Review extends View {
     else if (k === "j" || k === "down" || k === "J") for (let n = 0; n < times; n++) this.move(1, k === "J" || m.shift);
     else if (k === "k" || k === "up" || k === "K") for (let n = 0; n < times; n++) this.move(-1, k === "K" || m.shift);
     else if (k === "G") this.goLine(count, 1);
-    else if (k === "V") this.toggleVisual();
+    else if (k === "v" || k === "V") this.toggleVisual();
     else if (k === "}" || (k === "]" && m.shift)) for (let n = 0; n < times; n++) this.paragraph(1);
     else if (k === "{" || (k === "[" && m.shift)) for (let n = 0; n < times; n++) this.paragraph(-1);
     else if (k === "]") for (let n = 0; n < times; n++) this.hunk(1);
@@ -1216,9 +1215,9 @@ export default class Review extends View {
     const send = pretty(bound("send"));
     const hints = this.composer ? [["↵", "save"], ["⇧↵", "new line"], ["esc", "discard"]]
       : this.filtering ? [["↵", "done"], ["esc", "clear"]]
-      : this.visual ? [["VISUAL", "line"], ["j k { } G", "extend"], ["c", "comment"], ["V esc", "cancel"]]
+      : this.visual ? [["VISUAL", "line"], ["j k { } G", "extend"], ["c", "comment"], ["v esc", "cancel"]]
       : filesOn ? [["↵ L", "open"], ["/", "filter"], ["v", "viewed"], [send, "send"], ["?", "keys"]]
-      : [["c", "comment"], ["V", "select"], ["v", "viewed"], ...(file && folded(file) ? [["o", "show"]] : []), [send, "send"], ["?", "keys"]];
+      : [["c", "comment"], ["v", "select"], ...(file && folded(file) ? [["o", "show"]] : []), [send, "send"], ["?", "keys"]];
     const sheet = this.help && this.helpSheet(t, send);
     const footer = h_flex().h(28).flex_none().px(14).gap(14).items_center().bg(t.chrome).border_t(1).border_color(t.border).text_size(11).text_color(t.dim)
       .children(hints.map(([keys, what]) => hint(keys, what)))
@@ -1256,7 +1255,7 @@ export default class Review extends View {
     const groups = [
       ["Moving in the diff", [["j k", "line down, up"], ["5j 42G", "count, go to line 42"], ["gg G", "first, last line"], ["{ }", "paragraph"], ["[ ]", "hunk"],
         [`${key("half-down", "⌃d")} ${key("half-up", "⌃u")}`, "half page"], [`${key("page-down", "⌃f")} ${key("page-up", "⌃b")}`, "page"], ["zz zt zb", "line to middle, top, bottom"]]],
-      ["Comments", [["c ↵", "comment the line or range"], ["V", "select lines"], ["⇧j ⇧k", "extend the range"], ["e d", "edit, delete"], ["n N", "next, previous comment"], [send, "send to the agent"]]],
+      ["Comments", [["c ↵", "comment the line or range"], ["v V", "select lines"], ["⇧j ⇧k", "extend the range"], ["e d", "edit, delete"], ["n N", "next, previous comment"], [send, "send to the agent"]]],
       ["Files", [["j k", "move"], ["gg G", "first, last"], ["h l", "fold, unfold"], ["/", "filter"], ["v", "mark viewed"], ["o", "show a hidden file"]]],
       ["Review", [["H L", "files, diff"], ["tab", "switch pane"], ["b", "uncommitted or branch"], ["B", "compare against"], ["r", "reload"], ["w |", "wrap, split"], ["q", "close"]]],
     ];
