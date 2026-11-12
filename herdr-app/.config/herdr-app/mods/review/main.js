@@ -108,6 +108,7 @@ export default class Review extends View {
     const f = focused(), space = spaces().find((s) => s.id === f?.space) ?? spaces().find((s) => s.active);
     const pane = f?.pane ? panes().find((p) => p.pane === f.pane) : null;
     this.where = { cwd: pane?.cwd || f?.cwd || space?.folder, on: space?.machine ?? null, space: space?.id, tab: f?.tab };
+    this.branch = pane?.branch || space?.branch || null;
     const own = agents().filter((a) => a.space === this.where.space);
     this.target = (own.find((a) => a.address === f?.terminal) ?? own.find((a) => a.tab === f?.tab) ?? own[0])?.address ?? null;
     this.mode = "work";
@@ -913,8 +914,9 @@ export default class Review extends View {
       .on_click((_e, cx) => { this.setPref(key, !prefs[key]); cx.notify(); }).child(label);
 
     const header = h_flex().h(46).flex_none().px(14).gap(10).items_center().bg(t.chrome).border_b(1).border_color(t.border)
-      .child(svg("mods/workspace-chrome/git-compare.svg").size(15).text_color(t.muted))
-      .child(div().font_semibold().text_size(14).child("Review"))
+      .child(h_flex().gap(4).flex_none().items_center().text_size(12).text_color(t.muted)
+        .child(svg("mods/workspace-chrome/git-compare.svg").size(14).flex_none())
+        .child(div().max_w(200).truncate().child(this.branch ?? "Review")))
       .child(h_flex().p(2).gap(2).rounded(8).border_1().border_color(t.border)
         .child(modeButton("work", "Uncommitted"))
         .child(modeButton("branch", "Branch")))
