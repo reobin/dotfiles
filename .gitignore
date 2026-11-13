@@ -3,7 +3,6 @@ claude/.claude/*
 !claude/.claude/settings.json
 !claude/.claude/hooks/
 claude/.claude/hooks/*
-tt/.config/ghostty/themes/terminal-active
 tt/.config/tt/active/
 tt/.config/tt/current
 karabiner/.config/karabiner/automatic_backups/

@@ -8,7 +8,6 @@ cd "$DOTFILES_DIRECTORY"
 
 CONFIGS=(
   git
-  ghostty
   herdr-app
   karabiner
   lazygit

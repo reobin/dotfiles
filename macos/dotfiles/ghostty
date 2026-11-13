@@ -1,7 +1,0 @@
-#!/usr/bin/env bash
-
-if [[ -e ~/.config/ghostty && ! -L ~/.config/ghostty ]]; then
-  rm -rf ~/.config/ghostty
-fi
-
-stow ghostty
