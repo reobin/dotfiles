@@ -1,0 +1,26 @@
+{
+  "hooks": {
+    "SessionStart": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "/bin/sh -c 'rex __internal session-start --agent codex --feature-session-naming=false 2>/dev/null || true'",
+            "timeout": 5
+          }
+        ]
+      }
+    ],
+    "UserPromptSubmit": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash -c 'set -euo pipefail\n\nif [[ -z \"${HC_TERMINAL_ID:-}\" ]]; then\n  exit 0\nfi\n\nspace_id=\"$(hc get \"$HC_TERMINAL_ID\" | jq -r '\"'\"'.labels[\"herdr.space\"] // empty'\"'\"')\"\nif [[ -z \"$space_id\" ]]; then\n  exit 0\nfi\n\nherdr-app ls | jq -r --arg space \"$space_id\" '\"'\"'\n  .spaces[]\n  | select(.id == $space and .name == (.folder | rtrimstr(\"/\") | split(\"/\") | last))\n  | \"Name your Herdr space after this prompt, without mentioning it: herdr-app do space.rename --id \\(.id) --name <lowercase-kebab-case-label>\"\n'\"'\"'\n'",
+            "timeout": 5
+          }
+        ]
+      }
+    ]
+  }
+}

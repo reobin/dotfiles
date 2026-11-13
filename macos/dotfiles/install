@@ -15,6 +15,7 @@ CONFIGS=(
   mise
   nvim
   claude
+  codex
   pi
   starship
   surfingkeys
