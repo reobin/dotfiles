@@ -8,7 +8,9 @@ import { ICONS, entryFor, target, refresh, installIcons, ticketIcon, prIcon, prC
 const PANEL_CHILDREN = { files: "files", ticket: "ticket-status", pr: "pr-status" };
 // image() rasterizes these 1em SVGs small and scales them up into a blurry fringe;
 // they are one color, so svg() can draw them crisp in that color.
-const BRAND = { "icons/claude.svg": "#D97757", "icons/amp.svg": "#F34E3F", "icons/kiro.svg": "#9046FF" };
+const BRAND = { "icons/claude.svg": "#D97757", "icons/amp.svg": "#F34E3F", "icons/kiro.svg": "#9046FF", "icons/codex.svg": "#7A9DFF" };
+// The app's codex icon is its mark on a white tile; draw the mark alone.
+const GLYPH = { "icons/codex.svg": "mods/tree/codex.svg" };
 
 function find(node, id) {
   if (node?.id === id) return node;
@@ -151,7 +153,7 @@ export default class Tabs extends View {
         .on_mouse_down("right", (_e, cx) => { cx.stop_propagation(); openOverlay({ mod: "menu", kind: "popup", width: 200, props: { tab: "tab", target: { id: c.id, space: space.id } } }); })
         .when(Boolean(program?.icon), el => {
           const tint = program.tint ? t.muted : BRAND[program.icon];
-          return el.child(tint ? svg(program.icon).size(14).text_color(tint) : image(program.icon).size(14));
+          return el.child(tint ? svg(GLYPH[program.icon] ?? program.icon).size(14).text_color(tint) : image(program.icon).size(14));
         })
         .child(div().max_w(170).truncate().child(c.zoomed ? `${name} Z` : name))
         .child(div().size(12).flex_none().flex().items_center().justify_center()

@@ -13,12 +13,14 @@ const SANS = "Geist";
 const MONO = "JetBrains Mono";
 // image() rasterizes these 1em SVGs small and scales them up into a blurry fringe;
 // they are one color, so svg() can draw them crisp in that color.
-const BRAND = { "icons/claude.svg": "#D97757", "icons/amp.svg": "#F34E3F", "icons/kiro.svg": "#9046FF" };
+const BRAND = { "icons/claude.svg": "#D97757", "icons/amp.svg": "#F34E3F", "icons/kiro.svg": "#9046FF", "icons/codex.svg": "#7A9DFF" };
+// The app's codex icon is its mark on a white tile; draw the mark alone.
+const GLYPH = { "icons/codex.svg": "mods/tree/codex.svg" };
 
 function icon(p, size, color) {
   if (!p?.icon) return null;
   const tint = p.tint ? color : BRAND[p.icon];
-  return tint ? svg(p.icon).size(size).flex_none().text_color(tint) : image(p.icon).w(size).h(size).flex_none();
+  return tint ? svg(GLYPH[p.icon] ?? p.icon).size(size).flex_none().text_color(tint) : image(p.icon).w(size).h(size).flex_none();
 }
 
 function folder(cwd) {

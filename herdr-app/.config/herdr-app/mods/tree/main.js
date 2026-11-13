@@ -23,7 +23,9 @@ const ROW = 26;
 const icon = (name) => svg(`mods/tree/${name}.svg`);
 // image() rasterizes these 1em SVGs small and scales them up into a blurry fringe;
 // they are one color, so svg() can draw them crisp in that color.
-const BRAND = { "icons/claude.svg": "#D97757", "icons/amp.svg": "#F34E3F", "icons/kiro.svg": "#9046FF" };
+const BRAND = { "icons/claude.svg": "#D97757", "icons/amp.svg": "#F34E3F", "icons/kiro.svg": "#9046FF", "icons/codex.svg": "#7A9DFF" };
+// The app's codex icon is its mark on a white tile; draw the mark alone.
+const GLYPH = { "icons/codex.svg": "mods/tree/codex.svg" };
 const isAgent = (p) => Boolean(p.program?.agent);
 // A tab whose content fits on its label's line: no agent at all, or one agent alone.
 const quiet = (list) => list.length > 0 && !list.some(isAgent);
@@ -283,7 +285,7 @@ export default class Tree extends View {
     const agent = p.program?.agent;
     const tint = p.program?.tint ? t.dim : BRAND[p.program?.icon];
     const pic = agent && p.program.icon
-      ? tint ? svg(p.program.icon).size(15).flex_none().text_color(tint) : image(p.program.icon).w(15).h(15).flex_none()
+      ? tint ? svg(GLYPH[p.program.icon] ?? p.program.icon).size(15).flex_none().text_color(tint) : image(p.program.icon).w(15).h(15).flex_none()
       : null;
     const on = s.active && p.focused;
     const st = status(t, p.status);
