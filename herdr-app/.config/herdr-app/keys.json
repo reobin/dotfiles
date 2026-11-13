@@ -115,7 +115,9 @@
     "alt-backspace": "send:\u0017",
     "cmd-left": "send:\u0001",
     "cmd-right": "send:\u0005",
-    "cmd-backspace": "send:\u0015"
+    "cmd-backspace": "send:\u0015",
+    "cmd-up": {"command": "terminal.scroll", "args": {"pages": -0.5}},
+    "cmd-down": {"command": "terminal.scroll", "args": {"pages": 0.5}}
   },
   "mod:review": {
     "cmd-enter": "review.send",
