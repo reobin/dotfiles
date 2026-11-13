@@ -9,6 +9,7 @@ node = "24"
 aws-cli = { version = "latest", symlink_bins = true }
 bun = "latest"
 claude = "latest"
+codex = "latest"
 "npm:@opencode/browse" = { version = "latest", allow_low_downloads = true }
 "npm:ntn" = "latest"
 "npm:yalc" = "1.0.0-pre.53"
