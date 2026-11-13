@@ -1,4 +1,6 @@
 alias cc='claude'
+# The shared Codex daemon retains another terminal's Herdr environment.
+[[ -n ${HC_TERMINAL_ID:-} ]] && alias codex='codex --no-daemon'
 alias c='codex'
 alias pn='pnpm'
 alias pnx='pnpm dlx'
