@@ -1,24 +1,36 @@
-// Sidetrack: forks the focused Claude Code session into a new pane from its
-// last completed turn, leaving the original running untouched. Port of the
-// TUI's herdr-sidetrack. Draws nothing: the layout holds one copy in a 0px
-// block, so only one copy listens.
+// Sidetrack: forks the focused Claude Code, Codex or pi session into a new
+// pane, leaving the original running untouched. A Claude fork starts from the
+// last completed turn; Codex and pi fork natively. Port of the TUI's
+// herdr-sidetrack. Draws nothing: the layout holds one copy in a 0px block, so
+// only one copy listens.
 
 import { View, div } from "gpui-kit";
 import { focused, panes, hc, home, appHome, readTextFile, exec, notify, run, nextCommand } from "herdr";
 import { randomUUID } from "crypto";
 
 // --settings is left out: the `claude` shell function adds it already.
-const VALUE_FLAGS = new Set(["--model", "--permission-mode", "--effort"]);
-const BARE_FLAGS = new Set(["--dangerously-skip-permissions", "--allow-dangerously-skip-permissions"]);
+const CLAUDE_FLAGS = {
+  value: new Set(["--model", "--permission-mode", "--effort"]),
+  bare: new Set(["--dangerously-skip-permissions", "--allow-dangerously-skip-permissions"]),
+};
+const CODEX_FLAGS = {
+  value: new Set(["-m", "--model", "-p", "--profile", "-s", "--sandbox", "-a", "--ask-for-approval", "-c", "--config", "--enable", "--disable", "--add-dir"]),
+  bare: new Set(["--dangerously-bypass-approvals-and-sandbox", "--approve-for-me", "--search", "--no-alt-screen", "--no-daemon"]),
+};
+const PI_FLAGS = { value: new Set(["--provider", "--model", "--thinking"]), bare: new Set() };
 
-function keptFlags(argv) {
+// Codex's SessionStart hook and pi's herdr-session extension put these labels on their terminal.
+const CODEX_SESSION = "codex.session";
+const PI_SESSION = "pi.session";
+
+function keptFlags(argv, { value, bare }) {
   const kept = [];
   for (let i = 1; i < argv.length; i++) {
     const arg = argv[i];
     const eq = arg.indexOf("=");
-    if (BARE_FLAGS.has(arg)) kept.push(arg);
-    else if (VALUE_FLAGS.has(arg) && i + 1 < argv.length) kept.push(arg, argv[++i]);
-    else if (eq > 0 && VALUE_FLAGS.has(arg.slice(0, eq))) kept.push(arg);
+    if (bare.has(arg)) kept.push(arg);
+    else if (value.has(arg) && i + 1 < argv.length) kept.push(arg, argv[++i]);
+    else if (eq > 0 && value.has(arg.slice(0, eq))) kept.push(arg);
   }
   return kept;
 }
@@ -52,8 +64,33 @@ export default class Sidetrack extends View {
 
     const info = JSON.parse((await hc(["get", f.terminal, "--json"])).stdout || "{}");
     const fg = info.foreground;
-    if (fg?.name !== "claude") throw new Error("focused pane is not running claude");
+    const target =
+      fg?.name === "claude" ? await this.claude(fg)
+      : fg?.name === "codex" ? this.codex(fg, info)
+      : fg?.name === "pi" ? this.pi(fg, info)
+      : null;
+    if (!target) throw new Error("focused pane is not running claude, codex or pi");
 
+    const place = this.place(f, info);
+    run("terminal.open", { ...target, place, ...(place === "tab" ? { name: "sidetrack" } : {}) });
+  }
+
+  codex(fg, info) {
+    const id = info.labels?.[CODEX_SESSION];
+    if (!id) throw new Error("this codex has no session label yet: restart it so its SessionStart hook runs");
+    const flags = keptFlags(fg.argv ?? [], CODEX_FLAGS);
+    // A shared Codex daemon keeps another terminal's Herdr environment.
+    if (!flags.includes("--no-daemon")) flags.push("--no-daemon");
+    return { argv: ["codex", "fork", id, ...flags], folder: info.cwd };
+  }
+
+  pi(fg, info) {
+    const file = info.labels?.[PI_SESSION];
+    if (!file) throw new Error("this pi has no session label yet: restart it so the herdr-session extension runs");
+    return { argv: ["pi", "--fork", file, ...keptFlags(fg.argv ?? [], PI_FLAGS)], folder: info.cwd };
+  }
+
+  async claude(fg) {
     const session = JSON.parse((await readTextFile(`${home()}/.claude/sessions/${fg.pid}.json`)) || "{}");
     if (!session.sessionId || !session.cwd) throw new Error(`no session recorded for claude pid ${fg.pid}`);
 
@@ -70,17 +107,11 @@ export default class Sidetrack extends View {
 
     // Effort and permission mode are session state, so a mid-session change
     // wins over the parent's launch flags. The CLI calls the "default" mode "manual".
-    let flags = keptFlags(fg.argv ?? []);
+    let flags = keptFlags(fg.argv ?? [], CLAUDE_FLAGS);
     if (effort) flags = [...withoutFlag(flags, "--effort"), "--effort", effort];
     if (mode) flags = [...withoutFlag(flags, "--permission-mode"), "--permission-mode", mode === "default" ? "manual" : mode];
 
-    const place = this.place(f, info);
-    run("terminal.open", {
-      argv: ["claude", "--resume", forkId, ...flags],
-      folder: session.cwd,
-      place,
-      ...(place === "tab" ? { name: "sidetrack" } : {}),
-    });
+    return { argv: ["claude", "--resume", forkId, ...flags], folder: session.cwd };
   }
 
   // Alone in the tab, the pane is full width and has room to sit side by

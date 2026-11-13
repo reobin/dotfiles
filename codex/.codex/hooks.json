@@ -5,7 +5,18 @@
         "hooks": [
           {
             "type": "command",
-            "command": "/bin/sh -c 'rex __internal session-start --agent codex --feature-session-naming=false 2>/dev/null || true'",
+            "command": "/bin/sh -c '[ -n \"$HC_TERMINAL_ID\" ] || exit 0; s=$(jq -r \".session_id // empty\"); [ -n \"$s\" ] && hc label \"$HC_TERMINAL_ID\" \"codex.session=$s\" >/dev/null 2>&1; exit 0'",
+            "timeout": 5
+          }
+        ]
+      }
+    ],
+    "SessionEnd": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "/bin/sh -c '[ -n \"$HC_TERMINAL_ID\" ] && hc label \"$HC_TERMINAL_ID\" codex.session= >/dev/null 2>&1; exit 0'",
             "timeout": 5
           }
         ]
