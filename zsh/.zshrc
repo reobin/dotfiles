@@ -1,5 +1,5 @@
 alias cc='claude'
-alias co='codex'
+alias c='codex'
 alias pn='pnpm'
 alias pnx='pnpm dlx'
 alias mup='MISE_MINIMUM_RELEASE_AGE=0 mise up'
