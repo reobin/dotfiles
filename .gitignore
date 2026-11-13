@@ -3,8 +3,6 @@ claude/.claude/*
 !claude/.claude/settings.json
 !claude/.claude/hooks/
 claude/.claude/hooks/*
-tt/.config/tt/active/
-tt/.config/tt/current
 karabiner/.config/karabiner/automatic_backups/
 karabiner/.config/karabiner/focus-solo
 karabiner/.config/karabiner/notif

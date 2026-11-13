@@ -2,9 +2,14 @@
 
 set -eu
 
-# Keep this Mac awake while plugged in. Lid-closed sleep is blocked by the
-# com.reobin.keep-awake daemon under macos/daemons/, since `pmset disablesleep`
-# has no per-power-source form.
+if [[ -f /Library/LaunchDaemons/com.reobin.keep-awake.plist ]]; then
+  if sudo launchctl print system/com.reobin.keep-awake >/dev/null 2>&1; then
+    sudo launchctl bootout system/com.reobin.keep-awake
+  fi
+  sudo pmset -a disablesleep 0
+  sudo pmset restoredefaults
+  sudo rm /Library/LaunchDaemons/com.reobin.keep-awake.plist
+fi
 
 # Disable the accented character popup when holding a key.
 defaults write -g ApplePressAndHoldEnabled -bool false
@@ -28,17 +33,6 @@ SCREENSHOT_DIRECTORY="$HOME/Pictures/Screenshots"
 mkdir -p "$SCREENSHOT_DIRECTORY"
 defaults write com.apple.screencapture location "$SCREENSHOT_DIRECTORY"
 killall SystemUIServer || true
-
-# Keep the machine awake on AC power, but still let the displays blank on
-# idle (~15 min). This only covers idle sleep; the keep-awake daemon owns the
-# lid. Battery power keeps a normal sleep timeout after the display blanks.
-sudo pmset -c sleep 0
-sudo pmset -b sleep 20
-sudo pmset -a displaysleep 15
-sudo pmset -a powernap 0
-sudo pmset -a tcpkeepalive 1
-sudo pmset -c standby 0
-sudo pmset -c womp 1
 
 # Turn off Spotlight indexing. Raycast finds apps on its own, and mds re-indexing
 # build output was a top battery drain.
