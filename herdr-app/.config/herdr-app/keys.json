@@ -25,6 +25,7 @@
     "cmd-shift-d": "pane.split:down",
     "cmd-enter": "smart-split.split",
     "cmd-s": "sidetrack.fork",
+    "cmd-shift-r": "codex-reload.reload",
     "cmd-shift-enter": "pane.zoom",
     "cmd-j": "toggle-split.toggle",
     "cmd-alt-left": "pane.go:left",

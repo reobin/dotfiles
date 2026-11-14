@@ -209,6 +209,16 @@
               "content": {
                 "mod": "toggle-split"
               }
+            },
+            {
+              "id": "codex-reload",
+              "type": "block",
+              "size": {
+                "px": 0
+              },
+              "content": {
+                "mod": "codex-reload"
+              }
             }
           ],
           "resizable": false
