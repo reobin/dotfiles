@@ -3,7 +3,7 @@ import { v_flex, h_flex, InputState, Input, TextareaState, Textarea, Popup } fro
 import { spaces, panes, agents, terminals, focused, theme, settings, props, closeOverlay, shared, setShared, hc, run, notify, keys, nextCommand, exec } from "herdr";
 import { loadDiff, loadBases, loadFile, isLine, anchor, message } from "./diff.js";
 import { treeOrder, treeRows } from "./tree.js";
-import { wrapSpans, lineCount, pairs } from "./layout.js";
+import { wrapSpans, wrapText, lineCount, pairs } from "./layout.js";
 
 export const DRAFTS = "review.drafts";
 const VIEWED = "review.viewed", PREFS = "review.prefs";
@@ -54,7 +54,6 @@ const resolve = (c, rows) => {
   const s = span(rows, c);
   return s ? { ...c, at: lineKey(rows, s.end), ...anchor(rows, s.start, s.end) } : c;
 };
-const textLines = (text) => text.split("\n").length;
 const threadH = (lines) => 60 + 18 * lines;
 const linesLabel = (lines) => lines.includes("-") ? `lines ${lines.replace("-", "–")}` : `line ${lines}`;
 const folded = (f) => !f.opened && (GENERATED.test(f.path) || f.add + f.del > FOLD_LINES);
@@ -493,7 +492,15 @@ export default class Review extends View {
     return Math.max(20, Math.floor(width / (charW ?? CHAR_W)));
   }
 
-  composerRows() { return Math.min(COMPOSER_ROWS, Math.max(1, textLines(this.input.value()))); }
+  // Characters per line in a comment card: its width less the border and padding.
+  noteCols() {
+    if (!this.diffW) return 0;
+    const card = Math.min(820, this.diffW - (this.split() ? SIDE_CODE_X : CODE_X) - 24);
+    return Math.max(20, Math.floor((card - 22) / (charW ?? CHAR_W)));
+  }
+
+  // Two columns short, since the textarea wraps a little before the card edge.
+  composerRows() { return Math.min(COMPOSER_ROWS, wrapText(this.input.value(), Math.max(0, this.noteCols() - 2)).length); }
 
   // The diff as drawn: lines (one row, or a side-by-side pair), each followed by its comments
   // and the open comment box.
@@ -532,7 +539,7 @@ export default class Review extends View {
     if (item.t === "pair") return ROW * Math.max(lineCount(rows[item.l], cols), lineCount(rows[item.r], cols));
     if (item.t === "composer") return threadH(this.composerRows());
     if (item.t === "folded") return 96;
-    return threadH(textLines(item.c.text));
+    return threadH(wrapText(item.c.text, this.noteCols()).length);
   }
 
   tops(items) {
@@ -1014,11 +1021,12 @@ export default class Review extends View {
     const label = `${linesLabel(c.lines)}${loose ? " · no longer in the diff" : ""}`;
     const edit = (_e, cx) => { this.focus = "diff"; const end = findLine(this.file().rows, c.at, c.code); this.cursor = end; this.edit({ c, end }); cx.notify(); };
     const remove = (_e, cx) => { this.setComments(this.comments().filter((x) => x.id !== c.id)); cx.notify(); };
-    return this.thread(`c-${c.id}`, textLines(c.text), c.id === this.hit, label, [
+    const text = wrapText(c.text, this.noteCols());
+    return this.thread(`c-${c.id}`, text.length, c.id === this.hit, label, [
       !loose && this.action(`edit-${c.id}`, "Edit", "e", false, t, edit),
       this.action(`del-${c.id}`, "Delete", "d", false, t, remove),
     ].filter(Boolean), v_flex().px(10).py(7).text_color(t.foreground)
-      .children(c.text.split("\n").map((line, i) => div().id(`cl-${c.id}-${i}`).h(18).child(line || " "))), t);
+      .children(text.map((line, i) => div().id(`cl-${c.id}-${i}`).h(18).whitespace_nowrap().child(line || " "))), t);
   }
 
   composerView(t, lost) {

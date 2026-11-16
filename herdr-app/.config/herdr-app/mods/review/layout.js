@@ -2,6 +2,21 @@ const expand = (text) => text.replace(/\t/g, "    ");
 
 export const lineCount = (row, cols) => !cols || !row ? 1 : Math.max(1, Math.ceil(expand(row.text ?? "").length / cols));
 
+// Prose cut into screen lines of `cols` characters, breaking after a space where one fits.
+export function wrapText(text, cols) {
+  const out = [];
+  for (let rest of expand(text).split("\n")) {
+    while (cols && rest.length > cols) {
+      const space = rest.lastIndexOf(" ", cols);
+      const cut = space > 0 ? space + 1 : cols;
+      out.push(rest.slice(0, cut));
+      rest = rest.slice(cut);
+    }
+    out.push(rest);
+  }
+  return out;
+}
+
 // A row's colored spans cut into screen lines of `cols` characters (one line when cols is 0).
 export function wrapSpans(spans, cols) {
   const lines = [[]];
