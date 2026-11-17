@@ -13,7 +13,7 @@ export default class StatusPanel extends View {
     cx.spawn(async (cx) => { for (;;) panelCommand(this, await nextCommand(), cx); });
   }
 
-  render() {
-    return this.panel ? this.panel(this) : div();
+  render(cx) {
+    return this.panel ? this.panel(this, cx) : div();
   }
 }

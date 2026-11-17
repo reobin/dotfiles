@@ -120,6 +120,10 @@
     "cmd-up": {"command": "terminal.scroll", "args": {"pages": -0.5}},
     "cmd-down": {"command": "terminal.scroll", "args": {"pages": 0.5}}
   },
+  "mod:status-panel": {
+    "escape": "status-panel.escape",
+    "cmd-enter": "status-panel.submit"
+  },
   "mod:review": {
     "cmd-enter": "review.send",
     "tab": "review.pane",

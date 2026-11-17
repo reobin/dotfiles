@@ -37,7 +37,7 @@ export default class Tabs extends View {
       for (;;) {
         const command = await nextCommand();
         if (command === "refresh") this.kick(cx);
-        else if (Object.hasOwn(PANEL_CHILDREN, command)) this.togglePanel(PANEL_CHILDREN[command]);
+        else if (Object.hasOwn(PANEL_CHILDREN, command)) this.togglePanel(PANEL_CHILDREN[command], true);
         else if (command === "open-ticket" || command === "open-pr") this.openLink(command);
       }
     });
@@ -87,11 +87,22 @@ export default class Tabs extends View {
     });
   }
 
-  togglePanel(child) {
+  // The ticket and PR panels take the keyboard when they open; status-panel closes them
+  // (on its key, Esc or q) and hands the keyboard back.
+  // A key opens the ticket or PR panel only when there is one to show; it still closes it.
+  togglePanel(child, keyed = false) {
     const root = layout(), panel = find(root, "panel"), body = find(root, "panel-body");
-    if (panel && !panel.hidden && body?.active === child) { run("layout.hide", { id: "panel" }); return; }
+    const name = Object.keys(PANEL_CHILDREN).find((k) => PANEL_CHILDREN[k] === child && k !== "files");
+    const shown = panel && !panel.hidden && body?.active === child;
+    if (shown && name) { run(`status-panel.toggle-${name}`); return; }
+    if (shown) { run("layout.hide", { id: "panel" }); return; }
+    if (keyed && name) {
+      const space = spaces().find((s) => s.active), entry = space ? entryFor(target(space)) : null;
+      if (!(name === "ticket" ? entry?.ticket : entry?.pr)) return;
+    }
     run("layout.select", { stack: "panel-body", child });
     run("layout.show", { id: "panel" });
+    if (name) run(`status-panel.focus-${name}`);
   }
 
   // The side panel is remembered per space: switching shows that space's choice

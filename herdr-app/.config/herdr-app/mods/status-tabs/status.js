@@ -18,7 +18,7 @@ export async function installIcons() {
   return wrote;
 }
 
-const PR_FIELDS = "number,title,url,state,isDraft,reviewDecision,mergeable,mergeStateStatus,headRefName,baseRefName,additions,deletions,changedFiles,updatedAt,latestReviews,reviewRequests,statusCheckRollup,body";
+const PR_FIELDS = "number,title,url,state,isDraft,reviewDecision,mergeable,mergeStateStatus,headRefName,baseRefName,additions,deletions,changedFiles,updatedAt,latestReviews,reviewRequests,statusCheckRollup,body,author,labels";
 const BRANCH_ID = /(?:^|[/_])([a-z][a-z0-9]{1,4})-(\d{1,6})(?=$|[-_/])/i;
 const TEXT_ID = /\b([A-Z][A-Z0-9]{1,4}-\d{1,6})\b/;
 const LINEAR_URL = /linear\.app\/[^/\s]+\/issue\/([A-Za-z][A-Za-z0-9]{1,4}-\d{1,6})/;
@@ -137,6 +137,8 @@ function shapePr(raw, required) {
     review: { APPROVED: "approved", CHANGES_REQUESTED: "changes", REVIEW_REQUIRED: "waiting" }[decision] ?? null,
     reviews,
     requested: (raw.reviewRequests ?? []).map((r) => r.login ?? r.name ?? r.slug).filter(Boolean),
+    author: raw.author?.login ?? null,
+    labels: (raw.labels ?? []).map((l) => ({ name: l.name, color: l.color })),
     merge: mergeState(raw, required),
   };
 }
@@ -154,9 +156,10 @@ async function loadPr(t) {
 }
 
 const ISSUE_QUERY = `query($id: String!) { issue(id: $id) {
-  identifier title url description priority priorityLabel
-  state { name type color } assignee { displayName name } project { name } cycle { number name }
-  labels { nodes { name color } } attachments { nodes { url title sourceType } } } }`;
+  id identifier title url description priority priorityLabel team { id key }
+  state { id name type color } assignee { id displayName name } project { name } cycle { number name }
+  labels { nodes { id name color } } attachments { nodes { url title sourceType } }
+  comments(first: 50) { nodes { id body createdAt parent { id } user { displayName name } botActor { name } } } } }`;
 
 async function resolveTicket(label, branch, pr) {
   const found = [];
