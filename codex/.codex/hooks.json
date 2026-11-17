@@ -17,7 +17,7 @@
           {
             "type": "command",
             "command": "/bin/sh -c '[ -n \"$HC_TERMINAL_ID\" ] && hc label \"$HC_TERMINAL_ID\" codex.session= >/dev/null 2>&1; exit 0'",
-            "timeout": 5
+            "timeout": 3
           }
         ]
       }
