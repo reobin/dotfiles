@@ -11,20 +11,21 @@ const TICKET_LABEL = /^[A-Za-z][A-Za-z0-9]{1,4}-\d{1,6}$/;
 
 export const entryFor = (work) => (work ? (shared(KEY) ?? {})[work.key] : null) ?? null;
 
-// Agents label their terminal `ticket=<ID>` / `pr=<url>`: the ticket is the space's, the PR
-// follows the focused pane, and the first pane's branch (its worktree) fills in the rest.
+// Agents label their terminal `ticket=<ID>` / `pr=<url>`: both follow the focused pane, falling
+// back to the first pane, whose branch (its worktree) fills in the rest.
 export function target(space) {
   const tabs = space?.tabs ?? [];
   const inSpace = panes().filter((p) => p.terminal && tabs.some((t) => t.id === p.tab));
   const first = inSpace.find((p) => p.tab === tabs[0]?.id) ?? null;
   const labels = new Map(terminals().map((t) => [t.address, t.labels ?? {}]));
   const prOf = (p) => { const url = labels.get(p?.terminal)?.pr; return url && PR_LABEL.test(url) ? url : null; };
+  const ticketOf = (p) => { const id = labels.get(p?.terminal)?.ticket; return id && TICKET_LABEL.test(id) ? id : null; };
   const active = tabs.find((t) => t.active);
   const focus = inSpace.find((p) => p.focused) ?? inSpace.find((p) => p.tab === active?.id);
-  const prPane = focus && (prOf(focus) || focus.branch) ? focus : first;
-  const ticket = inSpace.map((p) => labels.get(p.terminal)?.ticket).find((id) => id && TICKET_LABEL.test(id)) ?? null;
+  const pane = focus && (prOf(focus) || ticketOf(focus) || focus.branch) ? focus : first;
+  const ticket = ticketOf(pane);
   const cwd = first?.cwd || space?.folder || null, branch = first?.branch || space?.branch || null;
-  const pr = prOf(prPane), prCwd = prPane?.cwd || cwd, prBranch = prPane === first ? branch : prPane.branch;
+  const pr = prOf(pane), prCwd = pane?.cwd || cwd, prBranch = pane === first ? branch : pane.branch;
   return { cwd, branch, on: space?.machine ?? null, ticket, pr, prCwd, prBranch, key: [space?.id, ticket, pr, prBranch, prCwd].join("|") };
 }
 
