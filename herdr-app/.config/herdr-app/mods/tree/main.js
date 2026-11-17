@@ -31,6 +31,26 @@ const isAgent = (p) => Boolean(p.program?.agent);
 const quiet = (list) => list.length > 0 && !list.some(isAgent);
 const solo = (list) => (list.length === 1 && isAgent(list[0]) ? list[0] : null);
 
+function prNumber(s, ps, terms) {
+  const mine = ps.filter((p) => p.terminal && s.tabs.some((tab) => tab.id === p.tab));
+  const first = mine.find((p) => p.tab === s.tabs[0]?.id);
+  const prOf = (p) => /^https:\/\/github\.com\/[^/\s]+\/[^/\s]+\/pull\/(\d+)$/.exec(terms.get(p?.terminal)?.labels?.pr ?? "");
+  const ticketOf = (p) => {
+    const id = terms.get(p?.terminal)?.labels?.ticket;
+    return /^[A-Za-z][A-Za-z0-9]{1,4}-\d{1,6}$/.test(id ?? "") ? id : null;
+  };
+  const active = s.tabs.find((tab) => tab.active);
+  const focus = mine.find((p) => p.focused) ?? mine.find((p) => p.tab === active?.id);
+  const pane = focus && (prOf(focus) || ticketOf(focus) || focus.branch) ? focus : first;
+  const pr = prOf(pane);
+  if (pr) return pr[1];
+  const cwd = first?.cwd || s.folder || null;
+  const branch = pane === first ? first?.branch || s.branch || null : pane?.branch;
+  // Keep selection and the cache key in sync with status-tabs/status.js target(); mods cannot import across folders.
+  const key = [s.id, ticketOf(pane), null, branch, pane?.cwd || cwd].join("|");
+  return shared("status-tabs.work")?.[key]?.pr?.number ?? null;
+}
+
 function find(node, id) {
   if (node?.id === id) return node;
   for (const child of node?.children ?? []) {
@@ -197,8 +217,9 @@ export default class Tree extends View {
   // The repo always leads and the task trails when it says something the repo
   // does not. A group names its task once, on its first card. ink: the task's colour,
   // null when this card doesn't name it.
-  space(t, s, ps, ink, folded) {
+  space(t, s, ps, terms, ink, folded, grouped) {
     const repo = (this.repo[where(s, ps)] ?? (s.named ? place(s, ps).split("/").pop() : s.name)) || s.name;
+    const pr = prNumber(s, ps, terms);
     const tabs = new Set(s.tabs.map((tab) => tab.id));
     const st = folded && s.status && s.status !== "idle" ? status(t, s.status) : null;
     return press(this.lit(h_flex().id(`space-${s.id}`).h(22).flex_none().px(8).gap(8).items_center().rounded(5),
@@ -206,6 +227,7 @@ export default class Tree extends View {
       .on_mouse_down("right", () => openOverlay({ mod: "menu", kind: "popup", width: 200, height: 260, props: { tab: "space", target: { id: s.id } } }))
       .child(icon("cube").size(14).flex_none().text_color(t.dim))
       .child(div().min_w(0).truncate().text_size(14).font_semibold().text_color(s.active ? t.foreground : t.muted).child(repo))
+      .when(Boolean(pr), (el) => el.child(div().flex_none().pt(2).font_family(MONO).text_size(grouped ? 10 : 11).text_color(t.dim).child(`#${pr}`)))
       .child(div().flex_1())
       // self_baseline() lands small text low here; centred, it sits about 1px
       // above the repo's baseline, so pt(2) drops it that pixel.
@@ -319,11 +341,11 @@ export default class Tree extends View {
     cx.notify();
   }
 
-  rows(t, s, ps, terms, ink, folded) {
-    if (folded) return [this.space(t, s, ps, ink, true)];
+  rows(t, s, ps, terms, ink, folded, grouped) {
+    if (folded) return [this.space(t, s, ps, terms, ink, true, grouped)];
     const mine = s.tabs.map((tab) => [tab, ps.filter((p) => p.tab === tab.id)]);
     return [
-      this.space(t, s, ps, ink, false),
+      this.space(t, s, ps, terms, ink, false, grouped),
       ...mine.flatMap(([tab, list]) => s.tabs.length > 1
         ? [v_flex().flex_none().mt(4).rounded(5).when(this.hot === `tab-${tab.id}`, (el) => el.bg(t.hover))
           .child(this.tab(t, s, tab, list, terms))
@@ -334,12 +356,12 @@ export default class Tree extends View {
 
   // The shown card's outline takes a pixel of its padding, so nothing shifts
   // when it moves.
-  card(t, s, ps, terms, ink, folded) {
+  card(t, s, ps, terms, ink, folded, grouped = false) {
     const pad = s.active ? 1 : 0;
     return v_flex().id(`card-${s.id}`).flex_none().px(4 - pad).pt(4 - pad).pb(4 - pad).rounded(8)
       .bg(this.hot === `space-${s.id}` ? t.hover : s.active ? t.background : t.foreground + "06")
       .when(s.active, (el) => el.border(1).border_color(t.accent + "73"))
-      .children(this.rows(t, s, ps, terms, ink, folded));
+      .children(this.rows(t, s, ps, terms, ink, folded, grouped));
   }
 
   // A run of neighbouring spaces shares an outlined box.
@@ -349,7 +371,7 @@ export default class Tree extends View {
     const here = run.some((s) => s.active);
     return v_flex().id(`group-${run[0].id}`).flex_none().p(4).gap(4).rounded(12).border(1)
       .border_color(here ? t.accent + "40" : t.border)
-      .children(run.map((s, i) => this.card(t, s, ps, terms, i === 0 ? (here ? t.accent : t.muted) : null, folded.has(s.id))));
+      .children(run.map((s, i) => this.card(t, s, ps, terms, i === 0 ? (here ? t.accent : t.muted) : null, folded.has(s.id), true)));
   }
 
   rail(t, runs) {
