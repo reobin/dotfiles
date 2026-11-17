@@ -195,13 +195,13 @@ export default class Tabs extends View {
       const count = (n, text, color) => n > 0 ? [div().text_size(11.5).text_color(color).child(`${text}${n}`)] : [];
       const branch = work?.branch || g?.branch;
       const tip = [branch ? `Review changes on ${branch}` : "Review changes", g ? describe(g) : null].filter(Boolean).join(" · ");
-      return h_flex().id("review-open").h(22).px(8).gap(4).flex_none().items_center().rounded(6)
+      return h_flex().id("review-open").h(22).px(8).gap(4).min_w(0).items_center().rounded(6)
         .text_size(12).bg(t.chrome).text_color(t.muted)
         .hover(s => s.bg(t.hover)).on_mouse_down("left", stop)
         .on_click(() => run("mod.open", { name: "review" }))
         .tooltip(tip)
         .child(svg("mods/workspace-chrome/git-compare.svg").size(14).flex_none())
-        .child(div().max_w(200).truncate().child(branch ?? "Review"))
+        .child(div().min_w(0).truncate().child(branch ?? "Review"))
         .when(Boolean(g), el => el.children([...count(g.files, "", t.dim), ...count(g.add, "+", t.ansi2), ...count(g.del, "−", t.ansi1),
           ...count(g.ahead, "↑", t.ansi4), ...count(g.behind, "↓", t.ansi5)]))
         .when(Boolean(clean), el => el.child(div().text_size(11).text_color(t.dim).child("✓")))
