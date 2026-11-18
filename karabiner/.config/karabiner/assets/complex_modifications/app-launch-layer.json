@@ -43,29 +43,11 @@
             }
           ],
           "from": {
-            "key_code": "c"
-          },
-          "to": [
-            {
-              "shell_command": "$HOME/.config/karabiner/focus-solo ChatGPT"
-            }
-          ],
-          "type": "basic"
-        },
-        {
-          "conditions": [
-            {
-              "name": "app_launch_layer",
-              "type": "variable_if",
-              "value": 1
-            }
-          ],
-          "from": {
             "key_code": "h"
           },
           "to": [
             {
-              "shell_command": "$HOME/.config/karabiner/focus-solo 'Proton Mail'"
+              "shell_command": "$HOME/.config/karabiner/focus-solo ChatGPT"
             }
           ],
           "type": "basic"
@@ -137,7 +119,7 @@
           },
           "to": [
             {
-              "shell_command": "$HOME/.config/karabiner/focus-solo Spotify"
+              "shell_command": "$HOME/.config/karabiner/focus-solo 'Proton Mail'"
             }
           ],
           "type": "basic"
@@ -156,6 +138,42 @@
           "to": [
             {
               "shell_command": "$HOME/.config/karabiner/focus-solo Notion"
+            }
+          ],
+          "type": "basic"
+        },
+        {
+          "conditions": [
+            {
+              "name": "app_launch_layer",
+              "type": "variable_if",
+              "value": 1
+            }
+          ],
+          "from": {
+            "key_code": "p"
+          },
+          "to": [
+            {
+              "shell_command": "$HOME/.config/karabiner/focus-solo Spotify"
+            }
+          ],
+          "type": "basic"
+        },
+        {
+          "conditions": [
+            {
+              "name": "app_launch_layer",
+              "type": "variable_if",
+              "value": 1
+            }
+          ],
+          "from": {
+            "key_code": "comma"
+          },
+          "to": [
+            {
+              "shell_command": "$HOME/.config/karabiner/focus-solo 'Notion Calendar'"
             }
           ],
           "type": "basic"
