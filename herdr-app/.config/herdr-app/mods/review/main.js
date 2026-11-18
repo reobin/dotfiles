@@ -10,7 +10,7 @@ const VIEWED = "review.viewed", PREFS = "review.prefs";
 const ROW = 22, MARGIN = ROW * 3, FILE_ROW = 29, FILE_PAD = 6, INDENT = 12;
 // Monospace advance at 12.5px, rounded up so a wrapped line never runs past the edge.
 const CHAR_W = 7.6, CODE_X = 3 + 46 + 46 + 18, SIDE_CODE_X = 3 + 46 + 18, GUTTER = CODE_X + 32, SIDE_GUTTER = SIDE_CODE_X + 16, SPLIT_MIN = 1000;
-const FOLD_LINES = 1500, EXPAND_STEP = 20, COMPOSER_ROWS = 8;
+const FOLD_LINES = 1500, EXPAND_STEP = 20, COMPOSER_ROWS = 8, NUDGE_LINES = 3;
 const LIST_W = 300, LIST_MIN = 160, DIFF_MIN = 360;
 const GENERATED = /(^|\/)(package-lock\.json|npm-shrinkwrap\.json|yarn\.lock|pnpm-lock\.yaml|bun\.lockb?|Cargo\.lock|Gemfile\.lock|poetry\.lock|composer\.lock|Pipfile\.lock|go\.sum|flake\.lock)$|\.min\.(js|css)$|\.map$/;
 // Theme colors come as #rrggbb or #rrggbbaa; a tint multiplies more transparency into either.
@@ -161,6 +161,8 @@ export default class Review extends View {
         else if (this.typing || this.picker) continue;
         else if (command === "half-down" || command === "half-up") this.scroll(command === "half-down" ? 1 : -1, false);
         else if (command === "page-down" || command === "page-up") this.scroll(command === "page-down" ? 1 : -1, true);
+        else if (command === "nudge-down" || command === "nudge-up") this.nudge(command === "nudge-down" ? 1 : -1, NUDGE_LINES);
+        else if (command === "nudge-half-down" || command === "nudge-half-up") this.nudge(command === "nudge-half-down" ? 1 : -1, Math.max(1, Math.floor(this.viewH / ROW / 2)));
         else if (command === "pane") { this.focus = this.focus === "files" ? "diff" : "files"; this.handle.focus(); }
         cx.notify();
       }
@@ -637,6 +639,11 @@ export default class Review extends View {
     const edge = whole && this.offset !== before ? this.pageEdge(step, i) : i;
     this.cursor = step > 0 ? Math.max(edge, this.cursor) : Math.min(edge, this.cursor);
     this.reveal(0);
+  }
+
+  // ⌥ scrolls move only the view, so the file list keeps focus and the cursor stays put.
+  nudge(step, lines) {
+    this.scrollTo(this.offset + step * lines * ROW, this.over);
   }
 
   // After ctrl-f the cursor goes to the top line of the new page, after ctrl-b to the bottom one,
@@ -1264,7 +1271,8 @@ export default class Review extends View {
       ["Moving in the diff", [["j k", "line down, up"], ["5j 42G", "count, go to line 42"], ["gg G", "first, last line"], ["{ }", "paragraph"], ["[ ]", "hunk"],
         [`${key("half-down", "⌃d")} ${key("half-up", "⌃u")}`, "half page"], [`${key("page-down", "⌃f")} ${key("page-up", "⌃b")}`, "page"], ["zz zt zb", "line to middle, top, bottom"]]],
       ["Comments", [["c ↵", "comment the line or range"], ["v V", "select lines"], ["⇧j ⇧k", "extend the range"], ["e d", "edit, delete"], ["n N", "next, previous comment"], [send, "send to the agent"]]],
-      ["Files", [["j k", "move"], ["gg G", "first, last"], ["h l", "fold, unfold"], ["/", "filter"], ["v", "mark viewed"], ["o", "show a hidden file"]]],
+      ["Files", [["j k", "move"], ["gg G", "first, last"], ["h l", "fold, unfold"], ["/", "filter"], ["v", "mark viewed"], ["o", "show a hidden file"],
+        [`${key("nudge-down", "⌥j")} ${key("nudge-up", "⌥k")}`, "scroll the diff"], [`${key("nudge-half-down", "⌥d")} ${key("nudge-half-up", "⌥u")}`, "diff half page"]]],
       ["Review", [["H L", "files, diff"], ["tab", "switch pane"], ["b", "uncommitted or branch"], ["B", "compare against"], ["r", "reload"], ["w |", "wrap, split"], ["q", "close"]]],
     ];
     const column = (list) => v_flex().flex_1().min_w(0).gap(16).children(list.map(([title, rows]) => v_flex().gap(2)
