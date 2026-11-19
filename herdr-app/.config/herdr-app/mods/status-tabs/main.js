@@ -178,6 +178,10 @@ export default class Tabs extends View {
     const lightsPadding = w?.platform === "macos" && w.titlebar === "none" && !w.fullscreen && root?.traffic_lights
       ? Math.max(8, (root.traffic_lights[0] + 64) / settings().zoom - (sidebar?.hidden ? 0 : sidebar?.size?.px ?? 0))
       : 8;
+    // The pane sits flush against the sidebar, so its folded-space hairline
+    // runs to the pane; with no sidebar, a 0px column takes the gap's inset.
+    const inset = find(root, "work-inset");
+    if (inset && Boolean(inset.hidden) !== !sidebar?.hidden) run(sidebar?.hidden ? "layout.show" : "layout.hide", { id: "work-inset" });
     const panel = find(root, "panel"), body = find(root, "panel-body");
     const enabled = [...(shared("workspace.panels") ?? ["files"]), "ticket-status", "pr-status"].filter(id => find(body, id));
     this.syncPanel(space, panel, body, enabled);

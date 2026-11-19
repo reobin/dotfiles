@@ -51,6 +51,15 @@
               "type": "row",
               "children": [
                 {
+                  "id": "work-inset",
+                  "type": "column",
+                  "children": [],
+                  "size": {
+                    "px": 0
+                  },
+                  "hidden": true
+                },
+                {
                   "id": "main",
                   "type": "block",
                   "content": {
@@ -124,11 +133,19 @@
                   "min": 280,
                   "max": 900,
                   "hidden": true
+                },
+                {
+                  "id": "work-gutter",
+                  "type": "column",
+                  "children": [],
+                  "size": {
+                    "px": 0
+                  }
                 }
               ],
               "padding": [
                 8,
-                8
+                0
               ],
               "gap": 8
             },
