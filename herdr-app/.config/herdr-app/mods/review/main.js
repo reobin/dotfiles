@@ -23,6 +23,10 @@ const tint = (color, alpha) => {
 const STATUS_COLOR = { A: "ansi2", D: "ansi1", M: "blocked" };
 
 const drafts = () => shared(DRAFTS) ?? {};
+// A draft is a line comment unless its scope says otherwise: "file" has a path and no anchor,
+// "overall" (one per review) has neither.
+const isFile = (c) => c.scope === "file";
+const isOverall = (c) => c.scope === "overall";
 const lineKey = (rows, i) => ({ kind: rows[i].kind, num: rows[i].new ?? rows[i].old, text: rows[i].text, above: rows[i - 1]?.text });
 // The row an anchor names: same kind and text, nearest its old number, since lines added above
 // shift every number. A matching line above wins first, so an inserted copy of a common line
@@ -42,7 +46,7 @@ function findLine(rows, at, code) {
 
 // The rows a comment covers now: its anchor line and, above it, as many diff lines as its code has.
 function span(rows, c) {
-  const end = rows ? findLine(rows, c.at, c.code) : -1;
+  const end = rows && c.at ? findLine(rows, c.at, c.code) : -1;
   if (end < 0) return null;
   let start = end, left = (c.code ?? "").split("\n").length;
   while (left > 1 && start > 0) { start--; if (isLine(rows[start])) left--; }
@@ -55,6 +59,7 @@ const resolve = (c, rows) => {
   return s ? { ...c, at: lineKey(rows, s.end), ...anchor(rows, s.start, s.end) } : c;
 };
 const threadH = (lines) => 60 + 18 * lines;
+const SHEET_W = 600, OVERALL_ROWS = 6;
 const linesLabel = (lines) => lines.includes("-") ? `lines ${lines.replace("-", "–")}` : `line ${lines}`;
 const folded = (f) => !f.opened && (GENERATED.test(f.path) || f.add + f.del > FOLD_LINES);
 const signature = (f) => `${f.status}:${f.add}:${f.del}`;
@@ -136,6 +141,14 @@ export default class Review extends View {
     this.filterInput = InputState.new({ placeholder: "Filter files" });
     this.filterInput.on("change", (_e, cx) => { this.filter = this.filterInput.value(); this.followFilter(cx); cx.notify(); });
     this.filterInput.on("submit", (_e, cx) => { this.filtering = false; this.handle.focus(); cx.notify(); });
+    this.overallInput = TextareaState.new({ placeholder: "Applies to the whole change. Optional.", rows: 2 });
+    this.overallInput.on("change", (_e, cx) => {
+      // ⌘↵ also reaches the box as a line break; while sending, the box keeps the text being sent.
+      if (this.sending) { if (this.overallInput.value() !== this.sentOverall) this.overallInput.set_value(this.sentOverall); return; }
+      this.setOverall(this.overallInput.value());
+      cx.notify();
+    });
+    this.overallInput.on("submit", (e, cx) => { if (!e?.shift) this.send(cx); });
     this.handle.focus();
     cx.timer.after(300, () => { if (!this.typing) this.handle.focus(); });
     this.root = roots.get(whereKey(this.where)) ?? null;
@@ -170,7 +183,7 @@ export default class Review extends View {
   }
 
   // Typing is whenever a text box is open; keys then belong to it.
-  get typing() { return Boolean(this.composer) || this.filtering; }
+  get typing() { return Boolean(this.composer || this.sendSheet) || this.filtering; }
 
   dismiss() {
     closeOverlay(props().overlay);
@@ -225,6 +238,19 @@ export default class Review extends View {
     return this.comments().map((c) => resolve(c, rows.get(c.path)));
   }
   setComments(list) { setShared(DRAFTS, { ...drafts(), [this.root]: list }); }
+  fileComment(path) { return this.comments().find((c) => isFile(c) && c.path === path) ?? null; }
+  overall() { return this.comments().find(isOverall)?.text ?? ""; }
+  setOverall(text) {
+    const list = this.comments(), old = list.find(isOverall), rest = list.filter((c) => !isOverall(c));
+    this.setComments(text.trim() ? [...rest, { id: old?.id ?? `o${Date.now()}`, scope: "overall", text }] : rest);
+  }
+
+  // File and line comments in file order, a file's own comment first.
+  queue() {
+    const index = new Map(this.files.map((f, i) => [f.path, i])), rank = (c) => index.get(c.path) ?? this.files.length;
+    return this.current().filter((c) => !isOverall(c))
+      .sort((a, b) => rank(a) - rank(b) || a.path.localeCompare(b.path) || (a.at?.num ?? 0) - (b.at?.num ?? 0));
+  }
 
   prefs() { return shared(PREFS) ?? {}; }
   setPref(key, value) { setShared(PREFS, { ...this.prefs(), [key]: value }); }
@@ -509,7 +535,9 @@ export default class Review extends View {
   items() {
     const file = this.file();
     if (!file || this.hold === file) return [];
-    if (folded(file)) return [{ t: "folded" }];
+    const note = this.fileComment(file.path);
+    const head = this.composer?.scope === "file" ? [{ t: "composer" }] : note ? [{ t: "comment", c: note }] : [];
+    if (folded(file)) return [...head, { t: "folded" }];
     const rows = file.rows, lines = this.split() ? pairs(rows) : rows.map((_r, i) => ({ t: "row", i }));
     const where = new Map();
     lines.forEach((ln, n) => {
@@ -518,15 +546,15 @@ export default class Review extends View {
     });
     const placed = new Map(), loose = [];
     for (const c of this.comments()) {
-      if (c.path !== file.path) continue;
+      if (c.path !== file.path || isFile(c)) continue;
       const i = findLine(rows, c.at, c.code);
       if (i < 0) loose.push(c);
       else placed.set(where.get(i), [...(placed.get(where.get(i)) ?? []), resolve(c, rows)]);
     }
-    const fresh = this.composer && !this.composer.id ? findLine(rows, this.composer.at) : -1;
+    const fresh = this.composer && !this.composer.id && !this.composer.scope ? findLine(rows, this.composer.at) : -1;
     const composerLine = fresh >= 0 ? where.get(fresh) : undefined;
-    const out = loose.map((c) => this.composer?.id === c.id ? { t: "composer", lost: true } : { t: "comment", c, loose: true });
-    if (this.composer && !this.composer.id && fresh < 0) out.unshift({ t: "composer", lost: true });
+    const out = [...head, ...loose.map((c) => this.composer?.id === c.id ? { t: "composer", lost: true } : { t: "comment", c, loose: true })];
+    if (this.composer && !this.composer.id && !this.composer.scope && fresh < 0) out.splice(head.length, 0, { t: "composer", lost: true });
     lines.forEach((ln, n) => {
       out.push(ln);
       for (const c of placed.get(n) ?? []) out.push(this.composer?.id === c.id ? { t: "composer" } : { t: "comment", c });
@@ -723,6 +751,35 @@ export default class Review extends View {
     this.input.focus();
   }
 
+  // C: the file's comment box, above its first hunk; opens the existing comment to edit.
+  // Closing it returns to the pane, line and scroll it was opened from.
+  commentFile() {
+    const file = this.file();
+    if (!file) return;
+    const note = this.fileComment(file.path);
+    this.from = null; this.visual = false;
+    const back = { focus: this.focus, offset: this.offset, over: this.over, head: this.headH(file.path) };
+    this.composer = { id: note?.id ?? null, scope: "file", back };
+    this.input.set_value(note?.text ?? "");
+    this.input.focus();
+    this.scrollTo(0);
+  }
+
+  // D: deletes the file's comment, keeping the lines below where they were on screen.
+  deleteFileComment() {
+    const path = this.file()?.path, note = path && this.fileComment(path);
+    if (!note) return;
+    const h = this.headH(path);
+    this.setComments(this.comments().filter((c) => c.id !== note.id));
+    this.scrollTo(this.offset - h, this.over);
+  }
+
+  // The file comment card's height, which shifts every line below it.
+  headH(path) {
+    const note = this.fileComment(path);
+    return note ? threadH(wrapText(note.text, this.noteCols()).length) : 0;
+  }
+
   // The comment whose lines the cursor is on: its anchor row and the rows its code covers above it.
   commentAt() {
     const file = this.file();
@@ -749,6 +806,7 @@ export default class Review extends View {
     if (!c || !file) return;
     const list = this.comments();
     if (c.id) this.setComments(text ? list.map((x) => x.id === c.id ? { ...resolve(x, file.rows), text } : x) : list.filter((x) => x.id !== c.id));
+    else if (text && c.scope === "file") this.setComments([...list, { id: `c${Date.now()}`, path: file.path, scope: "file", text }]);
     else if (text) {
       const r = resolve(c, file.rows);
       this.setComments([...list, { id: `c${Date.now()}`, path: file.path, at: r.at, text, lines: r.lines, code: r.code }]);
@@ -756,9 +814,14 @@ export default class Review extends View {
     this.cancel(cx);
   }
 
-  cancel(cx) {
+  cancel(cx, restore = true) {
+    const back = this.composer?.back;
     this.composer = null; this.from = null; this.visual = false;
     this.input.set_value("");
+    if (back && restore) {
+      this.focus = back.focus;
+      this.scrollTo(back.offset + this.headH(this.file()?.path) - back.head, back.over);
+    }
     this.handle.focus();
     cx.notify();
   }
@@ -772,10 +835,10 @@ export default class Review extends View {
   jumpComment(step, cx) {
     const index = new Map(this.files.map((f, i) => [f.path, i]));
     const list = this.comments().filter((c) => index.has(c.path))
-      .sort((a, b) => index.get(a.path) - index.get(b.path) || a.at.num - b.at.num);
+      .sort((a, b) => index.get(a.path) - index.get(b.path) || (a.at?.num ?? 0) - (b.at?.num ?? 0));
     if (!list.length) return;
     const row = this.file()?.rows?.[this.cursor], num = row?.new ?? row?.old ?? 0;
-    const cmp = (c) => (index.get(c.path) - this.at) || (c.at.num - num);
+    const cmp = (c) => (index.get(c.path) - this.at) || ((c.at?.num ?? 0) - num);
     const c = step > 0 ? list.find((x) => cmp(x) > 0) ?? list[0] : [...list].reverse().find((x) => cmp(x) < 0) ?? list[list.length - 1];
     const fi = index.get(c.path);
     this.files[fi].opened = true;
@@ -787,6 +850,7 @@ export default class Review extends View {
   applyJump() {
     const file = this.file();
     if (!this.jump || this.jump.path !== file?.path) return;
+    if (isFile(this.jump)) { this.jump = null; this.jumpTo(Math.max(0, file.rows.findIndex(isLine))); this.scrollTo(0); return; }
     const i = findLine(file.rows, this.jump.at, this.jump.code);
     if (i < 0) return;
     this.jump = null;
@@ -810,7 +874,8 @@ export default class Review extends View {
   }
 
   reset(cx) {
-    if (this.picker || this.help) { this.picker = null; this.help = false; cx.notify(); }
+    if (this.sendSheet) { this.closeSendSheet(); cx.notify(); }
+    else if (this.picker || this.help) { this.picker = null; this.help = false; cx.notify(); }
     else if (this.composer) this.cancel(cx);
     else if (this.visual) { this.from = null; this.visual = false; cx.notify(); }
     else if (this.filtering || this.filter) this.clearFilter(cx);
@@ -820,27 +885,47 @@ export default class Review extends View {
 
   agentList() { return agents().filter((a) => a.space === this.where.space); }
 
-  // The send key saves an open comment, then sends.
+  // The send key saves an open comment; otherwise it opens the send sheet, and sends from it.
   sendCommand(cx) {
     if (this.composer) return this.save(cx);
-    if (this.filtering || !this.comments().length || !this.target) return;
-    this.send(cx);
+    if (this.sendSheet) return this.send(cx);
+    if (!this.filtering) this.openSendSheet();
+  }
+
+  openSendSheet() {
+    if (!this.target || !this.root || this.sending) return;
+    this.picker = null; this.help = false;
+    this.sendSheet = true;
+    this.overallInput.set_value(this.overall());
+    this.overallInput.focus();
+  }
+
+  closeSendSheet() {
+    this.sendSheet = false;
+    this.handle.focus();
   }
 
   send(cx) {
-    const list = this.comments(), target = this.target;
-    if (!list.length || !target || this.sending) return;
+    const out = this.queue(), overall = this.overall().trim(), target = this.target;
+    if ((!out.length && !overall) || !target || this.sending) return;
     this.sending = true; this.note = null;
-    const text = message(this.current(), this.label ?? "Uncommitted");
+    if (this.sendSheet) {
+      this.sentOverall = this.overall().trimEnd();
+      this.overallInput.set_value(this.sentOverall);
+      this.handle.focus();
+    }
+    const text = message(out, overall, this.label ?? "Uncommitted");
     cx.spawn(async (cx) => {
       try {
         const r = await hc(["send", target, text]);
         if (r.code !== 0) throw new Error((r.stderr || r.stdout).trim() || "hc send failed");
         this.setComments([]);
-        notify({ title: "Review sent", body: `${list.length} comment${list.length === 1 ? "" : "s"} to ${target}`, level: "success", timeout: 3000 });
+        this.sendSheet = false;
+        const body = out.length ? `${out.length} comment${out.length === 1 ? "" : "s"}` : "Overall comment";
+        notify({ title: "Review sent", body: `${body} to ${target}`, level: "success", timeout: 3000 });
         run("pane.focus", { terminal: target });
         this.dismiss();
-      } catch (e) { this.note = `Send failed: ${e?.message ?? e}`; }
+      } catch (e) { this.note = `Send failed: ${e?.message ?? e}`; if (this.sendSheet) this.overallInput.focus(); }
       finally { this.sending = false; cx.notify(); }
     });
     cx.notify();
@@ -879,6 +964,8 @@ export default class Review extends View {
     else if (k === "H") this.focus = "files";
     else if (k === "L") this.focus = "diff";
     else if (k === "n" || k === "N") this.jumpComment(k === "N" ? -1 : 1, cx);
+    else if (k === "C") this.commentFile();
+    else if (k === "D") this.deleteFileComment();
     else if (files && (k === "j" || k === "down")) this.moveSel(times, cx);
     else if (files && (k === "k" || k === "up")) this.moveSel(-times, cx);
     else if (files && k === "G") this.selectRow(this.rows().at(-1), cx);
@@ -908,7 +995,7 @@ export default class Review extends View {
     return el.on_mouse_down("left", (e, cx) => {
       if (this.composer) {
         if (this.input.value().trim()) { this.input.focus(); return; }
-        this.cancel(cx);
+        this.cancel(cx, false);
       }
       if (e.modifiers.shift) { if (this.from === null) this.from = this.cursor; }
       else { this.from = null; this.visual = false; }
@@ -1025,25 +1112,30 @@ export default class Review extends View {
   }
 
   comment(c, loose, t) {
-    const label = `${linesLabel(c.lines)}${loose ? " · no longer in the diff" : ""}`;
-    const edit = (_e, cx) => { this.focus = "diff"; const end = findLine(this.file().rows, c.at, c.code); this.cursor = end; this.edit({ c, end }); cx.notify(); };
-    const remove = (_e, cx) => { this.setComments(this.comments().filter((x) => x.id !== c.id)); cx.notify(); };
+    const file = isFile(c);
+    const label = `${file ? "File comment" : linesLabel(c.lines)}${loose ? " · no longer in the diff" : ""}`;
+    const edit = file ? (_e, cx) => { this.commentFile(); cx.notify(); }
+      : (_e, cx) => { this.focus = "diff"; const end = findLine(this.file().rows, c.at, c.code); this.cursor = end; this.edit({ c, end }); cx.notify(); };
+    const remove = file ? (_e, cx) => { this.deleteFileComment(); cx.notify(); }
+      : (_e, cx) => { this.setComments(this.comments().filter((x) => x.id !== c.id)); cx.notify(); };
     const text = wrapText(c.text, this.noteCols());
     return this.thread(`c-${c.id}`, text.length, c.id === this.hit, label, [
-      !loose && this.action(`edit-${c.id}`, "Edit", "e", false, t, edit),
-      this.action(`del-${c.id}`, "Delete", "d", false, t, remove),
+      !loose && this.action(`edit-${c.id}`, "Edit", file ? "C" : "e", false, t, edit),
+      this.action(`del-${c.id}`, "Delete", file ? "D" : "d", false, t, remove),
     ].filter(Boolean), v_flex().px(10).py(7).text_color(t.foreground)
       .children(text.map((line, i) => div().id(`cl-${c.id}-${i}`).h(18).whitespace_nowrap().child(line || " "))), t);
   }
 
   composerView(t, lost) {
-    const c = this.composer, { lines } = c.id ? c : resolve(c, this.file()?.rows), rows = this.composerRows();
+    const c = this.composer, rows = this.composerRows();
     const filled = Boolean(this.input.value().trim());
-    const label = `${c.id ? "Edit comment" : "Comment"} on ${linesLabel(lines)}${lost ? " · no longer in the diff" : ""}`;
+    const label = c.scope === "file" ? (c.id ? "Edit file comment" : "File comment")
+      : `${c.id ? "Edit comment" : "Comment"} on ${linesLabel((c.id ? c : resolve(c, this.file()?.rows)).lines)}${lost ? " · no longer in the diff" : ""}`;
     return this.thread("composer", rows, true, label, [
       this.action("composer-cancel", "Cancel", "esc", false, t, (_e, cx) => this.cancel(cx)),
       this.action("composer-save", c.id && !filled ? "Delete" : "Save", "↵", filled, t, (_e, cx) => this.save(cx)),
-    ], div().h(14 + 18 * rows).px(10).py(4)
+    // The textarea sets its text 3px higher than a saved comment's lines; the extra top padding lines them up.
+    ], div().h(14 + 18 * rows).px(10).pt(7).pb(1)
       .child(Textarea.new(this.input).w_full().h_full().text_size(12.5).text_color(t.foreground)), t);
   }
 
@@ -1097,8 +1189,9 @@ export default class Review extends View {
     const add = this.files.reduce((n, f) => n + f.add, 0), del = this.files.reduce((n, f) => n + f.del, 0);
     const viewed = this.files.filter((f) => this.isViewed(f)).length;
     const counts = {};
-    for (const c of all) counts[c.path] = (counts[c.path] ?? 0) + 1;
-    const canSend = all.length > 0 && Boolean(target) && !this.sending;
+    for (const c of all) if (c.path) counts[c.path] = (counts[c.path] ?? 0) + 1;
+    const outgoing = all.filter((c) => !isOverall(c)).length;
+    const canSend = Boolean(target && this.root) && !this.sending;
     const stop = (_e, cx) => cx.stop_propagation();
     const filesOn = this.focus === "files";
 
@@ -1174,8 +1267,8 @@ export default class Review extends View {
       .when(!target, (el) => el.child(div().text_size(12).text_color(t.dim).child("No agent in this space")))
       .child(div().id("send").h(28).px(12).flex().items_center().rounded(7).text_size(12).font_semibold()
         .bg(canSend ? t.solid : t.raised).text_color(canSend ? t.solid_foreground : t.dim)
-        .when(canSend, (el) => el.cursor_pointer()).on_mouse_down("left", stop).on_click((_e, cx) => this.sendCommand(cx))
-        .child(this.sending ? "Sending…" : [`Send ${all.length || ""}`.trim(), targetName && `to ${targetName}`, pretty(bound("send"))].filter(Boolean).join(" ")));
+        .when(canSend, (el) => el.cursor_pointer()).on_mouse_down("left", stop).on_click((_e, cx) => { this.sendCommand(cx); cx.notify(); })
+        .child(this.sending ? "Sending…" : [`Send ${outgoing || ""}`.trim(), targetName && `to ${targetName}`, pretty(bound("send"))].filter(Boolean).join(" ")));
 
     const rows = this.rows();
     const filterBar = (this.filtering || this.filter) && h_flex().id("filter").h(34).flex_none().mx(FILE_PAD).mt(FILE_PAD).px(8).gap(6).items_center().rounded(7)
@@ -1210,6 +1303,11 @@ export default class Review extends View {
       .child(h_flex().h(32).flex_none().px(14).gap(8).items_center().border_b(1).border_color(t.border).text_size(12.5)
         .child(div().truncate().text_color(t.foreground).child(file?.path ?? ""))
         .when(Boolean(file) && this.isViewed(file), (el) => el.child(div().text_size(11).text_color(t.ansi2).child("✓ viewed")))
+        .when(Boolean(file) && !this.fileComment(file?.path) && this.composer?.scope !== "file", (el) => el.child(
+          h_flex().id("file-comment").h(22).px(8).gap(6).flex_none().items_center().rounded(6).border_1().border_color(t.border)
+            .text_size(11.5).text_color(t.dim).cursor_pointer().hover((s) => s.bg(t.hover).text_color(t.foreground))
+            .on_mouse_down("left", stop).on_click((_e, cx) => { this.commentFile(); cx.notify(); })
+            .child(div().child("File comment")).child(div().opacity(0.6).child("C"))))
         .child(div().flex_1())
         .child(toggle("wrap", "Wrap"))
         .child(toggle("split", this.prefs().split && this.diffW < SPLIT_MIN ? "Split (too narrow)" : "Split"))
@@ -1232,8 +1330,9 @@ export default class Review extends View {
       : this.filtering ? [["↵", "done"], ["esc", "clear"]]
       : this.visual ? [["VISUAL", "line"], ["j k { } G", "extend"], ["c", "comment"], ["v esc", "cancel"]]
       : filesOn ? [["↵ L", "open"], ["/", "filter"], ["v", "viewed"], [send, "send"], ["?", "keys"]]
-      : [["c", "comment"], ["v", "select"], ...(file && folded(file) ? [["o", "show"]] : []), [send, "send"], ["?", "keys"]];
+      : [["c", "comment"], ["C", "file comment"], ["v", "select"], ...(file && folded(file) ? [["o", "show"]] : []), [send, "send"], ["?", "keys"]];
     const sheet = this.help && this.helpSheet(t, send);
+    const outbox = this.sendSheet && this.sendSheetView(t, targetName, send);
     const footer = h_flex().h(28).flex_none().px(14).gap(14).items_center().bg(t.chrome).border_t(1).border_color(t.border).text_size(11).text_color(t.dim)
       .children(hints.map(([keys, what]) => hint(keys, what)))
       .child(div().flex_1())
@@ -1261,7 +1360,38 @@ export default class Review extends View {
         .child(edge)
         .when(Boolean(this.resizing), (el) => el.child(div().id("resize-cover").absolute().inset_0().cursor_col_resize())))
       .child(footer)
-      .when(Boolean(sheet), (el) => el.child(sheet));
+      .when(Boolean(sheet), (el) => el.child(sheet))
+      .when(Boolean(outbox), (el) => el.child(outbox));
+  }
+
+  // The send sheet: the overall comment, and what else goes with it.
+  sendSheetView(t, targetName, send) {
+    const list = this.queue(), overall = this.overall().trim(), ready = (list.length > 0 || Boolean(overall)) && !this.sending;
+    const files = new Set(list.map((c) => c.path)).size, plural = (n, word) => `${n} ${word}${n === 1 ? "" : "s"}`;
+    const cols = Math.floor((SHEET_W - 54) / (charW ?? CHAR_W));
+    const rows = Math.min(OVERALL_ROWS, Math.max(2, wrapText(this.overallInput.value(), cols).length));
+    const hint = (keys, what) => h_flex().gap(4).child(div().text_color(t.muted).child(keys)).child(div().child(what));
+
+    return div().id("send-sheet").absolute().inset_0().flex().items_center().justify_center().bg(tint(t.background, "b0"))
+      .on_mouse_down("left", (_e, cx) => { cx.stop_propagation(); this.closeSendSheet(); cx.notify(); })
+      .child(v_flex().id("send-card").w(SHEET_W).rounded(12).border_1().border_color(t.border).bg(t.chrome).shadow_lg().text_size(12.5).overflow_hidden()
+        .on_mouse_down("left", (_e, cx) => { cx.stop_propagation(); this.overallInput.focus(); })
+        .child(h_flex().px(16).pt(14).pb(10).gap(8).items_center()
+          .child(div().font_semibold().child(targetName ? `Send to ${targetName}` : "Send"))
+          .child(div().text_size(11.5).text_color(t.dim).child(this.label ?? "Uncommitted"))
+          .child(div().flex_1())
+          .child(div().text_size(11.5).text_color(t.dim).child(list.length ? `${plural(list.length, "comment")} in ${plural(files, "file")}` : "No comments")))
+        .child(div().id("overall").mx(16).h(14 + 18 * rows).px(10).py(4).rounded(8).border_1().border_color(t.accent).bg(t.background)
+          .font_family(settings().font_family ?? "JetBrains Mono")
+          .child(Textarea.new(this.overallInput).w_full().h_full().text_size(12.5).text_color(t.foreground)))
+        .child(h_flex().mt(12).px(16).py(10).gap(14).items_center().border_t(1).border_color(t.border).text_size(11).text_color(t.dim)
+          .children([["↵", "send"], ["⇧↵", "new line"], ["esc", "close"]].map(([keys, what]) => hint(keys, what)))
+          .child(div().flex_1())
+          .when(Boolean(this.note), (el) => el.child(div().text_color(t.ansi1).child(this.note)))
+          .child(div().id("sheet-send").h(28).px(12).flex().items_center().rounded(7).text_size(12).font_semibold()
+            .bg(ready ? t.solid : t.raised).text_color(ready ? t.solid_foreground : t.dim)
+            .when(ready, (el) => el.cursor_pointer()).on_click((_e, cx) => this.send(cx))
+            .child(this.sending ? "Sending…" : `Send ${send}`))));
   }
 
   // ? opens every key, grouped; any key or a click closes it.
@@ -1270,7 +1400,7 @@ export default class Review extends View {
     const groups = [
       ["Moving in the diff", [["j k", "line down, up"], ["5j 42G", "count, go to line 42"], ["gg G", "first, last line"], ["{ }", "paragraph"], ["[ ]", "hunk"],
         [`${key("half-down", "⌃d")} ${key("half-up", "⌃u")}`, "half page"], [`${key("page-down", "⌃f")} ${key("page-up", "⌃b")}`, "page"], ["zz zt zb", "line to middle, top, bottom"]]],
-      ["Comments", [["c ↵", "comment the line or range"], ["v V", "select lines"], ["⇧j ⇧k", "extend the range"], ["e d", "edit, delete"], ["n N", "next, previous comment"], [send, "send to the agent"]]],
+      ["Comments", [["c ↵", "comment the line or range"], ["C D", "comment the file, delete it"], ["v V", "select lines"], ["⇧j ⇧k", "extend the range"], ["e d", "edit, delete"], ["n N", "next, previous comment"], [send, "review and send"]]],
       ["Files", [["j k", "move"], ["gg G", "first, last"], ["h l", "fold, unfold"], ["/", "filter"], ["v", "mark viewed"], ["o", "show a hidden file"],
         [`${key("nudge-down", "⌥j")} ${key("nudge-up", "⌥k")}`, "scroll the diff"], [`${key("nudge-half-down", "⌥d")} ${key("nudge-half-up", "⌥u")}`, "diff half page"]]],
       ["Review", [["H L", "files, diff"], ["tab", "switch pane"], ["b", "uncommitted or branch"], ["B", "compare against"], ["r", "reload"], ["w |", "wrap, split"], ["q", "close"]]],

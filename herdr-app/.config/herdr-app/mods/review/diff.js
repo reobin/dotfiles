@@ -210,10 +210,12 @@ export function anchor(rows, from, to) {
   return { lines: first === last ? `${first}` : `${first}-${last}`, code: picked.map((r) => `${r.kind}${r.text}`).join("\n") };
 }
 
-export function message(comments, label) {
-  const parts = [`I reviewed the changes (${label.toLowerCase()}). Address each comment below:`];
+export function message(comments, overall, label) {
+  const intro = `I reviewed the changes (${label.toLowerCase()}).`;
+  const parts = [comments.length ? `${intro} Address each comment below:` : intro];
+  if (overall) parts.push(comments.length ? `Overall:\n${overall}` : overall);
   comments.forEach((c, i) => {
-    parts.push(`${i + 1}. ${c.path}:${c.lines}\n\`\`\`diff\n${c.code}\n\`\`\`\n${c.text}`);
+    parts.push(c.scope === "file" ? `${i + 1}. ${c.path} (whole file)\n${c.text}` : `${i + 1}. ${c.path}:${c.lines}\n\`\`\`diff\n${c.code}\n\`\`\`\n${c.text}`);
   });
   return parts.join("\n\n");
 }
