@@ -124,19 +124,11 @@
                   "min": 280,
                   "max": 900,
                   "hidden": true
-                },
-                {
-                  "id": "work-gutter",
-                  "type": "column",
-                  "children": [],
-                  "size": {
-                    "px": 0
-                  }
                 }
               ],
               "padding": [
                 8,
-                0
+                8
               ],
               "gap": 8
             },
