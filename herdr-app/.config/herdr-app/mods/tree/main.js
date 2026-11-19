@@ -4,8 +4,8 @@
 // pane is a chip with its callsign and program, and a tab with no agent folds
 // to one line of chips. Only what needs you is marked. Under 160px wide,
 // spaces only. A group folds and moves as one. Folded spaces sink under a
-// hairline, and the section the shown space isn't in dims (space-nav walks
-// one section at a time).
+// hairline. Only the section the shown space is in draws its cards; the
+// other folds to one line (space-nav walks one section at a time).
 
 import { View, div, svg, image } from "gpui-kit";
 import { v_flex, h_flex, ScrollHandle } from "gpui-base";
@@ -20,6 +20,7 @@ const COLLAPSED = "tree.collapsed";
 const TOP = 38;
 // Agent rows and tool chips share one height, so a pane row is the same size either way.
 const ROW = 26;
+const SLACK = 8;
 const icon = (name) => svg(`mods/tree/${name}.svg`);
 // image() rasterizes these 1em SVGs small and scales them up into a blurry fringe;
 // they are one color, so svg() can draw them crisp in that color.
@@ -111,6 +112,7 @@ export default class Tree extends View {
     this.under = null; // { key, at }: the lit row the last move over one landed on
     this.at = null; // where the last move over the sidebar landed, null once it leaves
     this.scroll = ScrollHandle.new();
+    this.dockScroll = ScrollHandle.new();
     this.revealed = null;
     cx.timer.every(1000, (cx) => this.lookup(cx));
     this.lookup(cx);
@@ -364,14 +366,27 @@ export default class Tree extends View {
       .children(this.rows(t, s, ps, terms, ink, folded, grouped));
   }
 
-  // A run of neighbouring spaces shares an outlined box.
+  // A run of neighbouring spaces shares an outlined box, drawn as one slice
+  // per card so every card is its own list child: scroll_to_item can then
+  // reveal the shown card even when its group is taller than the sidebar.
   group(t, run, ps, terms, folded) {
-    if (run.length === 1) return this.card(t, run[0], ps, terms, run[0].active ? t.accent : t.muted, folded.has(run[0].id));
+    if (run.length === 1) return [this.card(t, run[0], ps, terms, run[0].active ? t.accent : t.muted, folded.has(run[0].id))];
     // The shown space's group echoes its card's outline, fainter.
     const here = run.some((s) => s.active);
-    return v_flex().id(`group-${run[0].id}`).flex_none().p(4).gap(4).rounded(12).border(1)
+    const last = run.length - 1;
+    return run.map((s, i) => v_flex().id(`group-${s.id}`).flex_none().px(4).pt(4).border_x(1)
       .border_color(here ? t.accent + "40" : t.border)
-      .children(run.map((s, i) => this.card(t, s, ps, terms, i === 0 ? (here ? t.accent : t.muted) : null, folded.has(s.id), true)));
+      .when(i === 0, (el) => el.border_t(1).rounded_t(12))
+      .when(i === last, (el) => el.pb(4).border_b(1).rounded_b(12))
+      .child(this.card(t, s, ps, terms, i === 0 ? (here ? t.accent : t.muted) : null, folded.has(s.id), true)));
+  }
+
+  // scroll_to_item stops a child at the list's edge, so each card sits in a
+  // clear frame of SLACK above and below; negative margins overlap the frames
+  // so the cards keep their spacing.
+  cards(t, runs, ps, terms, folded) {
+    return runs.flatMap((run, k) => this.group(t, run, ps, terms, folded).map((el, i) =>
+      v_flex().flex_none().py(SLACK).mt((k > 0 && i === 0 ? 8 : 0) - (k === 0 && i === 0 ? 1 : 2) * SLACK).child(el)));
   }
 
   rail(t, runs) {
@@ -425,14 +440,31 @@ export default class Tree extends View {
     if (next) run("space.select", { id: next });
   }
 
-  // Brings the shown space's group into view when the shown space changes or
-  // moves, and leaves a hand scroll alone otherwise.
-  reveal(runs) {
-    const i = runs.findIndex((run) => run.some((s) => s.active));
-    const key = i < 0 ? null : `${runs[i].find((s) => s.active).id}:${i}`;
+  // Brings the shown space's list child into view when the shown space
+  // changes, moves or grows, and leaves a hand scroll alone otherwise.
+  // items: the spaces each list child holds.
+  reveal(handle, items, ps) {
+    const i = items.findIndex((run) => run.some((s) => s.active));
+    const s = i < 0 ? null : items[i].find((x) => x.active);
+    const tabs = new Set(s?.tabs.map((tab) => tab.id));
+    const key = s ? `${s.id}:${i}:${s.tabs.length}:${ps.filter((p) => tabs.has(p.tab)).length}` : null;
     if (key === this.revealed) return;
     this.revealed = key;
-    if (i >= 0) this.scroll.scroll_to_item(i);
+    if (i >= 0) handle.scroll_to_item(i);
+  }
+
+  // A folded section: its count and what in it needs you. A click goes there.
+  line(t, runs, label, open) {
+    const list = runs.flat();
+    const marks = list.filter((s) => s.status && s.status !== "idle").map((s) => status(t, s.status));
+    return press(h_flex().id(`line-${label}`).h(30).flex_none().mx(8).px(8).gap(8).items_center().rounded(5)
+      .opacity(0.45).hover((x) => x.bg(t.hover)).font_family(MONO).text_size(11.5).text_color(t.muted),
+    () => run("space.select", { id: list[0].id }))
+      .child(div().flex_none().text_color(t.dim).child(open ? "▾" : "▸"))
+      .child(div().flex_none().child(`${list.length} ${label}`))
+      .child(div().flex_1())
+      .child(h_flex().flex_none().gap(4).children(marks))
+      .child(div().flex_none().text_color(t.dim).child("alt-."));
   }
 
   render() {
@@ -443,7 +475,7 @@ export default class Tree extends View {
     const top = sets(all.filter((s) => !folded.has(s.id)));
     const dock = sets(all.filter((s) => folded.has(s.id)));
     const docked = all.some((s) => s.active && folded.has(s.id));
-    this.reveal(top);
+    const ps = panes();
     // A scrollable splits the height with its siblings, so the list scrolls
     // inside a plain flex_1 box and the dock keeps only the height it needs.
     const upper = (list) => v_flex().id("upper").flex_1().min_h(0).opacity(docked && top.length ? 0.45 : 1).transition("opacity", 150)
@@ -462,15 +494,23 @@ export default class Tree extends View {
         this.settle(cx);
       });
     if (narrow()) {
+      this.reveal(this.scroll, top, ps);
       return root
         .child(upper(v_flex().pt(TOP).pb(8).gap(8).items_center().children(this.rail(t, top))))
         .when(dock.length > 0, (el) => el.child(shelf(v_flex().py(8).gap(8).items_center().children(this.rail(t, dock)))));
     }
-    const ps = panes();
+    // One section shows in full, the one alt-j/k walks; the other folds to a
+    // line, the open spaces above the hairline and the hidden ones below it.
+    // Hidden spaces draw like open ones, never folded.
+    const [full, rest] = docked ? [dock, top] : [top, dock];
+    const handle = docked ? this.dockScroll : this.scroll;
+    this.reveal(handle, full.flat().map((s) => [s]), ps);
     const terms = new Map(terminals().map((x) => [x.address, x]));
-    return root
-      .child(upper(v_flex().pt(TOP).pb(8).px(8).gap(8).children(top.map((run) => this.group(t, run, ps, terms, folded)))))
-      .when(dock.length > 0, (el) => el.child(shelf(v_flex().pt(8).pb(8).px(8).gap(8)
-        .children(dock.map((run) => this.group(t, run, ps, terms, folded))))));
+    const hair = () => div().flex_none().border_t(1).border_color(t.dim + "80");
+    const list = v_flex().id("body").flex_1().min_h(0)
+      .child(v_flex().id(docked ? "dock" : "top").size_full().overflow_y_scrollbar().track_scroll(handle)
+        .pt(docked && rest.length ? 8 : TOP).px(8).children(this.cards(t, full, ps, terms, new Set())));
+    if (docked) return root.when(rest.length > 0, (el) => el.child(div().flex_none().h(TOP - 8)).child(this.line(t, rest, "open", true)).child(hair())).child(list);
+    return root.child(list).when(rest.length > 0, (el) => el.child(hair()).child(this.line(t, rest, "hidden", false)));
   }
 }
