@@ -10,7 +10,7 @@ const VIEWED = "review.viewed", PREFS = "review.prefs";
 const ROW = 22, MARGIN = ROW * 3, FILE_ROW = 29, FILE_PAD = 6, INDENT = 12;
 // Monospace advance at 12.5px, rounded up so a wrapped line never runs past the edge.
 const CHAR_W = 7.6, CODE_X = 3 + 46 + 46 + 18, SIDE_CODE_X = 3 + 46 + 18, GUTTER = CODE_X + 32, SIDE_GUTTER = SIDE_CODE_X + 16, SPLIT_MIN = 1000;
-const FOLD_LINES = 1500, EXPAND_STEP = 20, COMPOSER_ROWS = 8, NUDGE_LINES = 3;
+const FOLD_LINES = 1500, EXPAND_STEP = 20, COMPOSER_ROWS = 8;
 const LIST_W = 300, LIST_MIN = 160, DIFF_MIN = 360;
 const GENERATED = /(^|\/)(package-lock\.json|npm-shrinkwrap\.json|yarn\.lock|pnpm-lock\.yaml|bun\.lockb?|Cargo\.lock|Gemfile\.lock|poetry\.lock|composer\.lock|Pipfile\.lock|go\.sum|flake\.lock)$|\.min\.(js|css)$|\.map$/;
 // Theme colors come as #rrggbb or #rrggbbaa; a tint multiplies more transparency into either.
@@ -93,8 +93,8 @@ function carry(files, old, dark) {
 
 // Plain keys the view reads itself. Chords live in keys.json under "mod:review", which the app
 // resolves ahead of global bindings, so a global chord can never swallow one of them.
-const OWN_KEYS = ["j", "k", "h", "l", "g", "z", "[", "]", "c", "e", "d", "n", "v", "w", "o", "/", "|", "b", "r", "q",
-  "enter", "escape", "tab", "backspace", "up", "down", "left", "right"];
+const OWN_KEYS = ["j", "k", "g", "z", "[", "]", "c", "e", "d", "n", "v", "m", "w", "o", "/", "|", "b", "r", "q",
+  "enter", "escape", "backspace", "up", "down"];
 const GLYPH = { cmd: "⌘", shift: "⇧", alt: "⌥", ctrl: "⌃", enter: "↵", escape: "esc", tab: "tab" };
 const pretty = (chord) => chord ? chord.split("-").map((p) => GLYPH[p] ?? p.toUpperCase()).join("") : "unbound";
 const bound = (action) => keys().filter((b) => b.section === "mod:review" && b.action === `review.${action}`)
@@ -123,7 +123,6 @@ export default class Review extends View {
     this.opened = new Set();
     this.filter = "";
     this.filtering = false;
-    this.focus = "files";
     this.listOffset = 0;
     this.listH = 0;
     this.cursor = 0;
@@ -171,12 +170,10 @@ export default class Review extends View {
         if (this.help) { this.help = false; cx.notify(); continue; }
         if (command === "send") this.sendCommand(cx);
         else if (command === "reset") this.reset(cx);
+        else if ((command === "next-file" || command === "prev-file") && !this.composer && !this.sendSheet && !this.picker) this.stepFile(command === "next-file" ? 1 : -1, cx);
         else if (this.typing || this.picker) continue;
         else if (command === "half-down" || command === "half-up") this.scroll(command === "half-down" ? 1 : -1, false);
         else if (command === "page-down" || command === "page-up") this.scroll(command === "page-down" ? 1 : -1, true);
-        else if (command === "nudge-down" || command === "nudge-up") this.nudge(command === "nudge-down" ? 1 : -1, NUDGE_LINES);
-        else if (command === "nudge-half-down" || command === "nudge-half-up") this.nudge(command === "nudge-half-down" ? 1 : -1, Math.max(1, Math.floor(this.viewH / ROW / 2)));
-        else if (command === "pane") { this.focus = this.focus === "files" ? "diff" : "files"; this.handle.focus(); }
         cx.notify();
       }
     });
@@ -316,7 +313,8 @@ export default class Review extends View {
     this.at = Math.min(Math.max(index, 0), this.files.length - 1);
     const file = this.file();
     this.sel = `f:${file.path}`;
-    this.keepSel();
+    this.unfoldTo(file.path);
+    this.revealSel();
     this.from = null; this.composer = null; this.visual = false;
     this.offset = 0; this.over = false;
     file.rows ??= [{ kind: "", text: "Loading…" }];
@@ -428,47 +426,51 @@ export default class Review extends View {
     if (first) this.pick(first.i, cx);
   }
 
-  selectRow(row, cx) {
-    if (!row) return;
-    this.sel = row.key;
-    if (row.t === "file" && row.i !== this.at) this.pick(row.i, cx);
-    this.revealSel();
-  }
-
-  moveSel(step, cx) {
-    const rows = this.rows();
-    if (!rows.length) return;
-    const i = rows.findIndex((r) => r.key === this.sel);
-    this.selectRow(rows[Math.min(rows.length - 1, Math.max(0, i < 0 ? 0 : i + step))], cx);
-  }
-
   toggleDir(row) {
     if (this.filter) return;
     const [into, from] = row.open ? [this.closed, this.opened] : [this.opened, this.closed];
     from.delete(row.path); into.add(row.path);
-  }
-
-  // Left closes a folder, or steps out to the folder holding the row; right opens one, or steps in.
-  // Neither leaves the list: H, L, tab and enter move between it and the diff.
-  foldSel(open, cx) {
-    const rows = this.rows(), i = rows.findIndex((r) => r.key === this.sel), row = rows[i];
-    if (!row) return;
-    if (row.t === "dir" && row.open !== open && !this.filter) return this.toggleDir(row);
-    if (open) { if (row.t === "dir") this.moveSel(1, cx); return; }
-    for (let p = i - 1; p >= 0; p--) if (rows[p].t === "dir" && rows[p].depth < row.depth) return this.selectRow(rows[p], cx);
-  }
-
-  // On a folder, marks all its files viewed, or clears them when they all are, and lets it fold to match.
-  markViewed() {
-    const sel = this.rows().find((r) => r.key === this.sel);
-    if (sel?.t === "dir") {
-      this.setViewed(sel.files.map((i) => this.files[i]), !sel.viewed);
-      this.closed.delete(sel.path); this.opened.delete(sel.path);
-    } else if (sel?.t === "file") {
-      const file = this.files[sel.i];
-      this.setViewed([file], !this.isViewed(file));
-    } else return;
     this.keepSel();
+  }
+
+  // The folders above a path, each held open so the shown file stays in sight.
+  unfoldTo(path) {
+    const parts = path.split("/");
+    for (let n = 1; n < parts.length; n++) {
+      const dir = parts.slice(0, n).join("/");
+      this.closed.delete(dir); this.opened.add(dir);
+    }
+  }
+
+  // The files ⌥j, ⌥k and m walk: the filter's matches, in tree order.
+  walkable() {
+    const match = this.match();
+    return this.files.map((_f, i) => i).filter((i) => !match || match(this.files[i]));
+  }
+
+  stepFile(step, cx) {
+    const list = this.walkable(), at = list.indexOf(this.at);
+    const next = at < 0 ? list[0] : list[Math.min(list.length - 1, Math.max(0, at + step))];
+    if (next !== undefined && next !== this.at) this.pick(next, cx);
+  }
+
+  // m: toggles the shown file viewed. Marking it moves on to the next unviewed file, and lets each
+  // folder above it that is now all viewed fold again.
+  markViewed(cx) {
+    const file = this.file();
+    if (!file) return;
+    const on = !this.isViewed(file);
+    this.setViewed([file], on);
+    if (!on) return;
+    const parts = file.path.split("/");
+    for (let n = 1; n < parts.length; n++) {
+      const dir = `${parts.slice(0, n).join("/")}/`;
+      if (this.files.every((f) => !f.path.startsWith(dir) || this.isViewed(f))) { this.opened.delete(dir.slice(0, -1)); this.closed.delete(dir.slice(0, -1)); }
+    }
+    const list = this.walkable(), at = list.indexOf(this.at);
+    const next = [...list.slice(at + 1), ...list.slice(0, Math.max(0, at))].find((i) => !this.isViewed(this.files[i]));
+    if (next !== undefined) this.pick(next, cx);
+    else this.keepSel();
   }
 
   // A selection folded out of sight moves up to the deepest folder still shown around it.
@@ -613,7 +615,6 @@ export default class Review extends View {
   }
 
   jumpTo(i) {
-    this.focus = "diff";
     if (!this.visual) this.from = null;
     this.cursor = i;
     this.reveal();
@@ -652,7 +653,6 @@ export default class Review extends View {
   scroll(step, whole) {
     const screen = Math.floor(this.viewH / ROW), lines = Math.max(1, whole ? screen - 2 : Math.floor(screen / 2));
     const rows = this.file()?.rows ?? [];
-    this.focus = "diff";
     if (!this.visual) this.from = null;
     let i = this.cursor, left = lines;
     while (left > 0) {
@@ -667,11 +667,6 @@ export default class Review extends View {
     const edge = whole && this.offset !== before ? this.pageEdge(step, i) : i;
     this.cursor = step > 0 ? Math.max(edge, this.cursor) : Math.min(edge, this.cursor);
     this.reveal(0);
-  }
-
-  // ⌥ scrolls move only the view, so the file list keeps focus and the cursor stays put.
-  nudge(step, lines) {
-    this.scrollTo(this.offset + step * lines * ROW, this.over);
   }
 
   // After ctrl-f the cursor goes to the top line of the new page, after ctrl-b to the bottom one,
@@ -752,13 +747,13 @@ export default class Review extends View {
   }
 
   // C: the file's comment box, above its first hunk; opens the existing comment to edit.
-  // Closing it returns to the pane, line and scroll it was opened from.
+  // Closing it returns to the line and scroll it was opened from.
   commentFile() {
     const file = this.file();
     if (!file) return;
     const note = this.fileComment(file.path);
     this.from = null; this.visual = false;
-    const back = { focus: this.focus, offset: this.offset, over: this.over, head: this.headH(file.path) };
+    const back = { offset: this.offset, over: this.over, head: this.headH(file.path) };
     this.composer = { id: note?.id ?? null, scope: "file", back };
     this.input.set_value(note?.text ?? "");
     this.input.focus();
@@ -818,10 +813,7 @@ export default class Review extends View {
     const back = this.composer?.back;
     this.composer = null; this.from = null; this.visual = false;
     this.input.set_value("");
-    if (back && restore) {
-      this.focus = back.focus;
-      this.scrollTo(back.offset + this.headH(this.file()?.path) - back.head, back.over);
-    }
+    if (back && restore) this.scrollTo(back.offset + this.headH(this.file()?.path) - back.head, back.over);
     this.handle.focus();
     cx.notify();
   }
@@ -843,7 +835,6 @@ export default class Review extends View {
     const fi = index.get(c.path);
     this.files[fi].opened = true;
     this.jump = c;
-    this.focus = "diff";
     if (fi !== this.at) this.pick(fi, cx); else this.applyJump();
   }
 
@@ -858,7 +849,6 @@ export default class Review extends View {
   }
 
   startFilter() {
-    this.focus = "files";
     this.filtering = true;
     this.filterInput.set_value(this.filter);
     this.filterInput.focus();
@@ -868,6 +858,7 @@ export default class Review extends View {
     this.filtering = false; this.filter = "";
     this.filterInput.set_value("");
     this.sel = this.file() ? `f:${this.file().path}` : null;
+    if (this.file()) this.unfoldTo(this.file().path);
     this.handle.focus();
     this.revealSel();
     cx.notify();
@@ -942,16 +933,15 @@ export default class Review extends View {
     if (this.picker) return this.pickerKey(k, cx);
     if (this.help) { this.help = false; cx.stop_propagation(); cx.notify(); return; }
     this.dragging = false;
-    const files = this.focus === "files";
     // A count (42G, 5j) and a prefix (gg, zz) wait for the next key; any other key drops them.
     if (plain && !this.prefix && /^[0-9]$/.test(k) && (k !== "0" || this.count)) { this.count = (this.count ?? "") + k; cx.stop_propagation(); cx.notify(); return; }
     const count = this.count ? +this.count : null, times = Math.min(count ?? 1, 999), prefix = this.prefix;
     this.count = null; this.prefix = null;
     if (k === "escape") this.reset(cx);
     else if (!plain) return;
-    else if (prefix === "g") { if (k === "g") { if (files) this.selectRow(this.rows()[0], cx); else this.goLine(count, -1); } }
+    else if (prefix === "g") { if (k === "g") this.goLine(count, -1); }
     else if (prefix === "z") this.align(k);
-    else if (k === "g" || (k === "z" && !files)) { this.prefix = k; this.count = count === null ? null : String(count); }
+    else if (k === "g" || k === "z") { this.prefix = k; this.count = count === null ? null : String(count); }
     else if (k === "q") return this.dismiss();
     else if (k === "?" || (k === "/" && m.shift)) this.help = true;
     else if (k === "/") this.startFilter();
@@ -961,19 +951,10 @@ export default class Review extends View {
     else if (k === "w") this.setPref("wrap", !this.prefs().wrap);
     else if (k === "|" || k === "\\") this.setPref("split", !this.prefs().split);
     else if (k === "o") this.openFolded(cx);
-    else if (k === "H") this.focus = "files";
-    else if (k === "L") this.focus = "diff";
     else if (k === "n" || k === "N") this.jumpComment(k === "N" ? -1 : 1, cx);
     else if (k === "C") this.commentFile();
     else if (k === "D") this.deleteFileComment();
-    else if (files && (k === "j" || k === "down")) this.moveSel(times, cx);
-    else if (files && (k === "k" || k === "up")) this.moveSel(-times, cx);
-    else if (files && k === "G") this.selectRow(this.rows().at(-1), cx);
-    else if (files && k === "v") this.markViewed();
-    else if (files && (k === "h" || k === "left")) this.foldSel(false, cx);
-    else if (files && (k === "l" || k === "right")) this.foldSel(true, cx);
-    else if (files && k === "enter") { const row = this.rows().find((r) => r.key === this.sel); if (row?.t === "dir") this.toggleDir(row); else if (row) this.focus = "diff"; }
-    else if (files) return;
+    else if (k === "m") this.markViewed(cx);
     else if (k === "j" || k === "down" || k === "J") for (let n = 0; n < times; n++) this.move(1, k === "J" || m.shift);
     else if (k === "k" || k === "up" || k === "K") for (let n = 0; n < times; n++) this.move(-1, k === "K" || m.shift);
     else if (k === "G") this.goLine(count, 1);
@@ -1000,7 +981,6 @@ export default class Review extends View {
       if (e.modifiers.shift) { if (this.from === null) this.from = this.cursor; }
       else { this.from = null; this.visual = false; }
       this.cursor = i;
-      this.focus = "diff";
       this.dragging = true;
       this.dragFrom = i;
       this.handle.focus();
@@ -1039,7 +1019,7 @@ export default class Review extends View {
     const r = this.file().rows[i], [from, to] = this.range(), cols = this.cols();
     if (r.kind === "@") return this.separator(i, t);
     if (!isLine(r)) return div().id(`r${i}`).w_full().h(ROW).px(14).flex().items_center().text_color(t.dim).child(r.text);
-    const picked = this.from !== null && i >= from && i <= to, here = i === this.cursor && this.focus === "diff";
+    const picked = this.from !== null && i >= from && i <= to, here = i === this.cursor;
     const hue = r.kind === "+" ? t.ansi2 : r.kind === "-" ? t.ansi1 : null;
     const lines = this.code(r, cols, t, hue), h = ROW * lines.length;
     const num = (n) => div().w(46).h(ROW).flex_none().flex().items_center().justify_end().pr(10).text_color(hue ?? t.dim).opacity(hue ? 0.85 : 0.6).child(n === undefined ? "" : String(n));
@@ -1057,7 +1037,7 @@ export default class Review extends View {
   side(i, which, h, cols, t) {
     if (i === null) return div().flex_1().min_w(0).h(h).bg(t.border);
     const r = this.file().rows[i], [from, to] = this.range();
-    const picked = this.from !== null && i >= from && i <= to, here = i === this.cursor && this.focus === "diff";
+    const picked = this.from !== null && i >= from && i <= to, here = i === this.cursor;
     const hue = r.kind === "+" ? t.ansi2 : r.kind === "-" ? t.ansi1 : null, n = which === "l" ? r.old : r.new;
     return this.lineMouse(h_flex().id(`${which}${i}`).flex_1().min_w(0).h(h).items_start().overflow_hidden().cursor_pointer(), i)
       .when(Boolean(hue), (el) => el.bg(tint(hue, "14")))
@@ -1115,7 +1095,7 @@ export default class Review extends View {
     const file = isFile(c);
     const label = `${file ? "File comment" : linesLabel(c.lines)}${loose ? " · no longer in the diff" : ""}`;
     const edit = file ? (_e, cx) => { this.commentFile(); cx.notify(); }
-      : (_e, cx) => { this.focus = "diff"; const end = findLine(this.file().rows, c.at, c.code); this.cursor = end; this.edit({ c, end }); cx.notify(); };
+      : (_e, cx) => { const end = findLine(this.file().rows, c.at, c.code); this.cursor = end; this.edit({ c, end }); cx.notify(); };
     const remove = file ? (_e, cx) => { this.deleteFileComment(); cx.notify(); }
       : (_e, cx) => { this.setComments(this.comments().filter((x) => x.id !== c.id)); cx.notify(); };
     const text = wrapText(c.text, this.noteCols());
@@ -1158,19 +1138,19 @@ export default class Review extends View {
         .top((this.offset / this.total) * this.viewH).h(Math.max(24, (this.viewH / this.total) * this.viewH))));
   }
 
-  fileRow(row, t, counts, filesOn) {
+  fileRow(row, t, counts) {
     const sel = row.key === this.sel, pad = 8 + row.depth * INDENT;
     const base = h_flex().id(row.key).h(28).flex_none().pl(pad).pr(8).gap(6).items_center().rounded(7).cursor_pointer().text_size(12.5)
-      .when(sel, (el) => el.bg(filesOn ? t.selected : t.hover)).hover((s) => s.bg(t.hover));
+      .when(sel, (el) => el.bg(t.selected)).hover((s) => s.bg(t.hover));
     if (row.t === "dir") {
-      return base.on_click((_e, cx) => { this.sel = row.key; this.focus = "files"; this.filtering = false; this.toggleDir(row); this.handle.focus(); cx.notify(); })
+      return base.on_click((_e, cx) => { this.filtering = false; this.toggleDir(row); this.handle.focus(); cx.notify(); })
         .child(div().w(12).flex_none().text_size(10).text_color(t.dim).child(row.open ? "▾" : "▸"))
         .child(div().flex_1().min_w(0).truncate().text_color(row.viewed ? t.dim : t.muted).child(row.name))
         .when(!row.open, (el) => el.child(div().text_size(10.5).text_color(t.dim).child(String(row.count))))
         .when(row.viewed, (el) => el.child(div().text_size(11).text_color(t.ansi2).child("✓")));
     }
     const f = this.files[row.i], viewed = this.isViewed(f), current = row.i === this.at;
-    return base.on_click((_e, cx) => { this.selectRow(row, cx); this.focus = "files"; this.filtering = false; this.handle.focus(); cx.notify(); })
+    return base.on_click((_e, cx) => { if (row.i !== this.at) this.pick(row.i, cx); this.filtering = false; this.handle.focus(); cx.notify(); })
       .child(div().w(12).flex_none().text_size(11).text_color(viewed ? t.dim : t[STATUS_COLOR[f.status]] ?? t.muted).child(viewed ? "✓" : f.status))
       .child(div().flex_1().min_w(0).truncate().text_color(viewed || folded(f) ? t.dim : current ? t.foreground : t.muted).child(row.name))
       .when(Boolean(counts[f.path]), (el) => el.child(div().px(5).rounded(4).bg(t.accent).text_color(t.accent_foreground).text_size(10.5).child(String(counts[f.path]))))
@@ -1182,7 +1162,7 @@ export default class Review extends View {
     const dark = Boolean(settings().dark);
     if (this.dark !== undefined && this.dark !== dark) this.recolor(cx);
     this.dark = dark;
-    this.hit = this.focus === "diff" && !this.composer ? this.commentAt()?.c.id : null;
+    this.hit = !this.composer ? this.commentAt()?.c.id : null;
     const t = theme(), file = this.file(), all = this.comments(), items = this.items(), prefs = this.prefs();
     const target = this.agentList().find((a) => a.address === this.target);
     const targetName = target ? terminals().find((x) => x.address === target.address)?.labels?.callsign || target.address : null;
@@ -1193,7 +1173,6 @@ export default class Review extends View {
     const outgoing = all.filter((c) => !isOverall(c)).length;
     const canSend = Boolean(target && this.root) && !this.sending;
     const stop = (_e, cx) => cx.stop_propagation();
-    const filesOn = this.focus === "files";
 
     const modeButton = (mode, label) => div().id(`mode-${mode}`).h(24).px(10).flex().items_center().rounded(6).cursor_pointer().text_size(12)
       .bg(this.mode === mode ? t.selected : t.chrome).text_color(this.mode === mode ? t.foreground : t.muted)
@@ -1295,7 +1274,7 @@ export default class Review extends View {
         .on_size_change((s, cx) => { if (s.height !== this.listH) { this.listH = s.height; this.revealSel(); cx.notify(); } })
         .on_scroll_wheel((e, cx) => { this.scrollList(this.listOffset - e.delta.y); cx.notify(); })
         .child(v_flex().absolute().left(0).right(0).top(-this.listOffset).p(FILE_PAD).gap(1)
-          .children(rows.map((row) => this.fileRow(row, t, counts, filesOn)))
+          .children(rows.map((row) => this.fileRow(row, t, counts)))
           .when(!rows.length, (el) => el.child(div().p(8).text_color(t.dim).text_size(12.5)
             .child(this.error ?? (this.loading ? "Loading changes…" : this.filter ? "No file matches" : "No changes"))))));
 
@@ -1325,14 +1304,13 @@ export default class Review extends View {
     const taken = !bound("send") ? "Send has no key: add \"mod:review\": { \"cmd-enter\": \"review.send\" } to keys.json"
       : clash.length ? `Taken by global keys: ${clash.map((b) => `${pretty(b.keys)} → ${b.action}`).join(", ")}` : null;
     const hint = (keys, what) => h_flex().gap(4).child(div().text_color(t.muted).child(keys)).child(div().child(what));
-    const send = pretty(bound("send"));
+    const send = pretty(bound("send")), fileKeys = `${pretty(bound("next-file"))} ${pretty(bound("prev-file"))}`;
     const hints = this.composer ? [["↵", "save"], ["⇧↵", "new line"], ["esc", "discard"]]
-      : this.filtering ? [["↵", "done"], ["esc", "clear"]]
+      : this.filtering ? [["↵", "done"], [fileKeys, "matches"], ["esc", "clear"]]
       : this.visual ? [["VISUAL", "line"], ["j k { } G", "extend"], ["c", "comment"], ["v esc", "cancel"]]
-      : filesOn ? [["↵ L", "open"], ["/", "filter"], ["v", "viewed"], [send, "send"], ["?", "keys"]]
-      : [["c", "comment"], ["C", "file comment"], ["v", "select"], ...(file && folded(file) ? [["o", "show"]] : []), [send, "send"], ["?", "keys"]];
+      : [["c", "comment"], ["C", "file comment"], ["v", "select"], [fileKeys, "file"], ["m", "viewed"], ...(file && folded(file) ? [["o", "show"]] : []), [send, "send"], ["?", "keys"]];
     const sheet = this.help && this.helpSheet(t, send);
-    const outbox = this.sendSheet && this.sendSheetView(t, targetName, send);
+    const outbox = this.sendSheet && this.sendSheetView(t, targetName);
     const footer = h_flex().h(28).flex_none().px(14).gap(14).items_center().bg(t.chrome).border_t(1).border_color(t.border).text_size(11).text_color(t.dim)
       .children(hints.map(([keys, what]) => hint(keys, what)))
       .child(div().flex_1())
@@ -1365,7 +1343,7 @@ export default class Review extends View {
   }
 
   // The send sheet: the overall comment, and what else goes with it.
-  sendSheetView(t, targetName, send) {
+  sendSheetView(t, targetName) {
     const list = this.queue(), overall = this.overall().trim(), ready = (list.length > 0 || Boolean(overall)) && !this.sending;
     const files = new Set(list.map((c) => c.path)).size, plural = (n, word) => `${n} ${word}${n === 1 ? "" : "s"}`;
     const cols = Math.floor((SHEET_W - 54) / (charW ?? CHAR_W));
@@ -1391,7 +1369,7 @@ export default class Review extends View {
           .child(div().id("sheet-send").h(28).px(12).flex().items_center().rounded(7).text_size(12).font_semibold()
             .bg(ready ? t.solid : t.raised).text_color(ready ? t.solid_foreground : t.dim)
             .when(ready, (el) => el.cursor_pointer()).on_click((_e, cx) => this.send(cx))
-            .child(this.sending ? "Sending…" : `Send ${send}`))));
+            .child(this.sending ? "Sending…" : "Send"))));
   }
 
   // ? opens every key, grouped; any key or a click closes it.
@@ -1401,9 +1379,9 @@ export default class Review extends View {
       ["Moving in the diff", [["j k", "line down, up"], ["5j 42G", "count, go to line 42"], ["gg G", "first, last line"], ["{ }", "paragraph"], ["[ ]", "hunk"],
         [`${key("half-down", "⌃d")} ${key("half-up", "⌃u")}`, "half page"], [`${key("page-down", "⌃f")} ${key("page-up", "⌃b")}`, "page"], ["zz zt zb", "line to middle, top, bottom"]]],
       ["Comments", [["c ↵", "comment the line or range"], ["C D", "comment the file, delete it"], ["v V", "select lines"], ["⇧j ⇧k", "extend the range"], ["e d", "edit, delete"], ["n N", "next, previous comment"], [send, "review and send"]]],
-      ["Files", [["j k", "move"], ["gg G", "first, last"], ["h l", "fold, unfold"], ["/", "filter"], ["v", "mark viewed"], ["o", "show a hidden file"],
-        [`${key("nudge-down", "⌥j")} ${key("nudge-up", "⌥k")}`, "scroll the diff"], [`${key("nudge-half-down", "⌥d")} ${key("nudge-half-up", "⌥u")}`, "diff half page"]]],
-      ["Review", [["H L", "files, diff"], ["tab", "switch pane"], ["b", "uncommitted or branch"], ["B", "compare against"], ["r", "reload"], ["w |", "wrap, split"], ["q", "close"]]],
+      ["Files", [[`${key("next-file", "⌥j")} ${key("prev-file", "⌥k")}`, "next, previous file"], ["m", "viewed, on to the next unviewed"],
+        ["/", "filter, walked by the same keys"], ["o", "show a hidden file"]]],
+      ["Review", [["b", "uncommitted or branch"], ["B", "compare against"], ["r", "reload"], ["w |", "wrap, split"], ["q", "close"]]],
     ];
     const column = (list) => v_flex().flex_1().min_w(0).gap(16).children(list.map(([title, rows]) => v_flex().gap(2)
       .child(div().pb(4).text_size(11).text_color(t.dim).child(title))

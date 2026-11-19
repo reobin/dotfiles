@@ -126,16 +126,12 @@
   },
   "mod:review": {
     "cmd-enter": "review.send",
-    "tab": "review.pane",
-    "shift-tab": "review.pane",
     "escape": "review.reset",
     "ctrl-d": "review.half-down",
     "ctrl-u": "review.half-up",
     "ctrl-f": "review.page-down",
     "ctrl-b": "review.page-up",
-    "alt-j": "review.nudge-down",
-    "alt-k": "review.nudge-up",
-    "alt-d": "review.nudge-half-down",
-    "alt-u": "review.nudge-half-up"
+    "alt-j": "review.next-file",
+    "alt-k": "review.prev-file"
   }
 }
