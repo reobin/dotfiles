@@ -446,11 +446,11 @@ export default class Tree extends View {
     this.reveal(top);
     // A scrollable splits the height with its siblings, so the list scrolls
     // inside a plain flex_1 box and the dock keeps only the height it needs.
-    const upper = (list) => v_flex().flex_1().min_h(0).opacity(docked && top.length ? 0.45 : 1).transition("opacity", 150)
+    const upper = (list) => v_flex().id("upper").flex_1().min_h(0).opacity(docked && top.length ? 0.45 : 1).transition("opacity", 150)
       .child(list.id("top").size_full().overflow_y_scrollbar().track_scroll(this.scroll));
     // The hairline sits outside the dimmed part so it stays stronger than the folded groups' outlines.
     const shelf = (list) => v_flex().id("dock").flex_none().border_t(1).border_color(t.dim + "80")
-      .child(v_flex().opacity(docked ? 1 : 0.45).transition("opacity", 150).child(list));
+      .child(v_flex().id("dock-body").opacity(docked ? 1 : 0.45).transition("opacity", 150).child(list));
     const root = v_flex().id("tree").size_full().bg(t.chrome)
       .on_mouse_move((e, cx) => {
         this.at = e.position;
