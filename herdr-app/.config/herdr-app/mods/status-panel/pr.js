@@ -1,8 +1,8 @@
 import { div } from "gpui-kit";
 import { v_flex, h_flex } from "gpui-base";
-import { spaces, theme, run } from "herdr";
+import { spaces, theme } from "herdr";
 import { MONO, entryFor, target, prIcon, prColor, mergeLook, ago, open } from "./look.js";
-import { panelShell, act, valueOf, isPending, say, ask, kbd, spinner, icon, focusPanel, composer, openComposer, commentCard, isShown } from "./panel.js";
+import { panelShell, act, valueOf, isPending, say, ask, kbd, spinner, icon, focusPanel, composer, openComposer, commentCard, isShown, refreshButton } from "./panel.js";
 import { openPicker, anchored, avatar, hex } from "./picker.js";
 import * as gh from "./github.js";
 
@@ -19,6 +19,8 @@ export function renderPr(view, cx) {
   view.keymap = [];
   const scope = real?.url;
   const pr = real && { ...real, state: valueOf(view, scope, "state", real.state), requested: valueOf(view, scope, "requested", real.requested), labels: valueOf(view, scope, "labels", real.labels ?? []) };
+  if (pr && cx && isShown(view.panelName)) loadComments(view, cx, work, pr);
+  const thread = pr && view.prComments?.url === pr.url ? view.prComments : null;
   const open_ = pr && (pr.state === "open" || pr.state === "draft");
   const section = (title, extra, actions = []) => h_flex().px(6).gap(6).items_center().mb(6).text_size(11).text_color(t.muted)
     .child(div().font_semibold().child(title.toUpperCase())).when(Boolean(extra), (e) => e.child(div().text_color(t.foreground).child(extra)))
@@ -38,8 +40,7 @@ export function renderPr(view, cx) {
       .child(div().px(7).rounded(9).text_size(10.5).font_semibold().bg(prColor(pr, t)).text_color(t.background).child(pr.state[0].toUpperCase() + pr.state.slice(1))))
     .when(!pr, (e) => e.child(div().font_semibold().child("Pull request")))
     .child(div().flex_1())
-    .child(div().id("pr-refresh").p(4).rounded(5).cursor_pointer().text_color(t.dim).hover((s) => s.bg(t.hover).text_color(t.foreground))
-      .on_click((_e, cx) => { run("status-tabs.refresh"); if (view.prComments) view.prComments.at = 0; cx.notify(); }).child(icon("refresh")))
+    .child(refreshButton(view, t, work, thread))
     .when(Boolean(pr), (e) => e.child(h_flex().id("pr-open").gap(4).items_center().px(6).py(2).rounded(5).cursor_pointer().text_size(11.5).text_color(t.muted)
       .hover((s) => s.bg(t.hover).text_color(t.foreground)).on_click(() => open(pr.url)).child(icon("link")).child("GitHub")));
 
@@ -48,8 +49,6 @@ export function renderPr(view, cx) {
       : !current ? "Loading…" : current.prError ? `GitHub: ${current.prError}` : `No pull request for ${work.pr ?? work.prBranch}`;
     return panelShell(view, t, { header, body: div().p(14).text_color(current?.prError ? t.ansi1 : t.dim).child(note) });
   }
-
-  if (cx && isShown(view.panelName)) loadComments(view, cx, work, pr);
 
   const reviewers = (cx) => openPicker(view, cx, {
     field: "reviewers", placeholder: "Request reviewers…", multi: true,
@@ -169,7 +168,6 @@ export function renderPr(view, cx) {
     { key: "o", label: "open", hint: true, run: () => open(pr.url) },
   ];
 
-  const thread = view.prComments?.url === pr.url ? view.prComments : null;
   const list = thread?.list ?? [];
   const conversation = v_flex().px(14).pt(12).pb(10).gap(14)
     .child(h_flex().gap(6).items_center().text_size(11).text_color(t.muted)

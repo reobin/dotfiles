@@ -1,8 +1,8 @@
 import { div } from "gpui-kit";
 import { v_flex, h_flex, TextView } from "gpui-base";
-import { spaces, theme, run } from "herdr";
+import { spaces, theme } from "herdr";
 import { MONO, entryFor, target, ticketIcon, open } from "./look.js";
-import { panelShell, act, valueOf, isPending, say, kbd, spinner, icon, composer, openComposer, focusPanel, commentCard } from "./panel.js";
+import { panelShell, act, valueOf, isPending, say, kbd, spinner, icon, composer, openComposer, focusPanel, commentCard, refreshButton } from "./panel.js";
 import { openPicker, anchored, avatar, hex } from "./picker.js";
 import * as linear from "./linear.js";
 
@@ -28,8 +28,7 @@ export function renderTicket(view) {
     .when(Boolean(ticket), (e) => e.child(icon(ticketIcon(ticket), issue?.state?.color ?? t.dim, 14)).child(div().font_family(MONO).font_semibold().child(ticket.id)))
     .when(!ticket, (e) => e.child(div().font_semibold().child("Ticket")))
     .child(div().flex_1())
-    .child(div().id("ticket-refresh").p(4).rounded(5).cursor_pointer().text_color(t.dim).hover((s) => s.bg(t.hover).text_color(t.foreground))
-      .on_click(() => run("status-tabs.refresh")).child(icon("refresh")))
+    .child(refreshButton(view, t, work, null))
     .when(Boolean(url), (e) => e.child(h_flex().id("ticket-open").gap(4).items_center().px(6).py(2).rounded(5).cursor_pointer().text_size(11.5).text_color(t.muted)
       .hover((s) => s.bg(t.hover).text_color(t.foreground)).on_click(() => open(url)).child(icon("link")).child("Linear")));
 

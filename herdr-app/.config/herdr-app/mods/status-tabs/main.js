@@ -1,9 +1,9 @@
 import { View, div, svg, image } from "gpui-kit";
 import { h_flex } from "gpui-base";
-import { spaces, panes, run, openOverlay, theme, window, shared, setShared, layout, settings, nextCommand, watchFolder } from "herdr";
+import { spaces, panes, run, openOverlay, theme, window, shared, setShared, layout, settings, nextCommand, watchFolder, checking } from "herdr";
 import { mark } from "./marks.js";
 import { gitStatus, describe } from "./git.js";
-import { ICONS, entryFor, target, refresh, installIcons, ticketIcon, prIcon, prColor, mergeLook, open } from "./status.js";
+import { ICONS, REFRESHING, entryFor, target, refresh, installIcons, ticketIcon, prIcon, prColor, mergeLook, open } from "./status.js";
 
 const PANEL_CHILDREN = { files: "files", ticket: "ticket-status", pr: "pr-status" };
 // image() rasterizes these 1em SVGs small and scales them up into a blurry fringe;
@@ -25,11 +25,14 @@ export default class Tabs extends View {
   init(_props, cx) {
     this.pressed = null;
     this.panels = JSON.parse(localStorage.getItem("panels") ?? "{}");
+    this.git = {};
+    if (checking()) return;
+    const refreshing = shared(REFRESHING);
+    if (Array.isArray(refreshing) && refreshing.length) setShared(REFRESHING, []);
     cx.spawn(async (cx) => {
       try { if (await installIcons()) cx.notify(); }
       catch (e) { setShared("status-tabs.error", `icons: ${e?.message ?? e}`); }
     });
-    this.git = {};
     cx.timer.every(60000, (cx) => this.kick(cx));
     // Worktrees keep their git dir outside the folder and remote machines have no watch.
     cx.timer.every(10000, (cx) => this.gitKick(cx));
@@ -138,7 +141,7 @@ export default class Tabs extends View {
     const space = spaces().find(p => p.active);
     const work = space ? target(space) : null;
     const workKey = space ? `${work.key}|${work.branch}|${work.cwd}` : null;
-    if (workKey !== this.workKey) {
+    if (!checking() && workKey !== this.workKey) {
       this.workKey = workKey;
       if (Date.now() - (entryFor(work)?.at ?? 0) > 30000) this.kick(cx);
       this.gitKick(cx);

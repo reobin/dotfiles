@@ -3,6 +3,7 @@ import * as fs from "fs/promises";
 import { SVGS } from "./icons.js";
 
 export const KEY = "status-tabs.work";
+export const REFRESHING = "status-tabs.refreshing";
 export const ICONS = "data/status-tabs/icons";
 
 export async function installIcons() {
@@ -207,6 +208,7 @@ export function refresh(space) {
   running.add(t.key);
   return (async () => {
     try {
+      setShared(REFRESHING, [...running]);
       const pr = t.pr || (t.prBranch && t.prCwd) ? await loadPr(t).catch((e) => ({ pr: null, prError: String(e.message ?? e) })) : { pr: null };
       const ticket = await resolveTicket(t.ticket, t.prBranch, pr.pr).catch(() => null);
       if (pr.pr) delete pr.pr.body;
@@ -219,6 +221,7 @@ export function refresh(space) {
       setShared(KEY, { ...kept, [t.key]: entry });
     } finally {
       running.delete(t.key);
+      setShared(REFRESHING, [...running]);
     }
   })();
 }

@@ -1,6 +1,6 @@
 import { div, svg } from "gpui-kit";
 import { v_flex, h_flex, ScrollHandle, TextareaState, Textarea, TextView } from "gpui-base";
-import { run, focused, panes, terminals, spaces, layout } from "herdr";
+import { run, focused, panes, terminals, spaces, layout, shared } from "herdr";
 import { ICONS, SANS, MONO, ago, open } from "./look.js";
 import { pickerKey, avatar } from "./picker.js";
 
@@ -217,6 +217,7 @@ function panelKey(view, e, cx) {
   else if (k === "space") scrollTo(view, view.offset + (m.shift ? -1 : 1) * (view.viewH ?? STEP), cx);
   else if (k === "g" || k === "G") scrollTo(view, k === "G" ? maxOffset(view) : 0, cx);
   else if (k === "escape" || k === "q") escape(view, cx);
+  else if (k === "u") view.refresh(cx);
   else {
     const action = view.keymap.find((a) => a.key === k && !a.off);
     if (!action) return;
@@ -233,6 +234,19 @@ export function kbd(t, key) {
 export const spinner = (t, size = 12) => svg(SPINNER).size(size).flex_none().text_color(t.dim).spin(900);
 
 export const icon = (name, color, size = 12) => { const el = svg(`${ICONS}/${name}.svg`).size(size).flex_none(); return color ? el.text_color(color) : el; };
+
+export function refreshButton(view, t, work, thread) {
+  const refreshing = shared("status-tabs.refreshing");
+  const busy = (work && Array.isArray(refreshing) && refreshing.includes(work.key)) || thread?.loading;
+  view.refresh = (cx) => {
+    if (thread && !thread.loading) thread.at = 0;
+    run("status-tabs.refresh");
+    cx.notify();
+  };
+  return div().id(`${view.panelName}-refresh`).p(4).rounded(5).cursor_pointer().text_color(t.dim)
+    .hover((s) => s.bg(t.hover).text_color(t.foreground)).tooltip(busy ? "Refreshing…" : "Refresh (u)")
+    .on_click((_e, cx) => view.refresh(cx)).child(busy ? spinner(t) : icon("refresh"));
+}
 
 const stop = (_e, cx) => cx.stop_propagation();
 
