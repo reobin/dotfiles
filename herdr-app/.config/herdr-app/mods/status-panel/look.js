@@ -31,8 +31,20 @@ export function target(space) {
 
 export function ticketIcon(ticket) {
   const state = ticket?.issue?.state;
-  if (!state) return "lin-unknown";
-  if (state.type === "started") return /review/i.test(state.name) ? "lin-review" : "lin-progress";
+  return state ? stateIcon(state, ticket.issue.team?.states?.nodes) : "lin-unknown";
+}
+
+const STARTED_MAX = 12;
+
+// `states` are the team's workflow states, which rank a started state to pick its pie.
+export function stateIcon(state, states = []) {
+  if (state.type === "started") {
+    const started = states.filter((s) => s.type === "started").sort((a, b) => a.position - b.position);
+    const i = started.findIndex((s) => s.id === state.id), d = started.length + 1;
+    if (i < 0) return "lin-started-1-2";
+    if (d <= STARTED_MAX) return `lin-started-${i + 1}-${d}`;
+    return `lin-started-${Math.min(STARTED_MAX - 1, Math.max(1, Math.round(((i + 1) / d) * STARTED_MAX)))}-${STARTED_MAX}`;
+  }
   return { backlog: "lin-backlog", triage: "lin-backlog", unstarted: "lin-todo", completed: "lin-done", canceled: "lin-canceled" }[state.type] ?? "lin-todo";
 }
 

@@ -5,10 +5,8 @@ export const SVGS = {
   "conflict": "<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 16 16\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.6\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M8 2.2l6.2 11H1.8Z\"/><path d=\"M8 6.4v3.1\"/><path d=\"M8 11.4v.1\"/></svg>",
   "fail": "<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 16 16\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M4 4l8 8M12 4l-8 8\"/></svg>",
   "lin-backlog": "<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 16 16\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.6\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><circle cx=\"8\" cy=\"8\" r=\"6\" stroke-dasharray=\"2 2.2\" stroke-linecap=\"butt\"/></svg>",
-  "lin-canceled": "<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 16 16\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.6\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><circle cx=\"8\" cy=\"8\" r=\"6.2\"/><path d=\"M6 6l4 4M10 6l-4 4\"/></svg>",
-  "lin-done": "<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 16 16\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.6\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><circle cx=\"8\" cy=\"8\" r=\"6.2\"/><path d=\"M5.4 8.2l1.8 1.8 3.4-3.8\"/></svg>",
-  "lin-progress": "<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 16 16\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.6\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><circle cx=\"8\" cy=\"8\" r=\"6\"/><path d=\"M8 4.2a3.8 3.8 0 0 1 0 7.6Z\" fill=\"currentColor\" stroke=\"none\"/></svg>",
-  "lin-review": "<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 16 16\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.6\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><circle cx=\"8\" cy=\"8\" r=\"6\"/><path d=\"M8 4.2a3.8 3.8 0 1 1-3.8 3.8H8Z\" fill=\"currentColor\" stroke=\"none\"/></svg>",
+  "lin-canceled": "<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"-1 -1 16 16\"><path fill=\"currentColor\" fill-rule=\"evenodd\" d=\"M0.2 7a6.8 6.8 0 1 0 13.6 0a6.8 6.8 0 1 0-13.6 0ZM8.52 4.28L9.72 5.48L8.2 7L9.72 8.52L8.52 9.72L7 8.2L5.48 9.72L4.28 8.52L5.8 7L4.28 5.48L5.48 4.28L7 5.8Z\"/></svg>",
+  "lin-done": "<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"-1 -1 16 16\"><path fill=\"currentColor\" fill-rule=\"evenodd\" d=\"M0.2 7a6.8 6.8 0 1 0 13.6 0a6.8 6.8 0 1 0-13.6 0ZM10.951 4.249C11.283 4.581 11.283 5.119 10.951 5.451L5.951 10.451C5.619 10.783 5.081 10.783 4.749 10.451L2.749 8.451C2.417 8.119 2.417 7.581 2.749 7.249C3.081 6.917 3.619 6.917 3.951 7.249L5.35 8.648L9.749 4.249C10.081 3.917 10.619 3.917 10.951 4.249Z\"/></svg>",
   "lin-todo": "<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 16 16\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.6\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><circle cx=\"8\" cy=\"8\" r=\"6\"/></svg>",
   "lin-unknown": "<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 16 16\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.6\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><rect x=\"2.2\" y=\"2.2\" width=\"11.6\" height=\"11.6\" rx=\"3.5\"/><path d=\"M5.5 8h5\"/></svg>",
   "link": "<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 16 16\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.6\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M9 3h4v4M13 3L7.5 8.5M11.5 9.5v3a.5.5 0 0 1-.5.5H3.5a.5.5 0 0 1-.5-.5V5a.5.5 0 0 1 .5-.5h3\"/></svg>",
@@ -33,3 +31,12 @@ export const SVGS = {
   "merge-behind":"<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 16 16\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.6\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M8 2.5v8M4.5 7l3.5 3.5L11.5 7M3.5 13.5h9\"/></svg>"
 }
 ;
+
+// Linear fills a started state's pie by its rank: the i-th of n started states is (i+1)/(n+1) full.
+export const STARTED_MAX = 12;
+for (let d = 2; d <= STARTED_MAX; d++) {
+  for (let k = 1; k < d; k++) {
+    const a = (2 * Math.PI * k) / d, x = (8 + 3.8 * Math.sin(a)).toFixed(3), y = (8 - 3.8 * Math.cos(a)).toFixed(3);
+    SVGS[`lin-started-${k}-${d}`] = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="8" cy="8" r="6"/><path d="M8 8V4.2A3.8 3.8 0 ${k * 2 > d ? 1 : 0} 1 ${x} ${y}Z" fill="currentColor" stroke="none"/></svg>`;
+  }
+}

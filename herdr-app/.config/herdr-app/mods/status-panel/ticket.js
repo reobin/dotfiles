@@ -1,7 +1,7 @@
 import { div } from "gpui-kit";
 import { v_flex, h_flex, TextView } from "gpui-base";
 import { spaces, theme } from "herdr";
-import { MONO, entryFor, target, ticketIcon, open } from "./look.js";
+import { MONO, entryFor, target, ticketIcon, stateIcon, open } from "./look.js";
 import { panelShell, act, valueOf, isPending, say, kbd, spinner, icon, composer, openComposer, focusPanel, commentCard, refreshButton } from "./panel.js";
 import { openPicker, anchored, avatar, hex } from "./picker.js";
 import * as linear from "./linear.js";
@@ -9,7 +9,6 @@ import * as linear from "./linear.js";
 const KEY_HINT = "Set LINEAR_API_KEY, or save a Linear personal API key in ~/.config/linear/api-key, for status and details.";
 
 const personName = (p) => p?.displayName ?? p?.name ?? null;
-const stateIcon = (state) => ticketIcon({ issue: { state } });
 
 export function renderTicket(view) {
   const t = theme();
@@ -67,7 +66,7 @@ export function renderTicket(view) {
   const pickers = {
     state: (cx) => openPicker(view, cx, {
       field: "state", placeholder: "Change status…",
-      load: async () => (await linear.states(team)).map((s) => ({ key: s.id, label: s.name, icon: stateIcon(s), color: s.color, value: s })),
+      load: async () => { const all = await linear.states(team); return all.map((s) => ({ key: s.id, label: s.name, icon: stateIcon(s, all), color: s.color, value: s })); },
       checked: (it) => it.key === state?.id,
       choose: (it, cx) => { if (it.key !== state?.id) update("state", it.value, { stateId: it.key }, `Status set to ${it.label}`)(cx); },
     }),

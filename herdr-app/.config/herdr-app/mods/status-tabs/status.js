@@ -1,6 +1,6 @@
 import { exec, panes, terminals, shared, setShared, home, appHome, readTextFile } from "herdr";
 import * as fs from "fs/promises";
-import { SVGS } from "./icons.js";
+import { SVGS, STARTED_MAX } from "./icons.js";
 
 export const KEY = "status-tabs.work";
 export const REFRESHING = "status-tabs.refreshing";
@@ -158,7 +158,7 @@ async function loadPr(t) {
 }
 
 const ISSUE_QUERY = `query($id: String!) { issue(id: $id) {
-  id identifier title url description priority priorityLabel team { id key }
+  id identifier title url description priority priorityLabel team { id key states(filter: { type: { eq: "started" } }) { nodes { id type position } } }
   state { id name type color } assignee { id displayName name } project { name } cycle { number name }
   labels { nodes { id name color } } attachments { nodes { url title sourceType } }
   comments(first: 50) { nodes { id body createdAt parent { id } user { displayName name } botActor { name } } } } }`;
@@ -228,8 +228,18 @@ export function refresh(space) {
 
 export function ticketIcon(ticket) {
   const state = ticket?.issue?.state;
-  if (!state) return "lin-unknown";
-  if (state.type === "started") return /review/i.test(state.name) ? "lin-review" : "lin-progress";
+  return state ? stateIcon(state, ticket.issue.team?.states?.nodes) : "lin-unknown";
+}
+
+// `states` are the team's workflow states, which rank a started state to pick its pie.
+export function stateIcon(state, states = []) {
+  if (state.type === "started") {
+    const started = states.filter((s) => s.type === "started").sort((a, b) => a.position - b.position);
+    const i = started.findIndex((s) => s.id === state.id), d = started.length + 1;
+    if (i < 0) return "lin-started-1-2";
+    if (d <= STARTED_MAX) return `lin-started-${i + 1}-${d}`;
+    return `lin-started-${Math.min(STARTED_MAX - 1, Math.max(1, Math.round(((i + 1) / d) * STARTED_MAX)))}-${STARTED_MAX}`;
+  }
   return { backlog: "lin-backlog", triage: "lin-backlog", unstarted: "lin-todo", completed: "lin-done", canceled: "lin-canceled" }[state.type] ?? "lin-todo";
 }
 
