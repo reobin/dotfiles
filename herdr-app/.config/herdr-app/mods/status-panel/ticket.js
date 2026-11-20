@@ -109,13 +109,13 @@ export function renderTicket(view) {
   });
 
   const prop = (field, label, key, value) => {
-    const button = h_flex().id(`prop-${field}`).flex_1().min_w(0).h(26).px(6).gap(6).items_center().rounded(6)
+    const button = h_flex().id(`prop-${field}`).flex_1().min_w(0).min_h(26).px(6).gap(6).items_center().rounded(6)
       .when(view.picker?.field === field, (el) => el.bg(t.selected))
       .when(editable, (el) => el.cursor_pointer().hover((s) => s.bg(t.hover))
         .on_mouse_down("left", (_e, cx) => cx.stop_propagation())
         .on_click((_e, cx) => { focusPanel(view); pickers[field](cx); }))
       .children(value)
-      .child(div().flex_1())
+      .when(field !== "labels" || !labels.length, (el) => el.child(div().flex_1()))
       .when(isPending(view, scope, field), (el) => el.child(spinner(t)))
       .when(editable, (el) => el.child(kbd(t, key)));
     return h_flex().gap(4).items_center().min_h(26)
