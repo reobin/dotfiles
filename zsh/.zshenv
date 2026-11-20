@@ -6,3 +6,5 @@ typeset -U path
 
 # mise owns browse's version; its own updater would npm install -g behind mise's back.
 export OPENCODE_BROWSER_AUTO_UPDATE=off
+
+[[ -f ~/.zshenv.private ]] && source ~/.zshenv.private
