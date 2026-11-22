@@ -1,13 +1,15 @@
 // Brings back the Claude Code session a terminal lost to a reboot or a core
 // restart, like the TUI's resume_agents_on_restore. Each running session
 // (Claude's own ~/.claude/sessions/<pid>.json) is kept as labels on its
-// terminal, with the pid of the shell it ran under. A labeled terminal back at
-// a shell with another pid lost its agent, so the resume command is typed into
-// it; the same shell means the session was quit, so its labels go. Draws
+// terminal, with the pid of the shell it ran under (or of claude itself when it
+// is the terminal's own program) and the boot it ran in, since pids repeat
+// across reboots. A labeled terminal back at a shell with another identity lost
+// its agent, so the resume command is typed into it; the same shell means the
+// session was quit, so its labels go. Draws
 // nothing: the layout holds one copy in a 0px block, so only one copy acts.
 
 import { View, div } from "gpui-kit";
-import { terminals, hc, home, readTextFile, notify } from "herdr";
+import { terminals, hc, exec, home, readTextFile, notify } from "herdr";
 
 const SESSION = "resume.session";
 const CWD = "resume.cwd";
@@ -69,12 +71,12 @@ export default class Resume extends View {
     const failed = [];
     const seen = new Set();
     for (const t of all) {
-      if (!isClaude(t) && !t.labels?.[SESSION]) continue;
+      if (!isClaude(t) && t.program?.key !== "claude" && !t.labels?.[SESSION]) continue;
       try {
         const info = await inspect(t.address);
         if (!info.pid) continue;
         const fg = info.foreground;
-        const atShell = !fg || fg.pid === info.pid;
+        const atShell = !fg || (fg.pid === info.pid && fg.name !== "claude");
         if (!atShell && (fg.name === "claude" || isClaude(t))) {
           const ok = await this.record(info, fg);
           if (!ok && isClaude(t) && fg.name === "claude" && !this.warned) {
@@ -85,7 +87,7 @@ export default class Resume extends View {
         }
         const labels = info.labels ?? {};
         if (!labels[SESSION]) continue;
-        if (labels[SHELL] === String(info.pid)) {
+        if (labels[SHELL] === (await this.shellId(info.pid))) {
           await hc(["label", info.address, ...[...KEYS, "ticket", "pr"].map((k) => `${k}=`)]);
           continue;
         }
@@ -121,7 +123,7 @@ export default class Resume extends View {
     const want = {
       [SESSION]: session.sessionId,
       [CWD]: session.cwd,
-      [SHELL]: String(info.pid),
+      [SHELL]: await this.shellId(info.pid),
       [FLAGS]: keptFlags(fg.argv ?? []),
     };
     const have = info.labels ?? {};
@@ -136,8 +138,17 @@ export default class Resume extends View {
     const flags = (labels[FLAGS] ?? "").split(" ").filter(Boolean);
     if (!SAFE.test(labels[SESSION]) || !flags.every((f) => SAFE.test(f.replace("=", "")))) return 1;
     const line = ["cd", quote(labels[CWD]), "&&", "claude", "--resume", labels[SESSION], ...flags].join(" ");
-    await hc(["label", info.address, `${SHELL}=${info.pid}`]);
+    await hc(["label", info.address, `${SHELL}=${await this.shellId(info.pid)}`]);
     return (await hc(["send", info.address, line])).code;
+  }
+
+  async shellId(pid) {
+    if (!this.boot) {
+      const out = (await exec("sysctl", ["-n", "kern.boottime"])).stdout ?? "";
+      this.boot = out.match(/sec = (\d+)/)?.[1];
+      if (!this.boot) throw new Error("no boot time from sysctl");
+    }
+    return `${pid}@${this.boot}`;
   }
 
   render() {
