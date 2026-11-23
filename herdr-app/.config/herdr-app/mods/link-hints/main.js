@@ -1,5 +1,5 @@
 import { View, div } from "gpui-kit";
-import { h_flex, v_flex } from "gpui-base";
+import { h_flex } from "gpui-base";
 import { checking, closeOverlay, focused, hc, nextCommand, notify, panes, props, run, setShared, settings, shared, terminals, theme } from "herdr";
 
 const ALPHABET = "sadfjklewcmpgh";
@@ -123,7 +123,11 @@ export default class LinkHints extends View {
     this.pane = pane;
     this.hints = null;
     this.layoutName = String(shared("layout") ?? "main");
-    this.list = !this.placeable();
+    if (!this.placeable()) {
+      notify({ title: "Link hints need a pane that fills its tab", body: "Zoom the pane or close the split, at app zoom 100%.", level: "info", timeout: 2500 });
+      closeOverlay(this.overlay);
+      return;
+    }
     this.handle = cx.focus_handle();
     this.handle.focus();
     cx.spawn(async (cx) => {
@@ -171,13 +175,9 @@ export default class LinkHints extends View {
       text = JSON.parse(full.stdout).text;
       top = findLinks(text ?? "", cols).rows - screenRows - back;
     }
-    let links = findLinks(text ?? "", cols).links
+    const links = findLinks(text ?? "", cols).links
       .map((l) => ({ ...l, spans: l.spans.map((s) => ({ ...s, row: s.row - top })).filter((s) => s.row >= 0 && s.row < height) }))
       .filter((l) => l.spans.length);
-    if (this.list) {
-      const seen = new Set();
-      links = links.filter((l) => !seen.has(l.url) && seen.add(l.url));
-    }
     const names = labels(links.length);
     this.hints = links.map((l, i) => ({ ...l, label: names[i] }));
     this.grid = { cols, rows: height };
@@ -186,7 +186,7 @@ export default class LinkHints extends View {
 
   // Mods can't read where a pane sits, so inline markers are trusted only
   // where the origin was measured: a pane filling its tab, at zoom 1.
-  // Anywhere else the same labels show as a list.
+  // Anywhere else Cmd-L says so instead of drawing labels in the wrong place.
   placeable() {
     const pane = panes().find((p) => p.pane === this.pane);
     const lone = pane?.zoomed || panes().filter((p) => p.tab === pane?.tab).length === 1;
@@ -283,34 +283,6 @@ export default class LinkHints extends View {
       .font_weight(800)
       .whitespace_nowrap()
       .children(letters(h));
-
-    if (this.list) {
-      const width = Math.min(640, view.width - 48);
-      const row = (h) => {
-        const rest = h.url.replace(/^https?:\/\//, "");
-        const cut = rest.search(/[/?#]/);
-        const host = cut === -1 ? rest : rest.slice(0, cut);
-        return h_flex().id(`row-${h.label}`).h(34).flex_none().px(10).gap(12).items_center()
-          .child(badge(h).h(22).min_w(22).px(5).text_size(12))
-          .child(div().flex_none().text_color(t.foreground).font_weight(500).child(host))
-          .child(div().flex_1().min_w(0).truncate().text_color(t.muted).child(cut === -1 ? "" : rest.slice(cut)));
-      };
-      return root
-        .track_focus(this.handle)
-        .on_key_down((event, cx) => {
-          cx.stop_propagation();
-          const key = keyName(event);
-          if (key) this.press(key, event.modifiers.shift, cx);
-        })
-        .on_modifiers_changed((event, cx) => this.modifiers(event, cx))
-        .on_mouse_down("left", () => this.finish())
-        .when(shown.length > 0, (el) => el.child(
-          v_flex().id("link-hints-list").absolute().left((view.width - width) / 2 - p.x).top(72 - p.y).w(width)
-            .bg(t.popover).border_1().border_color(t.border).rounded(12).shadow_lg().overflow_hidden()
-            .text_size(13).font_family(font)
-            .child(v_flex().p(6).gap(2).children(shown.slice(0, 14).map(row))),
-        ));
-    }
 
     // Everything but the links fades back: a veil of the terminal's own
     // background over every cell that isn't part of a shown URL.
