@@ -5,7 +5,7 @@ import { mark } from "./marks.js";
 import { gitStatus, describe } from "./git.js";
 import { ICONS, REFRESHING, entryFor, target, refresh, installIcons, ticketIcon, prIcon, prColor, mergeLook, open } from "./status.js";
 
-const PANEL_CHILDREN = { files: "files", ticket: "ticket-status", pr: "pr-status" };
+const PANEL_CHILDREN = { ticket: "ticket-status", pr: "pr-status" };
 // image() rasterizes these 1em SVGs small and scales them up into a blurry fringe;
 // they are one color, so svg() can draw them crisp in that color.
 const BRAND = { "icons/claude.svg": "#D97757", "icons/amp.svg": "#F34E3F", "icons/kiro.svg": "#9046FF", "icons/codex.svg": "#7A9DFF" };
@@ -95,7 +95,7 @@ export default class Tabs extends View {
   // A key opens the ticket or PR panel only when there is one to show; it still closes it.
   togglePanel(child, keyed = false) {
     const root = layout(), panel = find(root, "panel"), body = find(root, "panel-body");
-    const name = Object.keys(PANEL_CHILDREN).find((k) => PANEL_CHILDREN[k] === child && k !== "files");
+    const name = Object.keys(PANEL_CHILDREN).find((k) => PANEL_CHILDREN[k] === child);
     const shown = panel && !panel.hidden && body?.active === child;
     if (shown && name) { run(`status-panel.toggle-${name}`); return; }
     if (shown) { run("layout.hide", { id: "panel" }); return; }
@@ -183,7 +183,7 @@ export default class Tabs extends View {
     const inset = find(root, "work-inset");
     if (inset && Boolean(inset.hidden) !== !sidebar?.hidden) run(sidebar?.hidden ? "layout.show" : "layout.hide", { id: "work-inset" });
     const panel = find(root, "panel"), body = find(root, "panel-body");
-    const enabled = [...(shared("workspace.panels") ?? ["files"]), "ticket-status", "pr-status"].filter(id => find(body, id));
+    const enabled = [...(shared("workspace.panels") ?? []), "ticket-status", "pr-status"].filter(id => find(body, id));
     this.syncPanel(space, panel, body, enabled);
     const panelButton = (id, content) => {
       const on = panel && !panel.hidden && body?.active === id;
@@ -241,7 +241,6 @@ export default class Tabs extends View {
       .on_scroll_wheel(e => { if (Math.abs(e.delta.y) >= 1) run(e.delta.y > 0 ? "tab.prev" : "tab.next"); })
       .child(h_flex().id("tab-scroll").flex_1().min_w(0).h_full().items_center().gap(8).overflow_x_scrollbar().children(shown.length > 1 ? shown.map(item) : []))
       .child(button("tab-new", "+", () => openOverlay({ mod: "new-menu", kind: "popup", width: 250, height: 512 })))
-      .when(enabled.includes("files"), el => el.child(panelButton("files", [svg("mods/files/file.svg").size(14), "Files"])))
       .child(reviewButton())
       .when(Boolean(ticket), el => el.child(ticketButton()))
       .when(Boolean(pr || (current && ticket) || current?.prError), el => el.child(prButton()))

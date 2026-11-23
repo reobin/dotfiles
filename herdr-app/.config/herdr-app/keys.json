@@ -94,7 +94,6 @@
     "cmd-alt-r": "space.rename",
     "cmd-alt-p": "terminal.park",
     "cmd-shift-o": "terminal.open",
-    "cmd-e": "status-tabs.files",
     "cmd-i": "status-tabs.ticket",
     "cmd-g": "status-tabs.pr",
     "cmd-r": "mod.open:review",

@@ -97,13 +97,6 @@
                       "type": "stack",
                       "children": [
                         {
-                          "id": "files",
-                          "type": "block",
-                          "content": {
-                            "mod": "files-nav"
-                          }
-                        },
-                        {
                           "id": "ticket-status",
                           "type": "block",
                           "content": {
@@ -124,7 +117,7 @@
                           }
                         }
                       ],
-                      "active": "files"
+                      "active": "ticket-status"
                     }
                   ],
                   "size": {
