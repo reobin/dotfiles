@@ -362,7 +362,7 @@ export default class Tree extends View {
     const pad = s.active ? 1 : 0;
     return v_flex().id(`card-${s.id}`).flex_none().px(4 - pad).pt(4 - pad).pb(4 - pad).rounded(8)
       .bg(this.hot === `space-${s.id}` ? t.hover : s.active ? t.background : t.foreground + "06")
-      .when(s.active, (el) => el.border(1).border_color(t.accent + "73"))
+      .when(s.active, (el) => el.border(1).border_color(t.accent + "33"))
       .children(this.rows(t, s, ps, terms, ink, folded, grouped));
   }
 
@@ -371,11 +371,10 @@ export default class Tree extends View {
   // reveal the shown card even when its group is taller than the sidebar.
   group(t, run, ps, terms, folded) {
     if (run.length === 1) return [this.card(t, run[0], ps, terms, run[0].active ? t.accent : t.muted, folded.has(run[0].id))];
-    // The shown space's group echoes its card's outline, fainter.
     const here = run.some((s) => s.active);
     const last = run.length - 1;
     return run.map((s, i) => v_flex().id(`group-${s.id}`).flex_none().px(4).pt(4).border_x(1)
-      .border_color(here ? t.accent + "40" : t.border)
+      .border_color(t.border)
       .when(i === 0, (el) => el.border_t(1).rounded_t(12))
       .when(i === last, (el) => el.pb(4).border_b(1).rounded_b(12))
       .child(this.card(t, s, ps, terms, i === 0 ? (here ? t.accent : t.muted) : null, folded.has(s.id), true)));
