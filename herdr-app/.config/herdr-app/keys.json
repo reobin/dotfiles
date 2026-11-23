@@ -102,6 +102,9 @@
     "cmd-shift-j": "status-panel.scroll-down",
     "cmd-shift-k": "status-panel.scroll-up"
   },
+  "layout:workbench": {
+    "cmd-z": "undo-close.undo"
+  },
   "terminal": {
     "cmd-c": "terminal.copy",
     "cmd-v": "terminal.paste",

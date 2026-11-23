@@ -124,7 +124,7 @@ export default class Tree extends View {
         if (c === "tab-left") this.moveTab(-1);
         if (c === "tab-right") this.moveTab(1);
         if (c === "toggle-collapse") this.toggle(spaces().find((s) => s.active)?.id);
-        if (c === "close-space") this.close();
+        if (c === "close-space") this.closeSpace();
       }
     });
   }
@@ -416,8 +416,9 @@ export default class Tree extends View {
   }
 
   // Herdr shows the closed space's neighbour, which may be folded, so move
-  // to an open one first and close the space from behind.
-  close() {
+  // to an open one first and close the space from behind. Not close(): that
+  // name is the view's teardown hook.
+  closeSpace() {
     const all = spaces();
     const folded = this.collapsed();
     const id = all.find((s) => s.active)?.id;
@@ -427,7 +428,7 @@ export default class Tree extends View {
     run("space.close", { id, confirmed: true });
   }
 
-  // Fallback for closes that skip close(), like a space's last pane exiting.
+  // Fallback for closes that skip closeSpace(), like a space's last pane exiting.
   keepOpen(all, folded) {
     const now = all.find((s) => s.active)?.id;
     if (!now) return;

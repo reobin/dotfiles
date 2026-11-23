@@ -153,6 +153,16 @@
               }
             },
             {
+              "id": "undo-close",
+              "type": "block",
+              "size": {
+                "px": 0
+              },
+              "content": {
+                "mod": "undo-close"
+              }
+            },
+            {
               "id": "callsigns",
               "type": "block",
               "size": {
