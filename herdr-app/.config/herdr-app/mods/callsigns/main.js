@@ -1,8 +1,10 @@
 // Gives every pane's terminal a serial callsign (A1, A2, B1: a letter per space,
 // a number per pane, counting up from the highest in use) as its `callsign`
 // label, like the herdr-callsigns TUI plugin's serial scheme. Never overwrites
-// one, so words `unified` gave stay. Unique per machine. Draws nothing: the
-// layout holds one copy in a 0px block, so only one copy ever assigns.
+// one, so words `unified` gave stay. Unique per machine. A terminal that
+// finishes loses its callsign, so a reopened pane's terminal is the only one
+// carrying it. Draws nothing: the layout holds one copy in a 0px block, so
+// only one copy ever assigns.
 
 import { View, div } from "gpui-kit";
 import { panes, spaces, terminals, hc, shared, setShared } from "herdr";
@@ -27,7 +29,8 @@ function letter(i) {
 export default class Callsigns extends View {
   init(_props, cx) {
     this.given = {};
-    this.naming = false;
+    this.signed = new Set();
+    this.busy = false;
     // A 0px block is never re-rendered, so the timer is what notices new
     // panes. A tick is a few map lookups and runs hc only to name one.
     cx.timer.every(250, (cx) => this.assign(cx));
@@ -38,8 +41,12 @@ export default class Callsigns extends View {
   // from the layout, what was given here counts as taken until it is back,
   // and the core is asked before labeling, so a lagging feed never overwrites.
   assign(cx) {
-    if (this.naming) return;
+    if (this.busy) return;
     const terms = new Map(terminals().map((x) => [x.address, x]));
+    // terminals() lists only live terminals, and can lag or blank during a
+    // core restart, so the core confirms `finished` before a label goes.
+    const gone = [...this.signed].filter((a) => terms.get(a)?.state !== "live");
+    for (const x of terms.values()) if (x.labels?.callsign) this.signed.add(x.address);
     const spaceOfTab = new Map(spaces().flatMap((s) => s.tabs.map((t) => [t.id, local(s.id)])));
     const paneSpace = new Map(panes().filter((p) => p.terminal).map((p) => [p.terminal, spaceOfTab.get(p.tab) ?? ""]));
     for (const [address, sign] of Object.entries(this.given)) {
@@ -51,9 +58,19 @@ export default class Callsigns extends View {
     });
     for (const address of todo) this.given[address] = this.pick(address, paneSpace, [...terms.values()]);
     this.publish();
-    if (!todo.length) return;
-    this.naming = true;
+    if (!todo.length && !gone.length) return;
+    this.busy = true;
     cx.spawn(async () => {
+      for (const address of gone) {
+        try {
+          const info = JSON.parse((await hc(["get", address, "--json"])).stdout || "{}");
+          if (info.state === "live") continue;
+          this.signed.delete(address);
+          if (info.state === "finished" && info.labels?.callsign) await hc(["label", address, "callsign="]);
+        } catch {
+          this.signed.delete(address);
+        }
+      }
       for (const address of todo) {
         try {
           const now = JSON.parse((await hc(["get", address, "--json"])).stdout || "{}").labels?.callsign;
@@ -63,7 +80,7 @@ export default class Callsigns extends View {
           delete this.given[address];
         }
       }
-      this.naming = false;
+      this.busy = false;
       this.publish();
     });
   }
