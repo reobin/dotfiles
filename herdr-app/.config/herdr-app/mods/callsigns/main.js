@@ -1,4 +1,4 @@
-// Gives every pane's terminal a serial callsign (a1, a2, b1: a letter per space,
+// Gives every pane's terminal a serial callsign (A1, A2, B1: a letter per space,
 // a number per pane, counting up from the highest in use) as its `callsign`
 // label, like the herdr-callsigns TUI plugin's serial scheme. Never overwrites
 // one, so words `unified` gave stay. Unique per machine. Draws nothing: the
@@ -7,7 +7,10 @@
 import { View, div } from "gpui-kit";
 import { panes, spaces, terminals, hc, shared, setShared } from "herdr";
 
-const SERIAL = /^([a-z]+)([1-9][0-9]{0,15})$/;
+const SERIAL = /^([A-Z]+)([1-9][0-9]{0,15})$/;
+
+// No I or O: they read as 1 and 0.
+const LETTERS = "ABCDEFGHJKLMNPQRSTUVWXYZ";
 
 // Given but not yet back in terminals(), so headers can show it at once.
 const GIVEN = "callsigns.given";
@@ -17,7 +20,7 @@ const local = (id) => id.split("/").pop();
 
 function letter(i) {
   let s = "";
-  for (let n = i + 1; n > 0; n = Math.floor((n - 1) / 26)) s = String.fromCharCode(97 + ((n - 1) % 26)) + s;
+  for (let n = i + 1; n > 0; n = Math.floor((n - 1) / LETTERS.length)) s = LETTERS[(n - 1) % LETTERS.length] + s;
   return s;
 }
 
