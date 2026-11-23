@@ -1,9 +1,10 @@
 import { View, div } from "gpui-kit";
-import { closeOverlay, exec, focused, hc, nextCommand, notify, panes, props, run, setShared, settings, shared, terminals } from "herdr";
+import { h_flex, v_flex } from "gpui-base";
+import { checking, closeOverlay, focused, hc, nextCommand, notify, panes, props, run, setShared, settings, shared, terminals, theme } from "herdr";
 
 const ALPHABET = "sadfjklewcmpgh";
 const URL = /https?:\/\/[^\s<>"'`]+/g;
-const CALIBRATION = "link-hints.calibration";
+const POPUP = "link-hints.popup";
 const emoji = /^\p{Emoji_Presentation}$/u;
 const mark = /^\p{Mark}$/u;
 
@@ -27,12 +28,12 @@ function cellWidth(ch) {
 }
 
 // `hc read` joins soft-wrapped rows into one line, so a line is laid back out
-// over the grid to find each URL's starting row and column.
-function physicalRows(text, cols) {
+// over the grid to find the cells each URL covers, one span per row.
+function findLinks(text, cols) {
   const links = [];
   let row = -1;
   for (const line of text.split("\n")) {
-    const starts = new Map();
+    const cells = new Map();
     let col = 0;
     let index = 0;
     row++;
@@ -42,16 +43,24 @@ function physicalRows(text, cols) {
         row++;
         col = 0;
       }
-      starts.set(index, { row, col });
+      cells.set(index, { row, col, w });
       col += w;
       index += ch.length;
     }
     for (const m of line.matchAll(URL)) {
-      const at = starts.get(m.index);
-      if (at) links.push({ url: trimUrl(m[0]), ...at });
+      const url = trimUrl(m[0]);
+      const spans = [];
+      for (let i = m.index; i < m.index + url.length; i++) {
+        const cell = cells.get(i);
+        if (!cell) continue;
+        const span = spans.at(-1);
+        if (span?.row === cell.row) span.end = cell.col + cell.w;
+        else spans.push({ row: cell.row, start: cell.col, end: cell.col + cell.w });
+      }
+      if (spans.length) links.push({ url, spans });
     }
   }
-  return { count: row + 1, links };
+  return { rows: row + 1, links };
 }
 
 // Vimium's labels: breadth-first over the alphabet, so no label prefixes another.
@@ -66,14 +75,14 @@ function labels(n) {
 }
 
 // Grid origins measured from `herdr-app shot` with one pane in the tab. Mods
-// can't read where a pane sits in the window, so splits need re-calibrating.
+// can't read where a pane sits in the window, so splits fall back to a list.
 const ORIGINS = { workbench: { x: 473.5, y: 90 } };
 // Mods can't read the display scale either; a Retina display is assumed.
 const SCALE = 2;
 
 // Ghostty rounds cells to whole device pixels; JetBrains Mono's advance is
 // 0.6em and its ascent plus descent 1.32em.
-function defaultCalibration(layoutName) {
+function geometry(layoutName) {
   const s = settings();
   const px = Number(s.font_size ?? 14) * Number(s.zoom ?? 1) * SCALE;
   return {
@@ -84,14 +93,24 @@ function defaultCalibration(layoutName) {
 }
 
 function keyName({ key, key_char, modifiers }) {
-  if (modifiers.control || modifiers.platform) return null;
-  if (modifiers.alt) return `alt-${key}`;
-  if (modifiers.shift && key.length > 1) return `shift-${key}`;
+  if (modifiers.control || modifiers.platform || modifiers.alt) return null;
   return key_char && key_char.length === 1 && key.length === 1 ? key_char.toLowerCase() : key;
 }
 
 export default class LinkHints extends View {
   init(_props, cx) {
+    this.typed = "";
+    if (checking()) {
+      // A check has no overlay; draw sample hints so it covers the drawing path.
+      this.handle = cx.focus_handle();
+      this.layoutName = "check";
+      this.grid = { cols: 80, rows: 24 };
+      this.hints = [
+        { url: "https://example.com", label: "a", spans: [{ row: 1, start: 2, end: 21 }] },
+        { url: "https://example.org", label: "sd", spans: [{ row: 3, start: 70, end: 80 }, { row: 4, start: 0, end: 9 }] },
+      ];
+      return;
+    }
     this.overlay = props()?.overlay;
     if (!this.overlay) return;
     const { terminal, pane, shown } = focused() ?? {};
@@ -102,13 +121,18 @@ export default class LinkHints extends View {
     }
     this.terminal = terminal;
     this.pane = pane;
-    this.typed = "";
     this.hints = null;
     this.layoutName = String(shared("layout") ?? "main");
+    this.list = !this.placeable();
     this.handle = cx.focus_handle();
     this.handle.focus();
     cx.spawn(async (cx) => {
-      const error = await this.load();
+      let error;
+      try {
+        error = await this.load();
+      } catch (e) {
+        error = `Link hints failed: ${e?.message ?? e}`;
+      }
       if (this.done) return;
       if (error || !this.hints.length) {
         notify({ title: error ?? "No links on screen", level: error ? "error" : "info", timeout: 2000 });
@@ -121,8 +145,8 @@ export default class LinkHints extends View {
       while (!this.done) {
         const command = await nextCommand();
         if (this.done) return;
-        if (command.startsWith("key-")) this.press(command.slice(4), cx);
-        else if (command === "escape" || command === "backspace") this.press(command, cx);
+        if (command.startsWith("key-")) this.press(command.slice(4), false, cx);
+        else if (command === "escape" || command === "backspace") this.press(command, false, cx);
       }
     });
   }
@@ -141,131 +165,198 @@ export default class LinkHints extends View {
     if (back > 0) {
       // The screen read is top-aligned; history rows sit above it, so the
       // viewport starts `back` rows above where the screen's own rows begin.
-      const screenRows = physicalRows(text ?? "", cols).count;
+      const screenRows = findLinks(text ?? "", cols).rows;
       const full = await hc(["read", this.terminal, "--json", "--lines", String(back)]);
       if (full.code !== 0) return full.stderr.trim() || "Couldn't read the history";
       text = JSON.parse(full.stdout).text;
-      top = physicalRows(text ?? "", cols).count - screenRows - back;
+      top = findLinks(text ?? "", cols).rows - screenRows - back;
     }
-    const links = physicalRows(text ?? "", cols).links
-      .map((l) => ({ ...l, row: l.row - top }))
-      .filter((l) => l.row >= 0 && l.row < height);
+    let links = findLinks(text ?? "", cols).links
+      .map((l) => ({ ...l, spans: l.spans.map((s) => ({ ...s, row: s.row - top })).filter((s) => s.row >= 0 && s.row < height) }))
+      .filter((l) => l.spans.length);
+    if (this.list) {
+      const seen = new Set();
+      links = links.filter((l) => !seen.has(l.url) && seen.add(l.url));
+    }
     const names = labels(links.length);
     this.hints = links.map((l, i) => ({ ...l, label: names[i] }));
     this.grid = { cols, rows: height };
     return null;
   }
 
-  calibration() {
-    const saved = shared(CALIBRATION)?.[this.layoutName];
-    return saved ?? defaultCalibration(this.layoutName);
+  // Mods can't read where a pane sits, so inline markers are trusted only
+  // where the origin was measured: a pane filling its tab, at zoom 1.
+  // Anywhere else the same labels show as a list.
+  placeable() {
+    const pane = panes().find((p) => p.pane === this.pane);
+    const lone = pane?.zoomed || panes().filter((p) => p.tab === pane?.tab).length === 1;
+    return Boolean(lone && ORIGINS[this.layoutName] && Number(settings().zoom ?? 1) === 1);
   }
 
-  nudge(change) {
-    const all = { ...(shared(CALIBRATION) ?? {}) };
-    const c = { ...this.calibration() };
-    for (const [k, v] of Object.entries(change)) c[k] = Math.round((c[k] + v) * 100) / 100;
-    all[this.layoutName] = c;
-    this.calibrating = true;
-    setShared(CALIBRATION, all);
-  }
-
-  press(key, cx) {
+  press(key, shift, cx) {
     if (this.done) return;
-    const step = { left: [-1, 0], right: [1, 0], up: [0, -1], down: [0, 1] };
     if (key === "escape") return this.finish();
     if (key === "backspace") this.typed = this.typed.slice(0, -1);
-    else if (step[key]) this.nudge({ x: step[key][0], y: step[key][1] });
-    else if (key.startsWith("shift-") && step[key.slice(6)]) {
-      const [dx, dy] = step[key.slice(6)];
-      this.nudge({ x: dx * 10, y: dy * 10 });
-    } else if (key.startsWith("alt-") && step[key.slice(4)]) {
-      const [dx, dy] = step[key.slice(4)];
-      this.nudge({ w: dx * 0.05, h: dy * 0.05 });
-    } else if (key === "?") this.calibrating = !this.calibrating;
     else if (key.length === 1 && ALPHABET.includes(key) && this.hints) {
       const typed = this.typed + key;
       const matches = this.hints.filter((h) => h.label.startsWith(typed));
       if (!matches.length) return;
       this.typed = typed;
       const hit = matches.find((h) => h.label === typed);
-      if (hit) return this.open(hit.url);
+      if (hit) return this.activate(hit.url, shift, cx);
     } else return;
     cx.notify();
   }
 
-  open(url) {
+  activate(url, copy, cx) {
     this.finish();
-    notify({ title: "Opening link", body: url, level: "info", timeout: 1500 });
-    exec("open", [url]);
+    if (copy) {
+      cx.write_to_clipboard(url);
+      notify({ title: "Copied link", body: url, level: "success", timeout: 1500 });
+    } else {
+      cx.open_url(url);
+    }
   }
 
-  finish() {
+  finish(refocus = true) {
     if (this.done) return;
     this.done = true;
     closeOverlay(this.overlay);
-    if (panes().some((p) => p.pane === this.pane)) run("pane.focus", { pane: this.pane });
+    if (refocus && panes().some((p) => p.pane === this.pane)) run("pane.focus", { pane: this.pane });
   }
 
   async close() {
     this.finish();
   }
 
+  // Where the popup sits in the window. Herdr insets it from the `at` corner,
+  // so the first pointer move over it measures that inset and keeps it.
+  popup() {
+    return shared(POPUP) ?? { x: 8.6, y: 10.6 };
+  }
+
+  measure(event) {
+    if (!event.local_position) return;
+    const at = { x: event.position.x - event.local_position.x, y: event.position.y - event.local_position.y };
+    const was = this.popup();
+    if (Math.abs(at.x - was.x) > 0.25 || Math.abs(at.y - was.y) > 0.25) setShared(POPUP, at);
+  }
+
   render() {
-    const root = div().id("link-hints").size_full().relative();
+    // A popup takes the width share from mod.json but not the height, so the
+    // root sizes itself to what the window shows from the popup's corner on.
+    const view = window.viewport_size();
+    const p = this.popup();
+    const root = div().id("link-hints").w(view.width - p.x).h(view.height - p.y).relative();
     if (!this.handle) return root;
-    const c = this.calibration();
-    const size = Math.max(9, Math.round(c.h * 0.62));
+    // Switching tab or pane leaves the hints behind; let the new focus be.
+    const now = focused();
+    if (this.pane && !this.done && now?.pane !== this.pane) {
+      this.finish(false);
+      return root;
+    }
+    const c = geometry(this.layoutName);
+    const x = (col) => c.x - p.x + col * c.w;
+    const y = (row) => c.y - p.y + row * c.h;
+    const t = theme();
     const font = String(settings().font ?? "JetBrains Mono");
-    const badge = (h) => {
-      const rest = h.label.slice(this.typed.length);
-      return div()
-        .id(`hint-${h.label}`)
-        .absolute()
-        .left(c.x + h.col * c.w)
-        .top(c.y + h.row * c.h)
-        .h(c.h)
-        .px(3)
-        .flex()
-        .items_center()
-        .rounded(3)
-        .bg("#f8d66d")
-        .border_1()
-        .border_color("#b3851d")
-        .shadow_sm()
-        .font_family(font)
-        .text_size(size)
-        .font_weight(700)
-        .text_color("#302205")
-        .whitespace_nowrap()
-        .when(this.typed.length > 0, (el) => el.child(div().text_color("#a88a3a").child(this.typed)))
-        .child(rest.toUpperCase());
-    };
     const grid = this.grid;
-    const status = this.hints ? `${this.hints.length} links` : "reading";
-    const area = this.size ? `${Math.round(this.size.width)}×${Math.round(this.size.height)}` : "unsized";
+    const shown = (this.hints ?? []).filter((h) => h.label.startsWith(this.typed));
+
+    // Labels take the terminal palette's blue (green while ⇧ copies), with the
+    // terminal background as ink, so they follow light and dark themes.
+    const solid = (this.copying ? t.ansi2 : t.ansi4) ?? t.accent;
+    const ink = t.background;
+    const alpha = (color, a) => (/^#[0-9a-f]{6}$/i.test(color) ? color + a : color);
+    const letters = (h) => [
+      this.typed && div().text_color(alpha(ink, "80")).child(this.typed.toUpperCase()),
+      div().child(h.label.slice(this.typed.length).toUpperCase()),
+    ].filter(Boolean);
+    const badge = (h) => h_flex()
+      .flex_none()
+      .items_center()
+      .justify_center()
+      .rounded(4)
+      .bg(solid)
+      .text_color(ink)
+      .font_family(font)
+      .font_weight(800)
+      .whitespace_nowrap()
+      .children(letters(h));
+
+    if (this.list) {
+      const width = Math.min(640, view.width - 48);
+      const row = (h) => {
+        const rest = h.url.replace(/^https?:\/\//, "");
+        const cut = rest.search(/[/?#]/);
+        const host = cut === -1 ? rest : rest.slice(0, cut);
+        return h_flex().id(`row-${h.label}`).h(34).flex_none().px(10).gap(12).items_center()
+          .child(badge(h).h(22).min_w(22).px(5).text_size(12))
+          .child(div().flex_none().text_color(t.foreground).font_weight(500).child(host))
+          .child(div().flex_1().min_w(0).truncate().text_color(t.muted).child(cut === -1 ? "" : rest.slice(cut)));
+      };
+      return root
+        .track_focus(this.handle)
+        .on_key_down((event, cx) => {
+          cx.stop_propagation();
+          const key = keyName(event);
+          if (key) this.press(key, event.modifiers.shift, cx);
+        })
+        .on_modifiers_changed((event, cx) => this.modifiers(event, cx))
+        .on_mouse_down("left", () => this.finish())
+        .when(shown.length > 0, (el) => el.child(
+          v_flex().id("link-hints-list").absolute().left((view.width - width) / 2 - p.x).top(72 - p.y).w(width)
+            .bg(t.popover).border_1().border_color(t.border).rounded(12).shadow_lg().overflow_hidden()
+            .text_size(13).font_family(font)
+            .child(v_flex().p(6).gap(2).children(shown.slice(0, 14).map(row))),
+        ));
+    }
+
+    // Everything but the links fades back: a veil of the terminal's own
+    // background over every cell that isn't part of a shown URL.
+    const veil = grid ? Array.from({ length: grid.rows }, (_, r) => {
+      const spans = shown.flatMap((h) => h.spans.filter((s) => s.row === r)).sort((a, b) => a.start - b.start);
+      const gaps = [];
+      let at = 0;
+      for (const s of [...spans, { start: grid.cols, end: grid.cols }]) {
+        if (s.start > at) gaps.push([at, s.start]);
+        at = Math.max(at, s.end);
+      }
+      return gaps.map(([from, to]) => div().id(`veil-${r}-${from}`).absolute()
+        .left(x(from)).top(y(r)).w((to - from) * c.w).h(c.h).bg(alpha(t.background, "a8")));
+    }).flat() : [];
+
+    // The label ends just left of the URL, over the dimmed text before it,
+    // so the whole address stays readable.
+    const marker = (h) => {
+      const first = h.spans[0];
+      return badge(h).id(`hint-${h.label}`).absolute()
+        .right(view.width - p.x - x(first.start) + 2).top(y(first.row) + 1)
+        .min_w(Math.max(h.label.length, 1.6) * c.w).h(c.h - 2).px(3)
+        .shadow_sm()
+        .text_size(Math.max(10, Math.round(c.h * 0.64)));
+    };
+
     return root
-      .on_size_change((size, cx) => { this.size = size; cx.notify(); })
-      .child(
-        div().absolute().left(c.x).top(Math.max(0, c.y - 30)).px(6).py(2).rounded(4)
-          .bg("#302205").text_color("#f8d66d").text_size(12).font_family(font)
-          .child(`link hints · ${status} · overlay ${area}`),
-      )
       .track_focus(this.handle)
       .on_key_down((event, cx) => {
         cx.stop_propagation();
         const key = keyName(event);
-        if (key) this.press(key, cx);
+        if (key) this.press(key, event.modifiers.shift, cx);
       })
+      .on_modifiers_changed((event, cx) => this.modifiers(event, cx))
+      .on_mouse_move((event) => this.measure(event))
       .on_mouse_down("left", () => this.finish())
-      .when(this.calibrating && grid, (el) => el.child(
-        div().absolute().left(c.x).top(c.y).w(grid.cols * c.w).h(grid.rows * c.h)
-          .border_1().border_color("#f8d66d"),
-      ).child(
-        div().absolute().left(c.x + 4).top(c.y + grid.rows * c.h - 26).px(6).py(2).rounded(4)
-          .bg("#302205").text_color("#f8d66d").text_size(12).font_family(font)
-          .child(`${this.layoutName} x ${c.x} y ${c.y} cell ${c.w}×${c.h} grid ${grid.cols}×${grid.rows}`),
-      ))
-      .children((this.hints ?? []).filter((h) => h.label.startsWith(this.typed)).map(badge));
+      .when(shown.length > 0, (el) => el.children(veil))
+      .children(shown.map(marker));
+  }
+
+  modifiers(event, cx) {
+    const m = event.modifiers;
+    const copying = Boolean(m.shift && !m.platform && !m.control && !m.alt);
+    if (copying !== Boolean(this.copying)) {
+      this.copying = copying;
+      cx.notify();
+    }
   }
 }
