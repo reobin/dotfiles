@@ -96,7 +96,7 @@ export default class Resume extends View {
           seen.add(info.address);
           continue;
         }
-        const name = labels.callsign ?? info.address;
+        const name = info.address;
         if ((await this.resume(info, labels)) === 0) {
           running.add(labels[SESSION]);
           resumed.push(name);

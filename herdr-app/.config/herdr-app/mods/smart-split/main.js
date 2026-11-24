@@ -6,15 +6,13 @@
 // holds one copy in a 0px block, so only one copy ever listens.
 
 import { View, div } from "gpui-kit";
-import { focused, hc, notify, run, nextCommand, setShared } from "herdr";
+import { focused, hc, notify, run, nextCommand } from "herdr";
 
 export default class SmartSplit extends View {
   init(_props, cx) {
-    setShared("smart-split.mounted", Date.now());
     cx.spawn(async () => {
       for (;;) {
-        const command = await nextCommand();
-        setShared("smart-split.last-command", { command, at: Date.now() });
+        await nextCommand();
         await this.split();
       }
     });
@@ -42,7 +40,6 @@ export default class SmartSplit extends View {
     }
     const args = { direction };
     if (f?.pane) args.pane = f.pane;
-    setShared("smart-split.last-split", { direction, pane: f?.pane ?? null, cols, rows, at: Date.now() });
     run("pane.split", args);
   }
 

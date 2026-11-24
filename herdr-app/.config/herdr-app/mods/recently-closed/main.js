@@ -1,14 +1,16 @@
-// cmd-z rebuilds what was closed last: a pane, a tab or a whole space, with
+// Recently closed panes, tabs and spaces, reopened from a popup (cmd-shift-t):
 // each terminal back in its folder and its place in the splits, and a Claude
-// session resumed where one was running (the resume mod's labels name it).
-// Closing stays Herdr's own; this keeps a snapshot of every space and notices
-// what disappears. Draws nothing: the layout holds one copy in a 0px block,
-// so the keys keep working while the sidebar is hidden.
+// or Codex session resumed where one was running (the resume mod's and the
+// Codex hook's labels name them). Closing stays Herdr's own; a copy in a 0px
+// layout block keeps a snapshot of every space, notices what disappears, and
+// does the reopening, since the popup's copy ends when it closes.
 
-import { View, div } from "gpui-kit";
-import { spaces, panes, terminals, run, shared, setShared, nextCommand, checking, readTextFile, home } from "herdr";
+import { View, div, svg, image } from "gpui-kit";
+import { v_flex, h_flex } from "gpui-base";
+import { spaces, panes, terminals, run, hc, shared, setShared, nextCommand, checking, readTextFile, home, props, closeOverlay, theme } from "herdr";
 
-const CLOSED = "undo-close.history";
+const CLOSED = "recently-closed.history";
+const PICK = "recently-closed.pick";
 const KEEP = 20;
 // A close is recorded once its terminals have ended; still running by then, it was parked or moved.
 const WAIT = 3000;
@@ -18,6 +20,12 @@ const SAFE = /^[A-Za-z0-9._:@+=-]+$/;
 // Each tab's split tree, from herdr-core's saved document, as toggle-split reads it.
 const DOCS = `${home()}/.local/state/herdr-core/default/docs.json`;
 const DIR = { row: "right", column: "down" };
+const ROW = 40;
+// A reopened terminal carries a `reopened-from.<address>=1` label per address it replaces, so an agent holding one finds it with `hc ls --label`.
+const FROM = "reopened-from.";
+// image() blurs these one-color 1em SVGs; svg() draws them crisp in their brand color.
+const BRAND = { "icons/claude.svg": "#D97757", "icons/amp.svg": "#F34E3F", "icons/kiro.svg": "#9046FF", "icons/codex.svg": "#7A9DFF" };
+const GLYPH = { "icons/codex.svg": "mods/tree/codex.svg" };
 
 const leaves = (n) => (n.type === "block" ? [n] : (n.children ?? []).flatMap(leaves));
 const term = (n) => leaves(n).find((b) => b.content?.terminal)?.content?.terminal;
@@ -42,11 +50,15 @@ function resize(id, size) {
   if (size) run("layout.resize", size.px !== undefined ? { id, px: size.px } : { id, weight: size.weight ?? 1 });
 }
 
-// Claude comes back in its own folder; anything else is a shell in the pane's.
+// Claude and Codex come back with their sessions; anything else is a shell in the pane's folder.
 function launch(p = {}) {
   const flags = (p.flags ?? "").split(" ").filter(Boolean);
-  if (!p.session || !SAFE.test(p.session) || !flags.every((f) => SAFE.test(f))) return { folder: p.cwd };
-  return { folder: p.sessionCwd || p.cwd, argv: ["claude", "--resume", p.session, ...flags] };
+  if (p.session && SAFE.test(p.session) && flags.every((f) => SAFE.test(f))) {
+    return { folder: p.sessionCwd || p.cwd, argv: ["claude", "--resume", p.session, ...flags] };
+  }
+  // The shell's codex alias adds --no-daemon; an argv skips the shell, so it goes here.
+  if (p.codex && SAFE.test(p.codex)) return { folder: p.cwd, argv: ["codex", "resume", p.codex, "--no-daemon"] };
+  return { folder: p.cwd };
 }
 
 // panes() and spaces() catch up with a command a moment after it runs.
@@ -59,8 +71,31 @@ async function until(cx, check, ms = 1000) {
   return null;
 }
 
-export default class UndoClose extends View {
+function short(path) {
+  const h = home();
+  return !path ? "" : path === h ? "~" : path.startsWith(h + "/") ? "~" + path.slice(h.length) : path;
+}
+
+function ago(ms) {
+  const m = Math.floor(ms / 60000);
+  return m < 1 ? "now" : m < 60 ? `${m}m` : m < 1440 ? `${Math.floor(m / 60)}h` : `${Math.floor(m / 1440)}d`;
+}
+
+function icon(info, color) {
+  if (!info?.icon) return div().size(15).flex_none();
+  const tint = info.tint ? color : BRAND[info.icon];
+  return tint ? svg(GLYPH[info.icon] ?? info.icon).size(15).flex_none().text_color(tint) : image(info.icon).w(15).h(15).flex_none();
+}
+
+export default class RecentlyClosed extends View {
   init(_props, cx) {
+    this.overlay = props()?.overlay;
+    if (this.overlay) {
+      this.at = 0;
+      this.handle = cx.focus_handle();
+      this.handle.focus();
+      return;
+    }
     this.prev = null;
     this.waiting = []; // closes whose terminals haven't ended yet
     this.trees = new Map(); // tab id -> split tree, matching its live panes
@@ -72,8 +107,7 @@ export default class UndoClose extends View {
     });
     cx.spawn(async (cx) => {
       for (;;) {
-        const c = await nextCommand();
-        if (c === "undo") await this.undo(cx);
+        if ((await nextCommand()) === "reopen") await this.reopen(cx);
       }
     });
   }
@@ -114,7 +148,10 @@ export default class UndoClose extends View {
         const mine = ps.filter((p) => p.tab === tab.id);
         const info = Object.fromEntries(mine.filter((p) => p.terminal).map((p) => {
           const l = ts.get(p.terminal)?.labels ?? {};
-          return [p.terminal, { terminal: p.terminal, cwd: p.cwd, session: l["resume.session"] || null, sessionCwd: l["resume.cwd"] || null, flags: l["resume.flags"] || "" }];
+          return [p.terminal, {
+            terminal: p.terminal, cwd: p.cwd, title: p.title || p.program?.name || "shell", icon: p.program?.icon ?? null, tint: Boolean(p.program?.tint),
+            session: l["resume.session"] || null, sessionCwd: l["resume.cwd"] || null, flags: l["resume.flags"] || "", codex: l["codex.session"] || null, from: Object.keys(l).filter((k) => k.startsWith(FROM)).map((k) => k.slice(FROM.length)),
+          }];
         }));
         const tree = this.trees.get(tab.id);
         const fits = tree && leaves(tree).map((b) => b.id).join() === mine.map((p) => p.pane).join();
@@ -139,17 +176,18 @@ export default class UndoClose extends View {
   }
 
   // Only what was in sight when it closed counts, so agents tidying up
-  // their own tabs in the background leave nothing to undo.
+  // their own tabs in the background leave nothing to reopen.
   lost(before, now, at) {
     const kept = new Set(now.flatMap((s) => s.tabs.flatMap((t) => Object.keys(t.info))));
     const found = [];
+    const add = (e) => found.push({ id: `${at}-${found.length}`, closed: at, seen: at, ...e });
     for (const s of before) {
       const ns = now.find((x) => x.id === s.id);
       const space = { id: s.id, name: s.name, index: s.index };
       const all = s.tabs.flatMap((t) => Object.keys(t.info));
       if (!ns) {
         const tabs = s.tabs.filter((t) => Object.keys(t.info).length);
-        if (s.active && all.length && !all.some((t) => kept.has(t))) found.push({ kind: "space", closed: at, seen: at, space, tabs, terminals: all });
+        if (s.active && all.length && !all.some((t) => kept.has(t))) add({ kind: "space", space, tabs, terminals: all });
         continue;
       }
       // Shown before or after: a switch and a close can land in one tick.
@@ -158,24 +196,23 @@ export default class UndoClose extends View {
         const mine = Object.keys(tab.info);
         const nt = ns.tabs.find((x) => x.id === tab.id);
         if (!nt) {
-          if (mine.length && !mine.some((t) => kept.has(t))) found.push({ kind: "tab", closed: at, seen: at, space, tabs: [tab], terminals: mine });
+          if (mine.length && !mine.some((t) => kept.has(t))) add({ kind: "tab", space, tabs: [tab], terminals: mine });
           continue;
         }
         if (!tab.active && !nt.active) continue;
-        for (const t of mine.filter((t) => !kept.has(t))) {
-          found.push({ kind: "pane", closed: at, seen: at, space, tab, pane: tab.info[t], terminals: [t] });
-        }
+        for (const t of mine.filter((t) => !kept.has(t))) add({ kind: "pane", space, tab, pane: tab.info[t], terminals: [t] });
       }
     }
     return found;
   }
 
-  async undo(cx) {
+  async reopen(cx) {
     this.watch();
     const list = this.closed();
-    const e = list.at(-1);
+    const e = list.find((x) => x.id === shared(PICK));
+    setShared(PICK, null);
     if (!e) return;
-    setShared(CLOSED, list.slice(0, -1));
+    setShared(CLOSED, list.filter((x) => x !== e));
     const s = spaces().find((x) => x.id === e.space.id);
     const tabs = e.kind === "pane" ? [{ ...e.tab, root: row([e.pane.terminal]) }] : e.tabs;
     if (e.kind === "pane" && s?.tabs.some((t) => t.id === e.tab.id)) await this.pane(cx, e);
@@ -204,7 +241,15 @@ export default class UndoClose extends View {
     const before = new Set(panes().map((p) => p.pane));
     run("pane.focus", { pane });
     run("terminal.open", { ...launch(info), place });
-    return (await until(cx, () => panes().find((p) => p.tab === tab && !before.has(p.pane))))?.pane ?? null;
+    const made = (await until(cx, () => panes().find((p) => p.tab === tab && !before.has(p.pane))))?.pane ?? null;
+    if (made) await this.mark(cx, made, info);
+    return made;
+  }
+
+  async mark(cx, pane, info) {
+    const address = await until(cx, () => panes().find((p) => p.pane === pane)?.terminal);
+    const from = [...(info?.from ?? []), info?.terminal].filter(Boolean).slice(-5);
+    if (address && from.length) await hc(["label", address, ...from.map((a) => `${FROM}${a}=1`)]);
   }
 
   async tab(cx, space, tab) {
@@ -232,7 +277,9 @@ export default class UndoClose extends View {
 
   async fill(cx, tab, id) {
     const pane = await until(cx, () => panes().find((p) => p.tab === id));
-    if (pane) await this.build(cx, tab.root, pane.pane, tab.info, id);
+    if (!pane) return;
+    await this.mark(cx, pane.pane, tab.info[term(tab.root)]);
+    await this.build(cx, tab.root, pane.pane, tab.info, id);
   }
 
   // Lays a split out from the pane holding its first leaf: its other
@@ -253,7 +300,58 @@ export default class UndoClose extends View {
     }
   }
 
+  pick(e) {
+    closeOverlay(this.overlay);
+    if (!e) return;
+    setShared(PICK, e.id);
+    run("recently-closed.reopen");
+  }
+
+  // A pane shows its own title; a tab or space its name, else its first pane's title, and how many panes came with it.
+  describe(e) {
+    const infos = e.kind === "pane" ? [e.pane] : e.tabs.flatMap((t) => Object.values(t.info));
+    const lead = infos.find((i) => i.session || i.codex) ?? infos[0];
+    const name = e.kind === "space" ? e.space.name : e.kind === "tab" ? e.tabs[0].name : null;
+    const own = lead?.title && lead.title !== lead.terminal ? lead.title : "shell";
+    return { lead, title: name || own, more: infos.length - 1 };
+  }
+
   render() {
-    return div();
+    if (!this.overlay) return div();
+    const t = theme();
+    const list = this.closed().slice().reverse();
+    this.at = Math.max(0, Math.min(this.at, list.length - 1));
+    const now = Date.now();
+    const line = (e, i) => {
+      const { lead, title, more } = this.describe(e);
+      const where = [e.space.name, short(lead?.sessionCwd || lead?.cwd)].filter(Boolean).join(" · ");
+      return h_flex().id(`rc-${e.id}`).mx(4).px(10).h(ROW).flex_none().rounded(7).gap(10).items_center().cursor_pointer()
+        .when(i === this.at, (el) => el.bg(t.hover))
+        .hover((s) => s.bg(t.hover))
+        .on_click(() => this.pick(e))
+        .child(div().w(30).flex_none().text_size(11).text_color(t.dim).child(ago(now - e.closed)))
+        .when(Boolean(lead?.terminal), (el) => el.child(div().flex_none().px(6).h(18).flex().items_center().rounded(5).bg(t.accent + "1f").text_size(11).font_semibold().text_color(t.accent)
+          .child(div().opacity(0.5).child(lead.terminal.slice(0, -2))).child(lead.terminal.slice(-2))))
+        .child(icon(lead, t.dim))
+        .child(div().flex_none().max_w(300).truncate().text_color(t.foreground).child(title))
+        .when(e.kind !== "pane" || more > 0, (el) => el.child(div().flex_none().px(6).h(18).flex().items_center().rounded(5).bg(t.foreground + "0f").text_size(10.5).text_color(t.muted)
+          .child(e.kind === "pane" ? `+${more}` : `${e.kind}${more > 0 ? ` +${more}` : ""}`)))
+        .child(div().flex_1().truncate().text_size(11).text_color(t.dim).child(where));
+    };
+    return v_flex().id("recently-closed").track_focus(this.handle).w_full().min_h(0).p(18).gap(10).bg(t.popover).text_size(13)
+      .on_key_down((e, cx) => {
+        const k = e.key, ctrl = e.modifiers.control;
+        if (k === "escape") return closeOverlay(this.overlay);
+        if (k === "enter") return this.pick(list[this.at]);
+        if (k === "down" || k === "j" || (ctrl && k === "n")) this.at = Math.min(list.length - 1, this.at + 1);
+        else if (k === "up" || k === "k" || (ctrl && k === "p")) this.at = Math.max(0, this.at - 1);
+        else return;
+        cx.stop_propagation();
+        cx.notify();
+      })
+      .child(h_flex().items_center().child(div().flex_1().text_size(15).font_semibold().text_color(t.foreground).child("Recently closed")).child(div().text_size(11).text_color(t.dim).child("↵ reopen · Esc")))
+      .child(v_flex().id("rc-list").flex_1().min_h(0).overflow_y_scroll().pb(6)
+        .when(!list.length, (el) => el.child(div().p(10).text_color(t.dim).child("Nothing closed yet")))
+        .children(list.map(line)));
   }
 }

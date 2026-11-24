@@ -58,7 +58,7 @@
                     "pane": {
                       "header": {
                         "content": {
-                          "mod": "callsign-pane"
+                          "mod": "pane-header"
                         },
                         "reveal": "always",
                         "height": 34,
@@ -75,6 +75,7 @@
                       },
                       "radius": 12,
                       "gap": 8,
+                      "veil": 0.3,
                       "lone": true
                     }
                   }
@@ -144,20 +145,10 @@
               }
             },
             {
-              "id": "undo-close",
+              "id": "recently-closed",
               "type": "block",
               "content": {
-                "mod": "undo-close"
-              },
-              "size": {
-                "px": 0
-              }
-            },
-            {
-              "id": "callsigns",
-              "type": "block",
-              "content": {
-                "mod": "callsigns"
+                "mod": "recently-closed"
               },
               "size": {
                 "px": 0

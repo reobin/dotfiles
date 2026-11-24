@@ -1,6 +1,6 @@
 import { View, div, svg } from "gpui-kit";
 import { v_flex, h_flex, InputState, Input, TextareaState, Textarea, Popup } from "gpui-base";
-import { spaces, panes, agents, terminals, focused, theme, settings, props, closeOverlay, shared, setShared, hc, run, notify, keys, nextCommand, exec } from "herdr";
+import { spaces, panes, agents, focused, theme, settings, props, closeOverlay, shared, setShared, hc, run, notify, keys, nextCommand, exec } from "herdr";
 import { loadDiff, loadBases, loadFile, isLine, anchor, message } from "./diff.js";
 import { treeOrder, treeRows } from "./tree.js";
 import { wrapSpans, wrapText, lineCount, pairs } from "./layout.js";
@@ -1165,7 +1165,7 @@ export default class Review extends View {
     this.hit = !this.composer ? this.commentAt()?.c.id : null;
     const t = theme(), file = this.file(), all = this.comments(), items = this.items(), prefs = this.prefs();
     const target = this.agentList().find((a) => a.address === this.target);
-    const targetName = target ? terminals().find((x) => x.address === target.address)?.labels?.callsign || target.address : null;
+    const targetName = target?.address ?? null;
     const add = this.files.reduce((n, f) => n + f.add, 0), del = this.files.reduce((n, f) => n + f.del, 0);
     const viewed = this.files.filter((f) => this.isViewed(f)).length;
     const counts = {};
@@ -1324,13 +1324,14 @@ export default class Review extends View {
         if (this.picker || this.help) { this.picker = null; this.help = false; cx.notify(); }
         if (!this.typing) this.handle.focus();
       })
-      .on_mouse_up("left", (_e, cx) => { this.dragging = false; this.endResize(cx); })
-      // Moves and releases only arrive while the pointer is over the overlay, so leaving it ends the drag.
-      .on_hover((hovered, cx) => { if (!hovered) this.endResize(cx); })
-      .on_mouse_move((e, cx) => {
-        if (this.resizing) { this.listW = this.resizing.w + e.position.x - this.resizing.x; this.listW = this.listWidth(); cx.notify(); }
-        if (!this.typing && !this.handle.is_focused()) this.handle.focus();
+      .on_window_mouse_up("left", (_e, cx) => { this.dragging = false; this.endResize(cx); })
+      .on_window_mouse_move((e, cx) => {
+        if (!this.resizing) return;
+        // A release outside the window sends no up event, so a move without the button ends the drag.
+        if (e.pressed_button !== "left") return this.endResize(cx);
+        this.listW = this.resizing.w + e.position.x - this.resizing.x; this.listW = this.listWidth(); cx.notify();
       })
+      .on_mouse_move(() => { if (!this.typing && !this.handle.is_focused()) this.handle.focus(); })
       .child(header)
       .child(div().id("review-body").flex_1().min_h(0).relative()
         .on_size_change((s, cx) => { if (s.width !== this.bodyW) { this.bodyW = s.width; cx.notify(); } })

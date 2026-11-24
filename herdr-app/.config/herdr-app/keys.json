@@ -66,8 +66,8 @@
     "alt-shift-k": "tree.space-up",
     "alt-h": "tab.prev",
     "alt-l": "tab.next",
-    "alt-shift-h": "tree.tab-left",
-    "alt-shift-l": "tree.tab-right",
+    "alt-shift-h": {"command": "tab.move", "args": {"by": -1}},
+    "alt-shift-l": {"command": "tab.move", "args": {"by": 1}},
     "alt-g": "mod.open:picker",
     "alt-left": "pane.go:left",
     "alt-right": "pane.go:right",
@@ -99,10 +99,8 @@
     "cmd-shift-i": "status-tabs.open-ticket",
     "cmd-shift-g": "status-tabs.open-pr",
     "cmd-shift-j": "status-panel.scroll-down",
-    "cmd-shift-k": "status-panel.scroll-up"
-  },
-  "layout:workbench": {
-    "cmd-z": "undo-close.undo"
+    "cmd-shift-k": "status-panel.scroll-up",
+    "cmd-shift-t": "mod.open:recently-closed"
   },
   "terminal": {
     "cmd-y": "mod.open:copy-mode",

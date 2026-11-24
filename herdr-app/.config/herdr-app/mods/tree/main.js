@@ -1,7 +1,7 @@
 // One sidebar list: every space, its tabs, their panes. Each space is a card,
 // the shown one outlined, in an outlined box that a group of spaces shares. An
 // agent pane gets a row with its icon, session title and status; any other
-// pane is a chip with its callsign and program, and a tab with no agent folds
+// pane is a chip with its address and program, and a tab with no agent folds
 // to one line of chips. Only what needs you is marked. Under 160px wide,
 // spaces only. A group archives and moves as one. Active and archived spaces
 // are two views: only the one the shown space is in draws, and a footer names
@@ -37,6 +37,16 @@ const solo = (list) => (list.length === 1 && isAgent(list[0]) ? list[0] : null);
 
 // The ticket and PR the top bar shows for the space, from status-tabs' cache;
 // a space it hasn't looked up lately shows only what its labels name.
+// What to type for a terminal: its address's last two characters, more while another pane's address ends the same way.
+function shorthand(address) {
+  const local = (a) => a.split("/").pop();
+  const me = local(address);
+  const others = panes().map((p) => p.terminal).filter((a) => a && a !== address).map(local);
+  let n = 2;
+  while (n < me.length - 1 && others.some((o) => o.endsWith(me.slice(-n)))) n++;
+  return [address.slice(0, -n), address.slice(-n)];
+}
+
 function work(s, ps, terms) {
   const mine = ps.filter((p) => p.terminal && s.tabs.some((tab) => tab.id === p.tab));
   const first = mine.find((p) => p.tab === s.tabs[0]?.id);
@@ -172,8 +182,6 @@ export default class Tree extends View {
         const c = await nextCommand();
         if (c === "space-up") this.move(-1);
         if (c === "space-down") this.move(1);
-        if (c === "tab-left") this.moveTab(-1);
-        if (c === "tab-right") this.moveTab(1);
         if (c === "toggle-archive") this.toggle(spaces().find((s) => s.active)?.id);
         if (c === "close-space") this.closeSpace();
       }
@@ -224,14 +232,6 @@ export default class Tree extends View {
     const i = open.findIndex((s) => ids.has(s.id));
     const next = open[i + group.length] ?? open[i - 1];
     if (next) run("space.select", { id: next.id });
-  }
-
-  moveTab(step) {
-    const tabs = spaces().find((s) => s.active)?.tabs ?? [];
-    const i = tabs.findIndex((tab) => tab.active);
-    const j = i + step;
-    if (i < 0 || j < 0 || j >= tabs.length) return;
-    run("tab.move", { id: tabs[i].id, index: j + 1 });
   }
 
   // The shown space's group moves as one, past the whole group next to it on
@@ -312,7 +312,7 @@ export default class Tree extends View {
   // The tab's place and name. A tab with no agent ends there: its panes
   // follow on the same line as chips, with the worst status at the end. A
   // lone agent follows as its row, and the tab name gives way to its title.
-  tab(t, s, tab, list, terms) {
+  tab(t, s, tab, list) {
     const shown = s.active && tab.active;
     const one = solo(list);
     const st = quiet(list) ? worst(t, list) : null;
@@ -328,29 +328,31 @@ export default class Tree extends View {
       .when(!one, (el) => el.items_start())
       .on_mouse_down("right", () => openOverlay({ mod: "menu", kind: "popup", width: 200, props: { tab: "tab", target: { id: tab.id, space: s.id } } }))
       .child(label)
-      .when(Boolean(one), (el) => el.child(this.pane(t, s, one, terms.get(one?.terminal), true)))
+      .when(Boolean(one), (el) => el.child(this.pane(t, s, one, true)))
       .when(quiet(list), (el) => el
         .child(h_flex().flex_1().min_w(0).flex_wrap().gap(4).pl(4)
-          .children(list.map((p) => this.chip(t, s, p, terms.get(p.terminal)))))
+          .children(list.map((p) => this.chip(t, s, p))))
         .when(Boolean(st), (el) => el.child(h_flex().flex_none().h(ROW).items_center().child(st))));
   }
 
-  label(p, term) {
-    const sign = p.terminal ? term?.labels?.callsign ?? shared("callsigns.given")?.[p.terminal] : null;
+  label(p) {
+    const sign = p.terminal;
     const name = isAgent(p) ? p.title || p.program.name : p.terminal ? p.program?.name ?? "shell" : p.title;
     return [sign, name];
   }
 
   pill(t, on, sign) {
+    const [head, tail] = sign === "·" ? ["", sign] : shorthand(sign);
     return h_flex().flex_none().min_w(28).h(18).px(4).justify_center().items_center().rounded(2)
       .font_family(MONO).text_size(11.5).font_semibold()
-      .bg(on ? t.accent + "24" : t.foreground + "0f").text_color(on ? t.accent : t.muted).child(sign);
+      .bg(on ? t.accent + "24" : t.foreground + "0f").text_color(on ? t.accent : t.muted)
+      .child(div().opacity(0.5).child(head)).child(div().child(tail));
   }
 
-  // Any pane that isn't an agent: its callsign pill, extended to the right by
+  // Any pane that isn't an agent: its address pill, extended to the right by
   // its program, so starting an agent in it leaves the pill where it was.
-  chip(t, s, p, term) {
-    const [sign, name] = this.label(p, term);
+  chip(t, s, p) {
+    const [sign, name] = this.label(p);
     const on = s.active && p.focused;
     const st = status(t, p.status);
     return press(h_flex().id(`pane-${p.pane}`).h(ROW).flex_none().items_center(), () => run("pane.focus", { pane: p.pane }))
@@ -363,18 +365,18 @@ export default class Tree extends View {
   }
 
   // Agents get rows; the rest of the tab gathers in one wrapping line of chips.
-  paneList(t, s, list, terms) {
+  paneList(t, s, list) {
     const tools = list.filter((p) => !isAgent(p));
     return [
-      ...list.filter(isAgent).map((p) => this.pane(t, s, p, terms.get(p.terminal))),
+      ...list.filter(isAgent).map((p) => this.pane(t, s, p)),
       ...(tools.length ? [h_flex().flex_none().flex_wrap().gap(4).px(8)
-        .children(tools.map((p) => this.chip(t, s, p, terms.get(p.terminal))))] : []),
+        .children(tools.map((p) => this.chip(t, s, p)))] : []),
     ];
   }
 
   // inline: on its tab's line, it takes the rest of the line instead of a row.
-  pane(t, s, p, term, inline = false) {
-    const [sign, name] = this.label(p, term);
+  pane(t, s, p, inline = false) {
+    const [sign, name] = this.label(p);
     const agent = p.program?.agent;
     const tint = p.program?.tint ? t.dim : BRAND[p.program?.icon];
     const pic = agent && p.program.icon
@@ -419,9 +421,9 @@ export default class Tree extends View {
       this.space(t, s, ps, terms, false, same),
       ...mine.flatMap(([tab, list]) => s.tabs.length > 1
         ? [v_flex().flex_none().mt(4).rounded(5).when(this.hot === `tab-${tab.id}`, (el) => el.bg(t.hover))
-          .child(this.tab(t, s, tab, list, terms))
-          .children(quiet(list) || solo(list) ? [] : this.paneList(t, s, list, terms))]
-        : this.paneList(t, s, list, terms)),
+          .child(this.tab(t, s, tab, list))
+          .children(quiet(list) || solo(list) ? [] : this.paneList(t, s, list))]
+        : this.paneList(t, s, list)),
     ];
   }
 
@@ -578,7 +580,7 @@ export default class Tree extends View {
     const archive = sets(all.filter((s) => archived.has(s.id)));
     const inArchive = all.some((s) => s.active && archived.has(s.id));
     // In the archive the archive's colour stands in for the accent, so the shown
-    // card, its group's name and its callsign all say where you are.
+    // card, its group's name and its address all say where you are.
     const base = theme();
     const t = inArchive ? { ...base, accent: archiveInk(base) } : base;
     const ps = panes();
