@@ -1077,7 +1077,7 @@ export default class Review extends View {
       .child(v_flex().flex_1().min_w(0).max_w(820).ml((this.split() ? SIDE_CODE_X : CODE_X) - 3).mr(24).my(7)
         .rounded(8).border_1().border_color(active ? t.accent : t.background).bg(t.background).overflow_hidden()
         .on_mouse_down("left", (_e, cx) => cx.stop_propagation())
-        .child(h_flex().h(28).flex_none().pl(10).pr(4).gap(2).items_center().bg(tint(t.accent, "14")).text_size(11.5).text_color(t.dim)
+        .child(h_flex().h(28).flex_none().pl(10).pr(4).gap(2).items_center().rounded_t(7).bg(tint(t.accent, "14")).text_size(11.5).text_color(t.dim)
           .child(div().flex_1().min_w(0).truncate().child(label))
           .children(actions))
         .child(body));
@@ -1277,9 +1277,9 @@ export default class Review extends View {
           .when(!rows.length, (el) => el.child(div().p(8).text_color(t.dim).text_size(12.5)
             .child(this.error ?? (this.loading ? "Loading changes…" : this.filter ? "No file matches" : "No changes"))))));
 
-    // The diff is a card on the review's canvas, headed like a pane.
-    const diff = v_flex().flex_1().min_w(0).rounded(12).overflow_hidden().bg(t.background)
-      .child(h_flex().h(34).flex_none().px(14).gap(8).items_center().bg(tint(t.accent, "14")).text_size(12.5)
+    // The diff is a card on the review's canvas, headed and outlined like the focused pane.
+    const diff = v_flex().flex_1().min_w(0).rounded(12).overflow_hidden().bg(t.background).border_1().border_color(t.accent)
+      .child(h_flex().h(34).flex_none().px(14).gap(8).items_center().rounded_t(11).bg(tint(t.accent, "14")).text_size(12.5)
         .child(div().truncate().text_color(t.foreground).child(file?.path ?? ""))
         .when(Boolean(file) && this.isViewed(file), (el) => el.child(div().text_size(11).text_color(t.ansi2).child("✓ viewed")))
         .when(Boolean(file) && !this.fileComment(file?.path) && this.composer?.scope !== "file", (el) => el.child(
