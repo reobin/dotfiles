@@ -105,6 +105,7 @@
     "cmd-z": "undo-close.undo"
   },
   "terminal": {
+    "cmd-y": "mod.open:copy-mode",
     "cmd-c": "terminal.copy",
     "cmd-v": "terminal.paste",
     "cmd-;": "nvim-input.edit",
