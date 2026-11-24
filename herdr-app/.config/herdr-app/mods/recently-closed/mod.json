@@ -1,1 +1,1 @@
-{ "place": "none", "title": "recently closed", "overlay": { "kind": "popup", "at": "top", "offset": 40, "width": 640, "height": 0.8 } }
+{ "place": "none", "title": "recently closed", "overlay": { "kind": "dialog", "width": 640, "height": 0.6 } }

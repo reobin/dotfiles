@@ -140,7 +140,7 @@ export default class NewSpace extends View {
       )
       .child(
         v_flex()
-          .h(Math.min(SHOWN, rows.length) * ROW)
+          .h(SHOWN * ROW)
           .flex_none()
           .mb(6)
           .children(shown.map(row)),

@@ -1,1 +1,1 @@
-{ "place": "none", "title": "new space", "overlay": { "kind": "popup", "at": "top", "offset": 40, "width": 640, "height": 0.8 } }
+{ "place": "none", "title": "new space", "overlay": { "kind": "dialog", "width": 640 } }
