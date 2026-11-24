@@ -227,8 +227,7 @@ function panelKey(view, e, cx) {
 }
 
 export function kbd(t, key) {
-  return div().h(16).min_w(16).px(4).flex_none().flex().items_center().justify_center().rounded(4)
-    .border_1().border_color(t.border).bg(t.background).font_family(MONO).text_size(10).text_color(t.dim).child(key);
+  return div().flex_none().font_family(MONO).text_size(11).text_color(t.muted).child(key);
 }
 
 export const spinner = (t, size = 12) => svg(SPINNER).size(size).flex_none().text_color(t.dim).spin(900);
@@ -254,12 +253,12 @@ function footer(view, t) {
   const c = view.confirm, n = view.notice;
   const chip = (id, label, key, primary, onClick) => h_flex().id(id).h(22).px(8).gap(6).items_center().rounded(6).cursor_pointer()
     .text_size(11.5).font_semibold().on_mouse_down("left", stop).on_click(onClick)
-    .when(primary, (el) => el.bg(t.ansi1).text_color(t.background).hover((s) => s.opacity(0.9)))
+    .when(primary, (el) => el.bg(t.solid).text_color(t.solid_foreground).hover((s) => s.opacity(0.9)))
     .when(!primary, (el) => el.text_color(t.muted).hover((s) => s.bg(t.hover).text_color(t.foreground)))
     .child(label).child(div().opacity(0.7).font_family(MONO).text_size(10.5).child(key));
   if (c) {
-    return v_flex().flex_none().mx(8).mb(8).p(10).gap(8).rounded(9).border_1().border_color(t.ansi1 + "66").bg(t.ansi1 + "14")
-      .child(h_flex().gap(8).items_center().child(icon(c.icon ?? "merge-ready", t.ansi1, 14)).child(div().flex_1().min_w(0).text_size(12.5).child(c.text)))
+    return v_flex().flex_none().mx(8).mb(8).p(10).gap(8).rounded(9).border_1().border_color(t.accent + "33").bg(t.accent + "14")
+      .child(h_flex().gap(8).items_center().child(icon(c.icon ?? "merge-ready", t.accent, 14)).child(div().flex_1().min_w(0).text_size(12.5).child(c.text)))
       .child(h_flex().gap(6).justify_end()
         .child(chip("confirm-no", "Cancel", "esc", false, (_e, cx) => { view.confirm = null; view.handle.focus(); cx.notify(); }))
         .child(chip("confirm-yes", c.verb, "↵", true, (_e, cx) => { view.confirm = null; c.run(cx); cx.notify(); })));
@@ -271,8 +270,8 @@ function footer(view, t) {
   }
   if (view.composing) return null;
   const hints = view.keymap.filter((a) => a.hint);
-  return h_flex().flex_none().px(14).py(8).gap(10).flex_wrap().border_t(1).border_color(t.border).text_size(11).text_color(t.dim)
-    .children([...hints, { key: "esc", label: "close" }].map((a) => h_flex().gap(5).items_center().child(kbd(t, a.key)).child(a.label)));
+  return h_flex().flex_none().px(14).py(8).gap(14).flex_wrap().text_size(11).text_color(t.dim)
+    .children([...hints, { key: "esc", label: "close" }].map((a) => h_flex().gap(4).items_center().child(kbd(t, a.key)).child(a.label)));
 }
 
 export function panelShell(view, t, { header, body }) {

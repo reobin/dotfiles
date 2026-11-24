@@ -168,7 +168,7 @@ export default class Tabs extends View {
         })
         .on_mouse_down("right", (_e, cx) => { cx.stop_propagation(); openOverlay({ mod: "menu", kind: "popup", width: 200, props: { tab: "tab", target: { id: c.id, space: space.id } } }); })
         .when(Boolean(program?.icon), el => {
-          const tint = program.tint ? t.muted : BRAND[program.icon];
+          const tint = program.tint ? t.dim : BRAND[program.icon];
           return el.child(tint ? svg(GLYPH[program.icon] ?? program.icon).size(14).text_color(tint) : image(program.icon).size(14));
         })
         .child(div().max_w(170).truncate().child(c.zoomed ? `${name} Z` : name))
@@ -185,8 +185,9 @@ export default class Tabs extends View {
     this.syncPanel(space, panel, body, enabled);
     const panelButton = (id, content) => {
       const on = panel && !panel.hidden && body?.active === id;
-      return h_flex().id(`panel-${id}`).h(22).px(8).gap(4).flex_none().items_center().rounded(6)
-        .text_size(12).bg(on ? t.selected : t.chrome).text_color(on ? t.foreground : t.muted)
+      return h_flex().id(`panel-${id}`).h(22).px(on ? 7 : 8).gap(4).flex_none().items_center().rounded(6)
+        .text_size(12).bg(on ? t.background : t.chrome).text_color(on ? t.foreground : t.muted)
+        .when(on, el => el.border(1).border_color(t.accent + "73"))
         .hover(s => s.bg(t.hover)).on_mouse_down("left", stop)
         .on_click(() => this.togglePanel(id)).children(content);
     };

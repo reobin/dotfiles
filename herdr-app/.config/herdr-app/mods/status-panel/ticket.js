@@ -23,7 +23,7 @@ export function renderTicket(view) {
   const url = issue?.url ?? null;
   view.keymap = [];
 
-  const header = h_flex().h(42).flex_none().px(14).gap(8).items_center()
+  const header = h_flex().h(34).flex_none().px(14).gap(8).items_center().bg(t.accent + "14")
     .when(Boolean(ticket), (e) => e.child(icon(ticketIcon(ticket), issue?.state?.color ?? t.dim, 14)).child(div().font_family(MONO).font_semibold().child(ticket.id)))
     .when(!ticket, (e) => e.child(div().font_semibold().child("Ticket")))
     .child(div().flex_1())

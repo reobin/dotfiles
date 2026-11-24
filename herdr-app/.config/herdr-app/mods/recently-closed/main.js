@@ -20,7 +20,7 @@ const SAFE = /^[A-Za-z0-9._:@+=-]+$/;
 // Each tab's split tree, from herdr-core's saved document, as toggle-split reads it.
 const DOCS = `${home()}/.local/state/herdr-core/default/docs.json`;
 const DIR = { row: "right", column: "down" };
-const ROW = 40;
+const ROW = 32;
 // A reopened terminal carries a `reopened-from.<address>=1` label per address it replaces, so an agent holding one finds it with `hc ls --label`.
 const FROM = "reopened-from.";
 // image() blurs these one-color 1em SVGs; svg() draws them crisp in their brand color.
@@ -82,9 +82,9 @@ function ago(ms) {
 }
 
 function icon(info, color) {
-  if (!info?.icon) return div().size(15).flex_none();
+  if (!info?.icon) return div().size(14).flex_none();
   const tint = info.tint ? color : BRAND[info.icon];
-  return tint ? svg(GLYPH[info.icon] ?? info.icon).size(15).flex_none().text_color(tint) : image(info.icon).w(15).h(15).flex_none();
+  return tint ? svg(GLYPH[info.icon] ?? info.icon).size(14).flex_none().text_color(tint) : image(info.icon).w(14).h(14).flex_none();
 }
 
 export default class RecentlyClosed extends View {
@@ -330,7 +330,7 @@ export default class RecentlyClosed extends View {
         .hover((s) => s.bg(t.hover))
         .on_click(() => this.pick(e))
         .child(div().w(30).flex_none().text_size(11).text_color(t.dim).child(ago(now - e.closed)))
-        .when(Boolean(lead?.terminal), (el) => el.child(div().flex_none().px(6).h(18).flex().items_center().rounded(5).bg(t.accent + "1f").text_size(11).font_semibold().text_color(t.accent)
+        .when(Boolean(lead?.terminal), (el) => el.child(div().flex_none().px(6).h(18).flex().items_center().rounded(5).bg(t.accent + "26").font_family("JetBrains Mono").text_size(11).font_semibold().text_color(t.accent)
           .child(div().opacity(0.5).child(lead.terminal.slice(0, -2))).child(lead.terminal.slice(-2))))
         .child(icon(lead, t.dim))
         .child(div().flex_none().max_w(300).truncate().text_color(t.foreground).child(title))
@@ -349,7 +349,9 @@ export default class RecentlyClosed extends View {
         cx.stop_propagation();
         cx.notify();
       })
-      .child(h_flex().items_center().child(div().flex_1().text_size(15).font_semibold().text_color(t.foreground).child("Recently closed")).child(div().text_size(11).text_color(t.dim).child("↵ reopen · Esc")))
+      .child(h_flex().items_center().child(div().flex_1().text_size(15).font_semibold().text_color(t.foreground).child("Recently closed")).child(h_flex().gap(4).items_center().text_size(11).text_color(t.dim)
+        .child(div().text_color(t.muted).child("↵")).child(div().child("reopen"))
+        .child(div().id("rc-esc").ml(8).px(6).py(2).rounded(5).cursor_pointer().hover((s) => s.bg(t.hover).text_color(t.foreground)).on_click(() => closeOverlay(this.overlay)).child("Esc"))))
       .child(v_flex().id("rc-list").flex_1().min_h(0).overflow_y_scroll().pb(6)
         .when(!list.length, (el) => el.child(div().p(10).text_color(t.dim).child("Nothing closed yet")))
         .children(list.map(line)));

@@ -343,9 +343,9 @@ export default class Tree extends View {
 
   pill(t, on, sign) {
     const [head, tail] = sign === "·" ? ["", sign] : shorthand(sign);
-    return h_flex().flex_none().min_w(28).h(18).px(4).justify_center().items_center().rounded(2)
-      .font_family(MONO).text_size(11.5).font_semibold()
-      .bg(on ? t.accent + "24" : t.foreground + "0f").text_color(on ? t.accent : t.muted)
+    return h_flex().flex_none().min_w(28).h(18).px(6).justify_center().items_center().rounded(5)
+      .font_family(MONO).text_size(11).font_semibold()
+      .bg(on ? t.accent + "26" : t.foreground + "0f").text_color(on ? t.accent : t.muted)
       .child(div().opacity(0.5).child(head)).child(div().child(tail));
   }
 
@@ -356,8 +356,8 @@ export default class Tree extends View {
     const on = s.active && p.focused;
     const st = status(t, p.status);
     return press(h_flex().id(`pane-${p.pane}`).h(ROW).flex_none().items_center(), () => run("pane.focus", { pane: p.pane }))
-      .child(h_flex().h(18).pr(6).gap(8).items_center().rounded(2)
-        .bg(t.foreground + "08").hover((x) => x.bg(t.hover))
+      .child(h_flex().h(18).pr(6).gap(8).items_center().rounded(5)
+        .bg(t.foreground + "06").hover((x) => x.bg(t.hover))
         .when(Boolean(sign), (el) => el.child(this.pill(t, on, sign)))
         .when(!sign, (el) => el.pl(6))
         .child(div().min_w(0).max_w(140).truncate().text_size(12).text_color(on ? t.foreground : t.muted).child(name ?? ""))
@@ -380,11 +380,11 @@ export default class Tree extends View {
     const agent = p.program?.agent;
     const tint = p.program?.tint ? t.dim : BRAND[p.program?.icon];
     const pic = agent && p.program.icon
-      ? tint ? svg(GLYPH[p.program.icon] ?? p.program.icon).size(15).flex_none().text_color(tint) : image(p.program.icon).w(15).h(15).flex_none()
+      ? tint ? svg(GLYPH[p.program.icon] ?? p.program.icon).size(14).flex_none().text_color(tint) : image(p.program.icon).w(14).h(14).flex_none()
       : null;
     const on = s.active && p.focused;
     const st = status(t, p.status);
-    return press(h_flex().id(`pane-${p.pane}`).h(ROW).gap(8).items_center().rounded(3)
+    return press(h_flex().id(`pane-${p.pane}`).h(ROW).gap(8).items_center().rounded(5)
       .when(inline, (el) => el.flex_1().min_w(0).pl(4))
       .when(!inline, (el) => el.flex_none().px(8))
       .hover((x) => x.bg(t.hover)), () => run("pane.focus", { pane: p.pane }))
@@ -479,7 +479,7 @@ export default class Tree extends View {
     return runs.map((run) => {
       const icons = this.icons(t, run);
       return run.length > 1
-        ? v_flex().id(`set-${run[0].id}`).flex_none().gap(4).rounded(8).bg(t.foreground + "0a").children(icons)
+        ? v_flex().id(`set-${run[0].id}`).flex_none().gap(4).rounded(8).bg(t.foreground + "06").children(icons)
         : icons[0];
     });
   }
@@ -556,12 +556,11 @@ export default class Tree extends View {
         .child(div().flex_none().text_size(10.5).font_semibold().text_color(inArchive ? archiveInk(t) : t.foreground).child(name(inArchive).toUpperCase()))
         .child(div().flex_none().text_color(t.dim).child(count(here)))
         .child(div().flex_1())
-        .child(press(h_flex().id("footer-hop").flex_none().h(26).pl(10).pr(4).gap(8).items_center().rounded(7)
-          .bg(t.foreground + "0a").hover((x) => x.bg(t.hover)), hop)
+        .child(press(h_flex().id("footer-hop").flex_none().h(26).px(10).gap(8).items_center().rounded(7)
+          .bg(t.foreground + "06").hover((x) => x.bg(t.hover)), hop)
           .child(h_flex().gap(6).items_center().child(div().child(name(!inArchive))).child(div().text_color(t.dim).child(count(other))))
           .when(marks.length > 0, (el) => el.child(h_flex().gap(3).items_center().children(marks)))
-          .child(h_flex().h(18).px(6).items_center().rounded(4).border(1).border_color(t.dim + "66")
-            .text_size(10.5).text_color(t.dim).child(target ? "alt-." : "cmd-n"))));
+          .child(div().opacity(0.6).text_size(10.5).child(target ? "alt-." : "cmd-n"))));
   }
 
   // In the empty strip beside the traffic lights, level with them. It takes no

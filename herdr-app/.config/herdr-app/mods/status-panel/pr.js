@@ -35,7 +35,7 @@ export function renderPr(view, cx) {
     .when(Boolean(busy), (el) => el.child(spinner(t, 11)))
     .child(label).when(Boolean(key), (el) => el.child(div().opacity(0.6).font_family(MONO).text_size(10.5).child(key)));
 
-  const header = h_flex().h(42).flex_none().px(14).gap(8).items_center()
+  const header = h_flex().h(34).flex_none().px(14).gap(8).items_center().bg(t.accent + "14")
     .when(Boolean(pr), (e) => e.child(icon(prIcon(pr), prColor(pr, t), 14)).child(div().font_family(MONO).font_semibold().child(`#${pr.number}`))
       .child(div().px(7).rounded(9).text_size(10.5).font_semibold().bg(prColor(pr, t)).text_color(t.background).child(pr.state[0].toUpperCase() + pr.state.slice(1))))
     .when(!pr, (e) => e.child(div().font_semibold().child("Pull request")))

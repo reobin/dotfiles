@@ -1072,12 +1072,12 @@ export default class Review extends View {
   // A comment or the comment box: a band under its lines holding a card that lines up with the code,
   // its actions in the card's header. Its height is threadH(lines), which the scroll math relies on.
   thread(id, lines, active, label, actions, body, t) {
-    return h_flex().id(id).w_full().h(threadH(lines)).items_start().bg(t.chrome).border_y(1).border_color(t.border)
+    return h_flex().id(id).w_full().h(threadH(lines)).items_start().bg(t.chrome)
       .child(div().w(3).h_full().flex_none().bg(active ? t.accent : tint(t.accent, "50")))
       .child(v_flex().flex_1().min_w(0).max_w(820).ml((this.split() ? SIDE_CODE_X : CODE_X) - 3).mr(24).my(7)
-        .rounded(8).border_1().border_color(active ? t.accent : t.border).bg(t.background).overflow_hidden()
+        .rounded(8).border_1().border_color(active ? t.accent : t.background).bg(t.background).overflow_hidden()
         .on_mouse_down("left", (_e, cx) => cx.stop_propagation())
-        .child(h_flex().h(28).flex_none().pl(10).pr(4).gap(2).items_center().border_b(1).border_color(t.border).text_size(11.5).text_color(t.dim)
+        .child(h_flex().h(28).flex_none().pl(10).pr(4).gap(2).items_center().bg(tint(t.accent, "14")).text_size(11.5).text_color(t.dim)
           .child(div().flex_1().min_w(0).truncate().child(label))
           .children(actions))
         .child(body));
@@ -1174,29 +1174,28 @@ export default class Review extends View {
     const canSend = Boolean(target && this.root) && !this.sending;
     const stop = (_e, cx) => cx.stop_propagation();
 
-    const modeButton = (mode, label) => div().id(`mode-${mode}`).h(24).px(10).flex().items_center().rounded(6).cursor_pointer().text_size(12)
-      .bg(this.mode === mode ? t.selected : t.chrome).text_color(this.mode === mode ? t.foreground : t.muted)
-      .hover((s) => s.bg(t.hover)).on_mouse_down("left", stop)
+    // The tabs bar's tab: a faint fill at rest, the card's background and an accent outline when on.
+    const tab = (el, on) => el.h(22).px(on ? 7 : 8).flex().items_center().rounded(6).cursor_pointer()
+      .bg(on ? t.background : t.foreground + "06").text_color(on ? t.foreground : t.muted)
+      .when(on, (x) => x.border_1().border_color(t.accent + "73"))
+      .hover((s) => s.bg(t.hover)).on_mouse_down("left", stop);
+    const modeButton = (mode, label) => tab(div().id(`mode-${mode}`).text_size(12), this.mode === mode)
       .on_click((_e, cx) => { if (this.mode !== mode) { this.mode = mode; this.reload(cx); } }).child(label);
-    const toggle = (key, label) => div().id(`pref-${key}`).h(22).px(8).flex().items_center().rounded(6).cursor_pointer().text_size(11.5)
-      .bg(prefs[key] ? t.selected : t.chrome).text_color(prefs[key] ? t.foreground : t.dim)
-      .hover((s) => s.bg(t.hover)).on_mouse_down("left", stop)
+    const toggle = (key, label) => tab(div().id(`pref-${key}`).text_size(11.5), Boolean(prefs[key]))
       .on_click((_e, cx) => { this.setPref(key, !prefs[key]); cx.notify(); }).child(label);
 
     const commits = (n) => `${n} commit${n === 1 ? "" : "s"}`;
     const tag = (b) => { const parent = b.kind === "parent" && b.pushed;
-      return div().flex_none().px(5).rounded(4).text_size(10.5)
+      return div().flex_none().px(6).rounded(5).text_size(10.5)
         .when(parent, (el) => el.bg(tint(t.accent, "26")).text_color(t.accent))
-        .when(!parent, (el) => el.border_1().border_color(t.border).text_color(t.dim))
+        .when(!parent, (el) => el.bg(t.foreground + "0f").text_color(t.dim))
         .child(parent ? "stack parent" : b.kind === "parent" ? "local only" : "default"); };
     const shown = this.bases?.find((b) => b.ref === this.base);
     const against = this.mode === "work"
       ? [div().text_color(t.foreground).child("HEAD"), this.head && div().text_color(t.dim).child(this.head.slice(0, 7))]
       : this.base ? [div().max_w(240).truncate().text_color(t.foreground).child(this.base), shown && tag(shown), shown && div().text_color(t.dim).child(commits(shown.ahead))]
       : [div().text_color(t.dim).child("…")];
-    const chip = h_flex().id("base").h(26).px(8).gap(6).items_center().rounded(7).border_1().text_size(12).cursor_pointer()
-      .border_color(this.picker ? t.accent : t.border).bg(this.picker ? t.selected : t.background)
-      .hover((s) => s.bg(t.hover)).on_mouse_down("left", stop)
+    const chip = tab(h_flex().id("base").gap(6).text_size(12), Boolean(this.picker))
       .on_click((_e, cx) => { if (this.picker) this.picker = null; else this.openPicker(cx); cx.notify(); })
       .when(this.loading, (el) => el.opacity(0.6))
       .child(div().text_color(t.dim).child("vs"))
@@ -1230,11 +1229,11 @@ export default class Review extends View {
         .child("j k move").child("↵ pick").child("1–9 jump").child("esc close"));
     const basePicker = Popup.new("base-picker", chip).anchor("top_left").when(Boolean(menu), (el) => el.content(menu));
 
-    const header =h_flex().h(46).flex_none().px(14).gap(10).items_center().bg(t.chrome).border_b(1).border_color(t.border)
+    const header = h_flex().h(40).flex_none().px(14).gap(10).items_center()
       .child(h_flex().gap(4).flex_none().items_center().text_size(12).text_color(t.muted)
         .child(svg("mods/workspace-chrome/git-compare.svg").size(14).flex_none())
         .child(div().max_w(200).truncate().child(this.branch ?? "Review")))
-      .child(h_flex().p(2).gap(2).rounded(8).border_1().border_color(t.border)
+      .child(h_flex().gap(4)
         .child(modeButton("work", "Uncommitted"))
         .child(modeButton("branch", "Branch")))
       .child(basePicker)
@@ -1259,7 +1258,7 @@ export default class Review extends View {
       .when(!this.filtering, (el) => el.child(div().id("filter-clear").text_color(t.dim).cursor_pointer().hover((s) => s.text_color(t.foreground))
         .on_mouse_down("left", (_e, cx) => { cx.stop_propagation(); this.clearFilter(cx); }).child("×")));
     const listW = this.listWidth();
-    const edge = div().id("list-edge").absolute().top(0).bottom(0).left(listW - 3).w(6).flex().justify_center().cursor_col_resize()
+    const edge = div().id("list-edge").absolute().top(0).bottom(0).left(listW + 1).w(6).flex().justify_center().cursor_col_resize()
       .on_hover((hot, cx) => { this.edgeHot = hot; cx.notify(); })
       .when(Boolean(this.resizing || this.edgeHot), (el) => el.child(div().w(2).h_full().bg(t.accent)))
       .on_mouse_down("left", (e, cx) => {
@@ -1268,7 +1267,7 @@ export default class Review extends View {
         else this.resizing = { x: e.position.x, w: listW };
         cx.notify();
       });
-    const list = v_flex().w(listW).flex_none().bg(t.chrome).border_r(1).border_color(t.border)
+    const list = v_flex().w(listW).flex_none()
       .when(Boolean(filterBar), (el) => el.child(filterBar))
       .child(div().id("review-files").flex_1().min_h(0).relative().overflow_hidden()
         .on_size_change((s, cx) => { if (s.height !== this.listH) { this.listH = s.height; this.revealSel(); cx.notify(); } })
@@ -1278,12 +1277,13 @@ export default class Review extends View {
           .when(!rows.length, (el) => el.child(div().p(8).text_color(t.dim).text_size(12.5)
             .child(this.error ?? (this.loading ? "Loading changes…" : this.filter ? "No file matches" : "No changes"))))));
 
-    const diff = v_flex().flex_1().min_w(0)
-      .child(h_flex().h(32).flex_none().px(14).gap(8).items_center().border_b(1).border_color(t.border).text_size(12.5)
+    // The diff is a card on the review's canvas, headed like a pane.
+    const diff = v_flex().flex_1().min_w(0).rounded(12).overflow_hidden().bg(t.background)
+      .child(h_flex().h(34).flex_none().px(14).gap(8).items_center().bg(tint(t.accent, "14")).text_size(12.5)
         .child(div().truncate().text_color(t.foreground).child(file?.path ?? ""))
         .when(Boolean(file) && this.isViewed(file), (el) => el.child(div().text_size(11).text_color(t.ansi2).child("✓ viewed")))
         .when(Boolean(file) && !this.fileComment(file?.path) && this.composer?.scope !== "file", (el) => el.child(
-          h_flex().id("file-comment").h(22).px(8).gap(6).flex_none().items_center().rounded(6).border_1().border_color(t.border)
+          h_flex().id("file-comment").h(22).px(8).gap(6).flex_none().items_center().rounded(6).bg(t.foreground + "06")
             .text_size(11.5).text_color(t.dim).cursor_pointer().hover((s) => s.bg(t.hover).text_color(t.foreground))
             .on_mouse_down("left", stop).on_click((_e, cx) => { this.commentFile(); cx.notify(); })
             .child(div().child("File comment")).child(div().opacity(0.6).child("C"))))
@@ -1311,14 +1311,14 @@ export default class Review extends View {
       : [["c", "comment"], ["C", "file comment"], ["v", "select"], [fileKeys, "file"], ["m", "viewed"], ...(file && folded(file) ? [["o", "show"]] : []), [send, "send"], ["?", "keys"]];
     const sheet = this.help && this.helpSheet(t, send);
     const outbox = this.sendSheet && this.sendSheetView(t, targetName);
-    const footer = h_flex().h(28).flex_none().px(14).gap(14).items_center().bg(t.chrome).border_t(1).border_color(t.border).text_size(11).text_color(t.dim)
+    const footer = h_flex().h(28).flex_none().px(14).gap(14).items_center().text_size(11).text_color(t.dim)
       .children(hints.map(([keys, what]) => hint(keys, what)))
       .child(div().flex_1())
       .when(Boolean(taken), (el) => el.child(div().text_color(t.blocked).child(taken)))
       .when(Boolean(this.count || this.prefix), (el) => el.child(div().text_color(t.foreground).child(`${this.count ?? ""}${this.prefix ?? ""}`)))
       .when(Boolean(this.note), (el) => el.child(div().text_color(t.ansi1).child(this.note)));
 
-    return v_flex().id("review").size_full().min_h(0).overflow_hidden().bg(t.background).rounded(12).border_1().border_color(t.border).shadow_lg().text_color(t.foreground)
+    return v_flex().id("review").size_full().min_h(0).overflow_hidden().bg(t.chrome).rounded(12).border_1().border_color(t.border).shadow_lg().text_color(t.foreground)
       .track_focus(this.handle).on_key_down((e, cx) => this.key(e, cx))
       .on_mouse_down("left", (_e, cx) => {
         if (this.picker || this.help) { this.picker = null; this.help = false; cx.notify(); }
@@ -1335,7 +1335,7 @@ export default class Review extends View {
       .child(header)
       .child(div().id("review-body").flex_1().min_h(0).relative()
         .on_size_change((s, cx) => { if (s.width !== this.bodyW) { this.bodyW = s.width; cx.notify(); } })
-        .child(div().absolute().inset_0().flex().child(list).child(diff))
+        .child(div().absolute().inset_0().flex().gap(8).pr(8).child(list).child(diff))
         .child(edge)
         .when(Boolean(this.resizing), (el) => el.child(div().id("resize-cover").absolute().inset_0().cursor_col_resize())))
       .child(footer)

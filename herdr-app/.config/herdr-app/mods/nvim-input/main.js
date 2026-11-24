@@ -92,8 +92,8 @@ export default class NvimInput extends View {
       layout: {
         type: "block",
         background: tint(t.background, BACKDROP),
-        border: { width: 1, color: "border" },
-        radius: 10,
+        border: { width: 1, color: "accent" },
+        radius: 12,
         shadow: "lg",
         content: { terminal: editor.address },
       },

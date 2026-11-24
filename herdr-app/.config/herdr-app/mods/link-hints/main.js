@@ -276,7 +276,7 @@ export default class LinkHints extends View {
       .flex_none()
       .items_center()
       .justify_center()
-      .rounded(4)
+      .rounded(5)
       .bg(solid)
       .text_color(ink)
       .font_family(font)
