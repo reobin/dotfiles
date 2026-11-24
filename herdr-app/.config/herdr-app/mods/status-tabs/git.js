@@ -49,6 +49,6 @@ export function describe(s) {
   if (s.detached) parts.push("detached HEAD");
   else if (s.gone) parts.push(`${s.upstream} is gone`);
   else if (!s.upstream) parts.push("no upstream");
-  if (!s.files && !s.ahead && !s.behind) parts.unshift(s.upstream && !s.gone ? `Clean, in sync with ${s.upstream}` : "Clean, nothing to push");
+  if (!s.files && !s.ahead && !s.behind) parts.unshift(s.upstream && !s.gone ? `clean, in sync with ${s.upstream}` : "clean, nothing to push");
   return parts.join(" · ");
 }

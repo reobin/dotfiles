@@ -24,7 +24,7 @@ export function initPanel(view, name, cx) {
   view.sending = false;
   view.commentH = {};
   view.expanded = new Set();
-  view.input = TextareaState.new({ placeholder: "Leave a comment…", rows: 2 });
+  view.input = TextareaState.new({ placeholder: "leave a comment…", rows: 2 });
   view.input.set_auto_grow(2, 10);
   view.input.on("change", (_e, cx) => cx.notify());
 }
@@ -187,7 +187,7 @@ function submitComposer(view, cx) {
       view.input.set_value("");
       view.composing = false;
       view.handle.focus();
-      say(view, cx, "Comment posted");
+      say(view, cx, "comment posted");
       cx.timer.after(1200, () => run("status-tabs.refresh"));
     } catch (e) { say(view, cx, errorText(e), "error"); }
     finally { view.sending = false; cx.notify(); }
@@ -243,7 +243,7 @@ export function refreshButton(view, t, work, thread) {
     cx.notify();
   };
   return div().id(`${view.panelName}-refresh`).p(4).rounded(5).cursor_pointer().text_color(t.dim)
-    .hover((s) => s.bg(t.hover).text_color(t.foreground)).tooltip(busy ? "Refreshing…" : "Refresh (u)")
+    .hover((s) => s.bg(t.hover).text_color(t.foreground)).tooltip(busy ? "refreshing…" : "refresh (u)")
     .on_click((_e, cx) => view.refresh(cx)).child(busy ? spinner(t) : icon("refresh"));
 }
 
@@ -260,7 +260,7 @@ function footer(view, t) {
     return v_flex().flex_none().mx(8).mb(8).p(10).gap(8).rounded(9).border_1().border_color(t.accent + "33").bg(t.accent + "14")
       .child(h_flex().gap(8).items_center().child(icon(c.icon ?? "merge-ready", t.accent, 14)).child(div().flex_1().min_w(0).text_size(12.5).child(c.text)))
       .child(h_flex().gap(6).justify_end()
-        .child(chip("confirm-no", "Cancel", "esc", false, (_e, cx) => { view.confirm = null; view.handle.focus(); cx.notify(); }))
+        .child(chip("confirm-no", "cancel", "esc", false, (_e, cx) => { view.confirm = null; view.handle.focus(); cx.notify(); }))
         .child(chip("confirm-yes", c.verb, "↵", true, (_e, cx) => { view.confirm = null; c.run(cx); cx.notify(); })));
   }
   if (n) {
@@ -314,7 +314,7 @@ export function commentCard(view, t, { id, who, at, body, reply }) {
     .when(long, (el) => el.child(div().id(`cmore-${id}`).ml(25).text_size(11.5).text_color(t.muted).cursor_pointer()
       .hover((s) => s.text_color(t.foreground)).on_mouse_down("left", stop)
       .on_click((_e, cx) => { if (open_) view.expanded.delete(id); else view.expanded.add(id); cx.notify(); })
-      .child(open_ ? "Show less" : "Show more")));
+      .child(open_ ? "show less" : "show more")));
 }
 
 // The comment box at the end of a panel: a quiet row until opened, then a growing text box.
@@ -335,10 +335,10 @@ export function composer(view, t, { label, send }) {
       .child(div().flex_1())
       .child(h_flex().id("composer-cancel").h(24).px(8).gap(5).items_center().rounded(6).cursor_pointer().text_size(11.5).text_color(t.muted)
         .hover((s) => s.bg(t.hover).text_color(t.foreground)).on_click((_e, cx) => { cancelComposer(view); cx.notify(); })
-        .child("Cancel").child(div().opacity(0.6).font_family(MONO).text_size(10.5).child("esc")))
+        .child("cancel").child(div().opacity(0.6).font_family(MONO).text_size(10.5).child("esc")))
       .child(h_flex().id("composer-send").h(24).px(10).gap(6).items_center().rounded(6).text_size(11.5).font_semibold()
         .bg(filled ? t.solid : t.raised).text_color(filled ? t.solid_foreground : t.dim)
         .when(filled && !view.sending, (el) => el.cursor_pointer().hover((s) => s.opacity(0.9)).on_click((_e, cx) => submitComposer(view, cx)))
         .when(view.sending, (el) => el.child(spinner(t, 11)))
-        .child("Comment").child(div().opacity(0.6).font_family(MONO).text_size(10.5).child("⌘↵"))));
+        .child("comment").child(div().opacity(0.6).font_family(MONO).text_size(10.5).child("⌘↵"))));
 }

@@ -65,11 +65,11 @@ export const labels = (team) => cached(`labels:${team}`, async () => {
 });
 
 export const PRIORITIES = [
-  { value: 0, name: "No priority", icon: "prio-none" },
-  { value: 1, name: "Urgent", icon: "prio-urgent" },
-  { value: 2, name: "High", icon: "prio-high" },
-  { value: 3, name: "Medium", icon: "prio-medium" },
-  { value: 4, name: "Low", icon: "prio-low" },
+  { value: 0, name: "no priority", icon: "prio-none" },
+  { value: 1, name: "urgent", icon: "prio-urgent" },
+  { value: 2, name: "high", icon: "prio-high" },
+  { value: 3, name: "medium", icon: "prio-medium" },
+  { value: 4, name: "low", icon: "prio-low" },
 ];
 
 export async function updateIssue(id, input) {

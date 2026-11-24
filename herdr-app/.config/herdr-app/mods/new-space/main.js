@@ -14,7 +14,7 @@ export default class NewSpace extends View {
     this.at = 0;
     this.top = 0;
     this.handle = cx.focus_handle();
-    this.input = InputState.new({ placeholder: "Pick a folder for the new space…" });
+    this.input = InputState.new({ placeholder: "pick a folder for the new space…" });
     this.input.on("change", (_e, cx) => { this.filter = this.input.value(); this.at = 0; this.top = 0; cx.notify(); });
     this.input.on("submit", (_e, cx) => this.go(this.rows()[this.at], cx));
     this.input.focus();
@@ -69,7 +69,7 @@ export default class NewSpace extends View {
       return;
     }
     cx.spawn(async () => {
-      const folder = await pickFolder({ prompt: "Folder for the new space" });
+      const folder = await pickFolder({ prompt: "folder for the new space" });
       this.close();
       if (folder) run("space.new", { folder, machine: "" });
     });
@@ -106,7 +106,7 @@ export default class NewSpace extends View {
         .when(on, (el) => el.bg(t.hover))
         .hover((s) => s.bg(t.hover))
         .on_click((_e, cx) => this.go(r, cx))
-        .when(browse, (el) => el.text_color(t.muted).child(div().w(12).child("…")).child("Browse…"))
+        .when(browse, (el) => el.text_color(t.muted).child(div().w(12).child("…")).child("browse…"))
         .when(!browse, (el) =>
           el.child(svg("mods/files/folder.svg").size(13).flex_none().text_color(t.dim))
             .child(div().flex_none().text_color(t.foreground).child(path.slice(cut + 1)))
@@ -132,7 +132,7 @@ export default class NewSpace extends View {
         cx.stop_propagation();
         cx.notify();
       })
-      .child(h_flex().items_center().child(div().flex_1().text_size(15).font_semibold().text_color(t.foreground).child("New space in…")).child(div().id("ns-esc").px(6).py(2).rounded(5).text_size(11).text_color(t.dim).cursor_pointer().hover((s) => s.bg(t.hover).text_color(t.foreground)).on_click(() => this.close()).child("Esc")))
+      .child(h_flex().items_center().child(div().flex_1().text_size(15).font_semibold().text_color(t.foreground).child("new space in…")).child(div().id("ns-esc").px(6).py(2).rounded(5).text_size(11).text_color(t.dim).cursor_pointer().hover((s) => s.bg(t.hover).text_color(t.foreground)).on_click(() => this.close()).child("esc")))
       .child(
         h_flex().h(36).flex_none().px(10).gap(8).items_center().rounded(9).border_1().border_color(t.accent).bg(t.background)
           .child(svg("mods/workspace-chrome/search.svg").size(15).text_color(t.dim))

@@ -42,7 +42,7 @@ async function until(cx, check, ms = 500) {
 }
 
 function fail(body) {
-  notify({ title: "Toggle split", body, level: "warning" });
+  notify({ title: "toggle split", body, level: "warning" });
 }
 
 export default class ToggleSplit extends View {
@@ -57,7 +57,7 @@ export default class ToggleSplit extends View {
         } catch (e) {
           await cx.sleep(100);
           for (const p of panes().filter((p) => p.mod === MOD)) run("pane.close", { pane: p.pane });
-          notify({ title: "Toggle split", body: String(e?.message ?? e), level: "error" });
+          notify({ title: "toggle split", body: String(e?.message ?? e), level: "error" });
         }
       }
     });

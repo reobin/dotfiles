@@ -52,7 +52,7 @@ export default class Sidetrack extends View {
         try {
           await this.fork();
         } catch (e) {
-          notify({ title: "Sidetrack", body: e?.message ?? String(e), level: "error" });
+          notify({ title: "sidetrack", body: e?.message ?? String(e), level: "error" });
         }
       }
     });

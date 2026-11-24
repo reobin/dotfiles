@@ -115,7 +115,7 @@ export default class LinkHints extends View {
     if (!this.overlay) return;
     const { terminal, pane, shown } = focused() ?? {};
     if (!terminal || !pane || shown || !terminals().some((t) => t.address === terminal && t.state === "live")) {
-      notify({ title: "Link hints need a focused terminal pane", level: "info", timeout: 2000 });
+      notify({ title: "link hints need a focused terminal pane", level: "info", timeout: 2000 });
       closeOverlay(this.overlay);
       return;
     }
@@ -124,7 +124,7 @@ export default class LinkHints extends View {
     this.hints = null;
     this.layoutName = String(shared("layout") ?? "main");
     if (!this.placeable()) {
-      notify({ title: "Link hints need a pane that fills its tab", body: "Zoom the pane or close the split, at app zoom 100%.", level: "info", timeout: 2500 });
+      notify({ title: "link hints need a pane that fills its tab", body: "zoom the pane or close the split, at app zoom 100%.", level: "info", timeout: 2500 });
       closeOverlay(this.overlay);
       return;
     }
@@ -135,11 +135,11 @@ export default class LinkHints extends View {
       try {
         error = await this.load();
       } catch (e) {
-        error = `Link hints failed: ${e?.message ?? e}`;
+        error = `link hints failed: ${e?.message ?? e}`;
       }
       if (this.done) return;
       if (error || !this.hints.length) {
-        notify({ title: error ?? "No links on screen", level: error ? "error" : "info", timeout: 2000 });
+        notify({ title: error ?? "no links on screen", level: error ? "error" : "info", timeout: 2000 });
         this.finish();
         return;
       }
@@ -159,11 +159,11 @@ export default class LinkHints extends View {
     const terminal = terminals().find((t) => t.address === this.terminal);
     const cols = terminal?.cols;
     const height = terminal?.rows;
-    if (!cols || !height) return "Couldn't size the terminal";
+    if (!cols || !height) return "couldn't size the terminal";
     const scroll = panes().find((p) => p.pane === this.pane)?.scroll;
     const back = scroll?.from_bottom ?? 0;
     const screen = await hc(["read", this.terminal, "--json"]);
-    if (screen.code !== 0) return screen.stderr.trim() || "Couldn't read the terminal";
+    if (screen.code !== 0) return screen.stderr.trim() || "couldn't read the terminal";
     let { text } = JSON.parse(screen.stdout);
     let top = 0;
     if (back > 0) {
@@ -171,7 +171,7 @@ export default class LinkHints extends View {
       // viewport starts `back` rows above where the screen's own rows begin.
       const screenRows = findLinks(text ?? "", cols).rows;
       const full = await hc(["read", this.terminal, "--json", "--lines", String(back)]);
-      if (full.code !== 0) return full.stderr.trim() || "Couldn't read the history";
+      if (full.code !== 0) return full.stderr.trim() || "couldn't read the history";
       text = JSON.parse(full.stdout).text;
       top = findLinks(text ?? "", cols).rows - screenRows - back;
     }
@@ -212,7 +212,7 @@ export default class LinkHints extends View {
     this.finish();
     if (copy) {
       cx.write_to_clipboard(url);
-      notify({ title: "Copied link", body: url, level: "success", timeout: 1500 });
+      notify({ title: "copied link", body: url, level: "success", timeout: 1500 });
     } else {
       cx.open_url(url);
     }

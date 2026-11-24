@@ -81,7 +81,7 @@ export default class Resume extends View {
           const ok = await this.record(info, fg);
           if (!ok && isClaude(t) && fg.name === "claude" && !this.warned) {
             this.warned = true;
-            notify({ title: "Resume can't read Claude's session file", body: `~/.claude/sessions/${fg.pid}.json`, level: "warning" });
+            notify({ title: "resume can't read Claude's session file", body: `~/.claude/sessions/${fg.pid}.json`, level: "warning" });
           }
           continue;
         }
@@ -109,7 +109,7 @@ export default class Resume extends View {
     if (resumed.length) {
       notify({ title: `Resumed ${resumed.length} Claude session${resumed.length > 1 ? "s" : ""}`, body: resumed.join(", "), level: "success" });
     }
-    if (failed.length) notify({ title: "Could not resume Claude", body: failed.join(", "), level: "error" });
+    if (failed.length) notify({ title: "could not resume Claude", body: failed.join(", "), level: "error" });
   }
 
   // False only when Claude's file is missing or lacks what a resume needs:

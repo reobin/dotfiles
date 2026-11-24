@@ -64,7 +64,7 @@ async function stackParents(root, on, def) {
 // What a branch review can be measured from: stack parents nearest first, then the default branch.
 export async function loadBases(root, on) {
   const def = await defaultBase(root, on);
-  if (!def) throw new Error("No default branch to compare against");
+  if (!def) throw new Error("no default branch to compare against");
   const stop = (await git(root, on, ["merge-base", "HEAD", def])).trim();
   const [parents, ahead] = await Promise.all([stackParents(root, on, def), git(root, on, ["rev-list", "--count", `${stop}..HEAD`])]);
   return [...parents, { ref: def, kind: "default", ahead: +ahead.trim(), at: stop }];
@@ -75,7 +75,7 @@ export async function loadBases(root, on) {
 async function branchBase(root, on, want) {
   const bases = await loadBases(root, on);
   const base = bases.find((b) => b.ref === want) ?? bases.find((b) => b.pushed) ?? bases.at(-1);
-  return { against: base.at, label: `Since ${base.ref}`, bases, base: base.ref };
+  return { against: base.at, label: `since ${base.ref}`, bases, base: base.ref };
 }
 
 // mode "work": uncommitted changes against HEAD; "branch": everything since the merge-base
@@ -86,9 +86,9 @@ async function branchBase(root, on, want) {
 export async function loadDiff(cwd, on, mode, want) {
   const info = repoInfo(cwd, on);
   const target = info.then(({ root, hasHead }) => {
-    if (!root) throw new Error("Not a git repository");
+    if (!root) throw new Error("not a git repository");
     if (mode === "branch" && hasHead) return branchBase(root, on, want);
-    return { against: hasHead ? "HEAD" : "--cached", label: "Uncommitted", base: null };
+    return { against: hasHead ? "HEAD" : "--cached", label: "uncommitted", base: null };
   });
   const guess = mode === "work" ? git(cwd, on, ["diff", ...FLAGS, "HEAD"]).catch(() => null) : null;
   const diffed = target.then(async ({ against }) => {
@@ -123,7 +123,7 @@ export async function loadFile(root, on, file, against, dark, still = () => true
   if (!still()) return null;
   const lines = r.stdout.split("\n").slice(0, MAX_ROWS + 100).map(colors);
   const [parsed] = parse(lines.map((l) => l.plain).join("\n"), lines.map((l) => l.spans));
-  return parsed ?? { add: 0, del: 0, rows: [{ kind: "", text: (r.stderr || "No text changes").trim() }] };
+  return parsed ?? { add: 0, del: 0, rows: [{ kind: "", text: (r.stderr || "no text changes").trim() }] };
 }
 
 const language = (path) => /\.([A-Za-z0-9]+)$/.exec(path)?.[1] ?? "txt";
@@ -175,7 +175,7 @@ function parse(text, spans) {
       else if (line.startsWith("deleted file mode")) file.status = "D";
       else if (line.startsWith("+++ b/")) file.path = line.slice(6);
       else if (line.startsWith("--- a/") && file.status === "D") file.path = line.slice(6);
-      else if (line.startsWith("Binary files")) file.rows.push({ kind: "", text: "Binary file changed" });
+      else if (line.startsWith("Binary files")) file.rows.push({ kind: "", text: "binary file changed" });
       if (!line.startsWith("@@")) return;
       file.hunks = true;
     }
@@ -194,7 +194,7 @@ function parse(text, spans) {
   });
   for (const f of files) {
     if (f.cut) f.rows.push({ kind: "", text: `… diff cut at ${MAX_ROWS} lines` });
-    if (!f.rows.length) f.rows.push({ kind: "", text: "No text changes (mode or permissions)" });
+    if (!f.rows.length) f.rows.push({ kind: "", text: "no text changes (mode or permissions)" });
     delete f.hunks; f.cut = Boolean(f.cut);
   }
   return files;
@@ -213,7 +213,7 @@ export function anchor(rows, from, to) {
 export function message(comments, overall, label) {
   const intro = `I reviewed the changes (${label.toLowerCase()}).`;
   const parts = [comments.length ? `${intro} Address each comment below:` : intro];
-  if (overall) parts.push(comments.length ? `Overall:\n${overall}` : overall);
+  if (overall) parts.push(comments.length ? `overall:\n${overall}` : overall);
   comments.forEach((c, i) => {
     parts.push(c.scope === "file" ? `${i + 1}. ${c.path} (whole file)\n${c.text}` : `${i + 1}. ${c.path}:${c.lines}\n\`\`\`diff\n${c.code}\n\`\`\`\n${c.text}`);
   });

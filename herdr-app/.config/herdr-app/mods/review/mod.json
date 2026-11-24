@@ -1,1 +1,1 @@
-{ "place": "none", "title": "Review", "overlay": { "kind": "dialog", "modal": true, "frame": "none", "width": 0.94, "height": 0.9 } }
+{ "place": "none", "title": "review", "overlay": { "kind": "dialog", "modal": true, "frame": "none", "width": 0.94, "height": 0.9 } }

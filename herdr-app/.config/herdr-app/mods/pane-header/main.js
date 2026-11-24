@@ -106,7 +106,7 @@ export default class Pane extends View {
         .on_click((_e, cx) => { cx.stop_propagation(); run("terminal.scroll", { terminal: p.terminal, to: "bottom" }); })
         .child(`↓ ${back}`)))
       .when(st === "working" || st === "done", el => el.child(mark(t, st)))
-      .when(st === "blocked", el => el.child(div().flex_none().px(8).h(18).flex().gap(4).items_center().rounded(5).bg(t.blocked + "26").text_size(10.5).font_semibold().text_color(t.blocked).child(mark(t, "blocked", 10)).child("Needs you")))
+      .when(st === "blocked", el => el.child(div().flex_none().px(8).h(18).flex().gap(4).items_center().rounded(5).bg(t.blocked + "26").text_size(10.5).font_semibold().text_color(t.blocked).child(mark(t, "blocked", 10)).child("needs you")))
       .when(this.hovered, el => el
         .child(this.button(t, `ph-r-${pane}`, "split-right", "pane.split", { direction: "right", pane }))
         .child(this.button(t, `ph-d-${pane}`, "split-down", "pane.split", { direction: "down", pane }))

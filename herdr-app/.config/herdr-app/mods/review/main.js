@@ -134,13 +134,13 @@ export default class Review extends View {
     this.viewH = 0;
     this.diffW = 0;
     this.handle = cx.focus_handle();
-    this.input = TextareaState.new({ placeholder: "Leave a comment", rows: 1 });
+    this.input = TextareaState.new({ placeholder: "leave a comment", rows: 1 });
     this.input.on("submit", (e, cx) => { if (!e?.shift) this.save(cx); });
     this.input.on("change", (_e, cx) => cx.notify());
-    this.filterInput = InputState.new({ placeholder: "Filter files" });
+    this.filterInput = InputState.new({ placeholder: "filter files" });
     this.filterInput.on("change", (_e, cx) => { this.filter = this.filterInput.value(); this.followFilter(cx); cx.notify(); });
     this.filterInput.on("submit", (_e, cx) => { this.filtering = false; this.handle.focus(); cx.notify(); });
-    this.overallInput = TextareaState.new({ placeholder: "Applies to the whole change. Optional.", rows: 2 });
+    this.overallInput = TextareaState.new({ placeholder: "applies to the whole change. Optional.", rows: 2 });
     this.overallInput.on("change", (_e, cx) => {
       // ⌘↵ also reaches the box as a line break; while sending, the box keeps the text being sent.
       if (this.sending) { if (this.overallInput.value() !== this.sentOverall) this.overallInput.set_value(this.sentOverall); return; }
@@ -208,7 +208,7 @@ export default class Review extends View {
     cx.spawn(async (cx) => {
       try {
         const { cwd, on } = this.where;
-        if (!cwd) throw new Error("No folder");
+        if (!cwd) throw new Error("no folder");
         const { root, files, label, against, head, bases, base } = await loadDiff(cwd, on, mode, this.wantedBase());
         if (seq !== this.reloads) return;
         this.root = root;
@@ -317,7 +317,7 @@ export default class Review extends View {
     this.revealSel();
     this.from = null; this.composer = null; this.visual = false;
     this.offset = 0; this.over = false;
-    file.rows ??= [{ kind: "", text: "Loading…" }];
+    file.rows ??= [{ kind: "", text: "loading…" }];
     this.cursor = Math.max(0, file.rows.findIndex(isLine));
     this.applyJump();
     if (!folded(file)) this.load(file, cx);
@@ -327,7 +327,7 @@ export default class Review extends View {
   stay(index, prev, cx) {
     this.at = index;
     const file = this.file();
-    file.rows ??= [{ kind: "", text: "Loading…" }];
+    file.rows ??= [{ kind: "", text: "loading…" }];
     this.remap(prev, file.rows);
     if (!folded(file)) this.load(file, cx);
   }
@@ -367,7 +367,7 @@ export default class Review extends View {
       file.rows = loaded.rows;
       file.dark = dark;
       if (!loaded.cut) Object.assign(file, { add: loaded.add, del: loaded.del });
-    } catch (e) { file.colored = false; file.dark = dark; prev = file.rows; file.rows = [{ kind: "", text: `Cannot show this diff: ${e?.message ?? e}` }]; }
+    } catch (e) { file.colored = false; file.dark = dark; prev = file.rows; file.rows = [{ kind: "", text: `cannot show this diff: ${e?.message ?? e}` }]; }
     file.painted = true;
     file.stale = file.dark !== Boolean(settings().dark);
     if (file.stale) file.colored = false;
@@ -905,18 +905,18 @@ export default class Review extends View {
       this.overallInput.set_value(this.sentOverall);
       this.handle.focus();
     }
-    const text = message(out, overall, this.label ?? "Uncommitted");
+    const text = message(out, overall, this.label ?? "uncommitted");
     cx.spawn(async (cx) => {
       try {
         const r = await hc(["send", target, text]);
         if (r.code !== 0) throw new Error((r.stderr || r.stdout).trim() || "hc send failed");
         this.setComments([]);
         this.sendSheet = false;
-        const body = out.length ? `${out.length} comment${out.length === 1 ? "" : "s"}` : "Overall comment";
-        notify({ title: "Review sent", body: `${body} to ${target}`, level: "success", timeout: 3000 });
+        const body = out.length ? `${out.length} comment${out.length === 1 ? "" : "s"}` : "overall comment";
+        notify({ title: "review sent", body: `${body} to ${target}`, level: "success", timeout: 3000 });
         run("pane.focus", { terminal: target });
         this.dismiss();
-      } catch (e) { this.note = `Send failed: ${e?.message ?? e}`; if (this.sendSheet) this.overallInput.focus(); }
+      } catch (e) { this.note = `send failed: ${e?.message ?? e}`; if (this.sendSheet) this.overallInput.focus(); }
       finally { this.sending = false; cx.notify(); }
     });
     cx.notify();
@@ -1063,7 +1063,7 @@ export default class Review extends View {
     return v_flex().id("folded").w_full().h(96).items_center().justify_center().gap(4).cursor_pointer()
       .text_color(t.dim).hover((s) => s.bg(t.hover))
       .on_mouse_down("left", (_e, cx) => { cx.stop_propagation(); this.openFolded(cx); cx.notify(); })
-      .child(div().text_color(t.muted).child(GENERATED.test(file.path) ? "Generated file, hidden" : "Large diff, hidden"))
+      .child(div().text_color(t.muted).child(GENERATED.test(file.path) ? "generated file, hidden" : "large diff, hidden"))
       .child(h_flex().gap(8).text_size(12)
         .child(div().text_color(t.ansi2).child(`+${file.add}`)).child(div().text_color(t.ansi1).child(`−${file.del}`))
         .child(div().child("o or click to show")));
@@ -1093,15 +1093,15 @@ export default class Review extends View {
 
   comment(c, loose, t) {
     const file = isFile(c);
-    const label = `${file ? "File comment" : linesLabel(c.lines)}${loose ? " · no longer in the diff" : ""}`;
+    const label = `${file ? "file comment" : linesLabel(c.lines)}${loose ? " · no longer in the diff" : ""}`;
     const edit = file ? (_e, cx) => { this.commentFile(); cx.notify(); }
       : (_e, cx) => { const end = findLine(this.file().rows, c.at, c.code); this.cursor = end; this.edit({ c, end }); cx.notify(); };
     const remove = file ? (_e, cx) => { this.deleteFileComment(); cx.notify(); }
       : (_e, cx) => { this.setComments(this.comments().filter((x) => x.id !== c.id)); cx.notify(); };
     const text = wrapText(c.text, this.noteCols());
     return this.thread(`c-${c.id}`, text.length, c.id === this.hit, label, [
-      !loose && this.action(`edit-${c.id}`, "Edit", file ? "C" : "e", false, t, edit),
-      this.action(`del-${c.id}`, "Delete", file ? "D" : "d", false, t, remove),
+      !loose && this.action(`edit-${c.id}`, "edit", file ? "C" : "e", false, t, edit),
+      this.action(`del-${c.id}`, "delete", file ? "D" : "d", false, t, remove),
     ].filter(Boolean), v_flex().px(10).py(7).text_color(t.foreground)
       .children(text.map((line, i) => div().id(`cl-${c.id}-${i}`).h(18).whitespace_nowrap().child(line || " "))), t);
   }
@@ -1109,11 +1109,11 @@ export default class Review extends View {
   composerView(t, lost) {
     const c = this.composer, rows = this.composerRows();
     const filled = Boolean(this.input.value().trim());
-    const label = c.scope === "file" ? (c.id ? "Edit file comment" : "File comment")
-      : `${c.id ? "Edit comment" : "Comment"} on ${linesLabel((c.id ? c : resolve(c, this.file()?.rows)).lines)}${lost ? " · no longer in the diff" : ""}`;
+    const label = c.scope === "file" ? (c.id ? "edit file comment" : "file comment")
+      : `${c.id ? "edit comment" : "comment"} on ${linesLabel((c.id ? c : resolve(c, this.file()?.rows)).lines)}${lost ? " · no longer in the diff" : ""}`;
     return this.thread("composer", rows, true, label, [
-      this.action("composer-cancel", "Cancel", "esc", false, t, (_e, cx) => this.cancel(cx)),
-      this.action("composer-save", c.id && !filled ? "Delete" : "Save", "↵", filled, t, (_e, cx) => this.save(cx)),
+      this.action("composer-cancel", "cancel", "esc", false, t, (_e, cx) => this.cancel(cx)),
+      this.action("composer-save", c.id && !filled ? "delete" : "save", "↵", filled, t, (_e, cx) => this.save(cx)),
     // The textarea sets its text 3px higher than a saved comment's lines; the extra top padding lines them up.
     ], div().h(14 + 18 * rows).px(10).pt(7).pb(1)
       .child(Textarea.new(this.input).w_full().h_full().text_size(12.5).text_color(t.foreground)), t);
@@ -1208,7 +1208,7 @@ export default class Review extends View {
         .when(on, (el) => el.bg(t.selected)).hover((s) => s.bg(t.hover))
         .on_click((_e, cx) => { this.choose(it, cx); cx.notify(); })
         .child(div().w(12).flex_none().text_color(t.accent).child(cur ? "✓" : ""))
-        .child(div().min_w(0).truncate().text_color(cur || on ? t.foreground : t.muted).child(it.mode === "work" ? "Uncommitted changes" : it.base.ref))
+        .child(div().min_w(0).truncate().text_color(cur || on ? t.foreground : t.muted).child(it.mode === "work" ? "uncommitted changes" : it.base.ref))
         .when(it.mode === "branch", (el) => el.child(tag(it.base)))
         .child(div().flex_1())
         .child(div().flex_none().text_size(11).text_color(t.dim)
@@ -1218,13 +1218,13 @@ export default class Review extends View {
     const group = (text) => div().px(8).pt(6).pb(2).text_size(10.5).text_color(t.dim).child(text);
     const menu = this.picker && v_flex().id("base-menu").w(400).mt(6).p(4).rounded(9).border_1().border_color(t.border).bg(t.background).shadow_lg()
       .text_size(12.5).on_mouse_down("left", stop)
-      .child(group("Uncommitted, against HEAD"))
+      .child(group("uncommitted, against HEAD"))
       .child(option(choices[0], 0))
       .child(div().h(1).mx(4).my(4).bg(t.border))
-      .child(group("Branch, since it forked from"))
+      .child(group("branch, since it forked from"))
       .children(choices.slice(1).map((it, i) => option(it, i + 1)))
       .when(choices.length === 1, (el) => el.child(div().h(30).px(28).flex().items_center().text_color(this.basesError ? t.ansi1 : t.dim)
-        .child(this.basesError ?? "Finding branches…")))
+        .child(this.basesError ?? "finding branches…")))
       .child(h_flex().mt(4).pt(6).pb(2).px(8).gap(12).border_t(1).border_color(t.border).text_size(10.5).text_color(t.dim)
         .child("j k move").child("↵ pick").child("1–9 jump").child("esc close"));
     const basePicker = Popup.new("base-picker", chip).anchor("top_left").when(Boolean(menu), (el) => el.content(menu));
@@ -1232,21 +1232,21 @@ export default class Review extends View {
     const header = h_flex().h(40).flex_none().px(14).gap(10).items_center()
       .child(h_flex().gap(4).flex_none().items_center().text_size(12).text_color(t.muted)
         .child(svg("mods/workspace-chrome/git-compare.svg").size(14).flex_none())
-        .child(div().max_w(200).truncate().child(this.branch ?? "Review")))
+        .child(div().max_w(200).truncate().child(this.branch ?? "review")))
       .child(h_flex().gap(4)
-        .child(modeButton("work", "Uncommitted"))
-        .child(modeButton("branch", "Branch")))
+        .child(modeButton("work", "uncommitted"))
+        .child(modeButton("branch", "branch")))
       .child(basePicker)
-      .child(div().text_size(12).text_color(t.dim).child(this.loading && !this.files.length ? "Loading…" : `${this.files.length} files`))
+      .child(div().text_size(12).text_color(t.dim).child(this.loading && !this.files.length ? "loading…" : `${this.files.length} files`))
       .child(div().text_size(12).text_color(t.ansi2).child(`+${add}`))
       .child(div().text_size(12).text_color(t.ansi1).child(`−${del}`))
       .when(this.files.length > 0, (el) => el.child(div().text_size(12).text_color(viewed === this.files.length ? t.ansi2 : t.dim).child(`${viewed}/${this.files.length} viewed`)))
       .child(div().flex_1())
-      .when(!target, (el) => el.child(div().text_size(12).text_color(t.dim).child("No agent in this space")))
+      .when(!target, (el) => el.child(div().text_size(12).text_color(t.dim).child("no agent in this space")))
       .child(div().id("send").h(28).px(12).flex().items_center().rounded(7).text_size(12).font_semibold()
         .bg(canSend ? t.solid : t.raised).text_color(canSend ? t.solid_foreground : t.dim)
         .when(canSend, (el) => el.cursor_pointer()).on_mouse_down("left", stop).on_click((_e, cx) => { this.sendCommand(cx); cx.notify(); })
-        .child(this.sending ? "Sending…" : [`Send ${outgoing || ""}`.trim(), targetName && `to ${targetName}`, pretty(bound("send"))].filter(Boolean).join(" ")));
+        .child(this.sending ? "sending…" : [`Send ${outgoing || ""}`.trim(), targetName && `to ${targetName}`, pretty(bound("send"))].filter(Boolean).join(" ")));
 
     const rows = this.rows();
     const filterBar = (this.filtering || this.filter) && h_flex().id("filter").h(34).flex_none().mx(FILE_PAD).mt(FILE_PAD).px(8).gap(6).items_center().rounded(7)
@@ -1275,7 +1275,7 @@ export default class Review extends View {
         .child(v_flex().absolute().left(0).right(0).top(-this.listOffset).p(FILE_PAD).gap(1)
           .children(rows.map((row) => this.fileRow(row, t, counts)))
           .when(!rows.length, (el) => el.child(div().p(8).text_color(t.dim).text_size(12.5)
-            .child(this.error ?? (this.loading ? "Loading changes…" : this.filter ? "No file matches" : "No changes"))))));
+            .child(this.error ?? (this.loading ? "loading changes…" : this.filter ? "no file matches" : "no changes"))))));
 
     // The diff is a card on the review's canvas, headed and outlined like the focused pane.
     const diff = v_flex().flex_1().min_w(0).rounded(12).overflow_hidden().bg(t.background).border_1().border_color(t.accent)
@@ -1286,10 +1286,10 @@ export default class Review extends View {
           h_flex().id("file-comment").h(22).px(8).gap(6).flex_none().items_center().rounded(6).bg(t.foreground + "06")
             .text_size(11.5).text_color(t.dim).cursor_pointer().hover((s) => s.bg(t.hover).text_color(t.foreground))
             .on_mouse_down("left", stop).on_click((_e, cx) => { this.commentFile(); cx.notify(); })
-            .child(div().child("File comment")).child(div().opacity(0.6).child("C"))))
+            .child(div().child("file comment")).child(div().opacity(0.6).child("C"))))
         .child(div().flex_1())
-        .child(toggle("wrap", "Wrap"))
-        .child(toggle("split", this.prefs().split && this.diffW < SPLIT_MIN ? "Split (too narrow)" : "Split"))
+        .child(toggle("wrap", "wrap"))
+        .child(toggle("split", this.prefs().split && this.diffW < SPLIT_MIN ? "split (too narrow)" : "split"))
         .when(Boolean(file), (el) => el.child(div().text_size(11).text_color(t.dim).child(`${this.at + 1} / ${this.files.length}`))))
       .child(div().id("review-diff").flex_1().min_h(0).relative().overflow_hidden().font_family(settings().font_family ?? "JetBrains Mono").text_size(12.5).text_color(t.foreground)
         .on_size_change((s, cx) => { if (s.height !== this.viewH || s.width !== this.diffW) { this.viewH = s.height; this.diffW = s.width; cx.notify(); } })
@@ -1301,13 +1301,13 @@ export default class Review extends View {
         .child(this.window(items, t)));
 
     const clash = clashes();
-    const taken = !bound("send") ? "Send has no key: add \"mod:review\": { \"cmd-enter\": \"review.send\" } to keys.json"
-      : clash.length ? `Taken by global keys: ${clash.map((b) => `${pretty(b.keys)} → ${b.action}`).join(", ")}` : null;
+    const taken = !bound("send") ? "send has no key: add \"mod:review\": { \"cmd-enter\": \"review.send\" } to keys.json"
+      : clash.length ? `taken by global keys: ${clash.map((b) => `${pretty(b.keys)} → ${b.action}`).join(", ")}` : null;
     const hint = (keys, what) => h_flex().gap(4).child(div().text_color(t.muted).child(keys)).child(div().child(what));
     const send = pretty(bound("send")), fileKeys = `${pretty(bound("next-file"))} ${pretty(bound("prev-file"))}`;
     const hints = this.composer ? [["↵", "save"], ["⇧↵", "new line"], ["esc", "discard"]]
       : this.filtering ? [["↵", "done"], [fileKeys, "matches"], ["esc", "clear"]]
-      : this.visual ? [["VISUAL", "line"], ["j k { } G", "extend"], ["c", "comment"], ["v esc", "cancel"]]
+      : this.visual ? [["visual", "line"], ["j k { } G", "extend"], ["c", "comment"], ["v esc", "cancel"]]
       : [["c", "comment"], ["C", "file comment"], ["v", "select"], [fileKeys, "file"], ["m", "viewed"], ...(file && folded(file) ? [["o", "show"]] : []), [send, "send"], ["?", "keys"]];
     const sheet = this.help && this.helpSheet(t, send);
     const outbox = this.sendSheet && this.sendSheetView(t, targetName);
@@ -1356,10 +1356,10 @@ export default class Review extends View {
       .child(v_flex().id("send-card").w(SHEET_W).rounded(12).border_1().border_color(t.border).bg(t.chrome).shadow_lg().text_size(12.5).overflow_hidden()
         .on_mouse_down("left", (_e, cx) => { cx.stop_propagation(); this.overallInput.focus(); })
         .child(h_flex().px(16).pt(14).pb(10).gap(8).items_center()
-          .child(div().font_semibold().child(targetName ? `Send to ${targetName}` : "Send"))
-          .child(div().text_size(11.5).text_color(t.dim).child(this.label ?? "Uncommitted"))
+          .child(div().font_semibold().child(targetName ? `send to ${targetName}` : "send"))
+          .child(div().text_size(11.5).text_color(t.dim).child(this.label ?? "uncommitted"))
           .child(div().flex_1())
-          .child(div().text_size(11.5).text_color(t.dim).child(list.length ? `${plural(list.length, "comment")} in ${plural(files, "file")}` : "No comments")))
+          .child(div().text_size(11.5).text_color(t.dim).child(list.length ? `${plural(list.length, "comment")} in ${plural(files, "file")}` : "no comments")))
         .child(div().id("overall").mx(16).h(14 + 18 * rows).px(10).py(4).rounded(8).border_1().border_color(t.accent).bg(t.background)
           .font_family(settings().font_family ?? "JetBrains Mono")
           .child(Textarea.new(this.overallInput).w_full().h_full().text_size(12.5).text_color(t.foreground)))
@@ -1370,19 +1370,19 @@ export default class Review extends View {
           .child(div().id("sheet-send").h(28).px(12).flex().items_center().rounded(7).text_size(12).font_semibold()
             .bg(ready ? t.solid : t.raised).text_color(ready ? t.solid_foreground : t.dim)
             .when(ready, (el) => el.cursor_pointer()).on_click((_e, cx) => this.send(cx))
-            .child(this.sending ? "Sending…" : "Send"))));
+            .child(this.sending ? "sending…" : "send"))));
   }
 
   // ? opens every key, grouped; any key or a click closes it.
   helpSheet(t, send) {
     const key = (action, fallback) => bound(action) ? pretty(bound(action)) : fallback;
     const groups = [
-      ["Moving in the diff", [["j k", "line down, up"], ["5j 42G", "count, go to line 42"], ["gg G", "first, last line"], ["{ }", "paragraph"], ["[ ]", "hunk"],
+      ["moving in the diff", [["j k", "line down, up"], ["5j 42G", "count, go to line 42"], ["gg G", "first, last line"], ["{ }", "paragraph"], ["[ ]", "hunk"],
         [`${key("half-down", "⌃d")} ${key("half-up", "⌃u")}`, "half page"], [`${key("page-down", "⌃f")} ${key("page-up", "⌃b")}`, "page"], ["zz zt zb", "line to middle, top, bottom"]]],
-      ["Comments", [["c ↵", "comment the line or range"], ["C D", "comment the file, delete it"], ["v V", "select lines"], ["⇧j ⇧k", "extend the range"], ["e d", "edit, delete"], ["n N", "next, previous comment"], [send, "review and send"]]],
-      ["Files", [[`${key("next-file", "⌥j")} ${key("prev-file", "⌥k")}`, "next, previous file"], ["m", "viewed, on to the next unviewed"],
+      ["comments", [["c ↵", "comment the line or range"], ["C D", "comment the file, delete it"], ["v V", "select lines"], ["⇧j ⇧k", "extend the range"], ["e d", "edit, delete"], ["n N", "next, previous comment"], [send, "review and send"]]],
+      ["files", [[`${key("next-file", "⌥j")} ${key("prev-file", "⌥k")}`, "next, previous file"], ["m", "viewed, on to the next unviewed"],
         ["/", "filter, walked by the same keys"], ["o", "show a hidden file"]]],
-      ["Review", [["b", "uncommitted or branch"], ["B", "compare against"], ["r", "reload"], ["w |", "wrap, split"], ["q", "close"]]],
+      ["review", [["b", "uncommitted or branch"], ["B", "compare against"], ["r", "reload"], ["w |", "wrap, split"], ["q", "close"]]],
     ];
     const column = (list) => v_flex().flex_1().min_w(0).gap(16).children(list.map(([title, rows]) => v_flex().gap(2)
       .child(div().pb(4).text_size(11).text_color(t.dim).child(title))
@@ -1392,7 +1392,7 @@ export default class Review extends View {
     return div().id("help").absolute().inset_0().flex().items_center().justify_center().bg(tint(t.background, "b0"))
       .on_mouse_down("left", (_e, cx) => { cx.stop_propagation(); this.help = false; cx.notify(); })
       .child(v_flex().id("help-card").w(680).p(20).gap(16).rounded(12).border_1().border_color(t.border).bg(t.chrome).shadow_lg().text_size(12.5)
-        .child(h_flex().items_center().child(div().flex_1().font_semibold().child("Review keys")).child(div().text_size(11).text_color(t.dim).child("any key to close")))
+        .child(h_flex().items_center().child(div().flex_1().font_semibold().child("review keys")).child(div().text_size(11).text_color(t.dim).child("any key to close")))
         .child(h_flex().gap(28).items_start().child(column(groups.slice(0, 2))).child(column(groups.slice(2)))));
   }
 }

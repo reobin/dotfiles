@@ -1,6 +1,6 @@
 {
   "place": "none",
-  "title": "Tabs with PR and ticket status",
+  "title": "tabs with PR and ticket status",
   "cloned_from": {
     "name": "tabs",
     "version": "0.1.13"

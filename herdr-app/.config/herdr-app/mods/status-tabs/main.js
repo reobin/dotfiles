@@ -137,7 +137,9 @@ export default class Tabs extends View {
   }
 
   render(cx) {
-    const space = spaces().find(p => p.active);
+    // While the tree shows an empty view over the panes, the bar shows no space either.
+    const empty = Boolean(shared("tree.empty"));
+    const space = empty ? null : spaces().find(p => p.active);
     // While the tree shows an archived space, its colour (the theme's ansi5) stands in for the accent, as in the sidebar.
     const base = theme();
     const t = space && (shared("tree.archived") ?? []).includes(space.id) ? { ...base, accent: base.ansi5 } : base;
@@ -154,7 +156,7 @@ export default class Tabs extends View {
       .on_mouse_down("left", stop).on_click(action).child(label);
     const item = (c, i) => {
       const program = panes().find(p => p.tab === c.id && p.program?.agent)?.program ?? panes().find(p => p.tab === c.id)?.program;
-      const name = /^tb\d+$/.test(c.name) ? program?.name ?? "Terminal" : c.name;
+      const name = /^tb\d+$/.test(c.name) ? program?.name ?? "terminal" : c.name;
       // Same box as the panel buttons; the active tab's outline takes a pixel of its padding so it doesn't shift.
       return h_flex().id(`tab-${c.id}`).h(22).px(c.active ? 7 : 8).gap(4).rounded(6).items_center().flex_none().text_size(12)
         .bg(c.active ? t.background : t.foreground + "06").text_color(c.active ? t.foreground : t.muted)
@@ -182,6 +184,11 @@ export default class Tabs extends View {
       : 8;
     const panel = find(root, "panel"), body = find(root, "panel-body");
     const enabled = [...(shared("workspace.panels") ?? []), "ticket-status", "pr-status"].filter(id => find(body, id));
+    // Forgetting the space makes the panel come back as that space left it.
+    if (empty) {
+      this.space = null; this.pending = null;
+      if (panel && !panel.hidden) run("layout.hide", { id: "panel" });
+    }
     this.syncPanel(space, panel, body, enabled);
     const panelButton = (id, content) => {
       const on = panel && !panel.hidden && body?.active === id;
@@ -200,14 +207,14 @@ export default class Tabs extends View {
       const clean = g && !g.files && !g.ahead && !g.behind;
       const count = (n, text, color) => n > 0 ? [div().text_size(11.5).text_color(color).child(`${text}${n}`)] : [];
       const branch = work?.branch || g?.branch;
-      const tip = [branch ? `Review changes on ${branch}` : "Review changes", g ? describe(g) : null].filter(Boolean).join(" · ");
+      const tip = [branch ? `review changes on ${branch}` : "review changes", g ? describe(g) : null].filter(Boolean).join(" · ");
       return h_flex().id("review-open").h(22).px(8).gap(4).min_w(0).items_center().rounded(6)
         .text_size(12).bg(t.chrome).text_color(t.muted)
         .hover(s => s.bg(t.hover)).on_mouse_down("left", stop)
         .on_click(() => run("mod.open", { name: "review" }))
         .tooltip(tip)
         .child(svg("mods/workspace-chrome/git-compare.svg").size(14).flex_none())
-        .child(div().min_w(0).truncate().child(branch ?? "Review"))
+        .child(div().min_w(0).truncate().child(branch ?? "review"))
         .when(Boolean(g), el => el.children([...count(g.files, "", t.dim), ...count(g.add, "+", t.ansi2), ...count(g.del, "−", t.ansi1),
           ...count(g.ahead, "↑", t.ansi4), ...count(g.behind, "↓", t.ansi5)]))
         .when(Boolean(clean), el => el.child(div().text_size(11).text_color(t.dim).child("✓")))
@@ -223,7 +230,7 @@ export default class Tabs extends View {
     const prButton = () => {
       if (!pr) {
         const failed = Boolean(current.prError);
-        return panelButton("pr-status", [svg(`${ICONS}/pr.svg`).size(14).flex_none().text_color(failed ? t.ansi1 : t.dim), div().text_color(t.dim).child(failed ? "PR ?" : "No PR")]);
+        return panelButton("pr-status", [svg(`${ICONS}/pr.svg`).size(14).flex_none().text_color(failed ? t.ansi1 : t.dim), div().text_color(t.dim).child(failed ? "PR ?" : "no PR")]);
       }
       // The icon's color says whether it can merge (grey draft, green ready, yellow waiting,
       // red needs fixing); the panel says why not.
@@ -239,8 +246,8 @@ export default class Tabs extends View {
       .on_mouse_up("left", () => { this.pressed = null; })
       .on_scroll_wheel(e => { if (Math.abs(e.delta.y) >= 1) run(e.delta.y > 0 ? "tab.prev" : "tab.next"); })
       .child(h_flex().id("tab-scroll").flex_1().min_w(0).h_full().items_center().gap(8).overflow_x_scrollbar().children(shown.length > 1 ? shown.map(item) : []))
-      .child(button("tab-new", "+", () => openOverlay({ mod: "new-menu", kind: "popup", width: 250, height: 512 })))
-      .child(reviewButton())
+      .when(!empty, el => el.child(button("tab-new", "+", () => openOverlay({ mod: "new-menu", kind: "popup", width: 250, height: 512 })))
+        .child(reviewButton()))
       .when(Boolean(ticket), el => el.child(ticketButton()))
       .when(Boolean(pr || (current && ticket) || current?.prError), el => el.child(prButton()))
       .when(w?.buttons, el => el.child(button("minimize", w.platform === "windows" ? svg("mods/status-tabs/win-min.svg").size(16) : "−", () => run("window.minimize")))

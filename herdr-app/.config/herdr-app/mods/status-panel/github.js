@@ -40,7 +40,7 @@ const mergeMethod = (work, pr) => cached(`merge:${repoOf(pr)}`, async () => {
   return r.squashMergeAllowed ? "squash" : r.mergeCommitAllowed ? "merge" : "rebase";
 });
 
-export const MERGE_LABEL = { squash: "Squash and merge", merge: "Merge", rebase: "Rebase and merge" };
+export const MERGE_LABEL = { squash: "squash and merge", merge: "merge", rebase: "rebase and merge" };
 export { mergeMethod };
 
 export const setReviewer = (work, pr, login, on) => gh(work, ["pr", "edit", pr.url, on ? "--add-reviewer" : "--remove-reviewer", login]);

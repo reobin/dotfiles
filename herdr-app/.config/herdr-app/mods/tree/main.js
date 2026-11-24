@@ -4,9 +4,11 @@
 // pane is a chip with its address and program, and a tab with no agent folds
 // to one line of chips. Only what needs you is marked. Under 160px wide,
 // spaces only. A group archives and moves as one. Active and archived spaces
-// are two views: only the one the shown space is in draws, and a footer names
-// it and offers the other (space-nav walks one view at a time). The archive is
-// marked beside the traffic lights and on the footer's top edge.
+// are two views: only one draws, and a footer names it and offers the other
+// (space-nav walks one view at a time). The view is the shown space's, except
+// that closing or archiving its last space, or hopping into an empty one, keeps
+// it on screen empty until another space is shown. The archive is marked
+// beside the traffic lights and on the footer's top edge.
 
 import { View, div, svg, image } from "gpui-kit";
 import { v_flex, h_flex, ScrollHandle } from "gpui-base";
@@ -18,6 +20,10 @@ const SANS = "Geist";
 const ARCHIVED = "tree.archived";
 // Read until the first archive toggle writes ARCHIVED; space-nav reads it the same way.
 const LEGACY = "tree.collapsed";
+// { view: "open" | "archive", at }: the view held while the space at is shown. space-nav reads it the same way.
+const VIEW = "tree.view";
+// The empty view shown in place of the panes ("open" | "archive"), or null; empty-view and status-tabs read it.
+const EMPTY = "tree.empty";
 // The block is a window drag handle; this keeps the list clear of the traffic
 // lights and level with the pane's top (30px tab bar + 8px padding).
 const TOP = 38;
@@ -104,6 +110,16 @@ function find(node, id) {
     if (found) return found;
   }
   return null;
+}
+
+const sectionOf = (archived, id) => (archived.has(id) ? "archive" : "open");
+
+// Keep in sync with space-nav's view().
+function viewOf(all, archived) {
+  const now = all.find((s) => s.active)?.id ?? null;
+  const pin = /** @type {{ view: string, at: string | null } | undefined} */ (shared(VIEW));
+  if (pin && pin.at === now) return pin.view;
+  return now ? sectionOf(archived, now) : "open";
 }
 
 const narrow = () => (find(layout(), "sidebar")?.size?.px ?? Infinity) < 160;
@@ -527,6 +543,25 @@ export default class Tree extends View {
     if (next) run("space.select", { id: next });
   }
 
+  // The view to draw. When the space last shown was closed, or archived out of
+  // the active view it was in, and that left its view empty, the view stays
+  // put. A space shown from outside the view (one an empty view is held over)
+  // only holds it by closing, so alt-. off the held view isn't undone.
+  stay(all, archived) {
+    const now = all.find((s) => s.active)?.id ?? null;
+    let view = viewOf(all, archived);
+    const was = this.was;
+    const gone = was?.id && !all.some((s) => s.id === was.id);
+    const archivedOut = was?.inView && was.view === "open" && archived.has(was.id);
+    if (was?.id && view !== was.view && (gone || archivedOut)
+      && !all.some((s) => sectionOf(archived, s.id) === was.view)) {
+      setShared(VIEW, { view: was.view, at: now });
+      view = was.view;
+    }
+    this.was = { id: now, view, inView: Boolean(now) && sectionOf(archived, now) === view };
+    return view;
+  }
+
   // Brings the shown space's list child into view when the shown space
   // changes, moves or grows, and leaves a hand scroll alone otherwise.
   // items: the spaces each list child holds.
@@ -541,26 +576,44 @@ export default class Tree extends View {
   }
 
   // The view you are in, with its count, and a button for the other one with
-  // its count and what in it needs you. With no active space left, the button
-  // opens a new one instead. Its hairline runs to the pane, which sits flush
-  // with the sidebar, and takes the archive's colour in the archive.
+  // its count and what in it needs you. Its hairline runs to the pane, which
+  // sits flush with the sidebar, and takes the archive's colour in the archive.
   footer(t, here, other, inArchive) {
     const count = (runs) => String(runs.flat().length);
     const name = (archived) => (archived ? "archived" : "active");
-    const target = other.flat()[0];
     const marks = other.flat().filter((s) => s.status && s.status !== "idle").map((s) => status(t, s.status));
-    const hop = () => (target ? run("space.select", { id: target.id }) : run("mod.open", { name: "new-space" }));
+    const hop = () => run("space-nav.switch");
     return v_flex().id("footer").flex_none()
       .child(div().flex_none().border_t(inArchive ? 2 : 1).border_color(inArchive ? archiveInk(t) : t.dim + "80"))
       .child(h_flex().h(40).pl(16).pr(8).gap(8).items_center().font_family(MONO).text_size(11.5).text_color(t.muted)
-        .child(div().flex_none().text_size(10.5).font_semibold().text_color(inArchive ? archiveInk(t) : t.foreground).child(name(inArchive).toUpperCase()))
+        .child(div().flex_none().text_size(10.5).font_semibold().text_color(inArchive ? archiveInk(t) : t.foreground).child(name(inArchive)))
         .child(div().flex_none().text_color(t.dim).child(count(here)))
         .child(div().flex_1())
         .child(press(h_flex().id("footer-hop").flex_none().h(26).px(10).gap(8).items_center().rounded(7)
           .bg(t.foreground + "06").hover((x) => x.bg(t.hover)), hop)
           .child(h_flex().gap(6).items_center().child(div().child(name(!inArchive))).child(div().text_color(t.dim).child(count(other))))
           .when(marks.length > 0, (el) => el.child(h_flex().gap(3).items_center().children(marks)))
-          .child(div().opacity(0.6).text_size(10.5).child(target ? "alt-." : "cmd-n"))));
+          .child(div().opacity(0.6).text_size(10.5).child("alt-."))));
+  }
+
+  // An empty view names itself here; the empty-view block over the panes offers the way out.
+  empty(t, inArchive) {
+    return v_flex().id("empty").size_full().pt(TOP).justify_center().items_center()
+      .child(div().text_size(13).text_color(t.muted).child(inArchive ? "no archived spaces" : "no active spaces"));
+  }
+
+  // An empty view takes the panes' place too, so what's on screen matches the sidebar.
+  showEmpty(view) {
+    if (view === this.emptied) return;
+    const left = Boolean(this.emptied) && !view;
+    this.emptied = view;
+    setShared(EMPTY, view);
+    run("layout.select", { stack: "main-stack", child: view ? "empty-view" : "main" });
+    // The empty view took the keyboard; alt-. back onto the space already shown doesn't move it.
+    // Every space keeps a focused pane, so only the shown tab's counts.
+    const tab = spaces().find((s) => s.active)?.tabs.find((x) => x.active)?.id;
+    const pane = left && tab ? panes().find((p) => p.tab === tab && p.focused) : null;
+    if (pane) run("pane.focus", { pane: pane.pane });
   }
 
   // In the empty strip beside the traffic lights, level with them. It takes no
@@ -568,7 +621,7 @@ export default class Tree extends View {
   archiveLabel(t) {
     return h_flex().id("archive-label").absolute().top(7).left(afterLights()).h(22).gap(6).items_center()
       .child(icon("archive").size(13).flex_none().text_color(archiveInk(t)))
-      .child(div().font_family(MONO).text_size(10.5).font_semibold().text_color(archiveInk(t)).child("ARCHIVE"));
+      .child(div().font_family(MONO).text_size(10.5).font_semibold().text_color(archiveInk(t)).child("archive"));
   }
 
   render() {
@@ -577,7 +630,8 @@ export default class Tree extends View {
     this.keepOpen(all, archived);
     const open = sets(all.filter((s) => !archived.has(s.id)));
     const archive = sets(all.filter((s) => archived.has(s.id)));
-    const inArchive = all.some((s) => s.active && archived.has(s.id));
+    const inArchive = this.stay(all, archived) === "archive";
+    this.showEmpty((inArchive ? archive : open).length ? null : inArchive ? "archive" : "open");
     // In the archive the archive's colour stands in for the accent, so the shown
     // card, its group's name and its address all say where you are.
     const base = theme();
@@ -609,15 +663,16 @@ export default class Tree extends View {
         .when(archive.length > 0, (el) => el.child(shelf(v_flex().py(8).gap(8).items_center().children(this.rail(t, archive)))));
     }
     // One view shows in full, the one alt-j/k walks, and the footer names it.
-    // The active view has no footer until something is archived.
     const [full, rest] = inArchive ? [archive, open] : [open, archive];
     const handle = inArchive ? this.archiveScroll : this.scroll;
     this.reveal(handle, full.flat().map((s) => [s]), ps);
     const terms = new Map(terminals().map((x) => [x.address, x]));
     const list = v_flex().id("body").flex_1().min_h(0)
-      .child(v_flex().id(inArchive ? "archive" : "open").size_full().overflow_y_scrollbar().track_scroll(handle)
-        .pt(TOP).px(8).children(this.cards(t, full, ps, terms, new Set())));
-    return root.child(list).when(inArchive || rest.length > 0, (el) => el.child(this.footer(t, full, rest, inArchive)))
+      .child(full.length
+        ? v_flex().id(inArchive ? "archive" : "open").size_full().overflow_y_scrollbar().track_scroll(handle)
+          .pt(TOP).px(8).children(this.cards(t, full, ps, terms, new Set()))
+        : this.empty(t, inArchive));
+    return root.child(list).child(this.footer(t, full, rest, inArchive))
       .when(inArchive, (el) => el.child(this.archiveLabel(t)));
   }
 }

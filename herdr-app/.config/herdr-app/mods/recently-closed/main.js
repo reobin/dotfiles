@@ -349,11 +349,11 @@ export default class RecentlyClosed extends View {
         cx.stop_propagation();
         cx.notify();
       })
-      .child(h_flex().items_center().child(div().flex_1().text_size(15).font_semibold().text_color(t.foreground).child("Recently closed")).child(h_flex().gap(4).items_center().text_size(11).text_color(t.dim)
+      .child(h_flex().items_center().child(div().flex_1().text_size(15).font_semibold().text_color(t.foreground).child("recently closed")).child(h_flex().gap(4).items_center().text_size(11).text_color(t.dim)
         .child(div().text_color(t.muted).child("↵")).child(div().child("reopen"))
-        .child(div().id("rc-esc").ml(8).px(6).py(2).rounded(5).cursor_pointer().hover((s) => s.bg(t.hover).text_color(t.foreground)).on_click(() => closeOverlay(this.overlay)).child("Esc"))))
+        .child(div().id("rc-esc").ml(8).px(6).py(2).rounded(5).cursor_pointer().hover((s) => s.bg(t.hover).text_color(t.foreground)).on_click(() => closeOverlay(this.overlay)).child("esc"))))
       .child(v_flex().id("rc-list").flex_1().min_h(0).overflow_y_scroll().pb(6)
-        .when(!list.length, (el) => el.child(div().p(10).text_color(t.dim).child("Nothing closed yet")))
+        .when(!list.length, (el) => el.child(div().p(10).text_color(t.dim).child("nothing closed yet")))
         .children(list.map(line)));
   }
 }

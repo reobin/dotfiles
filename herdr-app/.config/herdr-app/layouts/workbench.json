@@ -51,34 +51,49 @@
               "type": "row",
               "children": [
                 {
-                  "id": "main",
-                  "type": "block",
-                  "content": {
-                    "tab": "active",
-                    "pane": {
-                      "header": {
-                        "content": {
-                          "mod": "pane-header"
-                        },
-                        "reveal": "always",
-                        "height": 34,
-                        "position": "top"
+                  "id": "main-stack",
+                  "type": "stack",
+                  "children": [
+                    {
+                      "id": "main",
+                      "type": "block",
+                      "content": {
+                        "tab": "active",
+                        "pane": {
+                          "header": {
+                            "content": {
+                              "mod": "pane-header"
+                            },
+                            "reveal": "always",
+                            "height": 34,
+                            "position": "top"
+                          },
+                          "background": "background",
+                          "border": {
+                            "width": 1,
+                            "color": "background"
+                          },
+                          "focus": {
+                            "width": 1,
+                            "color": "accent"
+                          },
+                          "radius": 12,
+                          "gap": 8,
+                          "veil": 0.3,
+                          "lone": true
+                        }
+                      }
+                    },
+                    {
+                      "id": "empty-view",
+                      "type": "block",
+                      "content": {
+                        "mod": "empty-view"
                       },
-                      "background": "background",
-                      "border": {
-                        "width": 1,
-                        "color": "background"
-                      },
-                      "focus": {
-                        "width": 1,
-                        "color": "accent"
-                      },
-                      "radius": 12,
-                      "gap": 8,
-                      "veil": 0.3,
-                      "lone": true
+                      "window_drag": true
                     }
-                  }
+                  ],
+                  "active": "main"
                 },
                 {
                   "id": "panel",

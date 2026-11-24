@@ -106,8 +106,8 @@ function menu(view, t) {
   const note = (text, color) => h_flex().h(28).px(8).gap(8).items_center().text_color(color ?? t.dim).child(text);
   const list = p.error ? [note(p.error, t.ansi1)]
     : !p.items ? [h_flex().h(28).px(8).gap(8).items_center().text_color(t.dim)
-      .child(svg("mods/workspace-chrome/spinner.svg").size(12).text_color(t.dim).spin(900)).child("Loading…")]
-    : !items.length ? [note("No matches")]
+      .child(svg("mods/workspace-chrome/spinner.svg").size(12).text_color(t.dim).spin(900)).child("loading…")]
+    : !items.length ? [note("no matches")]
     : items.map(row);
 
   return v_flex().id(`picker-${p.field}`).w(300).mt(4).rounded(10).border_1().border_color(t.border).bg(t.popover).shadow_lg()

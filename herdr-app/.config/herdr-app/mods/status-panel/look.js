@@ -70,9 +70,9 @@ export function open(url) {
 
 export function mergeLook(pr, t) {
   if (pr.state === "merged" || pr.state === "closed") return null;
-  if (pr.state === "draft") return { icon: "pr-draft", color: t.dim, sentence: "Draft: mark it ready for review to merge" };
+  if (pr.state === "draft") return { icon: "pr-draft", color: t.dim, sentence: "draft: mark it ready for review to merge" };
   const { ok, reasons } = pr.merge ?? {};
-  if (ok) return { icon: "merge-ready", color: t.ansi2, sentence: pr.ci.fail ? "Mergeable; only non-required checks are failing" : "Mergeable" };
+  if (ok) return { icon: "merge-ready", color: t.ansi2, sentence: pr.ci.fail ? "mergeable; only non-required checks are failing" : "mergeable" };
   if (ok === false) {
     // Red: something on the PR needs fixing. Yellow: it's waiting on reviewers, CI or a branch update.
     const conflict = reasons.some((r) => r.startsWith("conflicts"));

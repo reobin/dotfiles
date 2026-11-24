@@ -1,14 +1,16 @@
-// alt-j/k walk the section the shown space is in, the open spaces or the
-// archived ones the tree sidebar sinks to the bottom, and alt-. hops to the
-// other section. Draws nothing: the layout holds one copy in a 0px block,
+// alt-j/k walk the section the tree sidebar shows, the open spaces or the
+// archived ones, and alt-. hops to the other section, onto its empty view when
+// it has no spaces. Draws nothing: the layout holds one copy in a 0px block,
 // so the keys keep working while the sidebar is hidden.
 
 import { View, div } from "gpui-kit";
-import { spaces, run, shared, nextCommand } from "herdr";
+import { spaces, run, shared, setShared, nextCommand } from "herdr";
 
 const ARCHIVED = "tree.archived";
 // Read until the first archive toggle writes ARCHIVED; tree reads it the same way.
 const LEGACY = "tree.collapsed";
+// { view: "open" | "archive", at }: the view held while the space at is shown; tree writes it too.
+const VIEW = "tree.view";
 
 export default class SpaceNav extends View {
   init(_props, cx) {
@@ -32,23 +34,32 @@ export default class SpaceNav extends View {
     return spaces().filter((s) => archived.has(s.id) === inArchive);
   }
 
+  // Keep in sync with tree's viewOf().
+  inArchive() {
+    const now = spaces().find((s) => s.active)?.id ?? null;
+    const pin = /** @type {{ view: string, at: string | null } | undefined} */ (shared(VIEW));
+    if (pin && pin.at === now) return pin.view === "archive";
+    return Boolean(now) && this.archived().has(now);
+  }
+
   step(by) {
-    const now = spaces().find((s) => s.active);
-    if (!now) return;
-    const list = this.section(this.archived().has(now.id));
-    const i = list.findIndex((s) => s.id === now.id);
-    run("space.select", { id: list[(i + by + list.length) % list.length].id });
+    const list = this.section(this.inArchive());
+    if (!list.length) return;
+    const i = list.findIndex((s) => s.active);
+    const next = i < 0 ? (by > 0 ? 0 : list.length - 1) : (i + by + list.length) % list.length;
+    run("space.select", { id: list[next].id });
   }
 
   hop() {
-    const now = spaces().find((s) => s.active);
-    if (!now) return;
-    const inArchive = this.archived().has(now.id);
+    const now = spaces().find((s) => s.active)?.id ?? null;
+    const inArchive = this.inArchive();
+    if (this.section(inArchive).some((s) => s.id === now)) this.left[inArchive ? "archive" : "open"] = now;
     const list = this.section(!inArchive);
-    if (!list.length) return;
-    this.left[inArchive ? "archive" : "open"] = now.id;
     const back = this.left[inArchive ? "open" : "archive"];
-    run("space.select", { id: list.some((s) => s.id === back) ? back : list[0].id });
+    const target = list.find((s) => s.id === back) ?? list[0];
+    if (!target) return setShared(VIEW, { view: inArchive ? "open" : "archive", at: now });
+    setShared(VIEW, null);
+    run("space.select", { id: target.id });
   }
 
   render() {

@@ -35,7 +35,7 @@ export default class SmartSplit extends View {
         }
       }
     } catch (e) {
-      notify({ title: "Smart split", body: `could not read terminal size: ${e?.message ?? e}`, level: "error" });
+      notify({ title: "smart split", body: `could not read terminal size: ${e?.message ?? e}`, level: "error" });
       return;
     }
     const args = { direction };
