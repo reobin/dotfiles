@@ -107,7 +107,7 @@ export default class Resume extends View {
     }
     this.lost = seen;
     if (resumed.length) {
-      notify({ title: `Resumed ${resumed.length} Claude session${resumed.length > 1 ? "s" : ""}`, body: resumed.join(", "), level: "success" });
+      notify({ title: `resumed ${resumed.length} Claude session${resumed.length > 1 ? "s" : ""}`, body: resumed.join(", "), level: "success" });
     }
     if (failed.length) notify({ title: "could not resume Claude", body: failed.join(", "), level: "error" });
   }

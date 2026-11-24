@@ -32,7 +32,7 @@ export function renderTicket(view) {
       .hover((s) => s.bg(t.hover).text_color(t.foreground)).on_click(() => open(url)).child(icon("link")).child("Linear")));
 
   if (!ticket) {
-    const note = !space ? "no space" : !current ? "loading…" : `No ticket found for ${work.branch ?? "this space"}`;
+    const note = !space ? "no space" : !current ? "loading…" : `no ticket found for ${work.branch ?? "this space"}`;
     return panelShell(view, t, { header, body: div().p(14).text_color(t.dim).child(note) });
   }
 

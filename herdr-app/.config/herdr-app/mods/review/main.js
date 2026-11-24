@@ -140,7 +140,7 @@ export default class Review extends View {
     this.filterInput = InputState.new({ placeholder: "filter files" });
     this.filterInput.on("change", (_e, cx) => { this.filter = this.filterInput.value(); this.followFilter(cx); cx.notify(); });
     this.filterInput.on("submit", (_e, cx) => { this.filtering = false; this.handle.focus(); cx.notify(); });
-    this.overallInput = TextareaState.new({ placeholder: "applies to the whole change. Optional.", rows: 2 });
+    this.overallInput = TextareaState.new({ placeholder: "applies to the whole change, optional.", rows: 2 });
     this.overallInput.on("change", (_e, cx) => {
       // ⌘↵ also reaches the box as a line break; while sending, the box keeps the text being sent.
       if (this.sending) { if (this.overallInput.value() !== this.sentOverall) this.overallInput.set_value(this.sentOverall); return; }
@@ -1246,7 +1246,7 @@ export default class Review extends View {
       .child(div().id("send").h(28).px(12).flex().items_center().rounded(7).text_size(12).font_semibold()
         .bg(canSend ? t.solid : t.raised).text_color(canSend ? t.solid_foreground : t.dim)
         .when(canSend, (el) => el.cursor_pointer()).on_mouse_down("left", stop).on_click((_e, cx) => { this.sendCommand(cx); cx.notify(); })
-        .child(this.sending ? "sending…" : [`Send ${outgoing || ""}`.trim(), targetName && `to ${targetName}`, pretty(bound("send"))].filter(Boolean).join(" ")));
+        .child(this.sending ? "sending…" : [`send ${outgoing || ""}`.trim(), targetName && `to ${targetName}`, pretty(bound("send"))].filter(Boolean).join(" ")));
 
     const rows = this.rows();
     const filterBar = (this.filtering || this.filter) && h_flex().id("filter").h(34).flex_none().mx(FILE_PAD).mt(FILE_PAD).px(8).gap(6).items_center().rounded(7)

@@ -264,7 +264,7 @@ export function mergeLook(pr, t) {
     // Red: something on the PR needs fixing. Yellow: it's waiting on reviewers, CI or a branch update.
     const conflict = reasons.some((r) => r.startsWith("conflicts"));
     const broken = conflict || reasons.some((r) => r.endsWith("failing") || r === "changes requested");
-    return { icon: conflict ? "conflict" : "merge-blocked", color: broken ? t.ansi1 : t.ansi3, sentence: `Not mergeable: ${reasons.join(", ")}` };
+    return { icon: conflict ? "conflict" : "merge-blocked", color: broken ? t.ansi1 : t.ansi3, sentence: `not mergeable: ${reasons.join(", ")}` };
   }
   return { icon: "pend", color: t.dim, sentence: "GitHub is still checking mergeability" };
 }

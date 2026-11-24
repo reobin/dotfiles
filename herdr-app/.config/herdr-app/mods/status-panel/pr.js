@@ -86,14 +86,14 @@ export function renderPr(view, cx) {
   const failedRuns = gh.failedRuns(pr);
   const rerun = (cx) => {
     if (!failedRuns.length) return say(view, cx, "no failed GitHub Actions runs to rerun");
-    act(view, cx, { scope, field: "rerun", value: true, ok: `Rerunning failed jobs in ${failedRuns.length} run${failedRuns.length === 1 ? "" : "s"}`,
+    act(view, cx, { scope, field: "rerun", value: true, ok: `rerunning failed jobs in ${failedRuns.length} run${failedRuns.length === 1 ? "" : "s"}`,
       task: () => gh.rerunFailed(work, pr) });
   };
 
   // Merging can't be undone: it always asks first, and only when GitHub says it can merge.
   const mergeIt = (cx) => {
     if (pr.state !== "open") return say(view, cx, pr.state === "draft" ? "mark it ready for review first" : `this pull request is ${pr.state}`, "error");
-    if (!pr.merge?.ok) return say(view, cx, pr.merge?.reasons?.length ? `Not mergeable: ${pr.merge.reasons.join(", ")}` : "GitHub hasn't said it can merge yet", "error");
+    if (!pr.merge?.ok) return say(view, cx, pr.merge?.reasons?.length ? `not mergeable: ${pr.merge.reasons.join(", ")}` : "GitHub hasn't said it can merge yet", "error");
     cx.spawn(async (cx) => {
       try {
         const method = await gh.mergeMethod(work, pr);
