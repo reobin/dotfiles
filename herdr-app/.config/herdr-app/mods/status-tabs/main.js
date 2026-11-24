@@ -137,8 +137,10 @@ export default class Tabs extends View {
   }
 
   render(cx) {
-    const t = theme();
     const space = spaces().find(p => p.active);
+    // While the tree shows an archived space, its colour (the theme's ansi5) stands in for the accent, as in the sidebar.
+    const base = theme();
+    const t = space && (shared("tree.archived") ?? []).includes(space.id) ? { ...base, accent: base.ansi5 } : base;
     const work = space ? target(space) : null;
     const workKey = space ? `${work.key}|${work.branch}|${work.cwd}` : null;
     if (!checking() && workKey !== this.workKey) {
@@ -176,12 +178,8 @@ export default class Tabs extends View {
     const root = layout(), sidebar = find(root, "sidebar"), w = window();
     // Old saved rails and a dragged-narrow sidebar can be smaller than the window buttons.
     const lightsPadding = w?.platform === "macos" && w.titlebar === "none" && !w.fullscreen && root?.traffic_lights
-      ? Math.max(8, (root.traffic_lights[0] + 64) / settings().zoom - (sidebar?.hidden ? 0 : sidebar?.size?.px ?? 0))
+      ? Math.max(8, (root.traffic_lights[0] + 64) / settings().zoom - (sidebar?.size?.px ?? 0))
       : 8;
-    // The pane sits flush against the sidebar, so its folded-space hairline
-    // runs to the pane; with no sidebar, a 0px column takes the gap's inset.
-    const inset = find(root, "work-inset");
-    if (inset && Boolean(inset.hidden) !== !sidebar?.hidden) run(sidebar?.hidden ? "layout.show" : "layout.hide", { id: "work-inset" });
     const panel = find(root, "panel"), body = find(root, "panel-body");
     const enabled = [...(shared("workspace.panels") ?? []), "ticket-status", "pr-status"].filter(id => find(body, id));
     this.syncPanel(space, panel, body, enabled);

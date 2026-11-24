@@ -1,20 +1,23 @@
 // One sidebar list: every space, its tabs, their panes. Each space is a card,
-// the shown one outlined, and a group of spaces sits in an outlined box. An
+// the shown one outlined, in an outlined box that a group of spaces shares. An
 // agent pane gets a row with its icon, session title and status; any other
 // pane is a chip with its callsign and program, and a tab with no agent folds
 // to one line of chips. Only what needs you is marked. Under 160px wide,
-// spaces only. A group folds and moves as one. Folded spaces sink under a
-// hairline. Only the section the shown space is in draws its cards; the
-// other folds to one line (space-nav walks one section at a time).
+// spaces only. A group archives and moves as one. Active and archived spaces
+// are two views: only the one the shown space is in draws, and a footer names
+// it and offers the other (space-nav walks one view at a time). The archive is
+// marked beside the traffic lights and on the footer's top edge.
 
 import { View, div, svg, image } from "gpui-kit";
 import { v_flex, h_flex, ScrollHandle } from "gpui-base";
 import { mark } from "./marks.js";
-import { spaces, panes, terminals, run, theme, layout, shared, setShared, openOverlay, exec, nextCommand } from "herdr";
+import { spaces, panes, terminals, run, theme, layout, shared, setShared, openOverlay, exec, hc, nextCommand, window, settings } from "herdr";
 
 const MONO = "JetBrains Mono";
 const SANS = "Geist";
-const COLLAPSED = "tree.collapsed";
+const ARCHIVED = "tree.archived";
+// Read until the first archive toggle writes ARCHIVED; space-nav reads it the same way.
+const LEGACY = "tree.collapsed";
 // The block is a window drag handle; this keeps the list clear of the traffic
 // lights and level with the pane's top (30px tab bar + 8px padding).
 const TOP = 38;
@@ -32,7 +35,9 @@ const isAgent = (p) => Boolean(p.program?.agent);
 const quiet = (list) => list.length > 0 && !list.some(isAgent);
 const solo = (list) => (list.length === 1 && isAgent(list[0]) ? list[0] : null);
 
-function prNumber(s, ps, terms) {
+// The ticket and PR the top bar shows for the space, from status-tabs' cache;
+// a space it hasn't looked up lately shows only what its labels name.
+function work(s, ps, terms) {
   const mine = ps.filter((p) => p.terminal && s.tabs.some((tab) => tab.id === p.tab));
   const first = mine.find((p) => p.tab === s.tabs[0]?.id);
   const prOf = (p) => /^https:\/\/github\.com\/[^/\s]+\/[^/\s]+\/pull\/(\d+)$/.exec(terms.get(p?.terminal)?.labels?.pr ?? "");
@@ -44,13 +49,43 @@ function prNumber(s, ps, terms) {
   const focus = mine.find((p) => p.focused) ?? mine.find((p) => p.tab === active?.id);
   const pane = focus && (prOf(focus) || ticketOf(focus) || focus.branch) ? focus : first;
   const pr = prOf(pane);
-  if (pr) return pr[1];
+  const ticket = ticketOf(pane);
   const cwd = first?.cwd || s.folder || null;
   const branch = pane === first ? first?.branch || s.branch || null : pane?.branch;
   // Keep selection and the cache key in sync with status-tabs/status.js target(); mods cannot import across folders.
-  const key = [s.id, ticketOf(pane), null, branch, pane?.cwd || cwd].join("|");
-  return shared("status-tabs.work")?.[key]?.pr?.number ?? null;
+  const entry = shared("status-tabs.work")?.[[s.id, ticket, pr?.[0] ?? null, branch, pane?.cwd || cwd].join("|")];
+  return { ticket: entry?.ticket ?? (ticket ? { id: ticket } : null), pr: entry?.pr ?? (pr ? { number: pr[1] } : null) };
 }
+
+// Icons and colours as status-tabs/status.js draws them in the top bar.
+const ICONS = "data/status-tabs/icons";
+const STARTED_MAX = 12;
+
+function ticketLook(t, ticket) {
+  const state = ticket.issue?.state;
+  if (!state) return ["lin-unknown", t.dim];
+  if (state.type !== "started") return [{ backlog: "lin-backlog", triage: "lin-backlog", unstarted: "lin-todo", completed: "lin-done", canceled: "lin-canceled" }[state.type] ?? "lin-todo", state.color];
+  const started = (ticket.issue.team?.states?.nodes ?? []).filter((x) => x.type === "started").sort((a, b) => a.position - b.position);
+  const i = started.findIndex((x) => x.id === state.id), d = started.length + 1;
+  const icon = i < 0 ? "lin-started-1-2" : d <= STARTED_MAX ? `lin-started-${i + 1}-${d}`
+    : `lin-started-${Math.min(STARTED_MAX - 1, Math.max(1, Math.round(((i + 1) / d) * STARTED_MAX)))}-${STARTED_MAX}`;
+  return [icon, state.color];
+}
+
+// Open: whether it can merge (green ready, yellow waiting, red needs fixing).
+function prLook(t, pr) {
+  const icon = { merged: "pr-merged", closed: "pr-closed", draft: "pr-draft" }[pr.state] ?? "pr";
+  if (pr.state !== "open") return [icon, { merged: t.ansi5, closed: t.ansi1 }[pr.state] ?? t.dim];
+  const { ok, reasons = [] } = pr.merge ?? {};
+  const broken = reasons.some((r) => r.startsWith("conflicts") || r.endsWith("failing") || r === "changes requested");
+  return [icon, ok ? t.ansi2 : ok === false ? broken ? t.ansi1 : t.ansi3 : t.dim];
+}
+
+// self_baseline() lands small text low on the space row; centred, it sits
+// about 1px above the repo's baseline, so pt(2) drops it that pixel.
+const tag = (t, [name, color], text) => h_flex().flex_none().pt(2).gap(3).items_center()
+  .child(svg(`${ICONS}/${name}.svg`).size(12).flex_none().text_color(color))
+  .child(div().font_family(MONO).text_size(11).text_color(t.muted).child(text));
 
 function find(node, id) {
   if (node?.id === id) return node;
@@ -62,6 +97,18 @@ function find(node, id) {
 }
 
 const narrow = () => (find(layout(), "sidebar")?.size?.px ?? Infinity) < 160;
+
+// The archive's colour is the theme's own magenta, so every theme marks it its way.
+const archiveInk = (t) => t.ansi5;
+
+// Where the strip beside the traffic lights starts; with no buttons drawn there
+// (fullscreen, other platforms), the sidebar's own edge. Same sum as status-tabs.
+function afterLights() {
+  const w = window(), root = /** @type {any} */ (layout());
+  return w?.platform === "macos" && w.titlebar === "none" && !w.fullscreen && root?.traffic_lights
+    ? (root.traffic_lights[0] + 64) / settings().zoom
+    : 16;
+}
 
 // Idle says nothing: a mark means work is running or waiting on you.
 const status = (t, st) => mark(t, st);
@@ -112,9 +159,13 @@ export default class Tree extends View {
     this.under = null; // { key, at }: the lit row the last move over one landed on
     this.at = null; // where the last move over the sidebar landed, null once it leaves
     this.scroll = ScrollHandle.new();
-    this.dockScroll = ScrollHandle.new();
+    this.archiveScroll = ScrollHandle.new();
     this.revealed = null;
-    cx.timer.every(1000, (cx) => this.lookup(cx));
+    this.applying = new Set(); // terminal addresses whose archive label is being cleared
+    cx.timer.every(1000, (cx) => {
+      this.lookup(cx);
+      this.requests();
+    });
     this.lookup(cx);
     cx.spawn(async () => {
       for (;;) {
@@ -123,34 +174,51 @@ export default class Tree extends View {
         if (c === "space-down") this.move(1);
         if (c === "tab-left") this.moveTab(-1);
         if (c === "tab-right") this.moveTab(1);
-        if (c === "toggle-collapse") this.toggle(spaces().find((s) => s.active)?.id);
+        if (c === "toggle-archive") this.toggle(spaces().find((s) => s.active)?.id);
         if (c === "close-space") this.closeSpace();
       }
     });
   }
 
   // Persisted by space id; ids of closed spaces are dropped on the next toggle.
-  collapsed() {
-    return new Set(/** @type {string[]} */ (shared(COLLAPSED) ?? []));
+  archived() {
+    return new Set(/** @type {string[]} */ (shared(ARCHIVED) ?? shared(LEGACY) ?? []));
   }
 
   // The groups on one side of the hairline: the one the space id is on.
-  side(all, folded, id) {
-    return sets(all.filter((s) => folded.has(s.id) === folded.has(id)));
+  side(all, archived, id) {
+    return sets(all.filter((s) => archived.has(s.id) === archived.has(id)));
   }
 
-  // A space folds and unfolds with its whole group.
   toggle(id) {
-    if (!id) return;
+    if (id) this.setArchived(id, !this.archived().has(id));
+  }
+
+  // Agents can't pass a space id to a mod command, so they label one of the
+  // space's terminals archive=1 (or archive=0 to unarchive); the label is
+  // cleared once applied.
+  requests() {
+    for (const term of terminals()) {
+      const want = term.labels?.archive;
+      const space = term.labels?.["herdr.space"];
+      if ((want !== "1" && want !== "0") || !space || this.applying.has(term.address)) continue;
+      this.setArchived(term.machine ? `${term.machine}/${space}` : space, want === "1");
+      this.applying.add(term.address);
+      hc(["label", term.address, "archive="]).finally(() => this.applying.delete(term.address));
+    }
+  }
+
+  // A space archives and unarchives with its whole group.
+  setArchived(id, archive) {
     const all = spaces();
-    const was = this.collapsed();
+    if (!all.some((s) => s.id === id)) return;
+    const was = this.archived();
     const group = this.side(all, was, id).find((r) => r.some((s) => s.id === id)) ?? [];
     const live = new Set(all.map((s) => s.id));
     const set = new Set([...was].filter((x) => live.has(x)));
-    const fold = !set.has(id);
-    for (const s of group) fold ? set.add(s.id) : set.delete(s.id);
-    setShared(COLLAPSED, [...set]);
-    if (!fold || !group.some((s) => s.active)) return;
+    for (const s of group) archive ? set.add(s.id) : set.delete(s.id);
+    setShared(ARCHIVED, [...set]);
+    if (!archive || !group.some((s) => s.active)) return;
     const ids = new Set(group.map((s) => s.id));
     const open = all.filter((s) => !set.has(s.id) || ids.has(s.id));
     const i = open.findIndex((s) => ids.has(s.id));
@@ -173,7 +241,7 @@ export default class Tree extends View {
     const all = spaces();
     const id = all.find((s) => s.active)?.id;
     if (!id) return;
-    const runs = this.side(all, this.collapsed(), id);
+    const runs = this.side(all, this.archived(), id);
     const i = runs.findIndex((r) => r.some((s) => s.id === id));
     const mine = runs[i];
     const other = runs[i + step];
@@ -215,25 +283,26 @@ export default class Tree extends View {
     });
   }
 
+  repoOf(s, ps) {
+    return (this.repo[where(s, ps)] ?? (s.named ? place(s, ps).split("/").pop() : s.name)) || s.name;
+  }
+
   // A folded space keeps its pane count and its status, so what needs you still shows.
-  // The repo always leads and the task trails when it says something the repo
-  // does not. A group names its task once, on its first card. ink: the task's colour,
-  // null when this card doesn't name it.
-  space(t, s, ps, terms, ink, folded, grouped) {
-    const repo = (this.repo[where(s, ps)] ?? (s.named ? place(s, ps).split("/").pop() : s.name)) || s.name;
-    const pr = prNumber(s, ps, terms);
+  // The repo leads and the ticket and PR sit at the right edge, where the
+  // task's name sits above them on the outline. same: the card above in the
+  // group shows this ticket, so this one leaves it out.
+  space(t, s, ps, terms, folded, same) {
+    const { ticket, pr } = work(s, ps, terms);
     const tabs = new Set(s.tabs.map((tab) => tab.id));
     const st = folded && s.status && s.status !== "idle" ? status(t, s.status) : null;
     return press(this.lit(h_flex().id(`space-${s.id}`).h(22).flex_none().px(8).gap(8).items_center().rounded(5),
       `space-${s.id}`), () => run("space.select", { id: s.id }))
       .on_mouse_down("right", () => openOverlay({ mod: "menu", kind: "popup", width: 200, height: 260, props: { tab: "space", target: { id: s.id } } }))
       .child(icon("cube").size(14).flex_none().text_color(t.dim))
-      .child(div().min_w(0).truncate().text_size(14).font_semibold().text_color(s.active ? t.foreground : t.muted).child(repo))
-      .when(Boolean(pr), (el) => el.child(div().flex_none().pt(2).font_family(MONO).text_size(grouped ? 10 : 11).text_color(t.dim).child(`#${pr}`)))
+      .child(div().min_w(0).truncate().text_size(14).font_semibold().text_color(s.active ? t.foreground : t.muted).child(this.repoOf(s, ps)))
       .child(div().flex_1())
-      // self_baseline() lands small text low here; centred, it sits about 1px
-      // above the repo's baseline, so pt(2) drops it that pixel.
-      .when(Boolean(ink) && s.name !== repo, (el) => el.child(div().min_w(0).pt(2).truncate().font_family(MONO).text_size(11.5).text_color(ink).child(s.name)))
+      .when(Boolean(ticket) && !same, (el) => el.child(tag(t, ticketLook(t, ticket), ticket.id)))
+      .when(Boolean(pr), (el) => el.child(tag(t, prLook(t, pr), `#${pr.number}`)))
       .when(folded, (el) => el
         .child(div().flex_none().pt(2).font_family(MONO).text_size(11.5).text_color(t.dim)
           .child(`+${ps.filter((p) => tabs.has(p.tab)).length}`))
@@ -343,11 +412,11 @@ export default class Tree extends View {
     cx.notify();
   }
 
-  rows(t, s, ps, terms, ink, folded, grouped) {
-    if (folded) return [this.space(t, s, ps, terms, ink, true, grouped)];
+  rows(t, s, ps, terms, folded, same) {
+    if (folded) return [this.space(t, s, ps, terms, true, same)];
     const mine = s.tabs.map((tab) => [tab, ps.filter((p) => p.tab === tab.id)]);
     return [
-      this.space(t, s, ps, terms, ink, false, grouped),
+      this.space(t, s, ps, terms, false, same),
       ...mine.flatMap(([tab, list]) => s.tabs.length > 1
         ? [v_flex().flex_none().mt(4).rounded(5).when(this.hot === `tab-${tab.id}`, (el) => el.bg(t.hover))
           .child(this.tab(t, s, tab, list, terms))
@@ -356,36 +425,52 @@ export default class Tree extends View {
     ];
   }
 
+  // The task's name, when it says something the repo does not, straddles the
+  // top edge of its box's outline with its last letter over the ticket and PR,
+  // and paints the outline out behind it. It sits in the box's frame, not the
+  // box: a border paints over children.
+  legend(t, s, ps, ink) {
+    if (s.name === this.repoOf(s, ps)) return null;
+    // The edge runs through the x-height, where lowercase reads centred, not the line box's middle.
+    return h_flex().absolute().top(SLACK - 7).right(13).h(13).px(4).items_center().bg(t.chrome)
+      .child(div().font_family(MONO).text_size(11.5).text_color(ink).child(s.name));
+  }
+
   // The shown card's outline takes a pixel of its padding, so nothing shifts
   // when it moves.
-  card(t, s, ps, terms, ink, folded, grouped = false) {
+  card(t, s, ps, terms, folded, same = false) {
     const pad = s.active ? 1 : 0;
     return v_flex().id(`card-${s.id}`).flex_none().px(4 - pad).pt(4 - pad).pb(4 - pad).rounded(8)
       .bg(this.hot === `space-${s.id}` ? t.hover : s.active ? t.background : t.foreground + "06")
       .when(s.active, (el) => el.border(1).border_color(t.accent + "33"))
-      .children(this.rows(t, s, ps, terms, ink, folded, grouped));
+      .children(this.rows(t, s, ps, terms, folded, same));
   }
 
-  // A run of neighbouring spaces shares an outlined box, drawn as one slice
-  // per card so every card is its own list child: scroll_to_item can then
-  // reveal the shown card even when its group is taller than the sidebar.
+  // A run of neighbouring spaces shares an outlined box, and a lone space gets
+  // one of its own. It is drawn as one slice per card so every card is its own
+  // list child: scroll_to_item can then reveal the shown card even when its
+  // group is taller than the sidebar.
   group(t, run, ps, terms, folded) {
-    if (run.length === 1) return [this.card(t, run[0], ps, terms, run[0].active ? t.accent : t.muted, folded.has(run[0].id))];
-    const here = run.some((s) => s.active);
     const last = run.length - 1;
-    return run.map((s, i) => v_flex().id(`group-${s.id}`).flex_none().px(4).pt(4).border_x(1)
+    const ids = run.map((s) => work(s, ps, terms).ticket?.id);
+    return run.map((s, i) => v_flex().id(`group-${s.id}`).flex_none().px(4).pt(i === 0 ? 8 : 4).border_x(1)
       .border_color(t.border)
       .when(i === 0, (el) => el.border_t(1).rounded_t(12))
       .when(i === last, (el) => el.pb(4).border_b(1).rounded_b(12))
-      .child(this.card(t, s, ps, terms, i === 0 ? (here ? t.accent : t.muted) : null, folded.has(s.id), true)));
+      .child(this.card(t, s, ps, terms, folded.has(s.id), i > 0 && Boolean(ids[i]) && ids[i] === ids[i - 1])));
   }
 
   // scroll_to_item stops a child at the list's edge, so each card sits in a
   // clear frame of SLACK above and below; negative margins overlap the frames
-  // so the cards keep their spacing.
+  // so the cards keep their spacing. A name on the top edge pokes 6px above
+  // it, and every box leaves room for one so naming a space shifts nothing.
   cards(t, runs, ps, terms, folded) {
-    return runs.flatMap((run, k) => this.group(t, run, ps, terms, folded).map((el, i) =>
-      v_flex().flex_none().py(SLACK).mt((k > 0 && i === 0 ? 8 : 0) - (k === 0 && i === 0 ? 1 : 2) * SLACK).child(el)));
+    return runs.flatMap((run, k) => {
+      const name = this.legend(t, run[0], ps, run.some((s) => s.active) ? t.accent : t.muted);
+      return this.group(t, run, ps, terms, folded).map((el, i) =>
+        v_flex().relative().flex_none().py(SLACK).mt((k > 0 && i === 0 ? 14 : 0) - (k === 0 && i === 0 ? 1 : 2) * SLACK).child(el)
+          .when(i === 0 && Boolean(name), (el) => el.child(name)));
+    });
   }
 
   rail(t, runs) {
@@ -409,34 +494,34 @@ export default class Tree extends View {
   }
 
   // Nearest open space to id, below first.
-  nearestOpen(order, id, all, folded) {
+  nearestOpen(order, id, all, archived) {
     const i = order.indexOf(id);
-    const open = (x) => all.some((s) => s.id === x) && !folded.has(x);
+    const open = (x) => all.some((s) => s.id === x) && !archived.has(x);
     return [...order.slice(i + 1), ...order.slice(0, i).reverse()].find(open);
   }
 
-  // Herdr shows the closed space's neighbour, which may be folded, so move
+  // Herdr shows the closed space's neighbour, which may be archived, so move
   // to an open one first and close the space from behind. Not close(): that
   // name is the view's teardown hook.
   closeSpace() {
     const all = spaces();
-    const folded = this.collapsed();
+    const archived = this.archived();
     const id = all.find((s) => s.active)?.id;
     if (!id) return;
-    const next = folded.has(id) ? null : this.nearestOpen(all.map((s) => s.id), id, all, folded);
+    const next = archived.has(id) ? null : this.nearestOpen(all.map((s) => s.id), id, all, archived);
     if (next) run("space.select", { id: next });
     run("space.close", { id, confirmed: true });
   }
 
   // Fallback for closes that skip closeSpace(), like a space's last pane exiting.
-  keepOpen(all, folded) {
+  keepOpen(all, archived) {
     const now = all.find((s) => s.active)?.id;
     if (!now) return;
     const [was, order] = [this.shown, this.order];
     this.shown = now;
     this.order = all.map((s) => s.id);
-    if (!was || was === now || folded.has(was) || !folded.has(now) || all.some((s) => s.id === was)) return;
-    const next = this.nearestOpen(order, was, all, folded);
+    if (!was || was === now || archived.has(was) || !archived.has(now) || all.some((s) => s.id === was)) return;
+    const next = this.nearestOpen(order, was, all, archived);
     if (next) run("space.select", { id: next });
   }
 
@@ -453,37 +538,60 @@ export default class Tree extends View {
     if (i >= 0) handle.scroll_to_item(i);
   }
 
-  // A folded section: its count and what in it needs you. A click goes there.
-  line(t, runs, label, open) {
-    const list = runs.flat();
-    const marks = list.filter((s) => s.status && s.status !== "idle").map((s) => status(t, s.status));
-    return press(h_flex().id(`line-${label}`).h(30).flex_none().mx(8).px(8).gap(8).items_center().rounded(5)
-      .opacity(0.45).hover((x) => x.bg(t.hover)).font_family(MONO).text_size(11.5).text_color(t.muted),
-    () => run("space.select", { id: list[0].id }))
-      .child(div().flex_none().text_color(t.dim).child(open ? "▾" : "▸"))
-      .child(div().flex_none().child(`${list.length} ${label}`))
-      .child(div().flex_1())
-      .child(h_flex().flex_none().gap(4).children(marks))
-      .child(div().flex_none().text_color(t.dim).child("alt-."));
+  // The view you are in, with its count, and a button for the other one with
+  // its count and what in it needs you. With no active space left, the button
+  // opens a new one instead. Its hairline runs to the pane, which sits flush
+  // with the sidebar, and takes the archive's colour in the archive.
+  footer(t, here, other, inArchive) {
+    const count = (runs) => String(runs.flat().length);
+    const name = (archived) => (archived ? "archived" : "active");
+    const target = other.flat()[0];
+    const marks = other.flat().filter((s) => s.status && s.status !== "idle").map((s) => status(t, s.status));
+    const hop = () => (target ? run("space.select", { id: target.id }) : run("mod.open", { name: "new-space" }));
+    return v_flex().id("footer").flex_none()
+      .child(div().flex_none().border_t(inArchive ? 2 : 1).border_color(inArchive ? archiveInk(t) : t.dim + "80"))
+      .child(h_flex().h(40).pl(16).pr(8).gap(8).items_center().font_family(MONO).text_size(11.5).text_color(t.muted)
+        .child(div().flex_none().text_size(10.5).font_semibold().text_color(inArchive ? archiveInk(t) : t.foreground).child(name(inArchive).toUpperCase()))
+        .child(div().flex_none().text_color(t.dim).child(count(here)))
+        .child(div().flex_1())
+        .child(press(h_flex().id("footer-hop").flex_none().h(26).pl(10).pr(4).gap(8).items_center().rounded(7)
+          .bg(t.foreground + "0a").hover((x) => x.bg(t.hover)), hop)
+          .child(h_flex().gap(6).items_center().child(div().child(name(!inArchive))).child(div().text_color(t.dim).child(count(other))))
+          .when(marks.length > 0, (el) => el.child(h_flex().gap(3).items_center().children(marks)))
+          .child(h_flex().h(18).px(6).items_center().rounded(4).border(1).border_color(t.dim + "66")
+            .text_size(10.5).text_color(t.dim).child(target ? "alt-." : "cmd-n"))));
+  }
+
+  // In the empty strip beside the traffic lights, level with them. It takes no
+  // press, so the strip still drags the window.
+  archiveLabel(t) {
+    return h_flex().id("archive-label").absolute().top(7).left(afterLights()).h(22).gap(6).items_center()
+      .child(icon("archive").size(13).flex_none().text_color(archiveInk(t)))
+      .child(div().font_family(MONO).text_size(10.5).font_semibold().text_color(archiveInk(t)).child("ARCHIVE"));
   }
 
   render() {
-    const t = theme();
-    const folded = this.collapsed();
+    const archived = this.archived();
     const all = spaces();
-    this.keepOpen(all, folded);
-    const top = sets(all.filter((s) => !folded.has(s.id)));
-    const dock = sets(all.filter((s) => folded.has(s.id)));
-    const docked = all.some((s) => s.active && folded.has(s.id));
+    this.keepOpen(all, archived);
+    const open = sets(all.filter((s) => !archived.has(s.id)));
+    const archive = sets(all.filter((s) => archived.has(s.id)));
+    const inArchive = all.some((s) => s.active && archived.has(s.id));
+    // In the archive the archive's colour stands in for the accent, so the shown
+    // card, its group's name and its callsign all say where you are.
+    const base = theme();
+    const t = inArchive ? { ...base, accent: archiveInk(base) } : base;
     const ps = panes();
     // A scrollable splits the height with its siblings, so the list scrolls
-    // inside a plain flex_1 box and the dock keeps only the height it needs.
-    const upper = (list) => v_flex().id("upper").flex_1().min_h(0).opacity(docked && top.length ? 0.45 : 1).transition("opacity", 150)
-      .child(list.id("top").size_full().overflow_y_scrollbar().track_scroll(this.scroll));
-    // The hairline sits outside the dimmed part so it stays stronger than the folded groups' outlines.
-    const shelf = (list) => v_flex().id("dock").flex_none().border_t(1).border_color(t.dim + "80")
-      .child(v_flex().id("dock-body").opacity(docked ? 1 : 0.45).transition("opacity", 150).child(list));
-    const root = v_flex().id("tree").size_full().bg(t.chrome)
+    // inside a plain flex_1 box and the archive keeps only the height it needs.
+    const upper = (list) => v_flex().id("upper").flex_1().min_h(0).opacity(inArchive && open.length ? 0.45 : 1).transition("opacity", 150)
+      .child(list.id("open").size_full().overflow_y_scrollbar().track_scroll(this.scroll));
+    // The hairline sits outside the dimmed part so it stays stronger than the
+    // archived groups' outlines, and takes the archive's colour in the archive.
+    const shelf = (list) => v_flex().id("archive").flex_none()
+      .border_t(inArchive ? 2 : 1).border_color(inArchive ? archiveInk(t) : t.dim + "80")
+      .child(v_flex().id("archive-body").opacity(inArchive ? 1 : 0.45).transition("opacity", 150).child(list));
+    const root = v_flex().id("tree").relative().size_full().bg(t.chrome)
       .on_mouse_move((e, cx) => {
         this.at = e.position;
         this.settle(cx);
@@ -494,23 +602,21 @@ export default class Tree extends View {
         this.settle(cx);
       });
     if (narrow()) {
-      this.reveal(this.scroll, top, ps);
+      this.reveal(this.scroll, open, ps);
       return root
-        .child(upper(v_flex().pt(TOP).pb(8).gap(8).items_center().children(this.rail(t, top))))
-        .when(dock.length > 0, (el) => el.child(shelf(v_flex().py(8).gap(8).items_center().children(this.rail(t, dock)))));
+        .child(upper(v_flex().pt(TOP).pb(8).gap(8).items_center().children(this.rail(t, open))))
+        .when(archive.length > 0, (el) => el.child(shelf(v_flex().py(8).gap(8).items_center().children(this.rail(t, archive)))));
     }
-    // One section shows in full, the one alt-j/k walks; the other folds to a
-    // line, the open spaces above the hairline and the hidden ones below it.
-    // Hidden spaces draw like open ones, never folded.
-    const [full, rest] = docked ? [dock, top] : [top, dock];
-    const handle = docked ? this.dockScroll : this.scroll;
+    // One view shows in full, the one alt-j/k walks, and the footer names it.
+    // The active view has no footer until something is archived.
+    const [full, rest] = inArchive ? [archive, open] : [open, archive];
+    const handle = inArchive ? this.archiveScroll : this.scroll;
     this.reveal(handle, full.flat().map((s) => [s]), ps);
     const terms = new Map(terminals().map((x) => [x.address, x]));
-    const hair = () => div().flex_none().border_t(1).border_color(t.dim + "80");
     const list = v_flex().id("body").flex_1().min_h(0)
-      .child(v_flex().id(docked ? "dock" : "top").size_full().overflow_y_scrollbar().track_scroll(handle)
-        .pt(docked && rest.length ? 8 : TOP).px(8).children(this.cards(t, full, ps, terms, new Set())));
-    if (docked) return root.when(rest.length > 0, (el) => el.child(div().flex_none().h(TOP - 8)).child(this.line(t, rest, "open", true)).child(hair())).child(list);
-    return root.child(list).when(rest.length > 0, (el) => el.child(hair()).child(this.line(t, rest, "hidden", false)));
+      .child(v_flex().id(inArchive ? "archive" : "open").size_full().overflow_y_scrollbar().track_scroll(handle)
+        .pt(TOP).px(8).children(this.cards(t, full, ps, terms, new Set())));
+    return root.child(list).when(inArchive || rest.length > 0, (el) => el.child(this.footer(t, full, rest, inArchive)))
+      .when(inArchive, (el) => el.child(this.archiveLabel(t)));
   }
 }

@@ -51,15 +51,6 @@
               "type": "row",
               "children": [
                 {
-                  "id": "work-inset",
-                  "type": "column",
-                  "children": [],
-                  "size": {
-                    "px": 0
-                  },
-                  "hidden": true
-                },
-                {
                   "id": "main",
                   "type": "block",
                   "content": {
@@ -74,9 +65,6 @@
                         "position": "top"
                       },
                       "background": "background",
-                      "radius": 12,
-                      "gap": 8,
-                      "lone": true,
                       "border": {
                         "width": 1,
                         "color": "background"
@@ -84,7 +72,10 @@
                       "focus": {
                         "width": 1,
                         "color": "accent"
-                      }
+                      },
+                      "radius": 12,
+                      "gap": 8,
+                      "lone": true
                     }
                   }
                 },
@@ -145,117 +136,117 @@
             {
               "id": "space-nav",
               "type": "block",
-              "size": {
-                "px": 0
-              },
               "content": {
                 "mod": "space-nav"
+              },
+              "size": {
+                "px": 0
               }
             },
             {
               "id": "undo-close",
               "type": "block",
-              "size": {
-                "px": 0
-              },
               "content": {
                 "mod": "undo-close"
+              },
+              "size": {
+                "px": 0
               }
             },
             {
               "id": "callsigns",
               "type": "block",
-              "size": {
-                "px": 0
-              },
               "content": {
                 "mod": "callsigns"
+              },
+              "size": {
+                "px": 0
               }
             },
             {
               "id": "resume",
               "type": "block",
-              "size": {
-                "px": 0
-              },
               "content": {
                 "mod": "resume"
+              },
+              "size": {
+                "px": 0
               }
             },
             {
               "id": "smart-split",
               "type": "block",
-              "size": {
-                "px": 0
-              },
               "content": {
                 "mod": "smart-split"
+              },
+              "size": {
+                "px": 0
               }
             },
             {
               "id": "sidetrack",
               "type": "block",
-              "size": {
-                "px": 0
-              },
               "content": {
                 "mod": "sidetrack"
+              },
+              "size": {
+                "px": 0
               }
             },
             {
               "id": "close-others",
               "type": "block",
-              "size": {
-                "px": 0
-              },
               "content": {
                 "mod": "close-others"
+              },
+              "size": {
+                "px": 0
               }
             },
             {
               "id": "toggle-split",
               "type": "block",
-              "size": {
-                "px": 0
-              },
               "content": {
                 "mod": "toggle-split"
+              },
+              "size": {
+                "px": 0
               }
             },
             {
               "id": "codex-reload",
               "type": "block",
-              "size": {
-                "px": 0
-              },
               "content": {
                 "mod": "codex-reload"
+              },
+              "size": {
+                "px": 0
               }
             },
             {
               "id": "nvim-input",
               "type": "block",
-              "size": {
-                "px": 0
-              },
               "content": {
                 "mod": "nvim-input"
+              },
+              "size": {
+                "px": 0
               }
             }
           ],
           "resizable": false
         }
       ],
-      "resizable": false,
-      "background": "chrome"
+      "background": "chrome",
+      "resizable": false
     }
   ],
   "background": "chrome",
-  "terminal_opacity": 0,
   "terminal_padding": [
     14,
     12
   ],
+  "terminal_opacity": 0,
   "titlebar": "none",
   "traffic_lights": [
     12,

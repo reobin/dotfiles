@@ -7,7 +7,7 @@
 import { View, div, svg, image } from "gpui-kit";
 import { h_flex } from "gpui-base";
 import { mark } from "./marks.js";
-import { panes, props, run, theme, home, terminals, shared } from "herdr";
+import { panes, props, run, theme, home, terminals, shared, spaces } from "herdr";
 
 const SANS = "Geist";
 const MONO = "JetBrains Mono";
@@ -51,7 +51,11 @@ export default class Pane extends View {
   }
 
   render(cx) {
-    const t = theme();
+    // While the tree shows an archived space, its colour (the theme's ansi5) stands in for the accent, as in the sidebar.
+    const base = theme();
+    const space = spaces().find((s) => s.active);
+    const archived = Boolean(space) && (shared("tree.archived") ?? []).includes(space.id);
+    const t = archived ? { ...base, accent: base.ansi5 } : base;
     const p = this.me();
     if (!p) return div();
     const name = ((p.program?.agent || p.program?.shell) && p.program.name) || p.title || p.program?.name || "shell";
@@ -64,6 +68,9 @@ export default class Pane extends View {
     return h_flex()
       .id(`pane-head-${pane}`)
       .size_full()
+      // A wash of the accent, so the header turns violet with the rest in the archive. The
+      // pane's border belongs to the layout; the header is the part of the frame a mod can mark.
+      .bg(t.accent + "14").rounded_t(11)
       .px(8)
       .gap(8)
       .items_center()
