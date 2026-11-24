@@ -102,10 +102,6 @@ export default class NvimInput extends View {
     this.next.catch(() => {});
     const saved = `${DIR}/${editor.address}.clipboard`;
     const saving = exec("sh", ["-c", 'pbpaste > "$1"', "sh", saved]).catch(() => null);
-    for (let waited = 0; waited < 1000 && focused()?.terminal !== editor.address; waited += 16) {
-      run("pane.focus", { terminal: editor.address });
-      await cx.sleep(16);
-    }
 
     let ended;
     do {
