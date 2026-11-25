@@ -3,9 +3,11 @@ import { h_flex } from "gpui-base";
 import { spaces, panes, run, openOverlay, theme, window, shared, setShared, layout, settings, nextCommand, watchFolder, checking } from "herdr";
 import { mark } from "./marks.js";
 import { gitStatus, describe } from "./git.js";
-import { ICONS, REFRESHING, entryFor, target, refresh, installIcons, ticketIcon, prIcon, prColor, mergeLook, open } from "./status.js";
+import { ICONS, REFRESHING, entryFor, target, shown as followed, archivedSpaces, refresh, installIcons, ticketIcon, prIcon, prColor, mergeLook, open } from "./status.js";
 
 const PANEL_CHILDREN = { ticket: "ticket-status", pr: "pr-status" };
+// How old an archived space's ticket and PR state may get before the minutely kick looks it up again.
+const ARCHIVED_STALE = 10 * 60 * 1000;
 // image() rasterizes these 1em SVGs small and scales them up into a blurry fringe;
 // they are one color, so svg() can draw them crisp in that color.
 const BRAND = { "icons/claude.svg": "#D97757", "icons/amp.svg": "#F34E3F", "icons/kiro.svg": "#9046FF", "icons/codex.svg": "#7A9DFF" };
@@ -47,19 +49,31 @@ export default class Tabs extends View {
   }
 
   openLink(command) {
-    const space = spaces().find((s) => s.active);
+    const space = followed();
     const entry = space ? entryFor(target(space)) : null;
     if (!entry) return;
     open(command === "open-pr" ? entry.pr?.url : entry.ticket?.issue?.url);
   }
 
   kick(cx) {
-    const space = spaces().find((s) => s.active);
+    const space = followed();
     if (space) cx.spawn(async () => { await refresh(space); });
+    // Archived spaces keep their ticket and PR state fresh for the tree's archive, one at a time.
+    if (this.archiving) return;
+    const stale = archivedSpaces().filter((s) => { const e = entryFor(target(s)); return Date.now() - (e?.at ?? 0) > ARCHIVED_STALE || e?.ticket?.linear === "nokey"; });
+    if (!stale.length) return;
+    this.archiving = true;
+    cx.spawn(async () => {
+      try {
+        for (const s of stale) await refresh(s);
+      } finally {
+        this.archiving = false;
+      }
+    });
   }
 
   gitKick(cx) {
-    const space = spaces().find((s) => s.active), t = space ? target(space) : null;
+    const space = followed(), t = space ? target(space) : null;
     if (!t?.cwd) return;
     if (this.gitBusy) { this.gitAgain = true; return; }
     this.gitBusy = true;
@@ -100,7 +114,7 @@ export default class Tabs extends View {
     if (shown && name) { run(`status-panel.toggle-${name}`); return; }
     if (shown) { run("layout.hide", { id: "panel" }); return; }
     if (keyed && name) {
-      const space = spaces().find((s) => s.active), entry = space ? entryFor(target(space)) : null;
+      const space = followed(), entry = space ? entryFor(target(space)) : null;
       if (!(name === "ticket" ? entry?.ticket : entry?.pr)) return;
     }
     run("layout.select", { stack: "panel-body", child });
@@ -137,12 +151,12 @@ export default class Tabs extends View {
   }
 
   render(cx) {
-    // While the tree shows an empty view over the panes, the bar shows no space either.
-    const empty = Boolean(shared("tree.empty"));
-    const space = empty ? null : spaces().find(p => p.active);
+    // Over an empty view the bar follows no space, except the archive's selected one.
+    const space = followed();
+    const empty = !space && Boolean(shared("tree.empty"));
     // While the tree shows an archived space, its colour (the theme's ansi5) stands in for the accent, as in the sidebar.
     const base = theme();
-    const t = space && (shared("tree.archived") ?? []).includes(space.id) ? { ...base, accent: base.ansi5 } : base;
+    const t = space && (space.archived || (shared("tree.archived") ?? []).includes(space.id)) ? { ...base, accent: base.ansi5 } : base;
     const work = space ? target(space) : null;
     const workKey = space ? `${work.key}|${work.branch}|${work.cwd}` : null;
     if (!checking() && workKey !== this.workKey) {
@@ -246,7 +260,7 @@ export default class Tabs extends View {
       .on_mouse_up("left", () => { this.pressed = null; })
       .on_scroll_wheel(e => { if (Math.abs(e.delta.y) >= 1) run(e.delta.y > 0 ? "tab.prev" : "tab.next"); })
       .child(h_flex().id("tab-scroll").flex_1().min_w(0).h_full().items_center().gap(8).overflow_x_scrollbar().children(shown.length > 1 ? shown.map(item) : []))
-      .when(!empty, el => el.child(button("tab-new", "+", () => openOverlay({ mod: "new-menu", kind: "popup", width: 250, height: 512 })))
+      .when(!empty && !space?.archived, el => el.child(button("tab-new", "+", () => openOverlay({ mod: "new-menu", kind: "popup", width: 250, height: 512 })))
         .child(reviewButton()))
       .when(Boolean(ticket), el => el.child(ticketButton()))
       .when(Boolean(pr || (current && ticket) || current?.prError), el => el.child(prButton()))

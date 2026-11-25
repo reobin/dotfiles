@@ -102,7 +102,7 @@
     "cmd-shift-g": "status-tabs.open-pr",
     "cmd-shift-j": "status-panel.scroll-down",
     "cmd-shift-k": "status-panel.scroll-up",
-    "cmd-shift-t": "mod.open:recently-closed"
+    "cmd-shift-t": "mod.open:restore"
   },
   "terminal": {
     "cmd-y": "mod.open:copy-mode",

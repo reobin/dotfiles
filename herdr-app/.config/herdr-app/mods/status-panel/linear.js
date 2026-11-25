@@ -5,10 +5,18 @@ const KEY_FILE = ".config/linear/api-key";
 const TYPE_ORDER = { triage: 0, backlog: 1, unstarted: 2, started: 3, completed: 4, canceled: 5 };
 const KEEP_MS = 600000;
 
-let apiKey, apiKeyAt = 0;
-async function linearKey() {
-  if (apiKey || Date.now() - apiKeyAt < 300000) return apiKey;
+let apiKey, apiKeyAt = 0, apiKeyLoad = null;
+// One load at a time: a lookup that lands while the slow zsh read runs waits for it
+// instead of taking the empty key and caching its ticket as 'nokey'.
+function linearKey() {
+  if (apiKeyLoad) return apiKeyLoad;
+  if (apiKey || Date.now() - apiKeyAt < 300000) return Promise.resolve(apiKey);
   apiKeyAt = Date.now();
+  apiKeyLoad = loadKey().finally(() => { apiKeyLoad = null; });
+  return apiKeyLoad;
+}
+
+async function loadKey() {
   const env = await exec("printenv", ["LINEAR_API_KEY"]).catch(() => null);
   apiKey = env?.code === 0 ? env.stdout.trim() : null;
   if (!apiKey) {

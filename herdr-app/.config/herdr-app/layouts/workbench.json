@@ -160,10 +160,10 @@
               }
             },
             {
-              "id": "recently-closed",
+              "id": "restore",
               "type": "block",
               "content": {
-                "mod": "recently-closed"
+                "mod": "restore"
               },
               "size": {
                 "px": 0

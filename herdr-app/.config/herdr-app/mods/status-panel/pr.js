@@ -1,7 +1,7 @@
 import { div } from "gpui-kit";
 import { v_flex, h_flex } from "gpui-base";
 import { spaces, theme } from "herdr";
-import { MONO, entryFor, target, prIcon, prColor, mergeLook, ago, open } from "./look.js";
+import { MONO, entryFor, target, shown, prIcon, prColor, mergeLook, ago, open } from "./look.js";
 import { panelShell, act, valueOf, isPending, say, ask, kbd, spinner, icon, focusPanel, composer, openComposer, commentCard, isShown, refreshButton } from "./panel.js";
 import { openPicker, anchored, avatar, hex } from "./picker.js";
 import * as gh from "./github.js";
@@ -12,7 +12,7 @@ const DECISION = { approved: "approved", changes: "changes requested", waiting: 
 
 export function renderPr(view, cx) {
   const t = theme();
-  const space = spaces().find((s) => s.active);
+  const space = shown();
   const work = space ? target(space) : null;
   const current = entryFor(work);
   const real = current?.pr;

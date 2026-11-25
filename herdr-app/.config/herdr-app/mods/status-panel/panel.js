@@ -84,7 +84,8 @@ export function closePanel(view) {
     && panes().find((p) => p.terminal === back.terminal && p.tab === tab);
   const fallback = panes().find((p) => p.tab === tab && p.terminal);
   const to = pane || term || fallback;
-  if (to) run("pane.focus", { pane: to.pane });
+  // Over an empty view or the archive the panes are hidden; empty-view takes the keyboard back.
+  if (to && !shared("tree.empty")) run("pane.focus", { pane: to.pane });
   run("layout.hide", { id: "panel" });
 }
 

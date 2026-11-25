@@ -1,7 +1,7 @@
 import { div } from "gpui-kit";
 import { v_flex, h_flex, TextView } from "gpui-base";
 import { spaces, theme } from "herdr";
-import { MONO, entryFor, target, ticketIcon, stateIcon, open } from "./look.js";
+import { MONO, entryFor, target, shown, ticketIcon, stateIcon, open } from "./look.js";
 import { panelShell, act, valueOf, isPending, say, kbd, spinner, icon, composer, openComposer, focusPanel, commentCard, refreshButton } from "./panel.js";
 import { openPicker, anchored, avatar, hex } from "./picker.js";
 import * as linear from "./linear.js";
@@ -12,7 +12,7 @@ const personName = (p) => p?.displayName ?? p?.name ?? null;
 
 export function renderTicket(view) {
   const t = theme();
-  const space = spaces().find((s) => s.active);
+  const space = shown();
   const work = space ? target(space) : null;
   const current = entryFor(work);
   const ticket = current?.ticket;

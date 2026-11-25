@@ -3,12 +3,15 @@
 // agent pane gets a row with its icon, session title and status; any other
 // pane is a chip with its address and program, and a tab with no agent folds
 // to one line of chips. Only what needs you is marked. Under 160px wide,
-// spaces only. A group archives and moves as one. Active and archived spaces
-// are two views: only one draws, and a footer names it and offers the other
-// (space-nav walks one view at a time). The view is the shown space's, except
-// that closing or archiving its last space, or hopping into an empty one, keeps
-// it on screen empty until another space is shown. The archive is marked
-// beside the traffic lights and on the footer's top edge.
+// spaces only. A group archives and moves as one. Active spaces and the
+// archive are two views: only one draws, and a footer names it and offers the
+// other (space-nav walks one view at a time). The archive lists the restore
+// mod's records, one row per group, while the empty-view block shows the
+// selected one over the panes; cmd-. there unarchives it. The view is the
+// shown space's, except that alt-. into the archive, closing or archiving the
+// last active space, or hopping into an empty view, holds it until another
+// space is shown. The archive is marked beside the traffic lights and on the
+// footer's top edge.
 
 import { View, div, svg, image } from "gpui-kit";
 import { v_flex, h_flex, ScrollHandle } from "gpui-base";
@@ -24,6 +27,27 @@ const LEGACY = "tree.collapsed";
 const VIEW = "tree.view";
 // The empty view shown in place of the panes ("open" | "archive"), or null; empty-view and status-tabs read it.
 const EMPTY = "tree.empty";
+// The restore mod's archive (see its RECORDS), the requests sent to it, and the
+// record the archive view shows. space-nav and empty-view read them the same way.
+const RECORDS = "restore.records";
+const QUEUE = "restore.queue";
+const SELECTED = "archive.selected";
+const records = () => /** @type {any[]} */ (shared(RECORDS) ?? []);
+const selectedRecord = () => records().find((r) => r.id === shared(SELECTED)) ?? records()[0] ?? null;
+// { record, i }: the space within the selected group that cmd-i, cmd-g and the top bar follow; status-tabs, status-panel, space-nav and empty-view read it.
+const SPACE = "archive.space";
+const spaceIndex = (r) => { const s = /** @type {any} */ (shared(SPACE)); return s?.record === r?.id ? Math.min(s.i, r.spaces.length - 1) : 0; };
+function send(op) {
+  setShared(QUEUE, [...(/** @type {any[]} */ (shared(QUEUE) ?? [])), op]);
+  run("restore.work");
+}
+const TICKET = /^[A-Za-z][A-Za-z0-9]{1,4}-\d{1,6}$/;
+const PR = /^https:\/\/github\.com\/[^/\s]+\/[^/\s]+\/pull\/(\d+)$/;
+const plural = (n, word) => `${n} ${word}${n === 1 ? "" : "s"}`;
+function ago(ms) {
+  const m = Math.floor(ms / 60000);
+  return m < 1 ? "now" : m < 60 ? `${m}m` : m < 1440 ? `${Math.floor(m / 60)}h` : `${Math.floor(m / 1440)}d`;
+}
 // The block is a window drag handle; this keeps the list clear of the traffic
 // lights and level with the pane's top (30px tab bar + 8px padding).
 const TOP = 38;
@@ -199,15 +223,20 @@ export default class Tree extends View {
         const c = await nextCommand();
         if (c === "space-up") this.move(-1);
         if (c === "space-down") this.move(1);
-        if (c === "toggle-archive") this.toggle(spaces().find((s) => s.active)?.id);
+        if (c === "toggle-archive") this.toggle();
         if (c === "close-space") this.closeSpace();
       }
     });
   }
 
-  // Persisted by space id; ids of closed spaces are dropped on the next toggle.
+  // Live spaces out of the active view: ones archived before records (restore
+  // turns them into records), and a record's while it waits to close or is
+  // built back, including ones just sent to restore.
   archived() {
-    return new Set(/** @type {string[]} */ (shared(ARCHIVED) ?? shared(LEGACY) ?? []));
+    const ids = new Set(/** @type {string[]} */ (shared(ARCHIVED) ?? shared(LEGACY) ?? []));
+    for (const r of records()) for (const s of r.spaces) ids.add(s.done ?? s.id);
+    for (const op of /** @type {any[]} */ (shared(QUEUE) ?? [])) for (const id of op.ids ?? []) ids.add(id);
+    return ids;
   }
 
   // The groups on one side of the hairline: the one the space id is on.
@@ -215,37 +244,46 @@ export default class Tree extends View {
     return sets(all.filter((s) => archived.has(s.id) === archived.has(id)));
   }
 
-  toggle(id) {
-    if (id) this.setArchived(id, !this.archived().has(id));
+  // In the archive, the selected group: one still finishing its turn comes
+  // back at once, a closed one is built back. Elsewhere, the shown space's group.
+  toggle() {
+    if (viewOf(spaces(), this.archived()) !== "archive") return this.archive(spaces().find((s) => s.active)?.id);
+    const r = selectedRecord();
+    if (r?.state === "pending") send({ op: "cancel", record: r.id });
+    else if (r?.state === "closed") send({ op: "unarchive", record: r.id });
   }
 
   // Agents can't pass a space id to a mod command, so they label one of the
-  // space's terminals archive=1 (or archive=0 to unarchive); the label is
-  // cleared once applied.
+  // space's terminals archive=1 (or archive=0 to take back an archive that
+  // hasn't closed yet); the label is cleared once applied. Only the user
+  // unarchives a closed group.
   requests() {
     for (const term of terminals()) {
       const want = term.labels?.archive;
       const space = term.labels?.["herdr.space"];
       if ((want !== "1" && want !== "0") || !space || this.applying.has(term.address)) continue;
-      this.setArchived(term.machine ? `${term.machine}/${space}` : space, want === "1");
+      const id = term.machine ? `${term.machine}/${space}` : space;
+      if (want === "1") this.archive(id);
+      else {
+        const r = records().find((x) => x.state === "pending" && x.spaces.some((s) => s.id === id));
+        if (r) send({ op: "cancel", record: r.id });
+      }
       this.applying.add(term.address);
       hc(["label", term.address, "archive="]).finally(() => this.applying.delete(term.address));
     }
   }
 
-  // A space archives and unarchives with its whole group.
-  setArchived(id, archive) {
+  // A space archives with its whole group: restore records it and closes it
+  // once its Claudes are quiet. The view moves on to the next active space.
+  archive(id) {
     const all = spaces();
-    if (!all.some((s) => s.id === id)) return;
     const was = this.archived();
+    if (!id || !all.some((s) => s.id === id) || was.has(id)) return;
     const group = this.side(all, was, id).find((r) => r.some((s) => s.id === id)) ?? [];
-    const live = new Set(all.map((s) => s.id));
-    const set = new Set([...was].filter((x) => live.has(x)));
-    for (const s of group) archive ? set.add(s.id) : set.delete(s.id);
-    setShared(ARCHIVED, [...set]);
-    if (!archive || !group.some((s) => s.active)) return;
+    send({ op: "archive", ids: group.map((s) => s.id) });
+    if (!group.some((s) => s.active)) return;
     const ids = new Set(group.map((s) => s.id));
-    const open = all.filter((s) => !set.has(s.id) || ids.has(s.id));
+    const open = all.filter((s) => !was.has(s.id) || ids.has(s.id));
     const i = open.findIndex((s) => ids.has(s.id));
     const next = open[i + group.length] ?? open[i - 1];
     if (next) run("space.select", { id: next.id });
@@ -580,10 +618,9 @@ export default class Tree extends View {
   // The view you are in, with its count, and a button for the other one with
   // its count and what in it needs you. Its hairline runs to the pane, which
   // sits flush with the sidebar, and takes the archive's colour in the archive.
-  footer(t, here, other, inArchive) {
-    const count = (runs) => String(runs.flat().length);
+  footer(t, here, other, marks, inArchive) {
+    const count = (n) => String(n);
     const name = (archived) => (archived ? "archived" : "active");
-    const marks = other.flat().filter((s) => s.status && s.status !== "idle").map((s) => status(t, s.status));
     const hop = () => run("space-nav.switch");
     return v_flex().id("footer").flex_none()
       .child(div().flex_none().border_t(inArchive ? 2 : 1).border_color(inArchive ? archiveInk(t) : t.dim + "80"))
@@ -596,6 +633,64 @@ export default class Tree extends View {
           .child(h_flex().gap(6).items_center().child(div().child(name(!inArchive))).child(div().text_color(t.dim).child(count(other))))
           .when(marks.length > 0, (el) => el.child(h_flex().gap(3).items_center().children(marks)))
           .child(div().opacity(0.6).text_size(10.5).child("alt-."))));
+  }
+
+  // An archived space's ticket and PR state, as status-tabs caches it for its standIn(); keep the key in sync.
+  archivedWork(r, i) {
+    const infos = r.spaces[i].tabs.flatMap((tab) => Object.values(tab.info));
+    const lead = infos.find((p) => p.labels?.pr || p.labels?.ticket) ?? infos[0] ?? {};
+    const ticket = TICKET.test(lead.labels?.ticket ?? "") ? lead.labels.ticket : null;
+    const pr = PR.test(lead.labels?.pr ?? "") ? lead.labels.pr : null;
+    const key = [`archived:${r.id}:${i}`, ticket, pr, lead.branch ?? null, lead.sessionCwd || lead.cwd || null].join("|");
+    return shared("status-tabs.work")?.[key] ?? null;
+  }
+
+  // Archived groups drawn like active ones, from their records: a box per
+  // group with its name on the outline, a card per space with its repo, ticket
+  // and PR, the selected group outlined. Under the last card, how long ago it
+  // left, and why while it's still open.
+  records(t, recs, on) {
+    const labelsOf = (s) => s.tabs.flatMap((tab) => Object.values(tab.info)).map((p) => p.labels ?? {});
+    const ticketOf = (s) => labelsOf(s).map((l) => l.ticket).find((x) => TICKET.test(x ?? ""));
+    return recs.flatMap((r, k) => {
+      const sel = r.id === on;
+      const last = r.spaces.length - 1;
+      const at = sel ? spaceIndex(r) : -1;
+      const pick = (i) => {
+        setShared(SELECTED, r.id);
+        setShared(SPACE, { record: r.id, i });
+      };
+      const infos = r.spaces.flatMap((s) => s.tabs.flatMap((tab) => Object.values(tab.info)));
+      const note = r.state === "restoring" ? ["restoring", t.working]
+        : r.state !== "pending" ? null
+        : r.needs ? ["needs you", t.blocked]
+        : [r.wait ?? "finishing turn", t.working];
+      const name = h_flex().absolute().top(SLACK - 7).right(13).h(13).px(4).items_center().bg(t.chrome)
+        .child(div().font_family(MONO).text_size(11.5).text_color(sel ? t.accent : t.muted).child(r.name ?? "unnamed"));
+      return r.spaces.map((s, i) => {
+        const ticket = ticketOf(s);
+        const pr = labelsOf(s).map((l) => PR.exec(l.pr ?? "")?.[1]).find(Boolean);
+        const known = this.archivedWork(r, i);
+        const repo = s.repo ?? s.tabs.flatMap((tab) => Object.values(tab.info))[0]?.cwd?.split("/").pop() ?? "space";
+        const card = press(h_flex().id(`record-${r.id}-${i}`).h(22).flex_none().px(8).gap(8).items_center().rounded(5), () => pick(i))
+          .child(icon("cube").size(14).flex_none().text_color(t.dim))
+          .child(div().min_w(0).truncate().text_size(14).font_semibold().text_color(i === at ? t.foreground : t.muted).child(repo))
+          .child(div().flex_1())
+          .when(Boolean(ticket) && !(i > 0 && ticketOf(r.spaces[i - 1]) === ticket), (el) => el.child(tag(t, known?.ticket ? ticketLook(t, known.ticket) : ["lin-unknown", t.dim], ticket)))
+          .when(Boolean(pr), (el) => el.child(tag(t, known?.pr ? prLook(t, known.pr) : ["pr", t.dim], `#${pr}`)));
+        const box = v_flex().id(`record-box-${r.id}-${i}`).flex_none().px(4).pt(i === 0 ? 8 : 4).border_x(1)
+          .border_color(sel ? t.accent : t.border)
+          .when(i === 0, (el) => el.border_t(1).rounded_t(12))
+          .when(i === last, (el) => el.pb(4).border_b(1).rounded_b(12))
+          .child(v_flex().flex_none().px(i === at ? 3 : 4).py(i === at ? 3 : 4).rounded(8).bg(i === at ? t.background : t.foreground + "06")
+            .when(i === at, (el) => el.border(1).border_color(t.accent + "40")).child(card))
+          .when(i === last, (el) => el.child(h_flex().px(12).pt(5).pb(1).gap(8).font_family(MONO).text_size(10.5).text_color(t.dim)
+            .child(div().child(`${ago(Date.now() - r.at)} · ${plural(infos.filter((p) => p.session).length, "Claude")}`))
+            .when(Boolean(note), (el) => el.child(div().flex_1()).child(div().text_color(note[1]).child(note[0])))));
+        return v_flex().relative().flex_none().py(SLACK).mt((k > 0 && i === 0 ? 14 : 0) - (k === 0 && i === 0 ? 1 : 2) * SLACK).child(box)
+          .when(i === 0, (el) => el.child(name));
+      });
+    });
   }
 
   // An empty view names itself here; the empty-view block over the panes offers the way out.
@@ -633,7 +728,8 @@ export default class Tree extends View {
     const open = sets(all.filter((s) => !archived.has(s.id)));
     const archive = sets(all.filter((s) => archived.has(s.id)));
     const inArchive = this.stay(all, archived) === "archive";
-    this.showEmpty((inArchive ? archive : open).length ? null : inArchive ? "archive" : "open");
+    // The archive's selected group stands in for the panes, so the archive always shows the empty-view block.
+    this.showEmpty(inArchive ? "archive" : open.length ? null : "open");
     // In the archive the archive's colour stands in for the accent, so the shown
     // card, its group's name and its address all say where you are.
     const base = theme();
@@ -665,16 +761,26 @@ export default class Tree extends View {
         .when(archive.length > 0, (el) => el.child(shelf(v_flex().py(8).gap(8).items_center().children(this.rail(t, archive)))));
     }
     // One view shows in full, the one alt-j/k walks, and the footer names it.
-    const [full, rest] = inArchive ? [archive, open] : [open, archive];
-    const handle = inArchive ? this.archiveScroll : this.scroll;
-    this.reveal(handle, full.flat().map((s) => [s]), ps);
+    const recs = records();
+    const stored = recs.reduce((n, r) => n + r.spaces.length, 0);
+    const active = open.flat();
+    if (inArchive) {
+      const on = selectedRecord()?.id;
+      const list = v_flex().id("body").flex_1().min_h(0)
+        .child(recs.length
+          ? v_flex().id("archive").size_full().overflow_y_scrollbar().track_scroll(this.archiveScroll)
+            .pt(TOP).px(8).children(this.records(t, recs, on))
+          : this.empty(t, true));
+      const marks = active.filter((s) => s.status && s.status !== "idle").map((s) => status(t, s.status));
+      return root.child(list).child(this.footer(t, stored, active.length, marks, true)).child(this.archiveLabel(t));
+    }
+    this.reveal(this.scroll, active.map((s) => [s]), ps);
     const terms = new Map(terminals().map((x) => [x.address, x]));
     const list = v_flex().id("body").flex_1().min_h(0)
-      .child(full.length
-        ? v_flex().id(inArchive ? "archive" : "open").size_full().overflow_y_scrollbar().track_scroll(handle)
-          .pt(TOP).px(8).children(this.cards(t, full, ps, terms, new Set()))
-        : this.empty(t, inArchive));
-    return root.child(list).child(this.footer(t, full, rest, inArchive))
-      .when(inArchive, (el) => el.child(this.archiveLabel(t)));
+      .child(open.length
+        ? v_flex().id("open").size_full().overflow_y_scrollbar().track_scroll(this.scroll)
+          .pt(TOP).px(8).children(this.cards(t, open, ps, terms, new Set()))
+        : this.empty(t, false));
+    return root.child(list).child(this.footer(t, active.length, stored, [], false));
   }
 }

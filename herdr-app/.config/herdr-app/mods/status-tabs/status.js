@@ -1,4 +1,4 @@
-import { exec, panes, terminals, shared, setShared, home, appHome, readTextFile } from "herdr";
+import { exec, panes, terminals, spaces, shared, setShared, home, appHome, readTextFile } from "herdr";
 import * as fs from "fs/promises";
 import { SVGS, STARTED_MAX } from "./icons.js";
 
@@ -31,7 +31,37 @@ export const entryFor = (work) => (work ? (shared(KEY) ?? {})[work.key] : null) 
 
 // Agents label their terminal `ticket=<ID>` / `pr=<url>`: both follow the focused pane, falling
 // back to the first pane, whose branch (its worktree) fills in the rest.
+// The space the bar and panels follow: the shown one, none over an empty view,
+// and in the archive the selected archived space, from the restore mod's record
+// (the tree and space-nav keep the selection in archive.selected and archive.space).
+export function shown() {
+  const empty = shared("tree.empty");
+  if (empty !== "archive") return empty ? null : spaces().find((s) => s.active) ?? null;
+  const list = /** @type {any[]} */ (shared("restore.records") ?? []);
+  const r = list.find((x) => x.id === shared("archive.selected")) ?? list[0];
+  if (!r) return null;
+  const at = /** @type {any} */ (shared("archive.space"));
+  return standIn(r, at?.record === r.id ? Math.min(at.i, r.spaces.length - 1) : 0);
+}
+
+// An archived space as the bar, the panels and the tree's archive follow it: its
+// record's ticket, PR, branch and folder. The tree builds the same key; keep them in sync.
+export function standIn(r, i) {
+  const infos = r.spaces[i].tabs.flatMap((t) => Object.values(t.info));
+  const lead = infos.find((p) => p.labels?.pr || p.labels?.ticket) ?? infos[0] ?? {};
+  const cwd = lead.sessionCwd || lead.cwd || null;
+  return { id: `archived:${r.id}:${i}`, tabs: [], machine: null, archived: { ticket: lead.labels?.ticket ?? null, pr: lead.labels?.pr ?? null, branch: lead.branch ?? null, cwd } };
+}
+
+export const archivedSpaces = () => (/** @type {any[]} */ (shared("restore.records") ?? [])).flatMap((r) => r.spaces.map((_, i) => standIn(r, i)));
+
 export function target(space) {
+  if (space?.archived) {
+    const a = space.archived;
+    const ticket = TICKET_LABEL.test(a.ticket ?? "") ? a.ticket : null, pr = PR_LABEL.test(a.pr ?? "") ? a.pr : null;
+    // gh finds a PR by its URL from anywhere; its worktree may be gone.
+    return { cwd: a.cwd, branch: a.branch, on: null, ticket, pr, prCwd: pr ? home() : a.cwd, prBranch: a.branch, key: [space.id, ticket, pr, a.branch, a.cwd].join("|") };
+  }
   const tabs = space?.tabs ?? [];
   const inSpace = panes().filter((p) => p.terminal && tabs.some((t) => t.id === p.tab));
   const first = inSpace.find((p) => p.tab === tabs[0]?.id) ?? null;
@@ -47,10 +77,18 @@ export function target(space) {
   return { cwd, branch, on: space?.machine ?? null, ticket, pr, prCwd, prBranch, key: [space?.id, ticket, pr, prBranch, prCwd].join("|") };
 }
 
-let apiKey, apiKeyAt = 0;
-async function linearKey() {
-  if (apiKey || Date.now() - apiKeyAt < 300000) return apiKey;
+let apiKey, apiKeyAt = 0, apiKeyLoad = null;
+// One load at a time: a lookup that lands while the slow zsh read runs waits for it
+// instead of taking the empty key and caching its ticket as 'nokey'.
+function linearKey() {
+  if (apiKeyLoad) return apiKeyLoad;
+  if (apiKey || Date.now() - apiKeyAt < 300000) return Promise.resolve(apiKey);
   apiKeyAt = Date.now();
+  apiKeyLoad = loadKey().finally(() => { apiKeyLoad = null; });
+  return apiKeyLoad;
+}
+
+async function loadKey() {
   const env = await exec("printenv", ["LINEAR_API_KEY"]).catch(() => null);
   apiKey = env?.code === 0 ? env.stdout.trim() : null;
   // The key is exported from ~/.zshrc.private, which only an interactive zsh reads.
