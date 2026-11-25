@@ -106,7 +106,10 @@ function mergeState(raw, required) {
     if (running) reasons.push(`${running} running`);
   }
   if (raw.reviewDecision === "CHANGES_REQUESTED") reasons.push("changes requested");
-  if (raw.reviewDecision === "REVIEW_REQUIRED") reasons.push("needs approval");
+  if (raw.reviewDecision === "REVIEW_REQUIRED") {
+    const approvals = (raw.latestReviews ?? []).filter((r) => r.state === "APPROVED").length;
+    reasons.push(approvals ? `${approvals} approval${approvals > 1 ? "s" : ""}, needs more` : "needs approval");
+  }
   if (raw.mergeStateStatus === "BEHIND") reasons.push(`behind ${raw.baseRefName}`);
   if (raw.mergeStateStatus === "BLOCKED" && !reasons.length) reasons.push("blocked by branch rules");
   if (reasons.length) return { ok: false, reasons };
