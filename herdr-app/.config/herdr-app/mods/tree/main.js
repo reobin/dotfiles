@@ -31,6 +31,7 @@ const TOP = 38;
 const ROW = 26;
 const SLACK = 8;
 const icon = (name) => svg(`mods/tree/${name}.svg`);
+const zoomMark = (t) => h_flex().flex_none().px(3).h(16).items_center().rounded(5).bg(t.accent + "26").text_color(t.accent).child(icon("zoomed").size(11));
 // image() rasterizes these 1em SVGs small and scales them up into a blurry fringe;
 // they are one color, so svg() can draw them crisp in that color.
 const BRAND = { "icons/claude.svg": "#D97757", "icons/amp.svg": "#F34E3F", "icons/kiro.svg": "#9046FF", "icons/codex.svg": "#7A9DFF" };
@@ -335,8 +336,7 @@ export default class Tree extends View {
     const label = h_flex().flex_none().h(ROW).gap(4).items_center()
       .child(icon("window").size(12).flex_none().text_color(t.dim))
       .child(div().flex_none().font_family(MONO).text_size(11).font_semibold().text_color(shown ? t.foreground : t.muted).child(String(tab.index)))
-      .when(tab.named, (el) => el.child(div().min_w(0).max_w(one ? 90 : 140).truncate().text_size(11.5).text_color(t.dim).child(tab.name)))
-      .when(tab.zoomed, (el) => el.child(div().flex_none().text_size(11.5).text_color(t.dim).child("zoomed")));
+      .when(tab.named, (el) => el.child(div().min_w(0).max_w(one ? 90 : 140).truncate().text_size(11.5).text_color(t.dim).child(tab.name)));
     // Chips wrap in their own column, so a second line starts under the
     // first chip rather than under the tab icon.
     return press(this.lit(h_flex().id(`tab-${tab.id}`).min_h(ROW).flex_none().px(8).gap(4),
@@ -377,6 +377,7 @@ export default class Tree extends View {
         .when(Boolean(sign), (el) => el.child(this.pill(t, on, sign)))
         .when(!sign, (el) => el.pl(6))
         .child(div().min_w(0).max_w(140).truncate().text_size(12).text_color(on ? t.foreground : t.muted).child(name ?? ""))
+        .when(p.zoomed, (el) => el.child(zoomMark(t)))
         .when(Boolean(st), (el) => el.child(st)));
   }
 
@@ -407,6 +408,7 @@ export default class Tree extends View {
       .child(this.pill(t, on, sign ?? "·"))
       .when(Boolean(pic), (el) => el.child(pic))
       .child(div().flex_1().min_w(0).truncate().font_family(SANS).text_size(13.5).when(on, (el) => el.font_medium()).text_color(on ? t.foreground : t.muted).child(name))
+      .when(p.zoomed, (el) => el.child(zoomMark(t)))
       .when(Boolean(st), (el) => el.child(st));
   }
 

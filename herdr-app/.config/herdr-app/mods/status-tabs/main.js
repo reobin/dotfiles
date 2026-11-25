@@ -173,7 +173,7 @@ export default class Tabs extends View {
           const tint = program.tint ? t.dim : BRAND[program.icon];
           return el.child(tint ? svg(GLYPH[program.icon] ?? program.icon).size(14).text_color(tint) : image(program.icon).size(14));
         })
-        .child(div().max_w(170).truncate().child(c.zoomed ? `${name} Z` : name))
+        .child(div().max_w(170).truncate().child(name))
         .child(div().size(12).flex_none().flex().items_center().justify_center()
           .when(Boolean(mark(t, c.status)), el => el.child(mark(t, c.status))));
     };
