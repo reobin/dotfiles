@@ -500,7 +500,7 @@ export default class Tree extends View {
     const pad = s.active ? 1 : 0;
     return v_flex().id(`card-${s.id}`).flex_none().px(4 - pad).pt(4 - pad).pb(4 - pad).rounded(8)
       .bg(this.hot === `space-${s.id}` ? t.hover : s.active ? t.background : t.foreground + "06")
-      .when(s.active, (el) => el.border(1).border_color(t.accent + "33"))
+      .when(s.active, (el) => el.border(1).border_color(t.accent + "40"))
       .children(this.rows(t, s, ps, terms, folded, same));
   }
 
@@ -508,11 +508,11 @@ export default class Tree extends View {
   // one of its own. It is drawn as one slice per card so every card is its own
   // list child: scroll_to_item can then reveal the shown card even when its
   // group is taller than the sidebar.
-  group(t, run, ps, terms, folded) {
+  group(t, run, ps, terms, folded, held) {
     const last = run.length - 1;
     const ids = run.map((s) => work(s, ps, terms).ticket?.id);
     return run.map((s, i) => v_flex().id(`group-${s.id}`).flex_none().px(4).pt(i === 0 ? 8 : 4).border_x(1)
-      .border_color(t.border)
+      .border_color(held ? t.accent : t.border)
       .when(i === 0, (el) => el.border_t(1).rounded_t(12))
       .when(i === last, (el) => el.pb(4).border_b(1).rounded_b(12))
       .child(this.card(t, s, ps, terms, folded.has(s.id), i > 0 && Boolean(ids[i]) && ids[i] === ids[i - 1])));
@@ -524,8 +524,9 @@ export default class Tree extends View {
   // it, and every box leaves room for one so naming a space shifts nothing.
   cards(t, runs, ps, terms, folded) {
     return runs.flatMap((run, k) => {
-      const name = this.legend(t, run[0], ps, run.some((s) => s.active) ? t.accent : t.muted);
-      return this.group(t, run, ps, terms, folded).map((el, i) =>
+      const held = run.some((s) => s.active);
+      const name = this.legend(t, run[0], ps, held ? t.accent : t.muted);
+      return this.group(t, run, ps, terms, folded, held).map((el, i) =>
         v_flex().relative().flex_none().py(SLACK).mt((k > 0 && i === 0 ? 14 : 0) - (k === 0 && i === 0 ? 1 : 2) * SLACK).child(el)
           .when(i === 0 && Boolean(name), (el) => el.child(name)));
     });
