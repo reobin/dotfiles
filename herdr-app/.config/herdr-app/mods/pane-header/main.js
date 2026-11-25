@@ -2,11 +2,13 @@
 //   { "tab": "active", "pane": { "header": { "content": { "mod": "pane-header" } } } }
 // Shows the terminal's address, the program's icon (the app's program table), the agent's name or
 // the terminal's title, the folder, how many lines it's scrolled back (click: to the bottom), a zoom mark while zoomed, and the agent's status; buttons split, zoom and close
-// this pane. Props from the app: { pane, terminal }. Click: focus the pane.
+// this pane. Props from the app: { pane, terminal }. Click: focus the pane. While link-hints runs on this pane,
+// its labels are drawn here (hints.js).
 
 import { View, div, svg, image } from "gpui-kit";
 import { h_flex } from "gpui-base";
 import { mark } from "./marks.js";
+import { withHints } from "./hints.js";
 import { panes, props, run, theme, home, shared, spaces } from "herdr";
 
 const SANS = "Geist";
@@ -83,7 +85,7 @@ export default class Pane extends View {
     const st = p.status;
     const pane = p.pane;
     const back = p.scroll?.from_bottom ?? 0;
-    return h_flex()
+    const header = h_flex()
       .id(`pane-head-${pane}`)
       .size_full()
       // A wash of the accent, so the header turns violet with the rest in the archive. The
@@ -114,5 +116,6 @@ export default class Pane extends View {
         .child(this.button(t, `ph-d-${pane}`, "split-down", "pane.split", { direction: "down", pane }))
         .child(this.button(t, `ph-z-${pane}`, p.zoomed ? "unzoom" : "zoom", "pane.zoom", { pane }))
         .child(this.button(t, `ph-x-${pane}`, "close", "pane.close", { pane })));
+    return withHints(header, pane);
   }
 }

@@ -1,10 +1,10 @@
 import { View, div } from "gpui-kit";
-import { h_flex } from "gpui-base";
-import { checking, closeOverlay, focused, hc, nextCommand, notify, panes, props, run, setShared, settings, shared, terminals, theme } from "herdr";
+import { checking, closeOverlay, focused, hc, layout, nextCommand, notify, panes, props, run, setShared, terminals } from "herdr";
 
 const ALPHABET = "sadfjklewcmpgh";
 const URL = /https?:\/\/[^\s<>"'`]+/g;
-const POPUP = "link-hints.popup";
+// What each pane-header copy reads to draw the labels under its header (pane-header/hints.js).
+const HINTS = "link-hints.shown";
 const emoji = /^\p{Emoji_Presentation}$/u;
 const mark = /^\p{Mark}$/u;
 
@@ -74,22 +74,12 @@ function labels(n) {
   return hints.slice(offset, offset + n).sort().map((h) => [...h].reverse().join(""));
 }
 
-// Grid origins measured from `herdr-app shot` with one pane in the tab. Mods
-// can't read where a pane sits in the window, so splits fall back to a list.
-const ORIGINS = { workbench: { x: 473.5, y: 93 } };
-// Mods can't read the display scale either; a Retina display is assumed.
-const SCALE = 2;
-
-// Ghostty rounds cells to whole device pixels; JetBrains Mono's advance is
-// 0.6em and its ascent plus descent 1.32em.
-function geometry(layoutName) {
-  const s = settings();
-  const px = Number(s.font_size ?? 14) * Number(s.zoom ?? 1) * SCALE;
-  return {
-    ...(ORIGINS[layoutName] ?? { x: 0, y: 0 }),
-    w: Math.round(px * 0.6) * Number(s.terminal_cell_width ?? 1) / SCALE,
-    h: Math.round(px * 1.32) * Number(s.terminal_line_height ?? 1) / SCALE,
-  };
+// The labels are drawn by the pane-header mod, pinned under a header at the top of each pane.
+function framed(node) {
+  if (!node || typeof node !== "object") return false;
+  const header = node.content?.pane?.header;
+  if (header?.content?.mod === "pane-header" && (header.position ?? "top") === "top" && header.reveal !== "hover") return true;
+  return [...(node.children ?? []), ...(node.floating ?? [])].some(framed);
 }
 
 function keyName({ key, key_char, modifiers }) {
@@ -101,14 +91,7 @@ export default class LinkHints extends View {
   init(_props, cx) {
     this.typed = "";
     if (checking()) {
-      // A check has no overlay; draw sample hints so it covers the drawing path.
       this.handle = cx.focus_handle();
-      this.layoutName = "check";
-      this.grid = { cols: 80, rows: 24 };
-      this.hints = [
-        { url: "https://example.com", label: "a", spans: [{ row: 1, start: 2, end: 21 }] },
-        { url: "https://example.org", label: "sd", spans: [{ row: 3, start: 70, end: 80 }, { row: 4, start: 0, end: 9 }] },
-      ];
       return;
     }
     this.overlay = props()?.overlay;
@@ -119,15 +102,15 @@ export default class LinkHints extends View {
       closeOverlay(this.overlay);
       return;
     }
-    this.terminal = terminal;
-    this.pane = pane;
-    this.hints = null;
-    this.layoutName = String(shared("layout") ?? "main");
-    if (!this.placeable()) {
-      notify({ title: "link hints need a pane that fills its tab", body: "zoom the pane or close the split, at app zoom 100%.", level: "info", timeout: 2500 });
+    if (!framed(layout())) {
+      notify({ title: "link hints need pane-header", body: "this layout's panes need the pane-header mod as a header at the top, always shown.", level: "info", timeout: 2500 });
       closeOverlay(this.overlay);
       return;
     }
+    this.terminal = terminal;
+    this.pane = pane;
+    this.hints = null;
+    this.at = Date.now();
     this.handle = cx.focus_handle();
     this.handle.focus();
     cx.spawn(async (cx) => {
@@ -143,7 +126,7 @@ export default class LinkHints extends View {
         this.finish();
         return;
       }
-      cx.notify();
+      this.publish();
     });
     cx.spawn(async (cx) => {
       while (!this.done) {
@@ -184,13 +167,16 @@ export default class LinkHints extends View {
     return null;
   }
 
-  // Mods can't read where a pane sits, so inline markers are trusted only
-  // where the origin was measured: a pane filling its tab, at zoom 1.
-  // Anywhere else Cmd-L says so instead of drawing labels in the wrong place.
-  placeable() {
-    const pane = panes().find((p) => p.pane === this.pane);
-    const lone = pane?.zoomed || panes().filter((p) => p.tab === pane?.tab).length === 1;
-    return Boolean(lone && ORIGINS[this.layoutName] && Number(settings().zoom ?? 1) === 1);
+  publish() {
+    if (this.done || !this.hints) return;
+    setShared(HINTS, {
+      pane: this.pane,
+      at: this.at,
+      grid: this.grid,
+      hints: this.hints.map(({ label, spans }) => ({ label, spans })),
+      typed: this.typed,
+      copying: Boolean(this.copying),
+    });
   }
 
   press(key, shift, cx) {
@@ -205,7 +191,7 @@ export default class LinkHints extends View {
       const hit = matches.find((h) => h.label === typed);
       if (hit) return this.activate(hit.url, shift, cx);
     } else return;
-    cx.notify();
+    this.publish();
   }
 
   activate(url, copy, cx) {
@@ -221,6 +207,7 @@ export default class LinkHints extends View {
   finish(refocus = true) {
     if (this.done) return;
     this.done = true;
+    setShared(HINTS, null);
     closeOverlay(this.overlay);
     if (refocus && panes().some((p) => p.pane === this.pane)) run("pane.focus", { pane: this.pane });
   }
@@ -229,86 +216,16 @@ export default class LinkHints extends View {
     this.finish();
   }
 
-  // Where the popup sits in the window. Herdr insets it from the `at` corner,
-  // so the first pointer move over it measures that inset and keeps it.
-  popup() {
-    return shared(POPUP) ?? { x: 8.6, y: 10.6 };
-  }
-
-  measure(event) {
-    if (!event.local_position) return;
-    const at = { x: event.position.x - event.local_position.x, y: event.position.y - event.local_position.y };
-    const was = this.popup();
-    if (Math.abs(at.x - was.x) > 0.25 || Math.abs(at.y - was.y) > 0.25) setShared(POPUP, at);
-  }
-
+  // Draws nothing: it holds the keyboard and takes a click anywhere as a cancel.
   render() {
-    // A popup takes the width share from mod.json but not the height, so the
-    // root sizes itself to what the window shows from the popup's corner on.
     const view = window.viewport_size();
-    const p = this.popup();
-    const root = div().id("link-hints").w(view.width - p.x).h(view.height - p.y).relative();
+    const root = div().id("link-hints").w(view.width).h(view.height);
     if (!this.handle) return root;
     // Switching tab or pane leaves the hints behind; let the new focus be.
-    const now = focused();
-    if (this.pane && !this.done && now?.pane !== this.pane) {
+    if (this.pane && !this.done && focused()?.pane !== this.pane) {
       this.finish(false);
       return root;
     }
-    const c = geometry(this.layoutName);
-    const x = (col) => c.x - p.x + col * c.w;
-    const y = (row) => c.y - p.y + row * c.h;
-    const t = theme();
-    const font = String(settings().font ?? "JetBrains Mono");
-    const grid = this.grid;
-    const shown = (this.hints ?? []).filter((h) => h.label.startsWith(this.typed));
-
-    // Labels take the terminal palette's blue (green while ⇧ copies), with the
-    // terminal background as ink, so they follow light and dark themes.
-    const solid = (this.copying ? t.ansi2 : t.ansi4) ?? t.accent;
-    const ink = t.background;
-    const alpha = (color, a) => (/^#[0-9a-f]{6}$/i.test(color) ? color + a : color);
-    const letters = (h) => [
-      this.typed && div().text_color(alpha(ink, "80")).child(this.typed.toUpperCase()),
-      div().child(h.label.slice(this.typed.length).toUpperCase()),
-    ].filter(Boolean);
-    const badge = (h) => h_flex()
-      .flex_none()
-      .items_center()
-      .justify_center()
-      .rounded(5)
-      .bg(solid)
-      .text_color(ink)
-      .font_family(font)
-      .font_weight(800)
-      .whitespace_nowrap()
-      .children(letters(h));
-
-    // Everything but the links fades back: a veil of the terminal's own
-    // background over every cell that isn't part of a shown URL.
-    const veil = grid ? Array.from({ length: grid.rows }, (_, r) => {
-      const spans = shown.flatMap((h) => h.spans.filter((s) => s.row === r)).sort((a, b) => a.start - b.start);
-      const gaps = [];
-      let at = 0;
-      for (const s of [...spans, { start: grid.cols, end: grid.cols }]) {
-        if (s.start > at) gaps.push([at, s.start]);
-        at = Math.max(at, s.end);
-      }
-      return gaps.map(([from, to]) => div().id(`veil-${r}-${from}`).absolute()
-        .left(x(from)).top(y(r)).w((to - from) * c.w).h(c.h).bg(alpha(t.background, "a8")));
-    }).flat() : [];
-
-    // The label ends just left of the URL, over the dimmed text before it,
-    // so the whole address stays readable.
-    const marker = (h) => {
-      const first = h.spans[0];
-      return badge(h).id(`hint-${h.label}`).absolute()
-        .right(view.width - p.x - x(first.start) + 2).top(y(first.row) + 1)
-        .min_w(Math.max(h.label.length, 1.6) * c.w).h(c.h - 2).px(3)
-        .shadow_sm()
-        .text_size(Math.max(10, Math.round(c.h * 0.64)));
-    };
-
     return root
       .track_focus(this.handle)
       .on_key_down((event, cx) => {
@@ -317,18 +234,15 @@ export default class LinkHints extends View {
         if (key) this.press(key, event.modifiers.shift, cx);
       })
       .on_modifiers_changed((event, cx) => this.modifiers(event, cx))
-      .on_mouse_move((event) => this.measure(event))
-      .on_mouse_down("left", () => this.finish())
-      .when(shown.length > 0, (el) => el.children(veil))
-      .children(shown.map(marker));
+      .on_mouse_down("left", () => this.finish());
   }
 
-  modifiers(event, cx) {
+  modifiers(event) {
     const m = event.modifiers;
     const copying = Boolean(m.shift && !m.platform && !m.control && !m.alt);
     if (copying !== Boolean(this.copying)) {
       this.copying = copying;
-      cx.notify();
+      this.publish();
     }
   }
 }
