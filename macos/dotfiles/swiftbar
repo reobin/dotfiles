@@ -1,0 +1,15 @@
+#!/usr/bin/env bash
+
+# Plugins are linked in from their own repos by macos/software, so the plugin
+# folder is a plain directory rather than a stow link into this repo.
+if [[ -L ~/.config/swiftbar ]]; then
+  rm ~/.config/swiftbar
+fi
+mkdir -p ~/.config/swiftbar/plugins
+
+defaults write com.ameba.SwiftBar PluginDirectory -string "$HOME/.config/swiftbar/plugins"
+
+if [[ -d /Applications/SwiftBar.app ]]; then
+  osascript -e 'tell application "System Events" to if not (exists login item "SwiftBar") then make login item at end with properties {path:"/Applications/SwiftBar.app", hidden:true}' >/dev/null
+  open -gj /Applications/SwiftBar.app
+fi

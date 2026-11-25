@@ -18,6 +18,7 @@ CONFIGS=(
   pi
   starship
   surfingkeys
+  swiftbar
   zsh
 )
 

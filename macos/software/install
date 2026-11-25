@@ -8,6 +8,7 @@ INSTALL_DIRECTORY="$DOTFILES_DIRECTORY/macos"
 SOFTWARE=(
   gw
   herdr-app
+  swiftbar-aws-vpn
 )
 
 for software in "${SOFTWARE[@]}"; do

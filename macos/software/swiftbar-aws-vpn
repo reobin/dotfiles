@@ -1,0 +1,17 @@
+#!/usr/bin/env bash
+
+# The AWS VPN SwiftBar plugin lives in its own repo. Clone it once,
+# fast-forward on later runs, and link the plugin into SwiftBar's folder.
+SWIFTBAR_AWS_VPN_DIR="${SWIFTBAR_AWS_VPN_DIR:-$HOME/.local/share/swiftbar-aws-vpn}"
+
+if [[ -d "$SWIFTBAR_AWS_VPN_DIR/.git" ]]; then
+  echo "updating swiftbar-aws-vpn ($SWIFTBAR_AWS_VPN_DIR)"
+  git -C "$SWIFTBAR_AWS_VPN_DIR" pull --ff-only || echo "warning: swiftbar-aws-vpn update failed" >&2
+else
+  echo "cloning swiftbar-aws-vpn ($SWIFTBAR_AWS_VPN_DIR)"
+  mkdir -p "$(dirname "$SWIFTBAR_AWS_VPN_DIR")"
+  git clone https://github.com/reobin/swiftbar-aws-vpn.git "$SWIFTBAR_AWS_VPN_DIR" || echo "warning: swiftbar-aws-vpn clone failed" >&2
+fi
+
+mkdir -p ~/.config/swiftbar/plugins
+ln -sfn "$SWIFTBAR_AWS_VPN_DIR/aws-vpn.10s.sh" ~/.config/swiftbar/plugins/aws-vpn.10s.sh
