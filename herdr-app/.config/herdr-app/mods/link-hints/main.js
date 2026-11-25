@@ -76,7 +76,7 @@ function labels(n) {
 
 // Grid origins measured from `herdr-app shot` with one pane in the tab. Mods
 // can't read where a pane sits in the window, so splits fall back to a list.
-const ORIGINS = { workbench: { x: 473.5, y: 90 } };
+const ORIGINS = { workbench: { x: 473.5, y: 93 } };
 // Mods can't read the display scale either; a Retina display is assumed.
 const SCALE = 2;
 
