@@ -343,7 +343,7 @@ export default class Tree extends View {
   }
 
   // A folded space keeps its pane count and its status, so what needs you still shows.
-  // The repo leads and the ticket and PR sit at the right edge, where the
+  // The repo leads and the PR and ticket sit at the right edge, where the
   // task's name sits above them on the outline. same: the card above in the
   // group shows this ticket, so this one leaves it out.
   space(t, s, ps, terms, folded, same) {
@@ -356,8 +356,8 @@ export default class Tree extends View {
       .child(icon("cube").size(14).flex_none().text_color(t.dim))
       .child(div().min_w(0).truncate().text_size(14).font_semibold().text_color(s.active ? t.foreground : t.muted).child(this.repoOf(s, ps)))
       .child(div().flex_1())
-      .when(Boolean(ticket) && !same, (el) => el.child(tag(t, ticketLook(t, ticket), ticket.id)))
       .when(Boolean(pr), (el) => el.child(tag(t, prLook(t, pr), `#${pr.number}`)))
+      .when(Boolean(ticket) && !same, (el) => el.child(tag(t, ticketLook(t, ticket), ticket.id)))
       .when(folded, (el) => el
         .child(div().flex_none().pt(2).font_family(MONO).text_size(11.5).text_color(t.dim)
           .child(`+${ps.filter((p) => tabs.has(p.tab)).length}`))
@@ -676,8 +676,8 @@ export default class Tree extends View {
           .child(icon("cube").size(14).flex_none().text_color(t.dim))
           .child(div().min_w(0).truncate().text_size(14).font_semibold().text_color(i === at ? t.foreground : t.muted).child(repo))
           .child(div().flex_1())
-          .when(Boolean(ticket) && !(i > 0 && ticketOf(r.spaces[i - 1]) === ticket), (el) => el.child(tag(t, known?.ticket ? ticketLook(t, known.ticket) : ["lin-unknown", t.dim], ticket)))
-          .when(Boolean(pr), (el) => el.child(tag(t, known?.pr ? prLook(t, known.pr) : ["pr", t.dim], `#${pr}`)));
+          .when(Boolean(pr), (el) => el.child(tag(t, known?.pr ? prLook(t, known.pr) : ["pr", t.dim], `#${pr}`)))
+          .when(Boolean(ticket) && !(i > 0 && ticketOf(r.spaces[i - 1]) === ticket), (el) => el.child(tag(t, known?.ticket ? ticketLook(t, known.ticket) : ["lin-unknown", t.dim], ticket)));
         const box = v_flex().id(`record-box-${r.id}-${i}`).flex_none().px(4).pt(i === 0 ? 8 : 4).border_x(1)
           .border_color(sel ? t.accent : t.border)
           .when(i === 0, (el) => el.border_t(1).rounded_t(12))
