@@ -1,6 +1,6 @@
 import { View, div, svg } from "gpui-kit";
 import { v_flex, h_flex, InputState, Input, TextareaState, Textarea, Popup } from "gpui-base";
-import { spaces, panes, agents, focused, theme, settings, props, closeOverlay, shared, setShared, hc, run, notify, keys, nextCommand, exec } from "herdr";
+import { spaces, panes, agents, focused, theme, settings, props, openOverlay, closeOverlay, shared, setShared, hc, run, notify, keys, nextCommand, exec } from "herdr";
 import { loadDiff, loadBases, loadFile, isLine, anchor, message } from "./diff.js";
 import { treeOrder, treeRows } from "./tree.js";
 import { wrapSpans, wrapText, lineCount, pairs } from "./layout.js";
@@ -70,6 +70,15 @@ let charW = null;
 const whereKey = (w) => `${w.on ?? ""}:${w.cwd}`;
 const lastKey = (on, root, mode) => `${on ?? ""}:${root}:${mode}`;
 const rowsText = (rows) => rows.map((r) => `${r.kind}${r.old ?? ""},${r.new ?? ""} ${r.text}`).join("\n");
+// The working-tree line to open nvim at: a deleted line has none, so the next line that still exists.
+const editLine = (rows, i) => {
+  for (let d = 0; d < rows.length; d++) {
+    if (rows[i + d]?.new) return rows[i + d].new;
+    if (rows[i - d]?.new) return rows[i - d].new;
+  }
+  return null;
+};
+const parse = (r) => { try { return JSON.parse(r.stdout || "null"); } catch (_) { return null; } };
 const nearestLine = (rows, i) => {
   for (let d = 0; d < rows.length; d++) {
     if (isLine(rows[i - d])) return i - d;
@@ -167,6 +176,7 @@ export default class Review extends View {
       for (;;) {
         const command = await nextCommand();
         this.count = null; this.prefix = null;
+        if (this.editing) continue;
         if (this.help) { this.help = false; cx.notify(); continue; }
         if (command === "send") this.sendCommand(cx);
         else if (command === "reset") this.reset(cx);
@@ -737,9 +747,12 @@ export default class Review extends View {
     });
   }
 
+  // On a commented line without a range, c edits that comment.
   compose() {
     const file = this.file();
     if (!file || !isLine(file.rows[this.cursor])) return;
+    const hit = !this.visual && this.commentAt();
+    if (hit) return this.edit(hit);
     const [from, to] = this.range();
     this.composer = { id: null, at: lineKey(file.rows, to), ...anchor(file.rows, from, to) };
     this.input.set_value("");
@@ -922,7 +935,39 @@ export default class Review extends View {
     cx.notify();
   }
 
+  // e: the file in nvim at the cursor's line, in a dialog over the review. The diff reloads when nvim exits.
+  openEditor(cx) {
+    const file = this.file();
+    if (!file || !this.root || this.editing) return;
+    if (file.status === "D") { this.note = `${file.path} is deleted`; return; }
+    const line = file.rows ? editLine(file.rows, this.cursor) : null, { on } = this.where;
+    this.editing = true; this.note = null;
+    cx.spawn(async (cx) => {
+      let address = null, dialog = null, ended = null;
+      try {
+        const started = await hc(["run", "--bg", "--json", "--no-parent", "--no-notify", "--name", `review-edit-${Date.now()}`,
+          ...(on ? ["--on", on] : []), "--cwd", this.root, "nvim", ...(line ? [`+${line}`] : []), file.path]);
+        address = parse(started)?.address;
+        if (!address) throw new Error((started.stderr || started.stdout).trim() || "nvim did not start");
+        dialog = openOverlay({ kind: "dialog", modal: true, frame: "none", width: 0.86, height: 0.84, layout: {
+          type: "block", background: theme().background, border: { width: 1, color: "accent" }, radius: 12, shadow: "lg",
+          content: { terminal: address },
+        } });
+        do ended = parse(await exec("hc", ["wait", "--json", "--timeout", "550", address], { timeout: 600_000 }));
+        while (ended && !ended.ended);
+      } catch (e) { this.note = `editor failed: ${e?.message ?? e}`; }
+      finally {
+        if (dialog) closeOverlay(dialog);
+        if (ended?.ended) await hc(["rm", address]);
+        this.editing = false;
+        if (!this.gone) { this.handle.focus(); this.reload(cx); }
+        cx.notify();
+      }
+    });
+  }
+
   key(e, cx) {
+    if (this.editing) return;
     const m = e.modifiers, plain = !(m.platform || m.control || m.alt);
     // A shifted letter reads as its capital, however the platform reports it.
     const k = m.shift && /^[a-z]$/.test(e.key) ? e.key.toUpperCase() : e.key;
@@ -964,7 +1009,7 @@ export default class Review extends View {
     else if (k === "]") for (let n = 0; n < times; n++) this.hunk(1);
     else if (k === "[") for (let n = 0; n < times; n++) this.hunk(-1);
     else if (k === "c" || k === "enter") this.compose();
-    else if (k === "e") this.edit(this.commentAt());
+    else if (k === "e") this.openEditor(cx);
     else if (k === "d" || k === "backspace") this.remove();
     else return;
     cx.stop_propagation();
@@ -1100,7 +1145,7 @@ export default class Review extends View {
       : (_e, cx) => { this.setComments(this.comments().filter((x) => x.id !== c.id)); cx.notify(); };
     const text = wrapText(c.text, this.noteCols());
     return this.thread(`c-${c.id}`, text.length, c.id === this.hit, label, [
-      !loose && this.action(`edit-${c.id}`, "edit", file ? "C" : "e", false, t, edit),
+      !loose && this.action(`edit-${c.id}`, "edit", file ? "C" : "c", false, t, edit),
       this.action(`del-${c.id}`, "delete", file ? "D" : "d", false, t, remove),
     ].filter(Boolean), v_flex().px(10).py(7).text_color(t.foreground)
       .children(text.map((line, i) => div().id(`cl-${c.id}-${i}`).h(18).whitespace_nowrap().child(line || " "))), t);
@@ -1308,7 +1353,7 @@ export default class Review extends View {
     const hints = this.composer ? [["↵", "save"], ["⇧↵", "new line"], ["esc", "discard"]]
       : this.filtering ? [["↵", "done"], [fileKeys, "matches"], ["esc", "clear"]]
       : this.visual ? [["visual", "line"], ["j k { } G", "extend"], ["c", "comment"], ["v esc", "cancel"]]
-      : [["c", "comment"], ["C", "file comment"], ["v", "select"], [fileKeys, "file"], ["m", "viewed"], ...(file && folded(file) ? [["o", "show"]] : []), [send, "send"], ["?", "keys"]];
+      : [["c", "comment"], ["C", "file comment"], ["v", "select"], ["e", "edit file"], [fileKeys, "file"], ["m", "viewed"], ...(file && folded(file) ? [["o", "show"]] : []), [send, "send"], ["?", "keys"]];
     const sheet = this.help && this.helpSheet(t, send);
     const outbox = this.sendSheet && this.sendSheetView(t, targetName);
     const footer = h_flex().h(28).flex_none().px(14).gap(14).items_center().text_size(11).text_color(t.dim)
@@ -1379,9 +1424,9 @@ export default class Review extends View {
     const groups = [
       ["moving in the diff", [["j k", "line down, up"], ["5j 42G", "count, go to line 42"], ["gg G", "first, last line"], ["{ }", "paragraph"], ["[ ]", "hunk"],
         [`${key("half-down", "⌃d")} ${key("half-up", "⌃u")}`, "half page"], [`${key("page-down", "⌃f")} ${key("page-up", "⌃b")}`, "page"], ["zz zt zb", "line to middle, top, bottom"]]],
-      ["comments", [["c ↵", "comment the line or range"], ["C D", "comment the file, delete it"], ["v V", "select lines"], ["⇧j ⇧k", "extend the range"], ["e d", "edit, delete"], ["n N", "next, previous comment"], [send, "review and send"]]],
+      ["comments", [["c ↵", "comment the line or range, or edit its comment"], ["C D", "comment the file, delete it"], ["v V", "select lines"], ["⇧j ⇧k", "extend the range"], ["d", "delete"], ["n N", "next, previous comment"], [send, "review and send"]]],
       ["files", [[`${key("next-file", "⌥j")} ${key("prev-file", "⌥k")}`, "next, previous file"], ["m", "viewed, on to the next unviewed"],
-        ["/", "filter, walked by the same keys"], ["o", "show a hidden file"]]],
+        ["/", "filter, walked by the same keys"], ["o", "show a hidden file"], ["e", "edit in nvim at the line"]]],
       ["review", [["b", "uncommitted or branch"], ["B", "compare against"], ["r", "reload"], ["w |", "wrap, split"], ["q", "close"]]],
     ];
     const column = (list) => v_flex().flex_1().min_w(0).gap(16).children(list.map(([title, rows]) => v_flex().gap(2)
