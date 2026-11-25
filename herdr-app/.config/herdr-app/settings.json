@@ -6,5 +6,9 @@
   "font_size": 16,
   "font_ligatures": false,
   "minimum_contrast": 1,
-  "ui_font": "JetBrains Mono"
+  "ui_font": "JetBrains Mono",
+  "theme": {
+    "light": "sage-light",
+    "dark": "sage-dark"
+  }
 }
