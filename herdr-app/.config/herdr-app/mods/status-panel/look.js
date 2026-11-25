@@ -79,6 +79,9 @@ export function prColor(pr, t) {
   return { open: t.ansi2, draft: t.dim, merged: t.ansi5, closed: t.ansi1 }[pr.state] ?? t.muted;
 }
 
+export const REPOS = "status-tabs.repos";
+export const REPO_SHOWN = "status-tabs.repo-shown";
+
 export function ago(iso) {
   const s = Math.max(0, (Date.now() - Date.parse(iso)) / 1000);
   if (s < 60) return "just now";

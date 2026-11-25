@@ -3,8 +3,9 @@ import { nextCommand, props } from "herdr";
 import { initPanel, panelCommand } from "./panel.js";
 import { renderPr } from "./pr.js";
 import { renderTicket } from "./ticket.js";
+import { renderRepo } from "./repo.js";
 
-const PANELS = { pr: renderPr, ticket: renderTicket };
+const PANELS = { pr: renderPr, ticket: renderTicket, repo: renderRepo };
 
 export default class StatusPanel extends View {
   init(_props, cx) {

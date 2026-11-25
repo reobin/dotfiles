@@ -122,6 +122,16 @@
                               "panel": "pr"
                             }
                           }
+                        },
+                        {
+                          "id": "repo-status",
+                          "type": "block",
+                          "content": {
+                            "mod": "status-panel",
+                            "props": {
+                              "panel": "repo"
+                            }
+                          }
                         }
                       ],
                       "active": "ticket-status"

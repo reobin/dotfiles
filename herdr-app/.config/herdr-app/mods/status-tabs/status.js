@@ -267,6 +267,51 @@ export function refresh(space) {
   })();
 }
 
+export const REPOS = "status-tabs.repos";
+// The followed space's repo, { key: work key, slug }, so the panel needs no git call of its own.
+export const REPO_SHOWN = "status-tabs.repo-shown";
+const REPO_FIELDS = "nameWithOwner,description,url,defaultBranchRef,visibility,isArchived,pushedAt,stargazerCount";
+const README_MAX = 60000;
+let login = null;
+
+export const repoEntry = (slug) => (slug ? (shared(REPOS) ?? {})[slug] : null) ?? null;
+
+async function gh(args, on) {
+  const r = await exec("gh", args, { on, timeout: 60000 });
+  if (r.code !== 0) throw new Error((r.stderr || r.stdout).trim().split("\n")[0] || `gh exited ${r.code}`);
+  return r.stdout;
+}
+
+// Fetched in the background like the PR, so the repo panel opens already filled.
+export function refreshRepo(slug, on) {
+  const id = `repo:${slug}`;
+  if (running.has(id)) return null;
+  running.add(id);
+  return (async () => {
+    let entry;
+    try {
+      setShared(REFRESHING, [...running]);
+      const [info, pulls, readme, me] = await Promise.all([
+        gh(["repo", "view", slug, "--json", REPO_FIELDS], on).then(JSON.parse),
+        gh(["pr", "list", "-R", slug, "--state", "open", "--limit", "50", "--json", "number,title,url,author,isDraft,reviewDecision"], on).then(JSON.parse),
+        gh(["api", `repos/${slug}/readme`, "-H", "Accept: application/vnd.github.raw"], on).catch(() => null),
+        login ?? gh(["api", "user", "--jq", ".login"], on).then((s) => (login = s.trim())).catch(() => null),
+      ]);
+      entry = { at: Date.now(), info, pulls, me, readme: readme?.slice(0, README_MAX) ?? null };
+    } catch (e) {
+      entry = { ...repoEntry(slug), at: Date.now(), error: String(e?.message ?? e) };
+    }
+    try {
+      const all = shared(REPOS) ?? {};
+      const kept = Object.fromEntries(Object.entries(all).filter(([, e]) => entry.at - (e?.at ?? 0) < KEEP_MS));
+      setShared(REPOS, { ...kept, [slug]: entry });
+    } finally {
+      running.delete(id);
+      setShared(REFRESHING, [...running]);
+    }
+  })();
+}
+
 export function ticketIcon(ticket) {
   const state = ticket?.issue?.state;
   return state ? stateIcon(state, ticket.issue.team?.states?.nodes) : "lin-unknown";

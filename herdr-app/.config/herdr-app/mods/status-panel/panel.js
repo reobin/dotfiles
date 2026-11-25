@@ -38,7 +38,7 @@ function scrollTo(view, offset, cx) {
 
 export const hasKeyboard = (view) => view.composing || view.handle.is_focused();
 
-const CHILD = { ticket: "ticket-status", pr: "pr-status" };
+const CHILD = { ticket: "ticket-status", pr: "pr-status", repo: "repo-status" };
 
 function find(node, id) {
   if (node?.id === id) return node;

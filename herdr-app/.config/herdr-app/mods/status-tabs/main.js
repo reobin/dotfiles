@@ -2,10 +2,10 @@ import { View, div, svg, image } from "gpui-kit";
 import { h_flex } from "gpui-base";
 import { spaces, panes, run, openOverlay, theme, window, shared, setShared, layout, settings, nextCommand, watchFolder, checking } from "herdr";
 import { mark } from "./marks.js";
-import { gitStatus, describe } from "./git.js";
-import { ICONS, REFRESHING, entryFor, target, shown as followed, archivedSpaces, refresh, installIcons, ticketIcon, prIcon, prColor, mergeLook, open } from "./status.js";
+import { gitStatus, describe, repoSlug } from "./git.js";
+import { ICONS, REFRESHING, REPO_SHOWN, entryFor, repoEntry, refreshRepo, target, shown as followed, archivedSpaces, refresh, installIcons, ticketIcon, prIcon, prColor, mergeLook, open } from "./status.js";
 
-const PANEL_CHILDREN = { ticket: "ticket-status", pr: "pr-status" };
+const PANEL_CHILDREN = { ticket: "ticket-status", pr: "pr-status", repo: "repo-status" };
 // How old an archived space's ticket and PR state may get before the minutely kick looks it up again.
 const ARCHIVED_STALE = 10 * 60 * 1000;
 // image() rasterizes these 1em SVGs small and scales them up into a blurry fringe;
@@ -41,23 +41,43 @@ export default class Tabs extends View {
     cx.spawn(async (cx) => {
       for (;;) {
         const command = await nextCommand();
-        if (command === "refresh") this.kick(cx);
+        if (command === "refresh") { this.kick(cx); this.repoKick(cx, true); }
         else if (Object.hasOwn(PANEL_CHILDREN, command)) this.togglePanel(PANEL_CHILDREN[command], true);
-        else if (command === "open-ticket" || command === "open-pr") this.openLink(command);
+        else if (command === "open-ticket" || command === "open-pr" || command === "open-repo") this.openLink(command);
       }
     });
   }
 
   openLink(command) {
     const space = followed();
+    if (command === "open-repo") {
+      const repo = space ? this.repoOf(target(space)) : null;
+      if (repo) open(`https://github.com/${repo}`);
+      return;
+    }
     const entry = space ? entryFor(target(space)) : null;
     if (!entry) return;
     open(command === "open-pr" ? entry.pr?.url : entry.ticket?.issue?.url);
   }
 
+  // The folder's origin, or the PR's repo when the folder isn't a GitHub checkout (or is gone).
+  repoOf(work) {
+    return this.git[`${work.on ?? ""}:${work.cwd}`]?.repo ?? repoSlug(entryFor(work)?.pr?.url ?? work.pr);
+  }
+
+  // The repo is known once the folder's git status lands, so this also runs after each one.
+  repoKick(cx, force = false) {
+    const space = followed(), work = space ? target(space) : null, slug = work ? this.repoOf(work) : null;
+    const now = shared(REPO_SHOWN);
+    if (now?.key !== work?.key || now?.slug !== slug) setShared(REPO_SHOWN, { key: work?.key ?? null, slug });
+    if (!slug || (!force && Date.now() - (repoEntry(slug)?.at ?? 0) < 60000)) return;
+    cx.spawn(async () => { await refreshRepo(slug, work.on); });
+  }
+
   kick(cx) {
     const space = followed();
     if (space) cx.spawn(async () => { await refresh(space); });
+    this.repoKick(cx);
     // Archived spaces keep their ticket and PR state fresh for the tree's archive, one at a time.
     if (this.archiving) return;
     const stale = archivedSpaces().filter((s) => { const e = entryFor(target(s)); return Date.now() - (e?.at ?? 0) > ARCHIVED_STALE || e?.ticket?.linear === "nokey"; });
@@ -83,6 +103,7 @@ export default class Tabs extends View {
       finally {
         this.gitBusy = false;
         if (this.gitAgain) { this.gitAgain = false; this.gitSoon(cx); }
+        this.repoKick(cx);
         cx.notify();
       }
     });
@@ -114,8 +135,8 @@ export default class Tabs extends View {
     if (shown && name) { run(`status-panel.toggle-${name}`); return; }
     if (shown) { run("layout.hide", { id: "panel" }); return; }
     if (keyed && name) {
-      const space = followed(), entry = space ? entryFor(target(space)) : null;
-      if (!(name === "ticket" ? entry?.ticket : entry?.pr)) return;
+      const space = followed(), work = space ? target(space) : null, entry = entryFor(work);
+      if (!(name === "ticket" ? entry?.ticket : name === "pr" ? entry?.pr : work && this.repoOf(work))) return;
     }
     run("layout.select", { stack: "panel-body", child });
     run("layout.show", { id: "panel" });
@@ -197,7 +218,7 @@ export default class Tabs extends View {
       ? Math.max(8, (root.traffic_lights[0] + 64) / settings().zoom - (sidebar?.size?.px ?? 0))
       : 8;
     const panel = find(root, "panel"), body = find(root, "panel-body");
-    const enabled = [...(shared("workspace.panels") ?? []), "ticket-status", "pr-status"].filter(id => find(body, id));
+    const enabled = [...(shared("workspace.panels") ?? []), "ticket-status", "pr-status", "repo-status"].filter(id => find(body, id));
     // Forgetting the space makes the panel come back as that space left it.
     if (empty) {
       this.space = null; this.pending = null;
@@ -255,15 +276,21 @@ export default class Tabs extends View {
         div().child(`#${pr.number}`),
       ]);
     };
+    const repo = work ? this.repoOf(work) : null;
+    const repoButton = () => panelButton("repo-status", [
+      svg(`${ICONS}/repo.svg`).size(14).flex_none().text_color(t.dim),
+      div().child(repo.split("/")[1]),
+    ]).tooltip(repo);
     // The top padding matches the 8px under the bar, so the buttons sit midway between the window's edge and the pane.
     return h_flex().size_full().min_w(0).px(8).pl(lightsPadding).pt(8).gap(8).items_center().bg(t.chrome)
       .on_mouse_up("left", () => { this.pressed = null; })
       .on_scroll_wheel(e => { if (Math.abs(e.delta.y) >= 1) run(e.delta.y > 0 ? "tab.prev" : "tab.next"); })
       .child(h_flex().id("tab-scroll").flex_1().min_w(0).h_full().items_center().gap(8).overflow_x_scrollbar().children(shown.length > 1 ? shown.map(item) : []))
-      .when(!empty && !space?.archived, el => el.child(button("tab-new", "+", () => openOverlay({ mod: "new-menu", kind: "popup", width: 250, height: 512 })))
-        .child(reviewButton()))
-      .when(Boolean(ticket), el => el.child(ticketButton()))
+      .when(!empty && !space?.archived, el => el.child(button("tab-new", "+", () => openOverlay({ mod: "new-menu", kind: "popup", width: 250, height: 512 }))))
+      .when(Boolean(repo), el => el.child(repoButton()))
+      .when(!empty && !space?.archived, el => el.child(reviewButton()))
       .when(Boolean(pr || (current && ticket) || current?.prError), el => el.child(prButton()))
+      .when(Boolean(ticket), el => el.child(ticketButton()))
       .when(w?.buttons, el => el.child(button("minimize", w.platform === "windows" ? svg("mods/status-tabs/win-min.svg").size(16) : "−", () => run("window.minimize")))
         .child(button("maximize", w.platform === "windows" ? svg(`mods/status-tabs/${w.maximized ? "win-restore" : "win-max"}.svg`).size(16) : "□", () => run("window.maximize")))
         .child(button("close-window", w.platform === "windows" ? svg("mods/status-tabs/win-close.svg").size(16) : svg("mods/pane/close.svg").size(13), () => run("window.close"))));

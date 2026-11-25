@@ -7,15 +7,21 @@ const MAX_UNTRACKED = 200;
 // Porcelain paths are relative to the repo root, not the folder asked.
 const top = async (cwd, on) => (await exec("git", ["rev-parse", "--show-toplevel"], { cwd, on })).stdout.trim() || cwd;
 
+const GITHUB = /github\.com[:/]([^/\s]+)\/([^/\s]+?)(?:\.git)?(?:\/pull\/\d+)?\/?$/;
+
+// owner/name of a GitHub remote or PR URL.
+export const repoSlug = (url) => { const m = GITHUB.exec(url ?? ""); return m ? `${m[1]}/${m[2]}` : null; };
+
 // Changed files and where the branch stands. Without a live upstream, unpushed means
 // commits on no remote at all.
 export async function gitStatus(cwd, on) {
-  const [r, stat] = await Promise.all([
+  const [r, stat, origin] = await Promise.all([
     exec("git", [...READ, "status", "--porcelain=v2", "--branch", "--untracked-files=all", "--no-renames", "-z"], { cwd, on }),
     exec("git", [...READ, "diff", "--shortstat", "--no-renames", "--no-ext-diff", "HEAD"], { cwd, on }),
+    exec("git", [...READ, "remote", "get-url", "origin"], { cwd, on }),
   ]);
   if (r.code !== 0) return null;
-  const s = { files: 0, add: 0, del: 0, ahead: 0, behind: 0, upstream: null, detached: false };
+  const s = { files: 0, add: 0, del: 0, ahead: 0, behind: 0, upstream: null, detached: false, repo: repoSlug(origin.stdout.trim()) };
   const untracked = [];
   let counted = false, oid = null;
   for (const line of r.stdout.split("\0")) {
