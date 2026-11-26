@@ -12,7 +12,6 @@ alias mv='mv -iv'
 alias cp='cp -riv'
 alias mkdir='mkdir -vp'
 alias g='git'
-alias lg='lazygit'
 alias n='nvim'
 alias db='nvim -c DBUI'
 

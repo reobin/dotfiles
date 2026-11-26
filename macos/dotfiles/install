@@ -10,7 +10,6 @@ CONFIGS=(
   git
   herdr-app
   karabiner
-  lazygit
   mise
   nvim
   claude
