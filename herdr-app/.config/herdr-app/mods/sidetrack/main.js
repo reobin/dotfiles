@@ -8,9 +8,8 @@ import { View, div } from "gpui-kit";
 import { focused, panes, hc, home, appHome, readTextFile, exec, notify, run, nextCommand } from "herdr";
 import { randomUUID } from "crypto";
 
-// --settings is left out: the `claude` shell function adds it already.
 const CLAUDE_FLAGS = {
-  value: new Set(["--model", "--permission-mode", "--effort"]),
+  value: new Set(["--model", "--permission-mode", "--effort", "--settings"]),
   bare: new Set(["--dangerously-skip-permissions", "--allow-dangerously-skip-permissions"]),
 };
 const CODEX_FLAGS = {

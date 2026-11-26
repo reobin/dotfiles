@@ -38,7 +38,7 @@ const QUIET = 3;
 const READY = 10000;
 // Building out of sight waits on spaces() and panes() longer, since every Claude in the group starts at once.
 const LONG = 5000;
-const SAFE = /^[A-Za-z0-9._:@+=-]+$/;
+const SAFE = /^[A-Za-z0-9._:@+=\/-]+$/;
 // Each tab's split tree, from herdr-core's saved document, as toggle-split reads it.
 const DOCS = `${home()}/.local/state/herdr-core/default/docs.json`;
 const DIR = { row: "right", column: "down" };

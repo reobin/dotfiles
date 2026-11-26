@@ -18,8 +18,8 @@ const FLAGS = "resume.flags";
 const KEYS = [SESSION, CWD, SHELL, FLAGS];
 
 const BARE_FLAGS = new Set(["--dangerously-skip-permissions"]);
-const VALUE_FLAGS = new Set(["--model", "--permission-mode"]);
-const SAFE = /^[A-Za-z0-9._:@+-]+$/;
+const VALUE_FLAGS = new Set(["--model", "--permission-mode", "--settings"]);
+const SAFE = /^[A-Za-z0-9._:@+\/-]+$/;
 
 function keptFlags(argv) {
   const kept = [];
@@ -137,7 +137,9 @@ export default class Resume extends View {
   async resume(info, labels) {
     const flags = (labels[FLAGS] ?? "").split(" ").filter(Boolean);
     if (!SAFE.test(labels[SESSION]) || !flags.every((f) => SAFE.test(f.replace("=", "")))) return 1;
-    const line = ["cd", quote(labels[CWD]), "&&", "claude", "--resume", labels[SESSION], ...flags].join(" ");
+    // Typed into the shell, where the `claude` function adds --settings itself.
+    const typed = flags.filter((f, i) => f !== "--settings" && flags[i - 1] !== "--settings" && !f.startsWith("--settings="));
+    const line = ["cd", quote(labels[CWD]), "&&", "claude", "--resume", labels[SESSION], ...typed].join(" ");
     await hc(["label", info.address, `${SHELL}=${await this.shellId(info.pid)}`]);
     return (await hc(["send", info.address, line])).code;
   }

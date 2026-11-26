@@ -13,7 +13,7 @@ import { focused, hc, notify, run, nextCommand } from "herdr";
 
 const AGENT_FLAGS = {
   claude: {
-    value: new Set(["--model", "--permission-mode", "--effort"]),
+    value: new Set(["--model", "--permission-mode", "--effort", "--settings"]),
     bare: new Set(["--dangerously-skip-permissions", "--allow-dangerously-skip-permissions"]),
   },
   codex: {
