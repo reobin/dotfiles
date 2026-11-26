@@ -230,16 +230,6 @@
               }
             },
             {
-              "id": "codex-reload",
-              "type": "block",
-              "content": {
-                "mod": "codex-reload"
-              },
-              "size": {
-                "px": 0
-              }
-            },
-            {
               "id": "nvim-input",
               "type": "block",
               "content": {
