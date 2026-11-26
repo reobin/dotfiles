@@ -87,7 +87,7 @@ export default class NvimInput extends View {
       kind: "dialog",
       modal: true,
       frame: "none",
-      width: 640,
+      width: 800,
       height: 540,
       layout: {
         type: "block",
