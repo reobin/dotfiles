@@ -1,8 +1,8 @@
 // A pane's header, for layouts that frame their panes:
 //   { "tab": "active", "pane": { "header": { "content": { "mod": "pane-header" } } } }
 // Shows the terminal's address, the program's icon (the app's program table), the agent's name or
-// the terminal's title, the folder, how many lines it's scrolled back (click: to the bottom), a zoom mark while zoomed, and the agent's status; buttons split, zoom and close
-// this pane. Props from the app: { pane, terminal }. Click: focus the pane. While link-hints runs on this pane,
+// the terminal's title, the folder, how many lines it's scrolled back (click: to the bottom), a zoom mark while zoomed, and the agent's status.
+// Props from the app: { pane, terminal }. Click: focus the pane. While link-hints runs on this pane,
 // its labels are drawn here (hints.js).
 
 import { View, div, svg, image } from "gpui-kit";
@@ -43,7 +43,6 @@ function folder(cwd) {
 
 export default class Pane extends View {
   init(_props, cx) {
-    this.hovered = false;
     // panes() reads scroll fresh but only re-renders on end/history transitions, so the count needs its own tick.
     this.back = 0;
     cx.timer.every(300, (cx) => {
@@ -54,20 +53,6 @@ export default class Pane extends View {
 
   me() {
     return panes().find((p) => p.pane === props()?.pane);
-  }
-
-  button(t, id, icon, command, args) {
-    return div()
-      .id(id)
-      .p(4)
-      .rounded(5)
-      .text_color(t.dim)
-      .hover((s) => s.bg(t.hover).text_color(t.foreground))
-      .on_click((_e, cx) => {
-        cx.stop_propagation();
-        run(command, args);
-      })
-      .child(svg(`mods/pane-header/${icon}.svg`).size(14));
   }
 
   render(cx) {
@@ -96,7 +81,6 @@ export default class Pane extends View {
       .items_center()
       .font_family(SANS)
       .text_size(12)
-      .on_hover((hovered, cx) => { this.hovered = hovered; cx.notify(); })
       .on_click(() => run("pane.focus", { pane }))
       .when(Boolean(sign), (el) => el.child(div().flex_none().px(6).h(18).flex().items_center().rounded(5).bg(t.accent + "26").font_family(MONO).text_size(11).font_semibold().text_color(t.accent).child(div().opacity(0.5).child(head)).child(tail)))
       .when(Boolean(pic), (el) => el.child(pic))
@@ -110,12 +94,7 @@ export default class Pane extends View {
       .when(p.zoomed, (el) => el.child(div().flex_none().px(4).h(18).flex().items_center().rounded(5).bg(t.accent + "26").text_color(t.accent)
         .child(svg("mods/pane-header/zoomed.svg").size(12))))
       .when(st === "working" || st === "done", el => el.child(mark(t, st)))
-      .when(st === "blocked", el => el.child(div().flex_none().px(8).h(18).flex().gap(4).items_center().rounded(5).bg(t.blocked + "26").text_size(10.5).font_semibold().text_color(t.blocked).child(mark(t, "blocked", 10)).child("needs you")))
-      .when(this.hovered, el => el
-        .child(this.button(t, `ph-r-${pane}`, "split-right", "pane.split", { direction: "right", pane }))
-        .child(this.button(t, `ph-d-${pane}`, "split-down", "pane.split", { direction: "down", pane }))
-        .child(this.button(t, `ph-z-${pane}`, p.zoomed ? "unzoom" : "zoom", "pane.zoom", { pane }))
-        .child(this.button(t, `ph-x-${pane}`, "close", "pane.close", { pane })));
+      .when(st === "blocked", el => el.child(div().flex_none().px(8).h(18).flex().gap(4).items_center().rounded(5).bg(t.blocked + "26").text_size(10.5).font_semibold().text_color(t.blocked).child(mark(t, "blocked", 10)).child("needs you")));
     return withHints(header, pane);
   }
 }
