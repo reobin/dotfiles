@@ -154,7 +154,26 @@ function mergeState(raw, required) {
   return ["CLEAN", "HAS_HOOKS", "UNSTABLE"].includes(raw.mergeStateStatus) ? { ok: true, reasons } : { ok: null, reasons };
 }
 
-function shapePr(raw, required) {
+const THREADS = `query($owner: String!, $name: String!, $number: Int!) { repository(owner: $owner, name: $name) { pullRequest(number: $number) {
+  reviewThreads(first: 100) { nodes { isResolved isOutdated path line originalLine comments(first: 1) { nodes { url body author { __typename login } } } } } } } }`;
+
+// `gh pr view` has no review threads. Unresolved ones, people's before bots'; null when GitHub wouldn't say.
+async function reviewThreads(t, url) {
+  const m = /github\.com\/([^/]+)\/([^/]+)\/pull\/(\d+)/.exec(url);
+  if (!m) return null;
+  const r = await exec("gh", ["api", "graphql", "-f", `query=${THREADS}`, "-F", `owner=${m[1]}`, "-F", `name=${m[2]}`, "-F", `number=${m[3]}`],
+    { cwd: t.prCwd, on: t.on, timeout: 60000 }).catch(() => null);
+  if (r?.code !== 0) return null;
+  try {
+    return JSON.parse(r.stdout).data.repository.pullRequest.reviewThreads.nodes.filter((n) => !n.isResolved).map((n) => {
+      const c = n.comments.nodes[0] ?? {}, who = c.author?.login ?? "ghost";
+      return { who, bot: c.author?.__typename === "Bot" || /copilot/i.test(who), path: n.path, line: n.line ?? n.originalLine ?? null,
+        outdated: n.isOutdated, url: c.url ?? null, body: (c.body ?? "").trim().split("\n")[0].slice(0, 200) };
+    }).sort((a, b) => Number(a.bot) - Number(b.bot));
+  } catch { return null; }
+}
+
+function shapePr(raw, required, threads) {
   const requiredIds = new Set((required ?? []).map((c) => `${c.workflow ?? ""}/${c.name}`));
   const latest = new Map();
   for (const c of raw.statusCheckRollup ?? []) {
@@ -183,6 +202,7 @@ function shapePr(raw, required) {
     author: raw.author?.login ?? null,
     labels: (raw.labels ?? []).map((l) => ({ name: l.name, color: l.color })),
     merge: mergeState(raw, required),
+    threads,
   };
 }
 
@@ -193,7 +213,11 @@ async function requiredChecks(t) {
 
 async function loadPr(t) {
   const r = await exec("gh", ["pr", "view", t.pr ?? t.prBranch, "--json", PR_FIELDS], { cwd: t.prCwd, on: t.on });
-  if (r.code === 0) return { pr: shapePr(JSON.parse(r.stdout), await requiredChecks(t)) };
+  if (r.code === 0) {
+    const raw = JSON.parse(r.stdout);
+    const [required, threads] = await Promise.all([requiredChecks(t), raw.state === "OPEN" ? reviewThreads(t, raw.url) : null]);
+    return { pr: shapePr(raw, required, threads) };
+  }
   if (/no pull requests found/i.test(r.stderr)) return { pr: null };
   return { pr: null, prError: (r.stderr || r.stdout).trim().split("\n")[0] || `gh exited ${r.code}` };
 }
@@ -272,7 +296,7 @@ export const REPOS = "status-tabs.repos";
 export const REPO_SHOWN = "status-tabs.repo-shown";
 const REPO_FIELDS = "nameWithOwner,description,url,defaultBranchRef,visibility,isArchived,pushedAt,stargazerCount";
 const README_MAX = 60000;
-let login = null;
+const OPEN_PULLS = "query($owner: String!, $name: String!) { repository(owner: $owner, name: $name) { pullRequests(states: OPEN) { totalCount } } }";
 
 export const repoEntry = (slug) => (slug ? (shared(REPOS) ?? {})[slug] : null) ?? null;
 
@@ -291,13 +315,14 @@ export function refreshRepo(slug, on) {
     let entry;
     try {
       setShared(REFRESHING, [...running]);
-      const [info, pulls, readme, me] = await Promise.all([
+      const [owner, name] = slug.split("/");
+      const [info, openPulls, readme] = await Promise.all([
         gh(["repo", "view", slug, "--json", REPO_FIELDS], on).then(JSON.parse),
-        gh(["pr", "list", "-R", slug, "--state", "open", "--limit", "50", "--json", "number,title,url,author,isDraft,reviewDecision"], on).then(JSON.parse),
+        gh(["api", "graphql", "-f", `query=${OPEN_PULLS}`, "-F", `owner=${owner}`, "-F", `name=${name}`,
+          "--jq", ".data.repository.pullRequests.totalCount"], on).then(Number),
         gh(["api", `repos/${slug}/readme`, "-H", "Accept: application/vnd.github.raw"], on).catch(() => null),
-        login ?? gh(["api", "user", "--jq", ".login"], on).then((s) => (login = s.trim())).catch(() => null),
       ]);
-      entry = { at: Date.now(), info, pulls, me, readme: readme?.slice(0, README_MAX) ?? null };
+      entry = { at: Date.now(), info, openPulls, readme: readme?.slice(0, README_MAX) ?? null };
     } catch (e) {
       entry = { ...repoEntry(slug), at: Date.now(), error: String(e?.message ?? e) };
     }
@@ -341,16 +366,20 @@ export function open(url) {
   if (url) exec("open", [url]).catch(() => {});
 }
 
+// The first blocker as one word, for where the sentence doesn't fit.
+const BLOCKER = [[/^conflicts/, "conflict"], [/failing$/, "ci failing"], [/running$/, "ci running"], [/^changes requested$/, "changes"], [/approv/, "review"], [/^behind/, "behind"]];
+
 export function mergeLook(pr, t) {
   if (pr.state === "merged" || pr.state === "closed") return null;
-  if (pr.state === "draft") return { icon: "pr-draft", color: t.dim, sentence: "draft: mark it ready for review to merge" };
+  if (pr.state === "draft") return { icon: "pr-draft", color: t.dim, word: "draft", sentence: "draft: mark it ready for review to merge" };
   const { ok, reasons } = pr.merge ?? {};
-  if (ok) return { icon: "merge-ready", color: t.ansi2, sentence: pr.ci.fail ? "mergeable; only non-required checks are failing" : "mergeable" };
+  if (ok) return { icon: "merge-ready", color: t.ansi2, word: "ready", sentence: pr.ci.fail ? "mergeable; only non-required checks are failing" : "mergeable" };
   if (ok === false) {
     // Red: something on the PR needs fixing. Yellow: it's waiting on reviewers, CI or a branch update.
     const conflict = reasons.some((r) => r.startsWith("conflicts"));
     const broken = conflict || reasons.some((r) => r.endsWith("failing") || r === "changes requested");
-    return { icon: conflict ? "conflict" : "merge-blocked", color: broken ? t.ansi1 : t.ansi3, sentence: `not mergeable: ${reasons.join(", ")}` };
+    const word = BLOCKER.find(([re]) => re.test(reasons[0]))?.[1] ?? "blocked";
+    return { icon: conflict ? "conflict" : "merge-blocked", color: broken ? t.ansi1 : t.ansi3, word, sentence: `not mergeable: ${reasons.join(", ")}` };
   }
-  return { icon: "pend", color: t.dim, sentence: "GitHub is still checking mergeability" };
+  return { icon: "pend", color: t.dim, word: "checking", sentence: "GitHub is still checking mergeability" };
 }

@@ -94,16 +94,20 @@ export function open(url) {
   if (url) exec("open", [url]).catch(() => {});
 }
 
+// The first blocker as one word, for where the sentence doesn't fit.
+const BLOCKER = [[/^conflicts/, "conflict"], [/failing$/, "ci failing"], [/running$/, "ci running"], [/^changes requested$/, "changes"], [/approv/, "review"], [/^behind/, "behind"]];
+
 export function mergeLook(pr, t) {
   if (pr.state === "merged" || pr.state === "closed") return null;
-  if (pr.state === "draft") return { icon: "pr-draft", color: t.dim, sentence: "draft: mark it ready for review to merge" };
+  if (pr.state === "draft") return { icon: "pr-draft", color: t.dim, word: "draft", sentence: "draft: mark it ready for review to merge" };
   const { ok, reasons } = pr.merge ?? {};
-  if (ok) return { icon: "merge-ready", color: t.ansi2, sentence: pr.ci.fail ? "mergeable; only non-required checks are failing" : "mergeable" };
+  if (ok) return { icon: "merge-ready", color: t.ansi2, word: "ready", sentence: pr.ci.fail ? "mergeable; only non-required checks are failing" : "mergeable" };
   if (ok === false) {
     // Red: something on the PR needs fixing. Yellow: it's waiting on reviewers, CI or a branch update.
     const conflict = reasons.some((r) => r.startsWith("conflicts"));
     const broken = conflict || reasons.some((r) => r.endsWith("failing") || r === "changes requested");
-    return { icon: conflict ? "conflict" : "merge-blocked", color: broken ? t.ansi1 : t.ansi3, sentence: `not mergeable: ${reasons.join(", ")}` };
+    const word = BLOCKER.find(([re]) => re.test(reasons[0]))?.[1] ?? "blocked";
+    return { icon: conflict ? "conflict" : "merge-blocked", color: broken ? t.ansi1 : t.ansi3, word, sentence: `not mergeable: ${reasons.join(", ")}` };
   }
-  return { icon: "pend", color: t.dim, sentence: "GitHub is still checking mergeability" };
+  return { icon: "pend", color: t.dim, word: "checking", sentence: "GitHub is still checking mergeability" };
 }

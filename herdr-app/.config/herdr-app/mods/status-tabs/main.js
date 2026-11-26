@@ -14,6 +14,15 @@ const BRAND = { "icons/claude.svg": "#D97757", "icons/amp.svg": "#F34E3F", "icon
 // The app's codex icon is its mark on a white tile; draw the mark alone.
 const GLYPH = { "icons/codex.svg": "mods/tree/codex.svg" };
 
+// Unresolved review threads: people's in the warning colour, bots' dimmed beside them.
+function threadCount(t, threads, dot) {
+  const people = (threads ?? []).filter((x) => !x.bot).length, bots = (threads?.length ?? 0) - people;
+  const part = (n, name, color) => n ? [h_flex().gap(2).items_center().text_color(color)
+    .child(svg(`${ICONS}/${name}.svg`).size(12).flex_none()).child(String(n))] : [];
+  const parts = [...part(people, "comment", t.ansi3), ...part(bots, "bot", t.dim)];
+  return parts.length ? [dot(), ...parts] : [];
+}
+
 function find(node, id) {
   if (node?.id === id) return node;
   for (const child of node?.children ?? []) {
@@ -239,20 +248,19 @@ export default class Tabs extends View {
         .filter(([root]) => cwd && (cwd === root || cwd.startsWith(`${root}/`)))
         .reduce((n, [, list]) => n + list.length, 0);
       const g = work ? this.git[`${work.on ?? ""}:${cwd}`] : null;
-      const clean = g && !g.files && !g.ahead && !g.behind;
       const count = (n, text, color) => n > 0 ? [div().text_size(11.5).text_color(color).child(`${text}${n}`)] : [];
       const branch = work?.branch || g?.branch;
-      const tip = [branch ? `review changes on ${branch}` : "review changes", g ? describe(g) : null].filter(Boolean).join(" · ");
+      if (!branch) return null;
+      const tip = [`review changes on ${branch}`, g ? describe(g) : null].filter(Boolean).join(" · ");
       return h_flex().id("review-open").h(22).px(8).gap(4).min_w(0).items_center().rounded(6)
         .text_size(12).bg(t.chrome).text_color(t.muted)
         .hover(s => s.bg(t.hover)).on_mouse_down("left", stop)
         .on_click(() => run("mod.open", { name: "review" }))
         .tooltip(tip)
         .child(svg("mods/workspace-chrome/git-compare.svg").size(14).flex_none())
-        .child(div().min_w(0).truncate().child(branch ?? "review"))
+        .child(div().min_w(0).truncate().child(branch))
         .when(Boolean(g), el => el.children([...count(g.files, "", t.dim), ...count(g.add, "+", t.ansi2), ...count(g.del, "−", t.ansi1),
           ...count(g.ahead, "↑", t.ansi4), ...count(g.behind, "↓", t.ansi5)]))
-        .when(Boolean(clean), el => el.child(div().text_size(11).text_color(t.dim).child("✓")))
         .when(drafts > 0, el => el.child(div().px(4).rounded(4).bg(t.accent).text_color(t.accent_foreground).text_size(10.5).child(String(drafts))));
     };
     const current = entryFor(work);
@@ -263,20 +271,22 @@ export default class Tabs extends View {
       div().child(ticket.id),
     ]);
     const prButton = () => {
-      if (!pr) {
-        const failed = Boolean(current.prError);
-        return panelButton("pr-status", [svg(`${ICONS}/pr.svg`).size(14).flex_none().text_color(failed ? t.ansi1 : t.dim), div().text_color(t.dim).child(failed ? "PR ?" : "no PR")]);
-      }
+      if (!pr) return panelButton("pr-status", [svg(`${ICONS}/pr.svg`).size(14).flex_none().text_color(t.ansi1), div().text_color(t.dim).child("PR ?")]);
       // The icon's color says whether it can merge (grey draft, green ready, yellow waiting,
-      // red needs fixing); the panel says why not.
-      const merge = pr.state === "open" ? mergeLook(pr, t) : null;
+      // red needs fixing), the word names the first blocker, and the panel lists them all.
+      const merge = mergeLook(pr, t);
       const color = pr.state === "draft" ? t.dim : pr.state === "open" ? merge?.color ?? t.dim : prColor(pr, t);
-      return panelButton("pr-status", [
+      const dot = () => div().text_color(t.dim).child("·");
+      const button = panelButton("pr-status", [
         svg(`${ICONS}/${prIcon(pr)}.svg`).size(14).flex_none().text_color(color),
         div().child(`#${pr.number}`),
+        ...(merge ? [dot(), div().text_color(merge.color).child(merge.word)] : []),
+        ...threadCount(t, merge ? pr.threads : null, dot),
       ]);
+      return merge ? button.tooltip(merge.sentence) : button;
     };
     const repo = work ? this.repoOf(work) : null;
+    const review = !empty && !space?.archived ? reviewButton() : null;
     const repoButton = () => panelButton("repo-status", [
       svg(`${ICONS}/repo.svg`).size(14).flex_none().text_color(t.dim),
       div().child(repo.split("/")[1]),
@@ -286,10 +296,9 @@ export default class Tabs extends View {
       .on_mouse_up("left", () => { this.pressed = null; })
       .on_scroll_wheel(e => { if (Math.abs(e.delta.y) >= 1) run(e.delta.y > 0 ? "tab.prev" : "tab.next"); })
       .child(h_flex().id("tab-scroll").flex_1().min_w(0).h_full().items_center().gap(8).overflow_x_scrollbar().children(shown.length > 1 ? shown.map(item) : []))
-      .when(!empty && !space?.archived, el => el.child(button("tab-new", "+", () => openOverlay({ mod: "new-menu", kind: "popup", width: 250, height: 512 }))))
       .when(Boolean(repo), el => el.child(repoButton()))
-      .when(!empty && !space?.archived, el => el.child(reviewButton()))
-      .when(Boolean(pr || (current && ticket) || current?.prError), el => el.child(prButton()))
+      .when(Boolean(review), el => el.child(review))
+      .when(Boolean(pr || current?.prError), el => el.child(prButton()))
       .when(Boolean(ticket), el => el.child(ticketButton()))
       .when(w?.buttons, el => el.child(button("minimize", w.platform === "windows" ? svg("mods/status-tabs/win-min.svg").size(16) : "−", () => run("window.minimize")))
         .child(button("maximize", w.platform === "windows" ? svg(`mods/status-tabs/${w.maximized ? "win-restore" : "win-max"}.svg`).size(16) : "□", () => run("window.maximize")))
