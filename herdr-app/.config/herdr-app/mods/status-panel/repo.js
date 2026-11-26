@@ -3,9 +3,6 @@ import { v_flex, h_flex, TextView } from "gpui-base";
 import { theme, shared } from "herdr";
 import { MONO, REPOS, REPO_SHOWN, target, shown, ago, open } from "./look.js";
 import { panelShell, icon, refreshButton } from "./panel.js";
-import { avatar } from "./picker.js";
-
-const REVIEW = { APPROVED: ["approved", "ansi2"], CHANGES_REQUESTED: ["changes", "ansi1"], REVIEW_REQUIRED: ["waiting", "dim"] };
 
 // The README's relative links and images point into the repo, not the app.
 function absolute(readme, info) {
@@ -25,11 +22,6 @@ export function renderRepo(view) {
   const refreshing = shared("status-tabs.refreshing");
   const busy = Boolean(slug && Array.isArray(refreshing) && refreshing.includes(`repo:${slug}`));
   view.keymap = [];
-
-  const section = (title, extra) => h_flex().px(6).gap(6).items_center().mb(6).text_size(11).text_color(t.muted)
-    .child(div().font_semibold().child(title)).when(Boolean(extra), (e) => e.child(div().text_color(t.foreground).child(extra)));
-  const row = (id, children, url) => h_flex().id(id).h(24).flex_none().px(6).gap(8).items_center().rounded(6)
-    .when(Boolean(url), (e) => e.cursor_pointer().hover((s) => s.bg(t.hover)).on_click(() => open(url))).children(children);
 
   const header = h_flex().h(34).flex_none().px(14).gap(8).items_center().rounded_t(11).bg(t.accent + "14")
     .child(icon("repo", t.dim, 14))
@@ -53,21 +45,11 @@ export function renderRepo(view) {
       .when(Boolean(branch), (e) => e.child(div().font_family(MONO).text_color(t.foreground).child(branch)).child("·"))
       .child(`pushed ${ago(info.pushedAt)}`)
       .when(info.stargazerCount > 0, (e) => e.child(`· ${info.stargazerCount} ★`)))
+    .when(Number.isInteger(data.openPulls), (e) => e.child(h_flex().id("repo-pulls").gap(6).items_center().self_start().mx(-6).px(6).py(2).rounded(5)
+      .cursor_pointer().hover((s) => s.bg(t.hover)).on_click(() => open(`${info.url}/pulls`)).text_size(12)
+      .child(icon("pr", t.muted)).child(div().font_semibold().child(String(data.openPulls)))
+      .child(div().text_color(t.muted).child(`open pull request${data.openPulls === 1 ? "" : "s"}`))))
     .when(Boolean(data.error), (e) => e.child(div().text_size(11.5).text_color(t.ansi1).child(`GitHub: ${data.error}`)));
-
-  const prs = [...(data.pulls ?? [])].sort((a, b) => (b.author?.login === data.me) - (a.author?.login === data.me));
-  const pulls = v_flex().px(8).py(12)
-    .child(section("open pull requests", String(prs.length)))
-    .children(prs.map((p) => {
-      const review = REVIEW[p.reviewDecision];
-      return row(`pull-${p.number}`, [
-        avatar(t, p.author?.login ?? "ghost", 16),
-        div().flex_none().font_family(MONO).text_size(11.5).text_color(t.dim).child(`#${p.number}`),
-        div().flex_1().min_w(0).truncate().text_color(p.isDraft ? t.dim : t.foreground).child(p.title),
-        ...(p.isDraft ? [icon("pr-draft", t.dim)] : review ? [icon(review[0], t[review[1]])] : []),
-      ], p.url);
-    }))
-    .when(!prs.length, (e) => e.child(div().px(6).text_size(12).text_color(t.dim).child("none open")));
 
   const readme = data.readme && v_flex().px(14).pt(12).pb(14)
     .child(div().mb(8).text_size(11).font_semibold().text_color(t.muted).child("README"))
@@ -78,5 +60,5 @@ export function renderRepo(view) {
     { key: "p", label: "pulls", hint: true, run: () => open(`${info.url}/pulls`) },
   ];
 
-  return panelShell(view, t, { header, body: v_flex().w_full().child(top).child(pulls).when(Boolean(readme), (e) => e.child(readme)) });
+  return panelShell(view, t, { header, body: v_flex().w_full().child(top).when(Boolean(readme), (e) => e.child(readme)) });
 }

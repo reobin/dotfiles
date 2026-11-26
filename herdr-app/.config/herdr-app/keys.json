@@ -130,8 +130,7 @@
     "cmd-down": {"command": "terminal.scroll", "args": {"pages": 0.5}}
   },
   "mod:status-panel": {
-    "escape": "status-panel.escape",
-    "cmd-enter": "status-panel.submit"
+    "escape": "status-panel.escape"
   },
   "mod:review": {
     "cmd-enter": "review.send",

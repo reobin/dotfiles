@@ -1,46 +1,33 @@
 import { div } from "gpui-kit";
 import { v_flex, h_flex } from "gpui-base";
-import { spaces, theme } from "herdr";
+import { theme } from "herdr";
 import { MONO, entryFor, target, shown, prIcon, prColor, mergeLook, ago, open } from "./look.js";
-import { panelShell, act, valueOf, isPending, say, ask, kbd, spinner, icon, focusPanel, composer, openComposer, commentCard, isShown, refreshButton } from "./panel.js";
-import { openPicker, anchored, avatar, hex } from "./picker.js";
-import * as gh from "./github.js";
+import { panelShell, icon, refreshButton } from "./panel.js";
+import { avatar, hex } from "./picker.js";
 
 const RESULT = { fail: ["fail", "ansi1"], pending: ["pend", "ansi3"], pass: ["ok", "ansi2"], skip: ["ok", "dim"] };
 const REVIEW = { APPROVED: ["approved", "ansi2", "approved"], CHANGES_REQUESTED: ["changes", "ansi1", "changes requested"], COMMENTED: ["waiting", "dim", "commented"], DISMISSED: ["waiting", "dim", "dismissed"], PENDING: ["waiting", "dim", "pending"] };
 const DECISION = { approved: "approved", changes: "changes requested", waiting: "review required" };
 
-export function renderPr(view, cx) {
+// Read-only: changes to a PR go through an agent or GitHub.
+export function renderPr(view, _cx) {
   const t = theme();
   const space = shown();
   const work = space ? target(space) : null;
   const current = entryFor(work);
-  const real = current?.pr;
+  const pr = current?.pr;
   view.keymap = [];
-  const scope = real?.url;
-  const pr = real && { ...real, state: valueOf(view, scope, "state", real.state), requested: valueOf(view, scope, "requested", real.requested), labels: valueOf(view, scope, "labels", real.labels ?? []) };
-  if (pr && cx && isShown(view.panelName)) loadComments(view, cx, work, pr);
-  const thread = pr && view.prComments?.url === pr.url ? view.prComments : null;
-  const open_ = pr && (pr.state === "open" || pr.state === "draft");
-  const section = (title, extra, actions = []) => h_flex().px(6).gap(6).items_center().mb(6).text_size(11).text_color(t.muted)
-    .child(div().font_semibold().child(title)).when(Boolean(extra), (e) => e.child(div().text_color(t.foreground).child(extra)))
-    .child(div().flex_1()).children(actions);
+  const section = (title, extra) => h_flex().px(6).gap(6).items_center().mb(6).text_size(11).text_color(t.muted)
+    .child(div().font_semibold().child(title)).when(Boolean(extra), (e) => e.child(div().text_color(t.foreground).child(extra)));
   const row = (id, children, url) => h_flex().id(id).h(24).flex_none().px(6).gap(8).items_center().rounded(6)
     .when(Boolean(url), (e) => e.cursor_pointer().hover((s) => s.bg(t.hover)).on_click(() => open(url))).children(children);
-  const button = (id, label, key, onClick, { busy, primary } = {}) => h_flex().id(id).h(22).px(7).gap(5).items_center().rounded(6).cursor_pointer()
-    .text_size(11.5).font_semibold()
-    .when(Boolean(primary), (el) => el.bg(t.solid).text_color(t.solid_foreground).hover((s) => s.opacity(0.9)))
-    .when(!primary, (el) => el.text_color(t.muted).hover((s) => s.bg(t.hover).text_color(t.foreground)))
-    .on_mouse_down("left", (_e, cx) => cx.stop_propagation()).on_click((_e, cx) => { focusPanel(view); onClick(cx); })
-    .when(Boolean(busy), (el) => el.child(spinner(t, 11)))
-    .child(label).when(Boolean(key), (el) => el.child(div().opacity(0.6).font_family(MONO).text_size(10.5).child(key)));
 
   const header = h_flex().h(34).flex_none().px(14).gap(8).items_center().rounded_t(11).bg(t.accent + "14")
     .when(Boolean(pr), (e) => e.child(icon(prIcon(pr), prColor(pr, t), 14)).child(div().font_family(MONO).font_semibold().child(`#${pr.number}`))
       .child(div().px(7).rounded(9).text_size(10.5).font_semibold().bg(prColor(pr, t)).text_color(t.background).child(pr.state)))
     .when(!pr, (e) => e.child(div().font_semibold().child("pull request")))
     .child(div().flex_1())
-    .child(refreshButton(view, t, work, thread))
+    .child(refreshButton(view, t, work, null))
     .when(Boolean(pr), (e) => e.child(h_flex().id("pr-open").gap(4).items_center().px(6).py(2).rounded(5).cursor_pointer().text_size(11.5).text_color(t.muted)
       .hover((s) => s.bg(t.hover).text_color(t.foreground)).on_click(() => open(pr.url)).child(icon("link")).child("GitHub")));
 
@@ -49,59 +36,6 @@ export function renderPr(view, cx) {
       : !current ? "loading…" : current.prError ? `GitHub: ${current.prError}` : `no pull request for ${work.pr ?? work.prBranch}`;
     return panelShell(view, t, { header, body: div().p(14).text_color(current?.prError ? t.ansi1 : t.dim).child(note) });
   }
-
-  const reviewers = (cx) => openPicker(view, cx, {
-    field: "reviewers", placeholder: "request reviewers…", multi: true,
-    load: async () => {
-      const reviewed = new Map(pr.reviews.map((r) => [r.login, (REVIEW[r.state] ?? REVIEW.COMMENTED)[2]]));
-      return (await gh.users(work, pr)).filter((u) => u.login !== pr.author)
-        .map((u) => ({ key: u.login, label: u.login, sub: reviewed.get(u.login) ?? u.name, person: true }));
-    },
-    checked: (it) => valueOf(view, scope, "requested", real.requested).includes(it.key),
-    choose: (it, cx) => {
-      const now = valueOf(view, scope, "requested", real.requested), on = now.includes(it.key);
-      act(view, cx, { scope, field: "requested", value: on ? now.filter((l) => l !== it.key) : [...now, it.key],
-        ok: on ? `removed ${it.key}` : `requested ${it.key}`, task: () => gh.setReviewer(work, pr, it.key, !on) });
-    },
-  });
-
-  const labels = (cx) => openPicker(view, cx, {
-    field: "pr-labels", placeholder: "add or remove labels…", multi: true,
-    load: async () => (await gh.repoLabels(work, pr)).map((l) => ({ key: l.name, label: l.name, dot: l.color })),
-    checked: (it) => valueOf(view, scope, "labels", real.labels ?? []).some((l) => l.name === it.key),
-    choose: (it, cx) => {
-      const now = valueOf(view, scope, "labels", real.labels ?? []), on = now.some((l) => l.name === it.key);
-      act(view, cx, { scope, field: "labels", value: on ? now.filter((l) => l.name !== it.key) : [...now, { name: it.key, color: it.dot }],
-        task: () => gh.setLabel(work, pr, it.key, !on) });
-    },
-  });
-
-  const toggleDraft = (cx) => {
-    if (!open_) return say(view, cx, `this pull request is ${pr.state}`, "error");
-    const draft = pr.state !== "draft";
-    act(view, cx, { scope, field: "state", value: draft ? "draft" : "open", ok: draft ? "converted to draft" : "marked ready for review",
-      task: () => gh.setDraft(work, pr, draft) });
-  };
-
-  const failedRuns = gh.failedRuns(pr);
-  const rerun = (cx) => {
-    if (!failedRuns.length) return say(view, cx, "no failed GitHub Actions runs to rerun");
-    act(view, cx, { scope, field: "rerun", value: true, ok: `rerunning failed jobs in ${failedRuns.length} run${failedRuns.length === 1 ? "" : "s"}`,
-      task: () => gh.rerunFailed(work, pr) });
-  };
-
-  // Merging can't be undone: it always asks first, and only when GitHub says it can merge.
-  const mergeIt = (cx) => {
-    if (pr.state !== "open") return say(view, cx, pr.state === "draft" ? "mark it ready for review first" : `this pull request is ${pr.state}`, "error");
-    if (!pr.merge?.ok) return say(view, cx, pr.merge?.reasons?.length ? `not mergeable: ${pr.merge.reasons.join(", ")}` : "GitHub hasn't said it can merge yet", "error");
-    cx.spawn(async (cx) => {
-      try {
-        const method = await gh.mergeMethod(work, pr);
-        ask(view, cx, { icon: "merge-ready", verb: gh.MERGE_LABEL[method], text: `${gh.MERGE_LABEL[method]} #${pr.number} into ${pr.base}?`,
-          run: (cx) => act(view, cx, { scope, field: "state", value: "merged", ok: `merged #${pr.number}`, task: () => gh.merge(work, pr, method) }) });
-      } catch (e) { say(view, cx, String(e?.message ?? e), "error"); }
-    });
-  };
 
   const failing = pr.checks.filter((c) => c.result === "fail" || c.result === "pending");
   const passed = pr.checks.filter((c) => c.result === "pass" || c.result === "skip");
@@ -112,45 +46,28 @@ export function renderPr(view, cx) {
   ], c.url);
 
   const merge = mergeLook(pr, t);
-  const mergeAction = pr.state === "draft" ? button("pr-ready", "ready for review", "d", toggleDraft, { busy: isPending(view, scope, "state") })
-    : pr.state === "open" && pr.merge?.ok ? button("pr-merge", "merge…", "m", mergeIt, { primary: true, busy: isPending(view, scope, "state") })
-    : null;
-  const labelTrigger = h_flex().id("pr-labels").min_h(24).px(6).gap(4).items_center().flex_wrap().rounded(6).cursor_pointer()
-    .when(view.picker?.field === "pr-labels", (el) => el.bg(t.selected)).hover((s) => s.bg(t.hover))
-    .on_mouse_down("left", (_e, cx) => cx.stop_propagation()).on_click((_e, cx) => { focusPanel(view); labels(cx); })
-    .when(pr.labels.length === 0, (el) => el.child(icon("tag", t.dim, 12)).child(div().text_size(11.5).text_color(t.dim).child("add labels")))
-    .children(pr.labels.map((l) => h_flex().px(6).gap(5).items_center().rounded(5).bg(hex(l.color) + "26").text_size(11).text_color(t.muted)
-      .child(div().size(6).rounded(3).bg(hex(l.color))).child(l.name)))
-    .when(isPending(view, scope, "labels"), (el) => el.child(spinner(t)))
-    .child(div().flex_1()).child(kbd(t, "l"));
-
+  const labels = pr.labels ?? [];
   const top = v_flex().px(14).pt(12).pb(12).gap(6)
     .child(div().text_size(14).font_semibold().child(pr.title))
     .child(div().font_family(MONO).text_size(11.5).text_color(t.muted).truncate().child(`${pr.branch} → ${pr.base}`))
     .child(h_flex().gap(6).text_size(11.5).text_color(t.muted)
       .child(div().font_family(MONO).text_color(t.ansi2).child(`+${pr.additions}`)).child(div().font_family(MONO).text_color(t.ansi1).child(`−${pr.deletions}`))
       .child(`· ${pr.files} files · updated ${ago(pr.updatedAt)}`))
-    .child(div().mx(-6).child(anchored(view, t, "pr-labels", labelTrigger)))
-    .when(Boolean(merge), (e) => e.child(h_flex().mt(4).px(8).py(6).gap(8).items_start().rounded(7).bg(t.raised)
-      .child(div().mt(2).flex_none().child(icon(merge.icon, merge.color, 14)))
-      .child(div().flex_1().min_w(0).text_color(merge.color).child(merge.sentence))
-      .when(Boolean(mergeAction), (el) => el.child(mergeAction))));
+    .when(labels.length > 0, (e) => e.child(h_flex().gap(4).flex_wrap()
+      .children(labels.map((l) => h_flex().px(6).gap(5).items_center().rounded(5).bg(hex(l.color) + "26").text_size(11).text_color(t.muted)
+        .child(div().size(6).rounded(3).bg(hex(l.color))).child(l.name)))))
+    .when(Boolean(merge), (e) => e.child(mergeBox(t, pr, merge)));
 
   const checks = v_flex().px(8).py(12)
-    .child(section("checks", pr.ci.total ? `${pr.ci.pass}/${pr.ci.total}` : "none",
-      failedRuns.length ? [button("pr-rerun", "rerun failed", "R", rerun, { busy: isPending(view, scope, "rerun") })] : []))
+    .child(section("checks", pr.ci.total ? `${pr.ci.pass}/${pr.ci.total}` : "none"))
     .children(failing.map(checkRow))
     .when(view.showPassed, (e) => e.children(passed.map((c, i) => checkRow(c, failing.length + i))))
     .when(passed.length > 0, (e) => e.child(row("checks-toggle", [
       icon("ok", t.ansi2), div().text_color(t.muted).child(view.showPassed ? "hide passed" : `${passed.length} passed or skipped`),
     ]).cursor_pointer().hover((s) => s.bg(t.hover)).on_click((_e, cx) => { view.showPassed = !view.showPassed; cx.notify(); })));
 
-  const reviewHeader = section("reviews", DECISION[pr.review] ?? (pr.state === "draft" ? "draft" : null), open_ ? [
-    anchored(view, t, "reviewers", button("pr-reviewers", "request", "r", reviewers, { busy: isPending(view, scope, "requested") })
-      .when(view.picker?.field === "reviewers", (el) => el.bg(t.selected))),
-  ] : []);
   const reviews = v_flex().px(8).py(12)
-    .child(reviewHeader)
+    .child(section("reviews", DECISION[pr.review] ?? (pr.state === "draft" ? "draft" : null)))
     .children(pr.reviews.map((r, i) => {
       const [name, color, label] = REVIEW[r.state] ?? REVIEW.COMMENTED;
       return row(`review-${i}`, [avatar(t, r.login, 16), div().flex_1().truncate().child(r.login), icon(name, t[color]), div().text_size(11.5).text_color(t.dim).child(label)]);
@@ -158,46 +75,67 @@ export function renderPr(view, cx) {
     .children(pr.requested.map((login, i) => row(`requested-${i}`, [avatar(t, login, 16), div().flex_1().truncate().text_color(t.muted).child(login), icon("waiting", t.dim), div().text_size(11.5).text_color(t.dim).child("requested")])))
     .when(!pr.reviews.length && !pr.requested.length, (e) => e.child(div().px(6).text_size(12).text_color(t.dim).child("no reviewers yet")));
 
-  view.keymap = [
-    { key: "r", run: reviewers, off: !open_ },
-    { key: "l", run: labels },
-    { key: "d", label: pr.state === "draft" ? "ready" : "draft", hint: open_, run: toggleDraft, off: !open_ },
-    { key: "R", label: "rerun failed", hint: failedRuns.length > 0, run: rerun },
-    { key: "m", label: "merge", hint: pr.state === "open" && Boolean(pr.merge?.ok), run: mergeIt },
-    { key: "c", label: "comment", hint: true, run: (cx) => openComposer(view, cx) },
-    { key: "o", label: "open", hint: true, run: () => open(pr.url) },
-  ];
+  view.keymap = [{ key: "o", label: "open", hint: true, run: () => open(pr.url) }];
 
-  const list = thread?.list ?? [];
-  const conversation = v_flex().px(14).pt(12).pb(10).gap(14)
-    .child(h_flex().gap(6).items_center().text_size(11).text_color(t.muted)
-      .child(div().font_semibold().child("conversation")).when(list.length > 0, (el) => el.child(div().text_color(t.dim).child(String(list.length))))
-      .when(Boolean(thread?.loading), (el) => el.child(spinner(t, 11))))
-    .when(Boolean(thread?.error), (el) => el.child(div().text_size(12).text_color(t.ansi1).child(`GitHub: ${thread.error}`)))
-    .when(Boolean(thread) && !thread.loading && !thread.error && !list.length, (el) => el.child(div().text_size(12).text_color(t.dim).child("no comments yet")))
-    .children(list.map((c) => commentCard(view, t, { id: c.id, who: c.who, at: c.createdAt, body: c.body })));
-
-  const send = async (text) => {
-    await gh.comment(work, pr, text);
-    if (view.prComments?.url === pr.url) {
-      view.prComments.list = [...(view.prComments.list ?? []), { id: `local-${Date.now()}`, who: "you", body: text, createdAt: new Date().toISOString() }];
-      view.prComments.at = 0;
-    }
-  };
-
-  return panelShell(view, t, { header, body: v_flex().w_full().child(top).child(checks).child(reviews).child(conversation)
-    .child(composer(view, t, { label: `comment on #${pr.number}…`, send })) });
+  return panelShell(view, t, { header, body: v_flex().w_full().child(top).child(checks).child(reviews) });
 }
 
-// The thread loads when the panel shows its PR, and again a minute later or after a comment.
-export function loadComments(view, cx, work, pr) {
-  const now = view.prComments;
-  if (now?.url === pr.url && (now.loading || Date.now() - now.at < 60000)) return;
-  const thread = { url: pr.url, at: Date.now(), loading: true, error: null, list: now?.url === pr.url ? now.list : null };
-  view.prComments = thread;
-  cx.spawn(async (cx) => {
-    try { thread.list = await gh.comments(work, pr); }
-    catch (e) { thread.error = String(e?.message ?? e); }
-    finally { thread.loading = false; thread.at = Date.now(); cx.notify(); }
-  });
+const GATE = { ok: ["ok", "ansi2"], fail: ["fail", "ansi1"], wait: ["waiting", "ansi3"], pend: ["pend", "dim"] };
+
+// Each thing GitHub checks before a merge, from the blockers status-tabs found.
+function gates(pr) {
+  const reasons = pr.merge?.reasons ?? [];
+  const find = (test) => reasons.find(test);
+  const conflict = find((r) => r.startsWith("conflicts")), failing = find((r) => r.endsWith(" failing")), running = find((r) => r.endsWith(" running"));
+  const changes = find((r) => r === "changes requested"), approval = find((r) => r.includes("approv"));
+  const behind = find((r) => r.startsWith("behind")), blocked = find((r) => r === "blocked by branch rules");
+  const by = (state) => pr.reviews.filter((r) => r.state === state).map((r) => r.login).join(", ");
+  return [
+    conflict ? ["fail", conflict] : pr.merge?.ok === null ? ["pend", "checking for conflicts"] : ["ok", `no conflicts with ${pr.base}`],
+    failing ? ["fail", failing] : running ? ["wait", running] : ["ok", "no required check failing"],
+    changes ? ["fail", `changes requested by ${by("CHANGES_REQUESTED") || "a reviewer"}`]
+      : approval ? ["wait", pr.requested.length ? `${approval}, requested from ${pr.requested.join(", ")}` : approval]
+      : ["ok", by("APPROVED") ? `approved by ${by("APPROVED")}` : "no approval required"],
+    behind ? ["wait", behind] : ["ok", `up to date with ${pr.base}`],
+    ...(blocked ? [["fail", blocked]] : []),
+  ];
+}
+
+// The merge verdict over a checklist of what's left, unresolved review threads included:
+// GitHub can call a PR mergeable while a reviewer's question is still open.
+function mergeBox(t, pr, merge) {
+  const threads = pr.threads, people = threads?.filter((x) => !x.bot) ?? [], bots = threads?.filter((x) => x.bot) ?? [];
+  const n = people.length + bots.length;
+  const headline = pr.merge?.ok === false ? "not mergeable" : merge.sentence;
+  const line = (id, [name, color], text, strong, extra = []) => h_flex().id(id).min_h(22).gap(8).items_center()
+    .child(div().w(14).flex_none().flex().justify_center().child(icon(name, t[color] ?? color, 12)))
+    .child(div().flex_1().min_w(0).truncate().text_size(12.5).text_color(strong ? t.foreground : t.muted).child(text)).children(extra);
+  const count = (list, name, color) => list.length ? [h_flex().flex_none().gap(2).items_center().font_family(MONO).text_size(11).text_color(color)
+    .child(icon(name, color, 11)).child(String(list.length))] : [];
+  const threadsLine = threads == null
+    ? line("gate-threads", GATE.pend, "couldn't load review threads", false)
+    : n ? line("gate-threads", ["comment", people.length ? "ansi3" : "dim"], `${n} unresolved thread${n === 1 ? "" : "s"}`, people.length > 0,
+      [...count(people, "comment", t.ansi3), ...count(bots, "bot", t.dim)])
+    : line("gate-threads", GATE.ok, "no unresolved threads", false);
+  const threadRow = (x, i) => h_flex().id(`thread-${i}`).h(24).flex_none().pl(22).pr(4).gap(7).items_center().rounded(6)
+    .when(Boolean(x.url), (e) => e.cursor_pointer().hover((s) => s.bg(t.hover)).on_click(() => open(x.url)))
+    .child(avatar(t, x.who, 16))
+    .child(div().flex_none().max_w(120).truncate().text_size(12).font_semibold().text_color(x.bot ? t.muted : t.foreground).child(x.who))
+    .child(div().flex_1().min_w(0).truncate().text_size(12).text_color(x.bot ? t.dim : t.muted).child(x.body || "no text"))
+    .when(x.outdated, (e) => e.child(div().flex_none().px(4).rounded(3).bg(t.background).font_family(MONO).text_size(10).text_color(t.dim).child("outdated")))
+    .child(div().flex_none().font_family(MONO).text_size(10.5).text_color(t.dim).child(`${x.path.split("/").pop()}${x.line ? `:${x.line}` : ""}`));
+  const botName = bots.every((x) => /copilot/i.test(x.who)) ? "copilot" : "bots";
+
+  return v_flex().mt(4).px(8).py(6).gap(2).rounded(7).bg(t.raised)
+    .child(h_flex().gap(8).items_start().mb(2)
+      .child(div().mt(2).flex_none().child(icon(merge.icon, merge.color, 14)))
+      .child(h_flex().flex_1().min_w(0).gap(6).flex_wrap().child(div().font_semibold().text_color(merge.color).child(headline))
+        .when(Boolean(pr.merge?.ok) && people.length > 0, (e) => e.child(div().text_color(t.muted)
+          .child(`${people.length} thread${people.length === 1 ? "" : "s"} still open`)))))
+    .children(pr.state === "draft" ? [] : gates(pr).map(([state, text], i) => line(`gate-${i}`, GATE[state], text, state !== "ok")))
+    .child(threadsLine)
+    .children(people.map(threadRow))
+    .when(bots.length > 0, (e) => e.child(h_flex().pl(22).pt(4).pb(2).gap(5).items_center().text_size(11).text_color(t.dim)
+      .child(icon("bot", t.dim, 11)).child(`${botName} · ${bots.length}`)))
+    .children(bots.map((x, i) => threadRow(x, people.length + i)));
 }

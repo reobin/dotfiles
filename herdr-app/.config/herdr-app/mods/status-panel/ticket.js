@@ -1,15 +1,17 @@
 import { div } from "gpui-kit";
 import { v_flex, h_flex, TextView } from "gpui-base";
-import { spaces, theme } from "herdr";
+import { theme } from "herdr";
 import { MONO, entryFor, target, shown, ticketIcon, stateIcon, open } from "./look.js";
-import { panelShell, act, valueOf, isPending, say, kbd, spinner, icon, composer, openComposer, focusPanel, commentCard, refreshButton } from "./panel.js";
-import { openPicker, anchored, avatar, hex } from "./picker.js";
-import * as linear from "./linear.js";
+import { panelShell, icon, commentCard, refreshButton } from "./panel.js";
+import { avatar, hex } from "./picker.js";
 
 const KEY_HINT = "set LINEAR_API_KEY, or save a Linear personal API key in ~/.config/linear/api-key, for status and details.";
+// Linear's priority values, 0 to 4.
+const PRIORITIES = [["no priority", "prio-none"], ["urgent", "prio-urgent"], ["high", "prio-high"], ["medium", "prio-medium"], ["low", "prio-low"]];
 
 const personName = (p) => p?.displayName ?? p?.name ?? null;
 
+// Read-only: changes to a ticket go through an agent or Linear.
 export function renderTicket(view) {
   const t = theme();
   const space = shown();
@@ -54,88 +56,22 @@ export function renderTicket(view) {
     return panelShell(view, t, { header, body: body.child(div().px(14).py(12).text_size(12).text_color(t.dim).child(note)) });
   }
 
-  // Entries cached before the panel could edit have no ids: they edit after the next refresh.
-  const scope = issue.id ?? ticket.id, team = issue.team?.id, editable = Boolean(issue.id && team);
-  const state = valueOf(view, scope, "state", issue.state);
-  const assignee = valueOf(view, scope, "assignee", issue.assignee);
-  const priority = valueOf(view, scope, "priority", issue.priority);
-  const labels = valueOf(view, scope, "labels", issue.labels.nodes);
-  const comments = valueOf(view, scope, "comments", issue.comments?.nodes ?? []);
-  const update = (field, value, input, ok) => (cx) => act(view, cx, { scope, field, value, ok, task: () => linear.updateIssue(issue.id, input) });
+  const { state, assignee } = issue;
+  const labels = issue.labels.nodes, comments = issue.comments?.nodes ?? [];
+  const [prioName, prioIcon] = PRIORITIES[issue.priority] ?? PRIORITIES[0];
+  const prop = (label, value) => h_flex().gap(4).items_center().min_h(26)
+    .child(div().w(70).flex_none().text_color(t.muted).child(label))
+    .child(h_flex().flex_1().min_w(0).px(6).gap(6).items_center().children(value));
 
-  const pickers = {
-    state: (cx) => openPicker(view, cx, {
-      field: "state", placeholder: "change status…",
-      load: async () => { const all = await linear.states(team); return all.map((s) => ({ key: s.id, label: s.name, icon: stateIcon(s, all), color: s.color, value: s })); },
-      checked: (it) => it.key === state?.id,
-      choose: (it, cx) => { if (it.key !== state?.id) update("state", it.value, { stateId: it.key }, `status set to ${it.label}`)(cx); },
-    }),
-    assignee: (cx) => openPicker(view, cx, {
-      field: "assignee", placeholder: "assign to…",
-      load: async () => [{ key: null, label: "unassigned", icon: "user" },
-        ...(await linear.members(team)).map((m) => ({ key: m.id, label: m.displayName || m.name, sub: m.displayName && m.name !== m.displayName ? m.name : null, person: true, value: m }))],
-      checked: (it) => (it.key ?? null) === (assignee?.id ?? null),
-      choose: (it, cx) => {
-        if ((it.key ?? null) === (assignee?.id ?? null)) return;
-        update("assignee", it.value ?? null, { assigneeId: it.key }, it.key ? `assigned to ${it.label}` : "unassigned")(cx);
-      },
-    }),
-    priority: (cx) => openPicker(view, cx, {
-      field: "priority", placeholder: "set priority…",
-      load: async () => linear.PRIORITIES.map((p) => ({ key: p.value, label: p.name, icon: p.icon, color: p.value === 1 ? t.ansi3 : t.muted })),
-      checked: (it) => it.key === priority,
-      choose: (it, cx) => { if (it.key !== priority) update("priority", it.key, { priority: it.key }, `priority set to ${it.label}`)(cx); },
-    }),
-    labels: (cx) => openPicker(view, cx, {
-      field: "labels", placeholder: "add or remove labels…", multi: true,
-      load: async () => (await linear.labels(team)).map((l) => ({ key: l.id, label: l.name, sub: l.parent?.name ?? null, dot: l.color, value: l })),
-      checked: (it) => valueOf(view, scope, "labels", issue.labels.nodes).some((l) => l.id === it.key),
-      choose: (it, cx) => {
-        const now = valueOf(view, scope, "labels", issue.labels.nodes);
-        const on = now.some((l) => l.id === it.key);
-        const next = on ? now.filter((l) => l.id !== it.key) : [...now, { id: it.key, name: it.label, color: it.value.color }];
-        update("labels", next, { labelIds: next.map((l) => l.id) })(cx);
-      },
-    }),
-  };
-
-  const assignMe = (cx) => cx.spawn(async (cx) => {
-    try {
-      const me = await linear.viewer();
-      if (assignee?.id === me.id) return say(view, cx, "already assigned to you");
-      update("assignee", me, { assigneeId: me.id }, "assigned to you")(cx);
-    } catch (e) { say(view, cx, String(e?.message ?? e), "error"); }
-  });
-
-  const prop = (field, label, key, value) => {
-    const button = h_flex().id(`prop-${field}`).flex_1().min_w(0).min_h(26).px(6).gap(6).items_center().rounded(6)
-      .when(view.picker?.field === field, (el) => el.bg(t.selected))
-      .when(editable, (el) => el.cursor_pointer().hover((s) => s.bg(t.hover))
-        .on_mouse_down("left", (_e, cx) => cx.stop_propagation())
-        .on_click((_e, cx) => { focusPanel(view); pickers[field](cx); }))
-      .children(value)
-      .when(field !== "labels" || !labels.length, (el) => el.child(div().flex_1()))
-      .when(isPending(view, scope, field), (el) => el.child(spinner(t)))
-      .when(editable, (el) => el.child(kbd(t, key)));
-    return h_flex().gap(4).items_center().min_h(26)
-      .child(div().w(70).flex_none().text_color(t.muted).child(label))
-      .child(anchored(view, t, field, button));
-  };
-
-  const prio = linear.PRIORITIES.find((p) => p.value === priority) ?? linear.PRIORITIES[0];
   const props = v_flex().px(8).py(10).gap(1).pl(14)
-    .child(prop("state", "status", "s", [icon(stateIcon(state), state?.color, 13), div().truncate().child(state?.name ?? "—")]))
-    .child(prop("priority", "priority", "p", [icon(prio.icon, prio.value === 1 ? t.ansi3 : t.muted, 13), div().child(prio.value ? prio.name : "no priority")]))
-    .child(prop("assignee", "assignee", "a", assignee
+    .child(prop("status", [icon(stateIcon(state), state?.color, 13), div().truncate().child(state?.name ?? "—")]))
+    .child(prop("priority", [icon(prioIcon, issue.priority === 1 ? t.ansi3 : t.muted, 13), div().child(prioName)]))
+    .child(prop("assignee", assignee
       ? [avatar(t, personName(assignee), 16), div().truncate().child(personName(assignee))]
       : [icon("user", t.dim, 14), div().text_color(t.dim).child("unassigned")]))
-    .child(prop("labels", "labels", "l", labels.length
-      ? [h_flex().flex_1().min_w(0).gap(4).flex_wrap().py(4).children(labels.map((l) => chip(l.name, l.color)))]
-      : [icon("tag", t.dim, 13), div().text_color(t.dim).child("add labels")]))
-    .when(Boolean(issue.project), (e) => e.child(h_flex().gap(4).items_center().min_h(26).child(div().w(70).flex_none().text_color(t.muted).child("project"))
-      .child(div().px(6).truncate().child(issue.project.name))))
-    .when(Boolean(issue.cycle), (e) => e.child(h_flex().gap(4).items_center().min_h(26).child(div().w(70).flex_none().text_color(t.muted).child("cycle"))
-      .child(div().px(6).child(issue.cycle.name || `cycle ${issue.cycle.number}`))));
+    .when(labels.length > 0, (e) => e.child(prop("labels", [h_flex().flex_1().min_w(0).gap(4).flex_wrap().py(4).children(labels.map((l) => chip(l.name, l.color)))])))
+    .when(Boolean(issue.project), (e) => e.child(prop("project", [div().truncate().child(issue.project.name)])))
+    .when(Boolean(issue.cycle), (e) => e.child(prop("cycle", [div().child(issue.cycle.name || `cycle ${issue.cycle.number}`)])));
 
   const linked = v_flex().px(14).py(12)
     .child(section("linked PRs"))
@@ -153,21 +89,7 @@ export function renderTicket(view) {
     .child(h_flex().gap(6).items_center().child(section("activity")).when(comments.length > 0, (el) => el.child(div().mb(6).text_size(11).text_color(t.dim).child(String(comments.length)))))
     .children(threads.map((c) => v_flex().gap(10).child(commentView(c, false)).children((replies.get(c.id) ?? []).sort(byTime).map((r) => commentView(r, true)))));
 
-  view.keymap = [
-    { key: "s", run: pickers.state, off: !editable },
-    { key: "a", run: pickers.assignee, off: !editable },
-    { key: "i", label: "assign me", hint: true, run: assignMe, off: !editable },
-    { key: "p", run: pickers.priority, off: !editable },
-    { key: "l", run: pickers.labels, off: !editable },
-    { key: "c", label: "comment", hint: true, run: (cx) => openComposer(view, cx), off: !issue.id },
-    { key: "o", label: "open", hint: true, run: () => open(url) },
-  ];
-
-  const send = async (text) => {
-    await linear.comment(issue.id, text);
-    const mine = { id: `local-${Date.now()}`, body: text, createdAt: new Date().toISOString(), user: { displayName: "you" } };
-    view.over[`${scope}:comments`] = { value: [...comments, mine], pending: false, until: Date.now() + 20000 };
-  };
+  view.keymap = [{ key: "o", label: "open", hint: true, run: () => open(url) }];
 
   return panelShell(view, t, { header, body: body
     .child(props)
@@ -177,6 +99,5 @@ export function renderTicket(view) {
       .child(issue.description?.trim()
         ? TextView.markdown("ticket-body", issue.description).selectable(true).on_link_click((u) => open(u))
         : div().text_color(t.dim).child("no description")))
-    .child(discussion)
-    .when(Boolean(issue.id), (e) => e.child(composer(view, t, { label: "leave a comment…", send }))) });
+    .child(discussion) });
 }
