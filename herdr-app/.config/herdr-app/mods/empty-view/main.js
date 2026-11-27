@@ -15,6 +15,8 @@ const EMPTY = "tree.empty";
 const RECORDS = "restore.records";
 const SELECTED = "archive.selected";
 const SPACE = "archive.space";
+const DELETING = "archive.deleting";
+const ARMED = 3000;
 const ICONS = "data/status-tabs/icons";
 const TICKET = /^[A-Za-z][A-Za-z0-9]{1,4}-\d{1,6}$/;
 const PR = /^https:\/\/github\.com\/[^/\s]+\/[^/\s]+\/pull\/(\d+)$/;
@@ -89,8 +91,10 @@ export default class EmptyView extends View {
       this.lent = open;
       // Like a pane, its border says whether it has the keyboard, so a panel taking it moves the mark there.
       const has = this.focus.is_focused();
-      if (has !== this.has) {
+      const armed = this.armed();
+      if (has !== this.has || armed !== this.wasArmed) {
         this.has = has;
+        this.wasArmed = armed;
         cx.notify();
       }
     });
@@ -102,6 +106,12 @@ export default class EmptyView extends View {
     const r = list.find((x) => x.id === shared(SELECTED)) ?? list[0] ?? null;
     const at = /** @type {any} */ (shared(SPACE));
     return { r, i: r && at?.record === r.id ? Math.min(at.i, r.spaces.length - 1) : 0 };
+  }
+
+  // The record a second cmd-w deletes, while the first press still holds.
+  armed() {
+    const d = /** @type {any} */ (shared(DELETING));
+    return d && Date.now() - d.at < ARMED ? d.record : null;
   }
 
   // The selected group's PR states and folders, looked up while it shows.
@@ -224,6 +234,8 @@ export default class EmptyView extends View {
     const [key, what] = r.state === "restoring" ? [null, "restoring…"]
       : r.state === "pending" ? ["cmd-.", "brings it back now"]
       : ["cmd-.", `unarchive · brings back ${plural(r.spaces.length, "space")}, resumes ${plural(claude, "Claude session")}`];
+    const armed = this.armed() === r.id && r.state !== "restoring";
+    const kbd = (text) => div().flex_none().h(18).px(6).flex().items_center().rounded(5).border(1).border_color(t.border).bg(t.foreground + "08").text_size(10.5).child(text);
     return v_flex().id("empty-view").track_focus(this.focus).size_full().rounded(12).bg(t.background).border(1).border_color(this.has ? ink : t.background).px(28).pt(24).pb(20).gap(16)
       .child(v_flex().flex_none().gap(10)
         .child(h_flex().gap(10).items_baseline()
@@ -233,8 +245,11 @@ export default class EmptyView extends View {
       .child(div().id("archive-spaces").flex_1().min_h(0).overflow_y_scroll()
         .child(h_flex().flex_wrap().gap(12).items_stretch().children(r.spaces.map((s, k) => this.card(t, r, s, k, k === i, common)))))
       .child(h_flex().flex_none().gap(8).items_center().font_family(MONO).text_size(11.5).text_color(t.muted)
-        .when(Boolean(key), (el) => el.child(div().flex_none().h(18).px(6).flex().items_center().rounded(5).border(1).border_color(t.border).bg(t.foreground + "08").text_size(10.5).child(key)))
-        .child(div().child(what)));
+        .when(armed, (el) => el.child(kbd("cmd-w")).child(div().text_color(t.ansi1).child(
+          r.state === "pending" ? "again to delete it for good · closes its spaces now" : "again to delete it for good")))
+        .when(!armed && Boolean(key), (el) => el.child(kbd(key)))
+        .when(!armed, (el) => el.child(div().child(what)))
+        .when(!armed && Boolean(key), (el) => el.child(div().flex_1()).child(kbd("cmd-w")).child(div().child("delete"))));
   }
 
   render() {

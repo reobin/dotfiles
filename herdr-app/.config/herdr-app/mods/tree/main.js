@@ -32,7 +32,10 @@ const EMPTY = "tree.empty";
 const RECORDS = "restore.records";
 const QUEUE = "restore.queue";
 const SELECTED = "archive.selected";
-const records = () => /** @type {any[]} */ (shared(RECORDS) ?? []);
+// { record, at }: the group cmd-w deletes if pressed again within ARMED; empty-view reads it the same way.
+const DELETING = "archive.deleting";
+const ARMED = 3000;
+const records =() => /** @type {any[]} */ (shared(RECORDS) ?? []);
 const selectedRecord = () => records().find((r) => r.id === shared(SELECTED)) ?? records()[0] ?? null;
 // { record, i }: the space within the selected group that cmd-i, cmd-g and the top bar follow; status-tabs, status-panel, space-nav and empty-view read it.
 const SPACE = "archive.space";
@@ -225,6 +228,9 @@ export default class Tree extends View {
         if (c === "space-down") this.move(1);
         if (c === "toggle-archive") this.toggle();
         if (c === "close-space") this.closeSpace();
+        if (c === "close-pane" && shared(EMPTY) === "archive") this.forget();
+        if (c === "close-pane" && !shared(EMPTY)) run("pane.close");
+        if (c === "close-tab" && !shared(EMPTY)) run("tab.close");
       }
     });
   }
@@ -251,6 +257,16 @@ export default class Tree extends View {
     const r = selectedRecord();
     if (r?.state === "pending") send({ op: "cancel", record: r.id });
     else if (r?.state === "closed") send({ op: "unarchive", record: r.id });
+  }
+
+  forget() {
+    const r = selectedRecord();
+    if (!r || r.state === "restoring") return;
+    const armed = /** @type {any} */ (shared(DELETING));
+    if (armed?.record === r.id && Date.now() - armed.at < ARMED) {
+      setShared(DELETING, null);
+      send({ op: "delete", record: r.id });
+    } else setShared(DELETING, { record: r.id, at: Date.now() });
   }
 
   // Agents can't pass a space id to a mod command, so they label one of the
@@ -561,8 +577,10 @@ export default class Tree extends View {
 
   // Herdr shows the closed space's neighbour, which may be archived, so move
   // to an open one first and close the space from behind. Not close(): that
-  // name is the view's teardown hook.
+  // name is the view's teardown hook. An empty view hides the active space, so
+  // closes wait until it's shown.
   closeSpace() {
+    if (shared(EMPTY)) return;
     const all = spaces();
     const archived = this.archived();
     const id = all.find((s) => s.active)?.id;

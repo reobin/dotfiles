@@ -2,7 +2,7 @@
 // the layout holds one copy in a 0px block, so only one copy ever listens.
 
 import { View, div } from "gpui-kit";
-import { focused, nextCommand, panes, run } from "herdr";
+import { focused, nextCommand, panes, run, shared } from "herdr";
 
 export default class CloseOthers extends View {
   init(_props, cx) {
@@ -15,6 +15,7 @@ export default class CloseOthers extends View {
   }
 
   closeOthers() {
+    if (shared("tree.empty")) return;
     const f = focused();
     if (!f?.pane) return;
     for (const p of panes()) {

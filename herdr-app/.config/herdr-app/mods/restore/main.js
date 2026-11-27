@@ -23,7 +23,7 @@ const PICK = "recently-closed.pick";
 // A space's id is the live one while pending, its old one once closed; done is the id it was built back as.
 // The tree and space-nav read it too; mods cannot import across folders.
 const RECORDS = "restore.records";
-// [{ op: "archive", ids } | { op: "unarchive" | "cancel", record }], sent by the tree.
+// [{ op: "archive", ids } | { op: "unarchive" | "cancel" | "delete", record }], sent by the tree.
 const QUEUE = "restore.queue";
 const SELECTED = "archive.selected";
 const VIEW = "tree.view";
@@ -305,6 +305,7 @@ export default class Restore extends View {
     for (const op of q) {
       if (op.op === "archive") this.archive(op.ids);
       if (op.op === "cancel") this.cancel(op.record);
+      if (op.op === "delete") this.forget(op.record);
       // One build at a time, so each knows which terminals it made.
       if (op.op === "unarchive") this.chain = (this.chain ?? Promise.resolve()).then(() => this.unarchive(cx, op.record));
     }
@@ -349,6 +350,19 @@ export default class Restore extends View {
     const needs = rec.needs && terminals().find((t) => t.address === rec.needs)?.labels?.["herdr.space"];
     setShared(VIEW, null);
     run("space.select", { id: needs && ids.includes(needs) ? needs : ids[0] });
+  }
+
+  // Drops a group from the archive for good; one still waiting to close closes now.
+  forget(id) {
+    const rec = records().find((r) => r.id === id);
+    if (!rec || rec.state === "restoring") return;
+    const ids = rec.spaces.map((s) => s.id);
+    if (rec.state === "pending") for (const s of spaces().filter((x) => ids.includes(x.id))) run("space.close", { id: s.id, confirmed: true });
+    for (const key of LEGACY) {
+      const old = /** @type {string[] | undefined} */ (shared(key));
+      if (old?.some((x) => ids.includes(x))) setShared(key, old.filter((x) => !ids.includes(x)));
+    }
+    setShared(RECORDS, records().filter((r) => r.id !== id));
   }
 
   // Each second: archive what the tree archived before records, then close
