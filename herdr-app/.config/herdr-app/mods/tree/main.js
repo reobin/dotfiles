@@ -17,7 +17,7 @@
 import { View, div, svg, image } from "gpui-kit";
 import { v_flex, h_flex, ScrollHandle } from "gpui-base";
 import { mark } from "./marks.js";
-import { spaces, panes, terminals, run, theme, layout, shared, setShared, openOverlay, exec, hc, nextCommand, window, settings } from "herdr";
+import { spaces, panes, terminals, run, theme, layout, shared, setShared, openOverlay, closeOverlay, props, exec, hc, nextCommand, window, settings } from "herdr";
 
 const MONO = "JetBrains Mono";
 const SANS = "Geist";
@@ -216,6 +216,13 @@ function press(el, act) {
 
 export default class Tree extends View {
   init(_props, cx) {
+    // A copy opened as an overlay only asks to close a group (see closeSpace()).
+    this.overlay = props()?.overlay;
+    if (this.overlay) {
+      this.handle = cx.focus_handle();
+      this.handle.focus();
+      return;
+    }
     // where() -> the main checkout's folder name, null: not a repo. Kept across restarts
     // (see REPOS), so names show at once instead of after git answers.
     this.repo = { ...(/** @type {Record<string, string | null>} */ (shared(REPOS) ?? {})) };
@@ -241,8 +248,8 @@ export default class Tree extends View {
         if (c === "toggle-archive") this.toggle();
         if (c === "close-space") this.closeSpace();
         if (c === "close-pane" && shared(EMPTY) === "archive") this.forget();
-        if (c === "close-pane" && !shared(EMPTY)) run("pane.close");
-        if (c === "close-tab" && !shared(EMPTY)) run("tab.close");
+        if (c === "close-pane" && !shared(EMPTY)) this.closeLast("pane");
+        if (c === "close-tab" && !shared(EMPTY)) this.closeLast("tab");
       }
     });
   }
@@ -653,16 +660,75 @@ export default class Tree extends View {
   // Herdr shows the closed space's neighbour, which may be archived, so move
   // to an open one first and close the space from behind. Not close(): that
   // name is the view's teardown hook. An empty view hides the active space, so
-  // closes wait until it's shown.
+  // closes wait until it's shown. A group's lead closes the whole group, once confirmed.
   closeSpace() {
     if (shared(EMPTY)) return;
+    const id = spaces().find((s) => s.active)?.id;
+    if (!id) return;
+    const group = this.leadGroup();
+    if (group) this.confirmClose(group);
+    else this.closeAll([id]);
+  }
+
+  // Closing the last pane or tab closes the space too, so a lead's asks the same.
+  closeLast(kind) {
+    const s = spaces().find((x) => x.active);
+    const tabs = new Set(s?.tabs.map((t) => t.id));
+    const last = kind === "tab" ? s?.tabs.length === 1 : panes().filter((p) => tabs.has(p.tab)).length === 1;
+    const group = last ? this.leadGroup() : null;
+    if (group) this.confirmClose(group);
+    else run(`${kind}.close`);
+  }
+
+  // The shown space's group when the shown space leads it and isn't alone.
+  leadGroup() {
     const all = spaces();
     const archived = this.archived();
     const id = all.find((s) => s.active)?.id;
-    if (!id) return;
-    const next = archived.has(id) ? null : this.nearestOpen(all.map((s) => s.id), id, all, archived);
+    if (!id || archived.has(id)) return null;
+    const group = this.side(all, archived, id).find((r) => r[0].id === id);
+    return group && group.length > 1 ? group : null;
+  }
+
+  confirmClose(group) {
+    openOverlay({ mod: "tree", kind: "dialog", modal: true, width: 360, height: 150, props: { ids: group.map((s) => s.id) } });
+  }
+
+  closeAll(ids) {
+    const all = spaces();
+    const archived = this.archived();
+    const live = ids.filter((id) => all.some((s) => s.id === id));
+    if (!live.length) return;
+    const next = archived.has(live[0]) ? null : this.nearestOpen(all.map((s) => s.id), live[0], all, new Set([...archived, ...live]));
     if (next) run("space.select", { id: next });
-    run("space.close", { id, confirmed: true });
+    // restore closes a group itself, so cmd-shift-t can reopen it as one.
+    if (live.length > 1) send({ op: "close", spaces: live });
+    else run("space.close", { id: live[0], confirmed: true });
+  }
+
+  confirm(t) {
+    const ids = /** @type {string[]} */ (props()?.ids ?? []);
+    const group = spaces().filter((s) => ids.includes(s.id));
+    const no = () => closeOverlay(this.overlay);
+    const yes = () => {
+      no();
+      this.closeAll(ids);
+    };
+    const button = (id, label, key, act, ink) => h_flex().id(id).px(10).h(26).gap(6).items_center().rounded(6).cursor_pointer()
+      .hover((s) => s.bg(t.hover)).on_click(act)
+      .child(div().text_color(ink).child(label)).child(div().text_size(11).text_color(t.dim).child(key));
+    return v_flex().id("close-group").track_focus(this.handle).size_full().p(18).gap(12).bg(t.popover).text_size(13)
+      .on_key_down((e, cx) => {
+        if (e.key === "escape") no();
+        else if (e.key === "enter") yes();
+        else return;
+        cx.stop_propagation();
+      })
+      .child(div().text_size(15).font_semibold().text_color(t.foreground).child(`close ${group[0]?.name ?? "group"}?`))
+      .child(div().text_color(t.muted).child(`closes all ${group.length} spaces in the group`))
+      .child(h_flex().justify_end().gap(4)
+        .child(button("close-group-no", "cancel", "esc", no, t.muted))
+        .child(button("close-group-yes", "close group", "↵", yes, t.ansi1)));
   }
 
   // Fallback for closes that skip closeSpace(), like a space's last pane exiting.
@@ -830,6 +896,7 @@ export default class Tree extends View {
   }
 
   render() {
+    if (this.overlay) return this.confirm(theme());
     const archived = this.archived();
     const all = spaces();
     this.keepOpen(all, archived);

@@ -23,7 +23,7 @@ const PICK = "recently-closed.pick";
 // A space's id is the live one while pending, its old one once closed; done is the id it was built back as.
 // The tree and space-nav read it too; mods cannot import across folders.
 const RECORDS = "restore.records";
-// [{ op: "archive", ids } | { op: "unarchive" | "cancel" | "delete", record }], sent by the tree.
+// [{ op: "archive", ids } | { op: "close", spaces } | { op: "unarchive" | "cancel" | "delete", record }], sent by the tree.
 const QUEUE = "restore.queue";
 const SELECTED = "archive.selected";
 const VIEW = "tree.view";
@@ -156,6 +156,7 @@ export default class Restore extends View {
     this.trees = new Map(); // tab id -> split tree, matching its live panes
     this.read = { key: null, at: 0 };
     this.closing = new Set(); // record ids whose close is under way
+    this.grouped = new Set(); // space ids a group close already recorded
     this.building = new Set(); // record ids being built back
     if (checking()) return;
     // A restore cut short by a quit or crash keeps what it built and retries the rest on the next cmd-.
@@ -260,6 +261,10 @@ export default class Restore extends View {
     for (const s of before) {
       if (held.has(s.id)) continue;
       const ns = now.find((x) => x.id === s.id);
+      if (this.grouped.has(s.id)) {
+        if (!ns) this.grouped.delete(s.id);
+        continue;
+      }
       const space = { id: s.id, name: s.name, index: s.index };
       const all = s.tabs.flatMap((t) => Object.keys(t.info));
       if (!ns) {
@@ -290,6 +295,12 @@ export default class Restore extends View {
     setShared(PICK, null);
     if (!e) return;
     setShared(CLOSED, list.filter((x) => x !== e));
+    if (e.kind === "group") {
+      const made = [];
+      for (const g of e.spaces) made.push(await this.space(cx, g.space, g.tabs));
+      if (made[0]) run("space.select", { id: made[0] });
+      return;
+    }
     const s = spaces().find((x) => x.id === e.space.id);
     const tabs = e.kind === "pane" ? [{ ...e.tab, root: row([e.pane.terminal]) }] : e.tabs;
     if (e.kind === "pane" && s?.tabs.some((t) => t.id === e.tab.id)) await this.pane(cx, e);
@@ -304,11 +315,27 @@ export default class Restore extends View {
     setShared(QUEUE, []);
     for (const op of q) {
       if (op.op === "archive") this.archive(op.ids);
+      if (op.op === "close") this.closeGroup(op.spaces);
       if (op.op === "cancel") this.cancel(op.record);
       if (op.op === "delete") this.forget(op.record);
       // One build at a time, so each knows which terminals it made.
       if (op.op === "unarchive") this.chain = (this.chain ?? Promise.resolve()).then(() => this.unarchive(cx, op.record));
     }
+  }
+
+  // One recently-closed entry for the whole group, since lost() only counts the shown space.
+  closeGroup(ids) {
+    const at = Date.now();
+    const group = this.snapshot().filter((s) => ids.includes(s.id))
+      .map((s) => ({ space: { id: s.id, name: s.name, index: s.index }, tabs: s.tabs.filter((t) => Object.keys(t.info).length) }))
+      .filter((g) => g.tabs.length);
+    if (group.length) {
+      const [lead] = group;
+      const terminals = group.flatMap((g) => g.tabs.flatMap((t) => Object.keys(t.info)));
+      this.waiting.push({ id: `${at}-group`, closed: at, seen: at, kind: "group", space: lead.space, tabs: lead.tabs, spaces: group, terminals });
+      for (const g of group) this.grouped.add(g.space.id);
+    }
+    for (const id of ids) run("space.close", { id, confirmed: true });
   }
 
   // The record is written at once, so it outlives a reboot that lands before the close.
@@ -556,11 +583,12 @@ export default class Restore extends View {
     const l = launch(first.info[term(first.root)]);
     run("space.new", { ...(space.name ? { name: space.name } : {}), ...(first.name ? { tab: first.name } : {}), folder: l.folder, ...(l.argv ? { argv: l.argv } : {}) });
     const made = await until(cx, () => spaces().find((s) => !was.has(s.id) && s.tabs.length));
-    if (!made) return;
+    if (!made) return null;
     run("space.move", { id: made.id, index: space.index });
     await this.fill(cx, first, made.tabs[0].id);
     for (const tab of others) await this.tab(cx, made.id, tab);
     run("tab.select", { id: made.tabs[0].id });
+    return made.id;
   }
 
   async fill(cx, tab, id, hidden = false) {
@@ -596,12 +624,13 @@ export default class Restore extends View {
   }
 
   // A pane shows its own title; a tab or space its name, else its first pane's title, and how many panes came with it.
+  // A group shows its lead's, and how many spaces came with it.
   describe(e) {
     const infos = e.kind === "pane" ? [e.pane] : e.tabs.flatMap((t) => Object.values(t.info));
     const lead = infos.find((i) => i.session || i.codex) ?? infos[0];
-    const name = e.kind === "space" ? e.space.name : e.kind === "tab" ? e.tabs[0].name : null;
+    const name = e.kind === "space" || e.kind === "group" ? e.space.name : e.kind === "tab" ? e.tabs[0].name : null;
     const own = lead?.title && lead.title !== lead.terminal ? lead.title : "shell";
-    return { lead, title: name || own, more: infos.length - 1 };
+    return { lead, title: name || own, more: e.kind === "group" ? e.spaces.length - 1 : infos.length - 1 };
   }
 
   render() {
