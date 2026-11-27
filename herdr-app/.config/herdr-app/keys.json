@@ -62,6 +62,8 @@
     "ctrl-9": "space.select:9",
     "alt-j": "space-nav.next",
     "alt-k": "space-nav.prev",
+    "alt-]": "space-nav.next-in-group",
+    "alt-[": "space-nav.prev-in-group",
     "alt-.": "space-nav.switch",
     "alt-shift-j": "tree.space-down",
     "alt-shift-k": "tree.space-up",

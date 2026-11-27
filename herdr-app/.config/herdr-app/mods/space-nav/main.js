@@ -1,8 +1,10 @@
-// alt-j/k walk the view the tree sidebar shows: the active spaces, or the
-// archived groups' spaces (the restore mod's records), and alt-. switches view. The
-// archive is a view held over the shown space, so switching to it moves
-// nothing. Draws nothing: the layout holds one copy in a 0px block, so the
-// keys keep working while the sidebar is hidden.
+// alt-j/k walk the groups of the view the tree sidebar shows, and alt-]/[ the
+// spaces inside the shown group: the active spaces, or the archived groups
+// (the restore mod's records), and alt-. switches view. Landing on an active
+// group shows the space last shown in it. The archive is a view held over the
+// shown space, so switching to it moves nothing. Draws nothing: the layout
+// holds one copy in a 0px block, so the keys keep working while the sidebar is
+// hidden.
 
 import { View, div } from "gpui-kit";
 import { spaces, run, shared, setShared, nextCommand } from "herdr";
@@ -18,17 +20,38 @@ const QUEUE = "restore.queue";
 const SELECTED = "archive.selected";
 const SPACE = "archive.space";
 const records = () => /** @type {any[]} */ (shared(RECORDS) ?? []);
+const groupKey = (s) => JSON.stringify([s.machine ?? null, s.name]);
+
+// Keep in sync with tree's sets().
+function sets(list) {
+  const runs = [];
+  for (const s of list) {
+    const head = runs.at(-1)?.[0];
+    if (head && s.named && head.named && s.name === head.name && (s.machine ?? null) === (head.machine ?? null)) runs.at(-1).push(s);
+    else runs.push([s]);
+  }
+  return runs;
+}
 
 export default class SpaceNav extends View {
   init(_props, cx) {
+    this.last = new Map(); // groupKey -> the id of the space last shown in that group
+    cx.timer.every(500, () => this.remember());
     cx.spawn(async () => {
       for (;;) {
         const c = await nextCommand();
         if (c === "next") this.step(1);
         if (c === "prev") this.step(-1);
+        if (c === "next-in-group") this.stepIn(1);
+        if (c === "prev-in-group") this.stepIn(-1);
         if (c === "switch") this.hop();
       }
     });
+  }
+
+  remember() {
+    const now = spaces().find((s) => s.active);
+    if (now?.named) this.last.set(groupKey(now), now.id);
   }
 
   // Keep in sync with tree's archived().
@@ -52,23 +75,42 @@ export default class SpaceNav extends View {
     return Boolean(now) && this.archived().has(now);
   }
 
+  selectedRecord() {
+    const list = records();
+    return list.find((r) => r.id === shared(SELECTED)) ?? list[0] ?? null;
+  }
+
   step(by) {
-    // The archive walks its spaces card by card, through every group, as the active view does.
     if (this.inArchive()) {
-      const list = records().flatMap((r) => r.spaces.map((_, i) => ({ record: r.id, i })));
+      const list = records();
       if (!list.length) return;
-      const id = records().find((r) => r.id === shared(SELECTED))?.id ?? list[0].record;
-      const at = /** @type {any} */ (shared(SPACE));
-      const i = list.findIndex((x) => x.record === id && x.i === (at?.record === id ? at.i : 0));
-      const next = list[i < 0 ? 0 : (i + by + list.length) % list.length];
-      setShared(SELECTED, next.record);
-      return setShared(SPACE, next);
+      const i = list.indexOf(this.selectedRecord());
+      const next = list[(i + by + list.length) % list.length];
+      setShared(SELECTED, next.id);
+      return setShared(SPACE, { record: next.id, i: 0 });
     }
-    const list = this.open();
-    if (!list.length) return;
-    const i = list.findIndex((s) => s.active);
-    const next = i < 0 ? (by > 0 ? 0 : list.length - 1) : (i + by + list.length) % list.length;
-    run("space.select", { id: list[next].id });
+    this.remember();
+    const groups = sets(this.open());
+    if (!groups.length) return;
+    const i = groups.findIndex((g) => g.some((s) => s.active));
+    const next = groups[i < 0 ? (by > 0 ? 0 : groups.length - 1) : (i + by + groups.length) % groups.length];
+    const id = this.last.get(groupKey(next[0]));
+    run("space.select", { id: next.some((s) => s.id === id) ? id : next[0].id });
+  }
+
+  stepIn(by) {
+    if (this.inArchive()) {
+      const r = this.selectedRecord();
+      if (!r || r.spaces.length < 2) return;
+      const at = /** @type {any} */ (shared(SPACE));
+      const i = at?.record === r.id ? Math.min(at.i, r.spaces.length - 1) : 0;
+      setShared(SELECTED, r.id);
+      return setShared(SPACE, { record: r.id, i: (i + by + r.spaces.length) % r.spaces.length });
+    }
+    const group = sets(this.open()).find((g) => g.some((s) => s.active));
+    if (!group || group.length < 2) return;
+    const i = group.findIndex((s) => s.active);
+    run("space.select", { id: group[(i + by + group.length) % group.length].id });
   }
 
   // Back from the archive onto the shown space, or the first active one when

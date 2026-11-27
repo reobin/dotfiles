@@ -183,7 +183,7 @@ const where = (s, ps) => JSON.stringify([s.machine ?? null, place(s, ps)]);
 
 // Neighbouring named spaces with the same name group; each section keeps
 // space order, so it stays in alt-j/k order. Unnamed names follow folders,
-// so they never group.
+// so they never group. space-nav groups the same way.
 function sets(list) {
   const runs = [];
   for (const s of list) {
