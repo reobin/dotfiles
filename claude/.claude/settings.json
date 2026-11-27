@@ -30,6 +30,11 @@
             "type": "command",
             "command": "[ -n \"$HC_TERMINAL_ID\" ] || exit 0; hc get \"$HC_TERMINAL_ID\" 2>/dev/null | jq -r '.labels[\"herdr.space\"] // empty' | { read -r s && herdr-app ls 2>/dev/null | jq -r --arg s \"$s\" --arg c \"${PWD##*/}\" '.spaces[] | select(.id == $s and (.name == (.folder | rtrimstr(\"/\") | split(\"/\") | last) or .name == $c)) | \"Name your Herdr space after this prompt, without mentioning it: herdr-app do space.rename --id \\(.id) --name <label>\"'; }; exit 0",
             "timeout": 5
+          },
+          {
+            "type": "command",
+            "command": "[ -n \"$HC_TERMINAL_ID\" ] || exit 0; l=$(hc get \"$HC_TERMINAL_ID\" 2>/dev/null | jq -c '.labels // {}'); [ -n \"$l\" ] || exit 0; set -- $(jq -r --argjson l \"$l\" '.prompt // \"\" | (select(($l.ticket // \"\") == \"\") | first(capture(\"linear\\\\.app/[^/\\\\s]+/issue/(?<id>[A-Za-z][A-Za-z0-9]{1,4}-[0-9]{1,6})\"; \"g\")) | \"ticket=\" + (.id | ascii_upcase)), (select(($l.pr // \"\") == \"\") | first(scan(\"https://github\\\\.com/[^/\\\\s]+/[^/\\\\s]+/pull/[0-9]+\")) | \"pr=\" + .)'); [ $# -gt 0 ] && hc label \"$HC_TERMINAL_ID\" \"$@\" >/dev/null 2>&1; exit 0",
+            "timeout": 5
           }
         ]
       }
