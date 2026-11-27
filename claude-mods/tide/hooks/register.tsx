@@ -15,6 +15,8 @@ let turning = false
 let percentNow: number | null = null
 let rise: { from: number; at: number } | null = null
 let previewUntil = 0
+let ticker: Timer | null = null
+let startedAt = 0
 
 function wantsGlow(now: number): boolean {
   if (now < previewUntil) return true
@@ -32,10 +34,20 @@ function startGlow($: EngineInterface): void {
   })
 }
 
-export const register: Register = on => {
-  let ticker: Timer | null = null
-  let startedAt = 0
+async function begin($: EngineInterface): Promise<void> {
+  startedAt = await $.clock.now()
+  turning = true
+  ticker ??= $.clock.every(40, () => void update($, frame, n => n + 1))
+  if (wantsGlow(startedAt)) startGlow($)
+}
 
+function end(): void {
+  turning = false
+  ticker?.cancel()
+  ticker = null
+}
+
+export const register: Register = on => {
   on('command.run', { command: 'tide' }, async ($, e) => {
     const target = Number(e.args.trim())
     const r = await read($, reading)
@@ -74,18 +86,23 @@ export const register: Register = on => {
   })
 
   on('turn.start', async ($, e, next) => {
-    startedAt = await $.clock.now()
-    turning = true
-    ticker ??= $.clock.every(40, () => void update($, frame, n => n + 1))
-    if (wantsGlow(startedAt)) startGlow($)
+    if (e.agentId === undefined) await begin($)
     return next(e)
   })
 
   on('turn.complete', async ($, e, next) => {
-    turning = false
-    ticker?.cancel()
-    ticker = null
+    if (e.agentId === undefined) end()
     return next(e)
+  })
+
+  on('session.compact', async ($, e, next) => {
+    if (e.agentId !== undefined || e.trigger === 'precompute' || turning) return next(e)
+    await begin($)
+    try {
+      return await next(e)
+    } finally {
+      end()
+    }
   })
 
   on('ui.render', { component: 'Spinner' }, async ($, e) => {

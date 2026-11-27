@@ -156,3 +156,50 @@ test('percent pulses when hot', () => {
     new Set([ansi.red, ansi.redBright]),
   )
 })
+
+const spinner = { plugin: 'tide', surface: 'terminal', component: 'Spinner', props: { word: 'Simmering', message: 'Compacting', suffix: '…', mode: 'requesting' } } as const
+
+const drawn = async ($: Parameters<Parameters<typeof test>[1]>[0]) => {
+  const ui = await $.ui.mount(spinner)
+  return {
+    wave: (await ui.findAll({ type: 'Text', text: /^[⠀-⣿]+$/ }))[0]?.text,
+    since: (await ui.findAll({ type: 'Text', text: / · / }))[0]?.text.trim().split(' · ')[0],
+  }
+}
+
+test('wave flows and the clock counts while the conversation compacts', async ($, on) => {
+  const clock = mock.clock(on, { now: 60_000 })
+  on('session.compact', async () => {
+    await clock.sleep(5_000)
+    return { messages: [{ role: 'user' as const, text: 'summary', toolUses: [] }] }
+  })
+  const compacting = $.session.compact({ trigger: 'manual', messages: [{ role: 'user', text: 'hello', toolUses: [] }] })
+  await clock.settle()
+  const start = await drawn($)
+  await clock.advance(3_000)
+  const middle = await drawn($)
+  await clock.advance(2_000)
+  await compacting
+  await clock.advance(400)
+  const done = await drawn($)
+  await clock.advance(400)
+  expect(middle.wave).not.toBe(start.wave)
+  expect(middle.since).toBe('3s')
+  expect((await drawn($)).wave).toBe(done.wave)
+})
+
+test('a subagent finishing leaves the main turn flowing', async ($, on) => {
+  const clock = mock.clock(on, { now: 60_000 })
+  on('turn.start', (_, e) => ({ turnId: e.turnId }))
+  on('turn.complete', (_, e) => ({ text: e.answer }))
+  await $.turn.start({ text: 'go', turnId: 'main' })
+  await clock.advance(3_000)
+  await $.turn.start({ text: 'sub', turnId: 'sub', agentId: 'helper' })
+  await $.turn.complete({ turnId: 'sub', agentId: 'helper', answer: '', durationMs: 0, isAborted: false, reason: 'answer' })
+  const before = await drawn($)
+  await clock.advance(400)
+  const after = await drawn($)
+  expect(after.wave).not.toBe(before.wave)
+  expect(after.since).toBe('3s')
+  await $.turn.complete({ turnId: 'main', answer: '', durationMs: 0, isAborted: false, reason: 'answer' })
+})
