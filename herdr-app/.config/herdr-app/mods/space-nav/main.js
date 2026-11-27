@@ -1,10 +1,9 @@
 // alt-j/k walk the groups of the view the tree sidebar shows, and alt-]/[ the
 // spaces inside the shown group: the active spaces, or the archived groups
-// (the restore mod's records), and alt-. switches view. Landing on an active
-// group shows the space last shown in it. The archive is a view held over the
-// shown space, so switching to it moves nothing. Draws nothing: the layout
-// holds one copy in a 0px block, so the keys keep working while the sidebar is
-// hidden.
+// (the restore mod's records), and alt-. switches view. Landing on a group
+// shows its first space. The archive is a view held over the shown space, so
+// switching to it moves nothing. Draws nothing: the layout holds one copy in a
+// 0px block, so the keys keep working while the sidebar is hidden.
 
 import { View, div } from "gpui-kit";
 import { spaces, run, shared, setShared, nextCommand } from "herdr";
@@ -20,7 +19,6 @@ const QUEUE = "restore.queue";
 const SELECTED = "archive.selected";
 const SPACE = "archive.space";
 const records = () => /** @type {any[]} */ (shared(RECORDS) ?? []);
-const groupKey = (s) => JSON.stringify([s.machine ?? null, s.name]);
 
 // Keep in sync with tree's sets().
 function sets(list) {
@@ -35,8 +33,6 @@ function sets(list) {
 
 export default class SpaceNav extends View {
   init(_props, cx) {
-    this.last = new Map(); // groupKey -> the id of the space last shown in that group
-    cx.timer.every(500, () => this.remember());
     cx.spawn(async () => {
       for (;;) {
         const c = await nextCommand();
@@ -47,11 +43,6 @@ export default class SpaceNav extends View {
         if (c === "switch") this.hop();
       }
     });
-  }
-
-  remember() {
-    const now = spaces().find((s) => s.active);
-    if (now?.named) this.last.set(groupKey(now), now.id);
   }
 
   // Keep in sync with tree's archived().
@@ -89,13 +80,11 @@ export default class SpaceNav extends View {
       setShared(SELECTED, next.id);
       return setShared(SPACE, { record: next.id, i: 0 });
     }
-    this.remember();
     const groups = sets(this.open());
     if (!groups.length) return;
     const i = groups.findIndex((g) => g.some((s) => s.active));
     const next = groups[i < 0 ? (by > 0 ? 0 : groups.length - 1) : (i + by + groups.length) % groups.length];
-    const id = this.last.get(groupKey(next[0]));
-    run("space.select", { id: next.some((s) => s.id === id) ? id : next[0].id });
+    run("space.select", { id: next[0].id });
   }
 
   stepIn(by) {
