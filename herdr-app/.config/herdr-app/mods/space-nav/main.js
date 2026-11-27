@@ -1,9 +1,10 @@
 // alt-j/k walk the groups of the view the tree sidebar shows, and alt-]/[ the
 // spaces inside the shown group: the active spaces, or the archived groups
 // (the restore mod's records), and alt-. switches view. Landing on a group
-// shows its first space. The archive is a view held over the shown space, so
-// switching to it moves nothing. Draws nothing: the layout holds one copy in a
-// 0px block, so the keys keep working while the sidebar is hidden.
+// shows its first space, and alt-k from a later space returns to that first
+// one. The archive is a view held over the shown space, so switching to it
+// moves nothing. Draws nothing: the layout holds one copy in a 0px block, so
+// the keys keep working while the sidebar is hidden.
 
 import { View, div } from "gpui-kit";
 import { spaces, run, shared, setShared, nextCommand } from "herdr";
@@ -75,7 +76,10 @@ export default class SpaceNav extends View {
     if (this.inArchive()) {
       const list = records();
       if (!list.length) return;
-      const i = list.indexOf(this.selectedRecord());
+      const r = this.selectedRecord();
+      const i = list.findIndex((x) => x.id === r?.id);
+      const at = /** @type {any} */ (shared(SPACE));
+      if (by < 0 && r && at?.record === r.id && at.i > 0) return setShared(SPACE, { record: r.id, i: 0 });
       const next = list[(i + by + list.length) % list.length];
       setShared(SELECTED, next.id);
       return setShared(SPACE, { record: next.id, i: 0 });
@@ -83,6 +87,7 @@ export default class SpaceNav extends View {
     const groups = sets(this.open());
     if (!groups.length) return;
     const i = groups.findIndex((g) => g.some((s) => s.active));
+    if (by < 0 && i >= 0 && !groups[i][0].active) return run("space.select", { id: groups[i][0].id });
     const next = groups[i < 0 ? (by > 0 ? 0 : groups.length - 1) : (i + by + groups.length) % groups.length];
     run("space.select", { id: next[0].id });
   }
