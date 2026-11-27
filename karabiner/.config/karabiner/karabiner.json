@@ -1,4 +1,11 @@
 {
+  "global": {
+    "accessibility_monitoring": {
+      "focused_ui_element": false,
+      "focused_window": false,
+      "frontmost_application": false
+    }
+  },
   "profiles": [
     {
       "complex_modifications": {
