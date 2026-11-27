@@ -28,7 +28,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "[ -n \"$HC_TERMINAL_ID\" ] || exit 0; hc get \"$HC_TERMINAL_ID\" 2>/dev/null | jq -r '.labels[\"herdr.space\"] // empty' | { read -r s && herdr-app ls 2>/dev/null | jq -r --arg s \"$s\" '.spaces[] | select(.id == $s and .name == (.folder | rtrimstr(\"/\") | split(\"/\") | last)) | \"Name your Herdr space after this prompt, without mentioning it: herdr-app do space.rename --id \\(.id) --name <label>\"'; }; exit 0",
+            "command": "[ -n \"$HC_TERMINAL_ID\" ] || exit 0; hc get \"$HC_TERMINAL_ID\" 2>/dev/null | jq -r '.labels[\"herdr.space\"] // empty' | { read -r s && herdr-app ls 2>/dev/null | jq -r --arg s \"$s\" --arg c \"${PWD##*/}\" '.spaces[] | select(.id == $s and (.name == (.folder | rtrimstr(\"/\") | split(\"/\") | last) or .name == $c)) | \"Name your Herdr space after this prompt, without mentioning it: herdr-app do space.rename --id \\(.id) --name <label>\"'; }; exit 0",
             "timeout": 5
           }
         ]

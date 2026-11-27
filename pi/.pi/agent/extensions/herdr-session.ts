@@ -1,3 +1,4 @@
+import { basename } from "node:path";
 import type { ExtensionAPI } from "@earendil-works/pi-coding-agent";
 
 // Labels the Herdr terminal with the session file, so the sidetrack mod can fork it.
@@ -17,7 +18,7 @@ export default function (pi: ExtensionAPI) {
   });
 
   // Mirror the Claude UserPromptSubmit hook: while the Herdr space still
-  // carries its default folder-basename, nudge the model to rename it.
+  // carries a default name, nudge the model to rename it.
   pi.on("before_agent_start", async (event) => {
     try {
       if (event.messageType !== "user") return;
@@ -37,8 +38,7 @@ export default function (pi: ExtensionAPI) {
       const space = spaces?.find((s) => s.id === spaceId);
       if (!space) return;
 
-      const basename = (space.folder ?? "").replace(/\/+$/, "").split("/").pop() ?? "";
-      if (space.name !== basename) {
+      if (space.name !== basename(space.folder ?? "") && space.name !== basename(process.cwd())) {
         spaceSettled = true;
         return;
       }
