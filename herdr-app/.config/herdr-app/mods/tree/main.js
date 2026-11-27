@@ -634,15 +634,15 @@ export default class Tree extends View {
   }
 
   // A run of neighbouring spaces shares an outlined box, and a lone space gets
-  // one of its own. The first space leads and keeps its card, the shown
-  // worker keeps its card too, and every other worker takes a line. It is
+  // one of its own. The first space leads and keeps its card. The shown
+  // group draws every worker as a card, and other groups' workers take a line. It is
   // drawn as one slice per space so every space is its own list child:
   // scroll_to_item can then reveal the shown card even when its group is
   // taller than the sidebar.
   group(t, run, ps, terms, folded, held) {
     const last = run.length - 1;
     const leadTicket = work(run[0], ps, terms).ticket?.id;
-    const draw = (s, i) => i === 0 || s.active
+    const draw = (s, i) => i === 0 || held
       ? this.card(t, s, ps, terms, folded.has(s.id), i > 0 && Boolean(leadTicket) && work(s, ps, terms).ticket?.id === leadTicket, i > 0)
       : this.line(t, s, ps, terms, leadTicket);
     return run.map((s, i) => v_flex().id(`group-${s.id}`).flex_none().px(4).pt(i === 0 ? 8 : 2).border_x(1)
