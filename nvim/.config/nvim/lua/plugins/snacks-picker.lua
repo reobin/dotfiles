@@ -1,5 +1,13 @@
 return {
   "folke/snacks.nvim",
+  init = function()
+    -- Visual is NonText's grey in the default colorscheme, hiding the dirname.
+    vim.api.nvim_create_autocmd("ColorScheme", {
+      callback = function()
+        vim.api.nvim_set_hl(0, "SnacksPickerListCursorLine", { link = "CursorLine" })
+      end,
+    })
+  end,
   opts = { picker = { win = { input = { keys = { ["<Esc>"] = { "close", mode = { "n", "i" } } } } } } },
   keys = {
     { "<leader>e", false },
