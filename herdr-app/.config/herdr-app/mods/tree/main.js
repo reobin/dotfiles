@@ -36,6 +36,8 @@ const SELECTED = "archive.selected";
 // { record, at }: the group cmd-w deletes if pressed again within ARMED; empty-view reads it the same way.
 const DELETING = "archive.deleting";
 const ARMED = 3000;
+// { name, after, folder }: the space new-space picked a folder for, to join the group whose last space is after; new-space writes it the same way.
+const JOIN = "new-space.join";
 // The repo names lookup() learned, by where(), for the next start.
 const REPOS = "tree.repos";
 const records =() => /** @type {any[]} */ (shared(RECORDS) ?? []);
@@ -190,6 +192,15 @@ function place(s, ps) {
 
 const where = (s, ps) => JSON.stringify([s.machine ?? null, place(s, ps)]);
 
+async function until(cx, check, ms = 1000) {
+  for (let waited = 0; waited <= ms; waited += 10) {
+    const value = check();
+    if (value) return value;
+    await cx.sleep(10);
+  }
+  return null;
+}
+
 // Neighbouring named spaces with the same name group; each section keeps
 // space order, so it stays in alt-j/k order. Unnamed names follow folders,
 // so they never group. space-nav groups the same way.
@@ -240,9 +251,11 @@ export default class Tree extends View {
       this.requests();
     });
     this.lookup(cx);
-    cx.spawn(async () => {
+    cx.spawn(async (cx) => {
       for (;;) {
         const c = await nextCommand();
+        if (c === "new-in-group") this.newInGroup();
+        if (c === "join") await this.join(cx);
         if (c === "space-up") this.move(-1);
         if (c === "space-down") this.move(1);
         if (c === "toggle-archive") this.toggle();
@@ -322,6 +335,29 @@ export default class Tree extends View {
     const i = open.findIndex((s) => ids.has(s.id));
     const next = open[i + group.length] ?? open[i - 1];
     if (next) run("space.select", { id: next.id });
+  }
+
+  // new-space picks the folder and join() places the space. A space that can't
+  // group (unnamed, remote or archived) gets the plain picker.
+  newInGroup() {
+    if (shared(EMPTY)) return;
+    const all = spaces();
+    const archived = this.archived();
+    const s = all.find((x) => x.active);
+    if (!s || !s.named || s.machine || archived.has(s.id)) return openOverlay({ mod: "new-space", kind: "dialog", width: 640 });
+    const group = this.side(all, archived, s.id).find((r) => r.some((x) => x.id === s.id)) ?? [s];
+    openOverlay({ mod: "new-space", kind: "dialog", width: 640, props: { group: { name: s.name, after: group.at(-1).id, folder: place(s, panes()) } } });
+  }
+
+  async join(cx) {
+    const want = /** @type {any} */ (shared(JOIN));
+    setShared(JOIN, null);
+    if (!want) return;
+    const was = new Set(spaces().map((s) => s.id));
+    run("space.new", { name: want.name, folder: want.folder, machine: "" });
+    const made = await until(cx, () => spaces().find((s) => !was.has(s.id)));
+    const after = spaces().find((s) => s.id === want.after);
+    if (made && after) run("space.move", { id: made.id, index: after.index + 1 });
   }
 
   // The shown space's group moves as one, past the whole group next to it on

@@ -17,6 +17,7 @@
     "cmd-[": "agent.prev",
     "cmd-shift-l": "layout.switch",
     "cmd-n": "mod.open:new-space",
+    "cmd-alt-n": "tree.new-in-group",
     "cmd-p": "mod.open:picker",
     "cmd-l": "mod.open:link-hints",
     "cmd-shift-p": "app.palette",

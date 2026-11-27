@@ -1,7 +1,9 @@
 import { View, div, svg } from "gpui-kit";
 import { v_flex, h_flex, InputState, Input } from "gpui-base";
-import { exec, home, readTextFile, pickFolder, run, theme, props, closeOverlay } from "herdr";
+import { exec, home, readTextFile, pickFolder, run, theme, props, closeOverlay, setShared } from "herdr";
 
+// Opened by the tree's new-in-group with props { group }: the space joins that group, placed by the tree's join.
+const JOIN = "new-space.join";
 const ROOTS = "~/.config/herdr-app/mods/new-space/roots";
 const SHOWN = 12;
 const ROW = 32;
@@ -9,6 +11,7 @@ const ROW = 32;
 export default class NewSpace extends View {
   init(_props, cx) {
     this.home = home();
+    this.group = props()?.group ?? null;
     this.dirs = [];
     this.filter = "";
     this.at = 0;
@@ -48,7 +51,13 @@ export default class NewSpace extends View {
       const r = await exec("zoxide", ["query", "-l"]);
       if (r.code === 0) recent = r.stdout.split("\n").filter(Boolean);
     } catch {}
-    return [...new Set([...recent, ...roots])];
+    return [...new Set([...(this.group ? [this.group.folder] : []), ...recent, ...roots])];
+  }
+
+  create(folder) {
+    if (!this.group) return run("space.new", { folder, machine: "" });
+    setShared(JOIN, { ...this.group, folder });
+    run("tree.join");
   }
 
   rows() {
@@ -65,13 +74,13 @@ export default class NewSpace extends View {
     if (!r) return;
     if (r.kind === "dir") {
       this.close();
-      run("space.new", { folder: r.path, machine: "" });
+      this.create(r.path);
       return;
     }
     cx.spawn(async () => {
       const folder = await pickFolder({ prompt: "folder for the new space" });
       this.close();
-      if (folder) run("space.new", { folder, machine: "" });
+      if (folder) this.create(folder);
     });
   }
 
@@ -132,7 +141,7 @@ export default class NewSpace extends View {
         cx.stop_propagation();
         cx.notify();
       })
-      .child(h_flex().items_center().child(div().flex_1().text_size(15).font_semibold().text_color(t.foreground).child("new space in…")).child(div().id("ns-esc").px(6).py(2).rounded(5).text_size(11).text_color(t.dim).cursor_pointer().hover((s) => s.bg(t.hover).text_color(t.foreground)).on_click(() => this.close()).child("esc")))
+      .child(h_flex().items_center().child(div().flex_1().text_size(15).font_semibold().text_color(t.foreground).child(this.group ? `new space in ${this.group.name}…` : "new space in…")).child(div().id("ns-esc").px(6).py(2).rounded(5).text_size(11).text_color(t.dim).cursor_pointer().hover((s) => s.bg(t.hover).text_color(t.foreground)).on_click(() => this.close()).child("esc")))
       .child(
         h_flex().h(36).flex_none().px(10).gap(8).items_center().rounded(9).border_1().border_color(t.accent).bg(t.background)
           .child(svg("mods/workspace-chrome/search.svg").size(15).text_color(t.dim))
