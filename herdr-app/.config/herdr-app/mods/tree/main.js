@@ -3,7 +3,8 @@
 // agent pane gets a row with its icon, session title and status; any other
 // pane is a chip with its address and program, and a tab with no agent folds
 // to one line of chips. Only what needs you is marked. Under 160px wide,
-// spaces only. A group archives and moves as one. Active spaces and the
+// spaces only. A group archives and moves as one; its first space leads and
+// keeps its card, and the rest fold to lines (see group()). Active spaces and the
 // archive are two views: only one draws, and a footer names it and offers the
 // other (space-nav walks one view at a time). The archive lists the restore
 // mod's records, one row per group, while the empty-view block shows the
@@ -35,6 +36,8 @@ const SELECTED = "archive.selected";
 // { record, at }: the group cmd-w deletes if pressed again within ARMED; empty-view reads it the same way.
 const DELETING = "archive.deleting";
 const ARMED = 3000;
+// The repo names lookup() learned, by where(), for the next start.
+const REPOS = "tree.repos";
 const records =() => /** @type {any[]} */ (shared(RECORDS) ?? []);
 const selectedRecord = () => records().find((r) => r.id === shared(SELECTED)) ?? records()[0] ?? null;
 // { record, i }: the space within the selected group that cmd-i, cmd-g and the top bar follow; status-tabs, status-panel, space-nav and empty-view read it.
@@ -68,6 +71,12 @@ const isAgent = (p) => Boolean(p.program?.agent);
 // A tab whose content fits on its label's line: no agent at all, or one agent alone.
 const quiet = (list) => list.length > 0 && !list.some(isAgent);
 const solo = (list) => (list.length === 1 && isAgent(list[0]) ? list[0] : null);
+
+function agentIcon(t, p, size) {
+  if (!isAgent(p) || !p.program.icon) return null;
+  const tint = p.program.tint ? t.dim : BRAND[p.program.icon];
+  return tint ? svg(GLYPH[p.program.icon] ?? p.program.icon).size(size).flex_none().text_color(tint) : image(p.program.icon).w(size).h(size).flex_none();
+}
 
 // The ticket and PR the top bar shows for the space, from status-tabs' cache;
 // a space it hasn't looked up lately shows only what its labels name.
@@ -207,7 +216,10 @@ function press(el, act) {
 
 export default class Tree extends View {
   init(_props, cx) {
-    this.repo = {}; // where() -> the main checkout's folder name, null: not a repo
+    // where() -> the main checkout's folder name, null: not a repo. Kept across restarts
+    // (see REPOS), so names show at once instead of after git answers.
+    this.repo = { ...(/** @type {Record<string, string | null>} */ (shared(REPOS) ?? {})) };
+    this.failed = new Set(); // where() keys git couldn't be asked about; never kept
     this.asking = false;
     this.hot = null; // "space-<id>" or "tab-<id>": its whole card or block lights up
     this.under = null; // { key, at }: the lit row the last move over one landed on
@@ -347,8 +359,11 @@ export default class Tree extends View {
           this.repo[k] = r.code !== 0 ? null : dir.endsWith("/.git") ? dir.slice(0, -5).split("/").pop() : dir.split("/").pop().replace(/\.git$/, "");
         } catch {
           this.repo[k] = null;
+          this.failed.add(k);
         }
       }
+      const now = new Set(spaces().map((s) => where(s, panes())));
+      setShared(REPOS, Object.fromEntries(Object.entries(this.repo).filter(([k]) => now.has(k) && !this.failed.has(k))));
       this.asking = false;
       cx.notify();
     });
@@ -362,14 +377,14 @@ export default class Tree extends View {
   // The repo leads and the PR and ticket sit at the right edge, where the
   // task's name sits above them on the outline. same: the card above in the
   // group shows this ticket, so this one leaves it out.
-  space(t, s, ps, terms, folded, same) {
+  space(t, s, ps, terms, folded, same, worker = false) {
     const { ticket, pr } = work(s, ps, terms);
     const tabs = new Set(s.tabs.map((tab) => tab.id));
     const st = folded && s.status && s.status !== "idle" ? status(t, s.status) : null;
     return press(this.lit(h_flex().id(`space-${s.id}`).h(22).flex_none().px(8).gap(8).items_center().rounded(5),
       `space-${s.id}`), () => run("space.select", { id: s.id }))
       .on_mouse_down("right", () => openOverlay({ mod: "menu", kind: "popup", width: 200, height: 260, props: { tab: "space", target: { id: s.id } } }))
-      .child(icon("cube").size(14).flex_none().text_color(t.dim))
+      .when(!worker, (el) => el.child(icon("cube").size(14).flex_none().text_color(t.dim)))
       .child(div().min_w(0).truncate().text_size(14).font_semibold().text_color(s.active ? t.foreground : t.muted).child(this.repoOf(s, ps)))
       .child(div().flex_1())
       .when(Boolean(pr), (el) => el.child(tag(t, prLook(t, pr), `#${pr.number}`)))
@@ -411,12 +426,13 @@ export default class Tree extends View {
     return [sign, name];
   }
 
-  pill(t, on, sign) {
+  // short: only what you type, without the dimmed rest of the address.
+  pill(t, on, sign, short = false) {
     const [head, tail] = sign === "·" ? ["", sign] : shorthand(sign);
-    return h_flex().flex_none().min_w(28).h(18).px(6).justify_center().items_center().rounded(5)
+    return h_flex().flex_none().min_w(short ? 0 : 28).h(18).px(6).justify_center().items_center().rounded(5)
       .font_family(MONO).text_size(11).font_semibold()
       .bg(on ? t.accent + "26" : t.foreground + "0f").text_color(on ? t.accent : t.muted)
-      .child(div().opacity(0.5).child(head)).child(div().child(tail));
+      .when(!short, (el) => el.child(div().opacity(0.5).child(head))).child(div().child(tail));
   }
 
   // Any pane that isn't an agent: its address pill, extended to the right by
@@ -448,11 +464,7 @@ export default class Tree extends View {
   // inline: on its tab's line, it takes the rest of the line instead of a row.
   pane(t, s, p, inline = false) {
     const [sign, name] = this.label(p);
-    const agent = p.program?.agent;
-    const tint = p.program?.tint ? t.dim : BRAND[p.program?.icon];
-    const pic = agent && p.program.icon
-      ? tint ? svg(GLYPH[p.program.icon] ?? p.program.icon).size(14).flex_none().text_color(tint) : image(p.program.icon).w(14).h(14).flex_none()
-      : null;
+    const pic = agentIcon(t, p, 14);
     const on = s.active && p.focused;
     const st = status(t, p.status);
     return press(h_flex().id(`pane-${p.pane}`).h(ROW).gap(8).items_center().rounded(5)
@@ -486,11 +498,11 @@ export default class Tree extends View {
     cx.notify();
   }
 
-  rows(t, s, ps, terms, folded, same) {
-    if (folded) return [this.space(t, s, ps, terms, true, same)];
+  rows(t, s, ps, terms, folded, same, worker) {
+    if (folded) return [this.space(t, s, ps, terms, true, same, worker)];
     const mine = s.tabs.map((tab) => [tab, ps.filter((p) => p.tab === tab.id)]);
     return [
-      this.space(t, s, ps, terms, false, same),
+      this.space(t, s, ps, terms, false, same, worker),
       ...mine.flatMap(([tab, list]) => s.tabs.length > 1
         ? [v_flex().flex_none().mt(4).rounded(5).when(this.hot === `tab-${tab.id}`, (el) => el.bg(t.hover))
           .child(this.tab(t, s, tab, list))
@@ -512,26 +524,89 @@ export default class Tree extends View {
 
   // The shown card's outline takes a pixel of its padding, so nothing shifts
   // when it moves.
-  card(t, s, ps, terms, folded, same = false) {
+  card(t, s, ps, terms, folded, same = false, worker = false) {
     const pad = s.active ? 1 : 0;
     return v_flex().id(`card-${s.id}`).flex_none().px(4 - pad).pt(4 - pad).pb(4 - pad).rounded(8)
       .bg(this.hot === `space-${s.id}` ? t.hover : s.active ? t.background : t.foreground + "06")
       .when(s.active, (el) => el.border(1).border_color(t.accent + "40"))
-      .children(this.rows(t, s, ps, terms, folded, same));
+      .children(this.rows(t, s, ps, terms, folded, same, worker));
+  }
+
+  // A pane on a worker's line: its address pill, and for an agent its icon
+  // and status in one chip, like a tool chip with its program.
+  mini(t, s, p) {
+    const pill = this.pill(t, s.active && p.focused, p.terminal ?? "·", true);
+    const chip = isAgent(p)
+      ? h_flex().h(18).pr(5).gap(4).items_center().rounded(5).bg(t.foreground + "06").hover((x) => x.bg(t.hover))
+        .child(pill).children([agentIcon(t, p, 11), mark(t, p.status, 10)].filter(Boolean))
+      : pill;
+    return press(h_flex().id(`pane-${p.pane}`).flex_none().items_center().child(chip), () => run("pane.focus", { pane: p.pane }));
+  }
+
+  // A worker that isn't shown: a card whose header row is the open card's
+  // (repo, and at the right edge its PR and its ticket when it isn't the
+  // lead's; workers carry no cube), so nothing moves when the worker opens. Its panes' addresses
+  // follow on the header row, a hairline between tabs, or all move to a row
+  // of their own under it when they wouldn't fit. The repo stays blank until
+  // git names it, so a long folder name doesn't stand in for it.
+  line(t, s, ps, terms, leadTicket) {
+    const { ticket, pr } = work(s, ps, terms);
+    const showTicket = Boolean(ticket) && ticket.id !== leadTicket;
+    const repo = where(s, ps) in this.repo ? this.repoOf(s, ps) : "";
+    const tabs = s.tabs.map((tab) => ps.filter((p) => p.tab === tab.id))
+      .map((list) => [...list.filter(isAgent), ...list.filter((p) => !isAgent(p))]).filter((list) => list.length);
+    const panes = tabs.flatMap((list, i) => [
+      ...(i > 0 ? [div().flex_none().w(1).h(13).mx(2).bg(t.border)] : []),
+      ...list.map((p) => this.mini(t, s, p)),
+    ]);
+    const tags = h_flex().flex_none().gap(8).items_center()
+      .when(Boolean(pr), (el) => el.child(tag(t, prLook(t, pr), `#${pr.number}`)))
+      .when(showTicket, (el) => el.child(tag(t, ticketLook(t, ticket), ticket.id)));
+    const fits = this.fits(s, ps, tabs, repo, pr ? `#${pr.number}` : "", showTicket ? ticket.id : "");
+    const head = h_flex().h(22).px(8).gap(8).items_center()
+      .child(div().min_w(0).truncate().text_size(14).font_semibold().text_color(t.muted).child(repo))
+      .when(fits, (el) => el.child(h_flex().flex_none().gap(5).items_center().children(panes)))
+      .child(div().flex_1())
+      .child(tags);
+    return press(this.lit(v_flex().id(`space-${s.id}`).flex_none().px(4).py(4).rounded(8)
+      .bg(this.hot === `space-${s.id}` ? t.hover : t.foreground + "06"), `space-${s.id}`), () => run("space.select", { id: s.id }))
+      .on_mouse_down("right", () => openOverlay({ mod: "menu", kind: "popup", width: 200, height: 260, props: { tab: "space", target: { id: s.id } } }))
+      .child(head)
+      .when(!fits, (el) => el.child(h_flex().flex_wrap().px(8).gap(5).items_center().children(panes)));
+  }
+
+  // Whether a worker's panes fit on its header row, from the sidebar's width
+  // and the row's pieces measured at their font sizes. Layout can't be read
+  // back before it is drawn, so this estimates, a few pixels on the safe side.
+  fits(s, ps, tabs, repo, pr, ticket) {
+    const room = (find(layout(), "sidebar")?.size?.px ?? Infinity) - 66;
+    const mono = (text) => text.length * 6.7;
+    const pill = (p) => 12 + mono(p.terminal ? shorthand(p.terminal)[1] : "·")
+      + (isAgent(p) ? 4 + 11 + (RANK[p.status] ? 14 : 0) + 5 : 0);
+    const list = tabs.flat();
+    const panes = list.reduce((sum, p) => sum + pill(p), 0) + 5 * (list.length - 1) + 10 * (tabs.length - 1);
+    const tag = (text) => (text ? 15 + mono(text) : 0);
+    const tags = tag(pr) + tag(ticket) + (pr && ticket ? 8 : 0);
+    return repo.length * 8.2 + 8 + panes + (tags ? 8 + tags : 0) <= room;
   }
 
   // A run of neighbouring spaces shares an outlined box, and a lone space gets
-  // one of its own. It is drawn as one slice per card so every card is its own
-  // list child: scroll_to_item can then reveal the shown card even when its
-  // group is taller than the sidebar.
+  // one of its own. The first space leads and keeps its card, the shown
+  // worker keeps its card too, and every other worker takes a line. It is
+  // drawn as one slice per space so every space is its own list child:
+  // scroll_to_item can then reveal the shown card even when its group is
+  // taller than the sidebar.
   group(t, run, ps, terms, folded, held) {
     const last = run.length - 1;
-    const ids = run.map((s) => work(s, ps, terms).ticket?.id);
-    return run.map((s, i) => v_flex().id(`group-${s.id}`).flex_none().px(4).pt(i === 0 ? 8 : 4).border_x(1)
+    const leadTicket = work(run[0], ps, terms).ticket?.id;
+    const draw = (s, i) => i === 0 || s.active
+      ? this.card(t, s, ps, terms, folded.has(s.id), i > 0 && Boolean(leadTicket) && work(s, ps, terms).ticket?.id === leadTicket, i > 0)
+      : this.line(t, s, ps, terms, leadTicket);
+    return run.map((s, i) => v_flex().id(`group-${s.id}`).flex_none().px(4).pt(i === 0 ? 8 : 2).border_x(1)
       .border_color(held ? t.accent : t.border)
       .when(i === 0, (el) => el.border_t(1).rounded_t(12))
       .when(i === last, (el) => el.pb(4).border_b(1).rounded_b(12))
-      .child(this.card(t, s, ps, terms, folded.has(s.id), i > 0 && Boolean(ids[i]) && ids[i] === ids[i - 1])));
+      .child(draw(s, i)));
   }
 
   // scroll_to_item stops a child at the list's edge, so each card sits in a
@@ -665,12 +740,17 @@ export default class Tree extends View {
   }
 
   // Archived groups drawn like active ones, from their records: a box per
-  // group with its name on the outline, a card per space with its repo, ticket
-  // and PR, the selected group outlined. Under the last card, how long ago it
-  // left, and why while it's still open.
+  // group with its name on the outline, the selected group outlined. The lead
+  // is a card with its repo, ticket and PR over a row per agent with its
+  // icon and session title; every other space is a one-row card with its
+  // agents' icons. Their addresses died with the panes and their status is
+  // frozen, so neither shows. Under the last card, how long ago it left, and
+  // why while it's still open.
   records(t, recs, on) {
     const labelsOf = (s) => s.tabs.flatMap((tab) => Object.values(tab.info)).map((p) => p.labels ?? {});
     const ticketOf = (s) => labelsOf(s).map((l) => l.ticket).find((x) => TICKET.test(x ?? ""));
+    const agentsOf = (s) => s.tabs.flatMap((tab) => Object.values(tab.info)).filter((p) => p.claude || p.codex || p.icon in BRAND);
+    const pic = (p, size) => agentIcon(t, { program: { agent: true, icon: p.icon, tint: p.tint } }, size);
     return recs.flatMap((r, k) => {
       const sel = r.id === on;
       const last = r.spaces.length - 1;
@@ -691,12 +771,21 @@ export default class Tree extends View {
         const pr = labelsOf(s).map((l) => PR.exec(l.pr ?? "")?.[1]).find(Boolean);
         const known = this.archivedWork(r, i);
         const repo = s.repo ?? s.tabs.flatMap((tab) => Object.values(tab.info))[0]?.cwd?.split("/").pop() ?? "space";
-        const card = press(h_flex().id(`record-${r.id}-${i}`).h(22).flex_none().px(8).gap(8).items_center().rounded(5), () => pick(i))
-          .child(icon("cube").size(14).flex_none().text_color(t.dim))
-          .child(div().min_w(0).truncate().text_size(14).font_semibold().text_color(i === at ? t.foreground : t.muted).child(repo))
+        const lit = i === at;
+        const agents = agentsOf(s);
+        const head = h_flex().min_h(22).flex_wrap().px(8).gap(5).items_center()
+          .child(h_flex().min_w(0).mr(3).gap(8).items_center()
+            .when(i === 0, (el) => el.child(icon("cube").size(14).flex_none().text_color(t.dim)))
+            .child(div().min_w(0).truncate().text_size(14).font_semibold().text_color(lit ? t.foreground : t.muted).child(repo)))
+          .when(i > 0, (el) => el.children(agents.map((p) => pic(p, 11)).filter(Boolean)))
           .child(div().flex_1())
-          .when(Boolean(pr), (el) => el.child(tag(t, known?.pr ? prLook(t, known.pr) : ["pr", t.dim], `#${pr}`)))
-          .when(Boolean(ticket) && !(i > 0 && ticketOf(r.spaces[i - 1]) === ticket), (el) => el.child(tag(t, known?.ticket ? ticketLook(t, known.ticket) : ["lin-unknown", t.dim], ticket)));
+          .child(h_flex().flex_none().gap(8).items_center()
+            .when(Boolean(pr), (el) => el.child(tag(t, known?.pr ? prLook(t, known.pr) : ["pr", t.dim], `#${pr}`)))
+            .when(Boolean(ticket) && !(i > 0 && ticketOf(r.spaces[0]) === ticket), (el) => el.child(tag(t, known?.ticket ? ticketLook(t, known.ticket) : ["lin-unknown", t.dim], ticket))));
+        const card = press(v_flex().id(`record-${r.id}-${i}`).flex_none().rounded(5), () => pick(i))
+          .child(head)
+          .when(i === 0, (el) => el.children(agents.map((p, j) => h_flex().id(`record-${r.id}-${i}-${j}`).h(ROW).px(8).gap(8).items_center()
+            .children([pic(p, 14), div().flex_1().min_w(0).truncate().font_family(SANS).text_size(13.5).text_color(lit ? t.foreground : t.muted).child(p.title)].filter(Boolean)))));
         const box = v_flex().id(`record-box-${r.id}-${i}`).flex_none().px(4).pt(i === 0 ? 8 : 4).border_x(1)
           .border_color(sel ? t.accent : t.border)
           .when(i === 0, (el) => el.border_t(1).rounded_t(12))
